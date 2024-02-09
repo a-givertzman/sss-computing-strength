@@ -1,0 +1,41 @@
+name: Cargo Tests
+
+on:
+  # push:
+  pull_request:
+
+env: 
+  TERM: dumb
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_and_test:
+    name: Testing
+    runs-on: ubuntu-latest
+    # strategy:
+    #   matrix:
+    #     toolchain:
+    #       - stable
+    #       - beta
+    #       - nightly
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2      
+        # uses: actions/checkout@v3
+
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          # profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Static analisis
+        run: |
+          cargo check
+      # - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      # - run: cargo build --release
+      - name: Unit tests
+        run: cargo test -- --show-output
+  
