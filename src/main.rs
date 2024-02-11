@@ -1,6 +1,6 @@
 use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
 use log::debug;
-use testing::entity::test_value::Value;
+use testing::entities::test_value::Value;
 
 fn main() {
     DebugSession::init(LogLevel::Debug, Backtrace::Short);
