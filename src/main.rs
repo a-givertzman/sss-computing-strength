@@ -2,6 +2,9 @@ use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
 use log::debug;
 use testing::entities::test_value::Value;
 
+mod data;
+mod tests;
+
 fn main() {
     DebugSession::init(LogLevel::Debug, Backtrace::Short);
     debug!("Test the debugging...");
