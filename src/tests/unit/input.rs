@@ -4,10 +4,8 @@
 mod tests {
     use log::{warn, info, debug};
     use std::{sync::Once, time::{Duration, Instant}};
-    use crate::core_::{
-        debug::debug_session::{DebugSession, LogLevel, Backtrace}, 
-        testing::test_stuff::max_test_duration::TestDuration,
-    }; 
+    use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
+    use testing::stuff::max_test_duration::TestDuration;
     use crate::data::parse_input::*;
     
     #[test]
