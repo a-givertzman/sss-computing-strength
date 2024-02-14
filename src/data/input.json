@@ -1,0 +1,17 @@
+{
+    "gravity_const_g": 9.81,
+    "water_density": 1.025,
+    "mean_draught_curve": [[0.0, 0.0], [1000.0, 1.0], [100000.0, 5.0]],
+    "trimming_moment_curve": [[0.0, 1000.0], [1.0, 2000.0], [5.0, 100000.0]],
+    "buoyancy_centre_curve": [[0.0, -0.2], [1.0, 0.1], [5.0, 1.0]],
+    "frames": [ 
+        {"offset_x": -1.0, "immersion_area_curve": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]},
+        {"offset_x": 0.0, "immersion_area_curve": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]},
+        {"offset_x": 1.0, "immersion_area_curve": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]}
+    ],
+    "frame_spaces": [
+        {"mass": 10.0, "displacement_curve": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]},
+        {"mass": 10.0, "displacement_curve": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]},
+        {"mass": 10.0, "displacement_curve": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]}
+    ]
+}
