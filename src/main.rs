@@ -4,6 +4,7 @@ use testing::entities::test_value::Value;
 
 mod data;
 mod tests;
+mod vec_f64;
 
 fn main() {
     DebugSession::init(LogLevel::Debug, Backtrace::Short);
