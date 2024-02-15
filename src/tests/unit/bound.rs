@@ -17,14 +17,18 @@ mod tests {
         let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
         testDuration.run().unwrap();
 
-        let bound = Bound::new(2., 4.);
-        assert_eq!(bound.intersect(&Bound::new(0., 1.,)), None);
-        assert_eq!(bound.intersect(&Bound::new(4., 5.,)), None);
-        assert_eq!(bound.intersect(&Bound::new(1., 3.,)), Some(Bound::new(2., 3.)));
-        assert_eq!(bound.intersect(&Bound::new(1., 5.,)), Some(Bound::new(2., 4.)));
-        assert_eq!(bound.intersect(&Bound::new(3., 5.,)), Some(Bound::new(3., 4.)));
-        assert_eq!(bound.intersect(&Bound::new(2., 3.,)), Some(Bound::new(2., 3.)));
-
+        let test_data = [
+            (Bound::new(2., 4.), Bound::new(0., 1.,), None),
+            (Bound::new(2., 4.), Bound::new(4., 5.,), None),
+            (Bound::new(2., 4.), Bound::new(1., 3.,), Some(Bound::new(2., 4.))),
+            (Bound::new(2., 4.), Bound::new(1., 5.,), Some(Bound::new(2., 4.))),
+            (Bound::new(2., 4.), Bound::new(3., 5.,), Some(Bound::new(3., 4.))),
+            (Bound::new(2., 4.), Bound::new(2., 3.,), Some(Bound::new(2., 3.))),
+        ];
+        for (left, right, target) in test_data {
+            let result = left.intersect(&right);
+            assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
+        }
         testDuration.exit();
     }
 
