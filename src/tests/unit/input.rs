@@ -9,10 +9,10 @@ mod tests {
     use crate::data::parse_input::*;
     
     #[test]
-    fn input() {
+    fn parse() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Input";
+        let selfId = "test Parse input";
         println!("{}", selfId);
         let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
         testDuration.run().unwrap();
