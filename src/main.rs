@@ -16,6 +16,5 @@ fn main() {
     let value = Value::Float(55.55);
     debug!("\t float value: {:?}", value);
     let value = Value::String("66.77".to_string());
-    debug!("\t string value: {:?}", value);
-    
+    debug!("\t string value: {:?}", value);    
 }
