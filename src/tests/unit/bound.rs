@@ -6,7 +6,7 @@ mod tests {
     use std::{sync::Once, time::{Duration, Instant}};
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::bound::*;
+    use crate::math::bound::*;
     
     #[test]
     fn intersect() {
