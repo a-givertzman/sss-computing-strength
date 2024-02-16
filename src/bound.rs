@@ -10,59 +10,57 @@ pub struct Bound {
 impl Bound {
     ///
     /// Creates new instance of Bound
-    /// - start - description if necessary
-    /// - end - description if necessary
-    pub fn new(x_start: f64, x_end: f64) -> Self {
-        assert!(x_end > x_start);
+    /// - start - начало диапазона
+    /// - end - конец диапазона
+    pub fn new(start: f64, end: f64) -> Self {
+        assert!(end > start);
         Self {
-            start: x_start,
-            end: x_end,
+            start: start,
+            end: end,
         }
     }
     ///
-    ///  Какая часть попадает в границы переданного диапазона, 0..=1
-    pub fn part(&self, bound: &Bound) -> f64 {
+    /// Отношение общей части пересечения к длине диапазона self
+    pub fn part_ratio(&self, bound: &Bound) -> f64 {
         self.intersect(bound).map(|v| v.length()/self.length() ).unwrap_or(0.)
     }
     ///
-    /// Пересечение диапазонов, 0..=self.length
-    pub fn intersect(&self, bound: &Bound) -> Option<Bound> {
-        assert!(bound.end() > bound.start());
-        if bound.start() >= self.end {
+    /// Пересечение c другим диапазоном, возвращает общий диапазон
+    pub fn intersect(&self, other: &Bound) -> Option<Bound> {
+        if other.start() >= self.end {
             return None;
         }
-        if bound.end() <= self.start {
+        if other.end() <= self.start {
             return None;
         }
-        if bound.start() <= self.start && bound.end() >= self.end {
+        if other.start() <= self.start && other.end() >= self.end {
             return Some(*self);
         }
-
-        Some(Bound::new(bound.start().max(self.start), bound.end().min(self.end)))
+        Some(Bound::new(other.start().max(self.start), other.end().min(self.end)))
     }
     ///
-    /// Descr...
+    /// Длинна диапазона
     pub fn length(&self) -> f64 {
         self.end - self.start
     }
     ///
-    /// Descr...
+    /// Начало диапазона
     pub fn start(&self) -> f64 {
         self.start
     }
     ///
-    /// Descr...
+    /// Конец диапазона
     pub fn end(&self) -> f64 {
         self.end
     }
     ///
-    /// Descr...
+    /// Центр диапазона
     pub fn center(&self) -> f64 {
         (self.start + self.end)/2.
     }
     ///
-    /// Descr...
-    pub fn add(&mut self, other: f64) {
+    /// Смещение диапазона на величину other
+    pub fn shift(&mut self, other: f64) {
         self.start += other;
         self.end += other;
     }
