@@ -1,13 +1,17 @@
+trait VecF64: std::vec::Vec<f64> {}
+
+/*
 ///
 /// Descr
 #[derive(Debug, Clone, PartialEq)]
 pub struct VecF64 {
     pub data: Vec<f64>,
 }
+*/
 ///
 ///
 impl VecF64 {
-    ///
+ /*   ///
     /// Descr...
     /// - data - is...
     pub fn new(data: Vec<f64>) -> Self {
@@ -33,6 +37,7 @@ impl VecF64 {
     pub fn into_iter(self) -> <Vec<f64> as IntoIterator>::IntoIter {
         self.data.into_iter()
     }
+    */
     ///
     /// Сумма сверху $res_i = res_{i-1} + src_i, res_0 = 0$
     pub fn sum_above(&self) -> Self {
@@ -54,26 +59,26 @@ impl VecF64 {
     ///
     /// Descr...
     pub fn add(&mut self, rhs: f64) {
-        self.data.iter_mut()
+        self.iter_mut()
            .for_each(|mut v| {*v += rhs;} )
     }
     ///
     /// Descr...
     pub fn sub(&mut self, rhs: f64) {
-        self.data.iter_mut()
+        self.iter_mut()
            .for_each(|mut v| {*v -= rhs;} )
     }
     ///
     /// Descr...
     pub fn div(&mut self, rhs: f64) {
         assert_ne!(rhs, 0.);
-        self.data.iter_mut()
+        self.iter_mut()
            .for_each(|mut v| {*v /= rhs;} )
     }
     ///
     /// Descr...
     pub fn mul(&mut self, rhs: f64) {
-        self.data.iter_mut()
+        self.iter_mut()
             .for_each(|mut v| {*v *= rhs;} )
     }
 }
@@ -82,7 +87,7 @@ impl VecF64 {
 impl std::ops::Index<usize> for VecF64 {
     type Output = f64;
     fn index(&self, index: usize) -> &Self::Output {
-        &self.data[index]
+        &self[index]
     }
 }
 ///
@@ -90,12 +95,10 @@ impl std::ops::Index<usize> for VecF64 {
 impl std::ops::Add for VecF64 {
     type Output = Self;    
     fn add(self, rhs: Self) -> Self {
-        VecF64 {
-            data: self.data.into_iter()
-            .zip(rhs.data.into_iter())
+        self.into_iter()
+            .zip(rhs.into_iter())
             .map(|(v1, v2)| v1 + v2)
             .collect()
-        }
     }
 }
 ///
