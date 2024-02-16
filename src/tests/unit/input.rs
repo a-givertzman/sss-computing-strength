@@ -34,8 +34,7 @@ mod tests {
                 {"mass": 10.0, "displacement_curve": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]},
                 {"mass": 10.0, "displacement_curve": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]}
             ]
-        }"#;
-        
+        }"#;        
     
         let result = ParsedData::parse(&data).expect("parse error");
         let target = ParsedData {
