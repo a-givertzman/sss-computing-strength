@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{load::ILoad, math::{bound::Bound, mass_moment::MassMoment, position::Position}};
+use crate::{load::ILoad, math::{bound::Bound, mass_moment::MassMoment, position::Position, surface_moment::SurfaceMoment}};
 
 ///класс, инкапсулирующий все грузы судна
 pub struct Mass<'a> {
@@ -8,6 +8,7 @@ pub struct Mass<'a> {
     loads: Vec<Rc<Box<dyn ILoad>>>,
     /// ссылка на вектор разбиения на отрезки для эпюров
     bounds: &'a Vec<Bound>,
+
 }
 
 impl<'a> Mass<'a> {
@@ -28,10 +29,18 @@ impl<'a> Mass<'a> {
     }
     ///отстояние центра масс
     pub fn shift(&self) -> Position {
-        self.moment().to_pos(self.sum())
+        self.moment_mass().to_pos(self.sum())
+    }
+    ///Поправка к продольной метацентрической высоте на влияние свободной поверхности жидкости в цистернах 
+    pub fn delta_m_h(&self) -> f64 {
+        self.moment_surface().y()/self.sum()
     }
     ///суммарный статический момент
-    pub fn moment (&self) -> MassMoment {
+    fn moment_mass (&self) -> MassMoment {
         self.loads.iter().map(|c| c.moment_mass() ).sum::<MassMoment>()
+    }
+    ///суммарный момент свободной поверхности
+    fn moment_surface (&self) -> SurfaceMoment {
+        self.loads.iter().map(|c| c.moment_surface() ).sum::<SurfaceMoment>()
     }
 }
