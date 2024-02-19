@@ -18,7 +18,7 @@ impl Displacement {
     //     let frames = frames.into_iter().enumerate().collect::<HashMap<_,_>>();
     //     Self::new( frames, ship_length )
     // }
-    ///погруженная площадь сечения
+    ///погруженный объем шпации
     pub fn value(&self, bound: Bound, draft: f64) -> f64 {
         let area_start = self.area(bound.start(), draft);
         let area_end = self.area(bound.end(), draft);

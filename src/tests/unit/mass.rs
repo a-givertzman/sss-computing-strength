@@ -84,30 +84,4 @@ mod tests {
 
         testDuration.exit();
     }
-
-
-    // #[test]
-    // fn moment() {
-    //     DebugSession::init(LogLevel::Debug, Backtrace::Short);
-    //     println!("");
-    //     let selfId = "test Mass moment";
-    //     println!("{}", selfId);
-    //     let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-    //     testDuration.run().unwrap();
-
-    //     let loads: Vec<Rc<Box<dyn ILoad>>>  = vec![Rc::new(Box::new(LoadSpace::new( Bound::new(-10., 0.), Position::new( -5., 0., 0.), 10.))),
-    //                                                 Rc::new(Box::new(LoadSpace::new( Bound::new(0., 10.), Position::new( 5., 0., 0.), 10.))),
-    //                                                 Rc::new(Box::new(LoadSpace::new( Bound::new(0., 10.), Position::new( 5., 0., 0.), 20.))),];
-
-    //     let bounds = vec![  Bound::new(-10., -5.),
-    //                                     Bound::new(-5., 0.),
-    //                                     Bound::new(0., 5.),
-    //                                     Bound::new(5., 10.),];
-
-    //     let result = Mass::new( loads, &bounds).mass_moment();
-    //     let target = MassMoment::new(100., 0., 0.);
-    //     assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
-
-    //     testDuration.exit();
-    // }
 }

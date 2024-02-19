@@ -8,7 +8,6 @@ pub struct Mass<'a> {
     loads: Vec<Rc<Box<dyn ILoad>>>,
     /// ссылка на вектор разбиения на отрезки для эпюров
     bounds: &'a Vec<Bound>,
-
 }
 
 impl<'a> Mass<'a> {

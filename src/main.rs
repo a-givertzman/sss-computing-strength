@@ -10,6 +10,7 @@ mod math;
 mod load;
 mod tank;
 mod mass;
+mod draught;
 
 fn main() {
     DebugSession::init(LogLevel::Debug, Backtrace::Short);
