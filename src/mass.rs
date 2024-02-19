@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{load::ILoad, math::{bound::Bound, moment::Moment, position::Position}};
+use crate::{load::ILoad, math::{bound::Bound, mass_moment::MassMoment, position::Position}};
 
 ///класс, инкапсулирующий все грузы судна
 pub struct Mass<'a> {
@@ -31,7 +31,7 @@ impl<'a> Mass<'a> {
         self.moment().to_pos(self.sum())
     }
     ///суммарный статический момент
-    pub fn moment (&self) -> Moment {
-        self.loads.iter().map(|c| c.moment() ).sum::<Moment>()
+    pub fn moment (&self) -> MassMoment {
+        self.loads.iter().map(|c| c.moment_mass() ).sum::<MassMoment>()
     }
 }

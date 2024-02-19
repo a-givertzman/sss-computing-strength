@@ -1,12 +1,12 @@
 use splines::{Interpolation, Key, Spline};
 
-///кривая
+///кривая, позволяет получать интерполированные значения 
 pub struct Curve {
     spline: Spline<f64, f64>,
 }
 
 impl Curve {
-    ///
+    ///конструктор, получает вектор пар ключ/значение
     pub fn new(values: Vec<(f64, f64)>) -> Curve {
         let values: Vec<_> = values
             .into_iter()

@@ -2,10 +2,10 @@ use std::{iter::Sum, ops::Add};
 
 use super::position::Position;
 
-pub type Moment = super::position::Position;
+pub type MassMoment = super::position::Position;
 
 ///класс инкапсулирующий момент массы
-impl Moment {
+impl MassMoment {
     ///рассчет момента из позиции и массы груза
     pub fn from_pos(position: Position, mass: f64) -> Self {
         Self::new(position.x()*mass, position.y()*mass, position.z()*mass,)
@@ -16,15 +16,15 @@ impl Moment {
     }
 }
 
-impl Add for Moment {
+impl Add for MassMoment {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Moment::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z(),)
+        MassMoment::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z(),)
     }
 }
 
-impl Sum for Moment {
+impl Sum for MassMoment {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(Self::new(0., 0., 0.),|a, b| a + b )
     }
