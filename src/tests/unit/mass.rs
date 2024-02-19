@@ -6,7 +6,7 @@ mod tests {
     use std::{rc::Rc, sync::Once, time::{Duration, Instant}};
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::{load::{ILoad, LoadSpace}, mass::Mass, math::{bound::Bound, position::Position}};
+    use crate::{load::{ILoad, LoadSpace}, mass::Mass, math::{bound::Bound, moment::Moment, position::Position}};
     
     #[test]
     fn sum() {
@@ -77,7 +77,7 @@ mod tests {
                                         Bound::new(5., 10.),];
 
         let result = Mass::new( loads, &bounds).moment();
-        let target = 100.;
+        let target = Moment::new(100., 0., 0.);
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
         testDuration.exit();

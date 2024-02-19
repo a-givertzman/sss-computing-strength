@@ -6,7 +6,7 @@ mod tests {
     use std::{sync::Once, time::{Duration, Instant}};
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::{load::{ILoad, LoadSpace}, math::{bound::Bound, position::Position}};
+    use crate::{load::{ILoad, LoadSpace}, math::{bound::Bound, moment::Moment, position::Position}};
     
     #[test]
     fn mass() {
@@ -34,7 +34,7 @@ mod tests {
         testDuration.run().unwrap();
 
         let result = LoadSpace::new( Bound::new(-1., 3.), Position::new( 1., 0., 0.), 20.).moment();
-        let target = 20.;
+        let target = Moment::new(20., 0., 0.);
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
         testDuration.exit();

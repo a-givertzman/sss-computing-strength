@@ -1,12 +1,12 @@
-use crate::math::{bound::Bound, position::Position};
+use crate::math::{bound::Bound, moment::Moment, position::Position};
 
 
 ///абстрактный груз, имеет массу и может вернуть какая его часть попадает в указанные границы
 pub trait ILoad {
-    ///момент массы
-    fn moment(&self) -> f64;
     ///масса груза
     fn mass(&self, bound: Option<Bound>) -> f64;
+    ///момент массы
+    fn moment(&self) -> Moment;
 }
 
 ///груз на судне, имеет границы, центр масс и значение
@@ -35,7 +35,7 @@ impl ILoad for LoadSpace {
         self.bound.part_ratio(&bound)*self.mass
     }
 
-    fn moment(&self) -> f64 {
-        self.mass * self.pos.x()
+    fn moment(&self) -> Moment {
+        Moment::from_pos(self.pos, self.mass)
     }
 }
