@@ -27,16 +27,6 @@ impl LoadSpace {
     pub fn new_empty(bound: Bound, pos: Position) -> Self {
         Self::new(bound, pos, 0.)
     }
-    ///
-    pub fn add(&mut self, mass: f64) {
-        assert!(mass > 0., "mass {} > 0", mass);
-        self.mass += mass;
-    }
-    ///
-    pub fn remove(&mut self, mass: f64) {
-        assert!(self.mass >= mass, "LoadSpace.mass {} >= mass {}", self.mass, mass);
-        self.mass -= mass;
-    }
 }
 
 impl ILoad for LoadSpace {

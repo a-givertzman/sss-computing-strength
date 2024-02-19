@@ -6,3 +6,4 @@ mod curve;
 mod frame;
 mod displacement;
 mod load;
+mod mass;

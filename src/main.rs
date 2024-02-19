@@ -8,6 +8,7 @@ mod frame;
 mod displacement;
 mod math;
 mod load;
+mod mass;
 
 fn main() {
     DebugSession::init(LogLevel::Debug, Backtrace::Short);
