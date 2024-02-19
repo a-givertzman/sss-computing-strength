@@ -1,6 +1,6 @@
 use crate::{load::ILoad, math::{bound::Bound, inertia_shift::InertiaShift, pos_shift::PosShift, position::Position, surface_moment::SurfaceMoment}};
 
-///цистерна
+///цистерна, помимо распределение массы имеет свойства инерции жидкости
 pub struct Tank {    
     density: f64, //плотность     
     volume: f64,  //объем 
