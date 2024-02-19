@@ -5,6 +5,7 @@ use testing::entities::test_value::Value;
 mod data;
 mod tests;
 mod frame;
+mod displacement;
 mod math;
 
 fn main() {
