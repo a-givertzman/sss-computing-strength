@@ -10,6 +10,7 @@ mod math;
 mod load;
 mod tank;
 mod mass;
+mod draught;
 mod trim;
 
 fn main() {
