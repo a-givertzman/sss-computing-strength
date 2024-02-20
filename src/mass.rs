@@ -19,7 +19,7 @@ impl<'a> Mass<'a> {
     }
     ///суммарная масса
     pub fn sum(&self) -> f64 {
-        self.loads.iter().map(|v| v.mass(None)).sum::<f64>()    
+        self.loads.iter().map(|v| v.mass(None)).sum::<f64>()
     }    
     ///распределение массы по вектору разбиения
     pub fn values(&self) -> Vec<f64> {
