@@ -24,6 +24,7 @@ pub struct LoadSpace {
     mass: f64,      
 }
 
+#[allow(dead_code)]
 impl LoadSpace {
     ///
     pub fn new(bound: Bound, center: Position, mass: f64) -> Self {

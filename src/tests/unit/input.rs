@@ -85,8 +85,33 @@ mod tests {
                     "bound": [-10.0, 0.0, 0.0, 5.0], 
                     "center": [0.0, 0.0, 1.0]
                 }
-            ],
-        
+            ]
+        }"#;        
+    
+        let result = ParsedLoadsData::parse(&data).expect("parse error");
+        let target = ParsedLoadsData {
+            load_space: vec![ LoadSpaceData { 
+                mass: 10.0, 
+                bound: (-10.0, 0.0, 0.0, 5.0), 
+                center: (0.0, 0.0, 1.0), 
+            }, ],          
+        };
+
+        assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
+        testDuration.exit();
+    }
+
+    #[test]
+    fn tanks() {
+        DebugSession::init(LogLevel::Debug, Backtrace::Short);
+        println!("");
+        let selfId = "test Parse tanks";
+        println!("{}", selfId);
+        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
+        testDuration.run().unwrap();
+
+        let data = r#"
+        {
             "tanks": [
                 {
                     "density": 0.7,
@@ -98,13 +123,8 @@ mod tests {
             ]
         }"#;        
     
-        let result = ParsedLoadsData::parse(&data).expect("parse error");
-        let target = ParsedLoadsData {
-            load_space: vec![ LoadSpaceData { 
-                mass: 10.0, 
-                bound: (-10.0, 0.0, 0.0, 5.0), 
-                center: (0.0, 0.0, 1.0), 
-            }, ],
+        let result = ParsedTanksData::parse(&data).expect("parse error");
+        let target = ParsedTanksData {
             tanks: vec![ TankData { 
                 density: 0.7, 
                 volume: 10.0, 

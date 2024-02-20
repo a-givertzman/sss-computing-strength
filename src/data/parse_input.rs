@@ -10,6 +10,7 @@ pub struct ParsedShipData {
     pub center_shift: Vec<(f64, f64, f64, f64,)>,
 }
 ///
+#[allow(dead_code)]
 impl ParsedShipData {
     ///
     pub fn parse(src: &str) -> Option<Self> {
@@ -30,6 +31,7 @@ pub struct ParsedFramesData {
     pub frames: Vec<FrameData>,
 }
 
+#[allow(dead_code)]
 impl ParsedFramesData {
     ///
     pub fn parse(src: &str) -> Option<Self> {
@@ -59,10 +61,24 @@ pub struct TankData {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ParsedLoadsData {
     pub load_space: Vec<LoadSpaceData>,
+}
+
+#[allow(dead_code)]
+impl ParsedLoadsData {
+    ///
+    pub fn parse(src: &str) -> Option<Self> {
+        serde_json::from_str(src).ok()?
+    }
+}
+
+///
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ParsedTanksData {
     pub tanks: Vec<TankData>,
 }
 
-impl ParsedLoadsData {
+#[allow(dead_code)]
+impl ParsedTanksData {
     ///
     pub fn parse(src: &str) -> Option<Self> {
         serde_json::from_str(src).ok()?

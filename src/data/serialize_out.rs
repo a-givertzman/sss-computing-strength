@@ -10,6 +10,7 @@ pub struct OutData {
 
 impl OutData {
     ///
+    #[allow(dead_code)]
     pub fn serialize(&self) -> Option<String> {
         serde_json::to_string(self).ok()
     }
