@@ -4,7 +4,7 @@ use crate::{
     trim::Trim,
 };
 
-///класс с данными для вычисления распределения осадки
+///класс реализующий распределение осадки
 pub struct Draught<'a> {
     trim: Trim<'a>, // дифферент судна
     displacement: Displacement,
