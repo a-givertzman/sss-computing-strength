@@ -1,17 +1,18 @@
-use crate::{math::vec::SumAbove, total_force::TotalForce};
+use crate::math::vec::SumAbove;
 
 ///срезающая сила, интегрирование путем вычисления суммы сверху, s_f[i] = s_f[i-1] + f[i], s_f[0] = 0
-pub struct ShearForce<'a> {
-    total_force: TotalForce<'a>,
+pub struct ShearForce {
+    total_force_values: Vec<f64>,
 }
 
-impl<'a> ShearForce<'a> {
+impl ShearForce {
     ///
-    pub fn new(total_force: TotalForce<'a>) -> Self {
-        Self { total_force }
+    pub fn new(total_force_values: Vec<f64>) -> Self {
+        Self { total_force_values }
     }
     ///
     pub fn values(&self) -> Vec<f64> {
-        self.total_force.values().sum_above()
+//        dbg!(&self.total_force.values().sum_above());
+        self.total_force_values.sum_above()
     }
 }

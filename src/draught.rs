@@ -5,22 +5,22 @@ use crate::{
 };
 
 ///класс реализующий распределение осадки
-pub struct Draught<'a> {
-    trim: Trim<'a>, // дифферент судна
+pub struct Draught {
+    trim: Trim, // дифферент судна
     displacement: Displacement,
     ship_length: f64,        // длинна судна
-    bounds: &'a Vec<Bound>,  // ссылка на вектор разбиения на отрезки для эпюров
+    bounds: Vec<Bound>,  // ссылка на вектор разбиения на отрезки для эпюров
     center_waterline: Curve, // отстояние центра тяжести ватерлинии по длине от миделя
     mean_draught: Curve,     // средняя осадка
 }
 
-impl<'a> Draught<'a> {
+impl Draught {
     ///
     pub fn new(
-        trim: Trim<'a>, // дифферент судна
+        trim: Trim, // дифферент судна
         displacement: Displacement,
         ship_length: f64,        // длинна судна
-        bounds: &'a Vec<Bound>,  // ссылка на вектор разбиения на отрезки для эпюров
+        bounds: Vec<Bound>,  // ссылка на вектор разбиения на отрезки для эпюров
         center_waterline: Curve, // отстояние центра тяжести ватерлинии по длине от миделя
         mean_draught: Curve,     // средняя осадка
     ) -> Self {
@@ -50,14 +50,20 @@ impl<'a> Draught<'a> {
 
         let trim_x_f_sl = x_f * trim / self.ship_length;
         let delta_draught = (-2. * trim_x_f_sl) / (self.bounds.len() as f64 * self.ship_length);
-        self.bounds
+        let result = self.bounds
             .iter()
-            .map(|v| {
-                self.displacement.value(
-                    *v,
-                    bow_draught + delta_draught * (v.center() + self.ship_length / 2.),
-                )
+            .map(|v| { {              
+                let displacement = self.displacement.value(
+                        *v,
+                        bow_draught + delta_draught * (v.center() + self.ship_length / 2.),
+                    );
+          //         dbg!(displacement);
+                    displacement
+                }
             })
-            .collect()
+            .collect();
+
+ //       dbg!(&x_f, &d, &trim, &bow_draught, &trim_x_f_sl, &delta_draught, &result);
+        result
     }
 }

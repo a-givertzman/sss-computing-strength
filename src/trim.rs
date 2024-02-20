@@ -4,28 +4,28 @@ use crate::{
 };
 
 ///класс с данными для вычисления дифферента судна
-pub struct Trim<'a> {
-    water_density: f64,       // плотность окружающей воды
-    mass: &'a Mass<'a>,       // все грузы судна
-    ship_length: f64,         // длинна судна
-    center_draught: PosShift, // отстояние центра величины погруженной части судна
-    rad_trans: Curve,         // поперечный метацентрические радиус
+pub struct Trim {
+    water_density: f64,     // плотность окружающей воды
+    mass: Mass,     // все грузы судна
+    ship_length: f64,       // длинна судна
+    center_shift: PosShift, // отстояние центра величины погруженной части судна
+    rad_trans: Curve,       // поперечный метацентрические радиус
 }
 
-impl<'a> Trim<'a> {
+impl Trim {
     ///
     pub fn new(
-        water_density: f64,       // плотность окружающей воды
-        mass: &'a Mass<'a>,       // все грузы судна
-        ship_length: f64,         // длинна судна
-        center_draught: PosShift, // отстояние центра величины погруженной части судна
-        rad_trans: Curve,         // поперечный метацентрические радиус
+        water_density: f64,     // плотность окружающей воды
+        mass: Mass,     // все грузы судна
+        ship_length: f64,       // длинна судна
+        center_shift: PosShift, // отстояние центра величины погруженной части судна
+        rad_trans: Curve,       // поперечный метацентрические радиус
     ) -> Self {
         Self {
             water_density,
             mass,
             ship_length,
-            center_draught,
+            center_shift,
             rad_trans,
         }
     }
@@ -38,7 +38,7 @@ impl<'a> Trim<'a> {
     #[allow(non_snake_case)]
     pub fn value(&self) -> f64 {
         //отстояние центра величины погруженной части судна по длине от миделя
-        let center_draught = self.center_draught.value(self.volume());
+        let center_draught = self.center_shift.value(self.volume());
         //аппликата продольного метацентра
         let Z_m = center_draught.z() + self.rad_trans.value(self.volume());
         //продольная метацентрическая высота без учета влияния

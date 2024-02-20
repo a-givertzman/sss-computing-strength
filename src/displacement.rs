@@ -13,16 +13,13 @@ impl Displacement {
     pub fn new(frames: Vec<Frame>, ship_length: f64) -> Self {
         Self { vec_step: ship_length/(frames.len() as f64 - 1.), frames, ship_length  }
     }
-    ///
-    // pub fn new_with_frames(frames: Vec<Frame>, ship_length: f64) -> Displacement {
-    //     let frames = frames.into_iter().enumerate().collect::<HashMap<_,_>>();
-    //     Self::new( frames, ship_length )
-    // }
     ///погруженный объем шпации
     pub fn value(&self, bound: Bound, draft: f64) -> f64 {
         let area_start = self.area(bound.start(), draft);
         let area_end = self.area(bound.end(), draft);
-        bound.length() * (area_start + area_end)/2.
+        let result = bound.length() * (area_start + area_end)/2.;
+        dbg!(&bound, &draft, &area_start, &area_end, &result);
+        result
     }
     ///Интерполированние значение погруженной площади сечения.  
     ///Получается методом линейной интерполяции.
@@ -32,6 +29,9 @@ impl Displacement {
         length = (length + self.ship_length/2.)/self.vec_step;
         let length_up = length.ceil();
         let length_down = length.floor();
+        if length_up == length_down {
+            return self.frames[length_up as usize].area(draft)
+        }
         let delta_len = length_up - length_down;
         let coeff_len_up = (length_up - length) / delta_len;        
         let coeff_len_down = (length - length_down) / delta_len; 
@@ -41,6 +41,8 @@ impl Displacement {
         let length_down = length_down as usize;               
         let frame_up = &self.frames[length_up];
         let frame_down = &self.frames[length_down];
-        frame_up.area(draft) * coeff_len_up + frame_down.area(draft) * coeff_len_down
+        let result = frame_up.area(draft) * coeff_len_up + frame_down.area(draft) * coeff_len_down;
+ //       dbg!(&length, &draft, &length_up, &length_down, &delta_len, &coeff_len_up, &coeff_len_down, &result);
+        result
     }
 }

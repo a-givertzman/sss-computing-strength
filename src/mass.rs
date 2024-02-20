@@ -3,18 +3,18 @@ use std::rc::Rc;
 use crate::{load::ILoad, math::{bound::Bound, mass_moment::MassMoment, position::Position, surface_moment::SurfaceMoment}};
 
 ///класс, инкапсулирующий все грузы судна
-pub struct Mass<'a> {
-    /// вектор абстрактных грузов
+pub struct Mass {
+    /// все грузы судна
     loads: Vec<Rc<Box<dyn ILoad>>>,
     /// ссылка на вектор разбиения на отрезки для эпюров
-    bounds: &'a Vec<Bound>,
+    bounds: Vec<Bound>,
 }
 
-impl<'a> Mass<'a> {
+impl Mass {
     /// аргументы  
     /// * loads - вектор абстрактных грузов
     /// * bounds - ссылка на вектор разбиения на отрезки для эпюров
-    pub fn new<'b: 'a>(loads: Vec<Rc<Box<dyn ILoad>>>, bounds: &'a Vec<Bound>) -> Self {
+    pub fn new (loads: Vec<Rc<Box<dyn ILoad>>>, bounds: Vec<Bound>) -> Self {
         Self { loads, bounds, }
     }
     ///суммарная масса
@@ -23,7 +23,7 @@ impl<'a> Mass<'a> {
     }    
     ///распределение массы по вектору разбиения
     pub fn values(&self) -> Vec<f64> {
-        self.bounds.into_iter().map(|&b| 
+        self.bounds.into_iter().map(|b| 
             self.loads.iter().map(|v| v.mass(Some(b))).sum::<f64>()).collect()
     }
     ///отстояние центра масс
