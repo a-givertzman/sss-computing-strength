@@ -1,4 +1,4 @@
-use crate::{draught::Draught, mass::Mass};
+use crate::{draught::Draught, mass::Mass, math::vec::*};
 
 ///распределение результирующей нагрузка на шпацию, ньютоны
 pub struct TotalForce<'a> {
@@ -18,12 +18,10 @@ impl<'a> TotalForce<'a> {
     }
     ///
     pub fn values(&self) -> Vec<f64> {
-        assert_eq!(self.mass.values().len(), self.draught.values().len());
-        self.mass
-            .values()
-            .iter()
-            .zip(self.draught.values().iter())
-            .map(|(m, bf)| (m - bf) * self.gravity_g)
-            .collect()
+        assert!(self.mass.values().len() == self.draught.values().len(), "mass.len() {} == draught.len() {}", self.mass.values().len(), self.draught.values().len());
+        let mut result = self.mass.values();
+        result.sub_vec(&self.draught.values());
+        result.mul_single(self.gravity_g);
+        result
     }
 }

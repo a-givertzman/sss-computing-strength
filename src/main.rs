@@ -13,7 +13,7 @@ mod mass;
 mod draught;
 mod trim;
 mod total_force;
-
+mod shear_force;
 
 fn main() {
     DebugSession::init(LogLevel::Debug, Backtrace::Short);
