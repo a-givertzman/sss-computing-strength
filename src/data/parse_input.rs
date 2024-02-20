@@ -2,32 +2,35 @@ use serde::{Deserialize, Serialize};
 
 ///
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ParsedShipData {
+    pub ship_length: f64,
+    pub center_waterline: Vec<(f64, f64)>,
+    pub rad_trans: Vec<(f64, f64)>,
+    pub mean_draught: Vec<(f64, f64)>,
+    pub center_shift: Vec<(f64, f64, f64, f64,)>,
+}
+///
+impl ParsedShipData {
+    ///
+    pub fn parse(src: &str) -> Option<Self> {
+        serde_json::from_str(src).ok()?
+    }
+}
+
+///
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FrameData {
-    pub offset_x: f64,
-    pub immersion_area_curve: Vec<(f64, f64)>,
+    pub index: usize,
+    pub immersion_area: Vec<(f64, f64)>,
 }
 
 ///
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct FrameSpaceData {
-    pub mass: f64,
-    pub displacement_curve: Vec<(f64, f64)>,
-}
-
-///
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct ParsedData {
-    pub gravity_const_g: f64,
-    pub water_density: f64,
-    pub mean_draught_curve: Vec<(f64, f64)>,
-    pub trimming_moment_curve: Vec<(f64, f64)>,
-    pub buoyancy_centre_curve: Vec<(f64, f64)>,
+pub struct ParsedFramesData {
     pub frames: Vec<FrameData>,
-    pub frame_spaces: Vec<FrameSpaceData>,
 }
 
-
-impl ParsedData {
+impl ParsedFramesData {
     ///
     pub fn parse(src: &str) -> Option<Self> {
         serde_json::from_str(src).ok()?
@@ -35,3 +38,33 @@ impl ParsedData {
 }
 
 
+///
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct LoadSpaceData {
+    pub mass: f64,
+    pub bound: (f64, f64, f64, f64),
+    pub center: (f64, f64, f64),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct TankData {
+    pub density: f64,
+    pub volume: f64,
+    pub bound: (f64, f64, f64, f64),
+    pub center: Vec<(f64, f64, f64, f64)>,
+    pub free_surf_inertia: Vec<(f64, f64, f64)>,
+}
+
+///
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ParsedLoadsData {
+    pub load_space: Vec<LoadSpaceData>,
+    pub tanks: Vec<TankData>,
+}
+
+impl ParsedLoadsData {
+    ///
+    pub fn parse(src: &str) -> Option<Self> {
+        serde_json::from_str(src).ok()?
+    }
+}
