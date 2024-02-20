@@ -14,6 +14,7 @@ mod draught;
 mod trim;
 mod total_force;
 mod shear_force;
+mod bending_moment;
 
 fn main() {
     DebugSession::init(LogLevel::Debug, Backtrace::Short);
