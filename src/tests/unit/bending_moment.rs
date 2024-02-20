@@ -12,7 +12,7 @@ mod tests {
     use testing::stuff::max_test_duration::TestDuration;
 
     #[test]
-    fn mass() {
+    fn bending_moment() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
         let selfId = "test BendingMoment";
@@ -21,10 +21,10 @@ mod tests {
         testDuration.run().unwrap();
 
         let result = BendingMoment::new(&Vec::from([
-            0.0, 15.0, 10.0, 5.0, 0.0, -5.0, -10.0, -15.0, -20.0, -15.0, 0.0,
+            0.0, 5.0, 10., 15.0, 10.0, 5.0, 0.0, -5.0, -10.0, -15.0, -15.0, 0.0,
         ]))
         .values();
-        let target = Vec::from([0., 15., 40., 50., 45., 0.]);
+        let target = Vec::from([0.0, 5.0, 20.0, 45.0, 70.0, 85.0, 90.0, 85.0, 70.0, 45.0, 15.0, 0.0]);
 
         assert!(
             result == target,

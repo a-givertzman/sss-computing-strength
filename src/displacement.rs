@@ -18,7 +18,6 @@ impl Displacement {
         let area_start = self.area(bound.start(), draft);
         let area_end = self.area(bound.end(), draft);
         let result = bound.length() * (area_start + area_end)/2.;
-        dbg!(&bound, &draft, &area_start, &area_end, &result);
         result
     }
     ///Интерполированние значение погруженной площади сечения.  

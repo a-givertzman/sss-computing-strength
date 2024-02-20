@@ -65,7 +65,7 @@ fn main() {
     let water_density = 1.025;
     // отстояние центра тяжести ватерлинии по длине от миделя
     let center_waterline = Curve::new(vec![(0., 0.), (10., 1.)]);
-    // поперечный метацентрические радиус
+    // поперечный метацентрический радиус
     let rad_trans = Curve::new(vec![(0., 0.), (10., 1.)]);
     // средняя осадка
     let mean_draught = Curve::new(vec![(0., 0.), (1000., 1.), (10000., 10.)]);
@@ -76,7 +76,6 @@ fn main() {
         Curve::new(vec![(0., 0.), (10., 0.)]),
         Curve::new(vec![(0., 0.), (10., 0.)]),
     );
-
     //координаты центра объема жидкости в цистерне в системе координат судна
     let tank_center_shift = PosShift::new(
         Curve::new(vec![(0., 2.), (10., 2.)]),
@@ -98,10 +97,11 @@ fn main() {
     )))];
 
     let mass = Mass::new(loads, bounds.clone());
-    let mut frames = Vec::new();
-    frames.push(Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])));
-    frames.push(Frame::new(Curve::new(vec![(0., 0.), (10., 20.)])));
-    frames.push(Frame::new(Curve::new(vec![(0., 0.), (10., 30.)])));
+    let frames = vec![
+        Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
+        Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
+        Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
+    ];
 
     let shear_force_values = ShearForce::new(
         TotalForce::new(

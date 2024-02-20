@@ -1,6 +1,7 @@
 use crate::{load::ILoad, math::{bound::Bound, inertia_shift::InertiaShift, pos_shift::PosShift, position::Position, surface_moment::SurfaceMoment}};
 
 ///цистерна, помимо распределение массы имеет свойства инерции жидкости
+#[derive(Clone)]
 pub struct Tank {    
     density: f64, //плотность     
     volume: f64,  //объем 
@@ -15,14 +16,6 @@ impl Tank {
         assert!(density > 0., "density {} > 0", density);
         assert!(volume >= 0., "volume {} >= 0", volume);
         Self { density, volume, bound, center, free_surf_inertia }
-    }
-    ///
-    pub fn new_empty(density: f64, bound: Bound, center: PosShift, free_surf_inertia: InertiaShift,) -> Self {
-        Self::new(density, 0., bound, center, free_surf_inertia)
-    }
-    ///
-    fn mass(&self) -> f64 {
-        self.volume*self.density
     }
 }
 

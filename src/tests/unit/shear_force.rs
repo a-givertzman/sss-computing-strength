@@ -16,7 +16,7 @@ mod tests {
     use testing::stuff::max_test_duration::TestDuration;
 
     #[test]
-    fn mass() {
+    fn shear_force() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
         let selfId = "test ShearForce";

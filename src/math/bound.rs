@@ -58,10 +58,4 @@ impl Bound {
     pub fn center(&self) -> f64 {
         (self.start + self.end)/2.
     }
-    ///
-    /// Смещение диапазона на величину other
-    pub fn shift(&mut self, other: f64) {
-        self.start += other;
-        self.end += other;
-    }
 }

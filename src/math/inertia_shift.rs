@@ -1,6 +1,7 @@
 use super::curve::Curve;
 
 ///момент инерции площади свободной поверхности
+#[derive(Clone)]
 pub struct InertiaMoment {    
     pub x: f64, //поперечный момент
     pub y: f64, //продольный момент
@@ -14,6 +15,7 @@ impl InertiaMoment {
 }
 
 ///класс, хранящий зависимость момента инерции от значения
+#[derive(Clone)]
 pub struct InertiaShift {    
     x: Curve, //кривая поперечного момента
     y: Curve, //кривая продольного момента

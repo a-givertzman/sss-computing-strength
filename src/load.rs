@@ -31,10 +31,6 @@ impl LoadSpace {
         assert!(bound.end() > center.x(), "bound.end {} > pos.x {}", bound.end(), center.x());
         Self { bound, center, mass }
     }
-    ///
-    pub fn new_empty(bound: Bound, center: Position) -> Self {
-        Self::new(bound, center, 0.)
-    }
 }
 
 impl ILoad for LoadSpace {

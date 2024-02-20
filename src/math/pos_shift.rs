@@ -2,6 +2,7 @@ use super::{curve::Curve, position::Position};
 
 
 ///класс, хранящий зависимость положения точки от значения
+#[derive(Clone)]
 pub struct PosShift {    
     x: Curve, 
     y: Curve, 
