@@ -12,6 +12,8 @@ mod tank;
 mod mass;
 mod draught;
 mod trim;
+mod total_force;
+
 
 fn main() {
     DebugSession::init(LogLevel::Debug, Backtrace::Short);
