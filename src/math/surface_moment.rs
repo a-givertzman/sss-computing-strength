@@ -1,8 +1,8 @@
+//! Момент свободной поверхности
 use std::{iter::Sum, ops::Add};
 
 use super::inertia_shift::InertiaMoment;
 
-///класс инкапсулирующий момент свободной поверхности
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct SurfaceMoment {
     x: f64,
@@ -27,15 +27,15 @@ impl SurfaceMoment {
         self.y
     }
 }
-
+///
 impl Add for SurfaceMoment {
     type Output = Self;
-
+    ///
     fn add(self, rhs: Self) -> Self::Output {
         SurfaceMoment::new(self.x() + rhs.x(), self.y() + rhs.y())
     }
 }
-
+///
 impl Sum for SurfaceMoment {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(Self::new(0., 0., ),|a, b| a + b )

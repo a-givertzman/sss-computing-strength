@@ -1,6 +1,7 @@
+//! Кривая, позволяет получать интерполированные значения 
 use splines::{Interpolation, Key, Spline};
 
-///кривая, позволяет получать интерполированные значения 
+///
 #[derive(Clone)]
 pub struct Curve {
     spline: Spline<f64, f64>,

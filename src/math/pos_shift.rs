@@ -1,7 +1,20 @@
+//! Зависимость положения точки от некоторого значения
 use super::{curve::Curve, position::Position};
-
-
-///класс, хранящий зависимость положения точки от значения
+/// Зависимость положения точки от некоторого значения.
+/// Интерполирует значение по ключу.
+///
+/// # Example
+///
+/// ```
+/// # #![allow(unused_mut)]
+/// let mut res = PosShift::new(
+///    Curve::new(vec![(0., 0.), (2., 2.)]),
+///    Curve::new(vec![(2., 0.), (0., 2.)]),
+///    Curve::new(vec![(1., 0.), (-1., 2.)]),
+/// ).value(1.);
+/// asserteq!(res, Position::new(1., 1., 0.));
+/// ```
+///
 #[derive(Clone)]
 pub struct PosShift {    
     x: Curve, 

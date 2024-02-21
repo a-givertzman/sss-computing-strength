@@ -1,11 +1,11 @@
-//! Дополнительные операции над вектором чисел с плавающей точкой  
+//! Дополнительные операции над вектором чисел с плавающей точкой
 /// Сумма сверху: $res_i = res_{i-1} + src_i, res_0 = 0$
 ///
 /// # Example
 ///
 /// ```
 /// # #![allow(unused_mut)]
-/// let mut res: Vec<i32> = vec![1., 2., 3.].sum_above();
+/// let mut res: Vec<f64> = vec![1., 2., 3.].sum_above();
 /// asserteq!(res, vec![0., 1., 3., 6.,]);
 /// ```
 pub trait SumAbove<T> {
@@ -23,7 +23,6 @@ impl SumAbove<f64> for Vec<f64>  {
         data
     }    
 }
-
 ///
 /// Интегральная сумма: $res_i = res_{i-1} + src_{i-1} + src_i, res_0 = 0$
 ///
@@ -31,7 +30,7 @@ impl SumAbove<f64> for Vec<f64>  {
 ///
 /// ```
 /// # #![allow(unused_mut)]
-/// let mut res: Vec<i32> = vec![1., 2., 3.].integral_sum();
+/// let mut res: Vec<f64> = vec![1., 2., 3.].integral_sum();
 /// asserteq!(res, vec![0., 1., 4., 9.,]);
 /// ```
 pub trait IntegralSum<T> {
@@ -53,7 +52,7 @@ impl IntegralSum<f64> for Vec<f64>  {
 ///
 /// ```
 /// # #![allow(unused_mut)]
-/// let mut vec: Vec<i32> = vec![1., 2., 3.];
+/// let mut vec: Vec<f64> = vec![1., 2., 3.];
 /// vec.shift(1.);
 /// asserteq!(vec, vec![ 2., 3., 4.,]);
 /// ```
@@ -74,7 +73,7 @@ impl Shift for Vec<f64>  {
 ///
 /// ```
 /// # #![allow(unused_mut)]
-/// let mut vec: Vec<i32> = vec![1., 2., 3.];
+/// let mut vec: Vec<f64> = vec![1., 2., 3.];
 /// vec.div_single(2.);
 /// asserteq!(vec, vec![0.5, 1., 1.5,]);
 /// ```
@@ -95,7 +94,7 @@ impl DivideSingle for Vec<f64>  {
 ///
 /// ```
 /// # #![allow(unused_mut)]
-/// let mut vec: Vec<i32> = vec![1., 2., 3.];
+/// let mut vec: Vec<f64> = vec![1., 2., 3.];
 /// vec.mul_single(2.);
 /// asserteq!(vec, vec![2., 4., 6.,]);
 /// ```
@@ -116,7 +115,7 @@ impl MultipleSingle for Vec<f64>  {
 ///
 /// ```
 /// # #![allow(unused_mut)]
-/// let mut vec: Vec<i32> = vec![1., 2., 3.];
+/// let mut vec: Vec<f64> = vec![1., 2., 3.];
 /// vec.add_vec(vec![3., 4., 5.]);
 /// asserteq!(vec, vec![4., 6., 8.,]);
 /// ```
@@ -139,7 +138,7 @@ impl AddVec for Vec<f64>  {
 ///
 /// ```
 /// # #![allow(unused_mut)]
-/// let mut vec: Vec<i32> = vec![1., 2., 3.];
+/// let mut vec: Vec<f64> = vec![1., 2., 3.];
 /// vec.sub_vec(vec![3., 4., 5.]);
 /// asserteq!(vec, vec![-2., -2., -2.,]);
 /// ```
@@ -162,7 +161,7 @@ impl SubVec for Vec<f64>  {
 ///
 /// ```
 /// # #![allow(unused_mut)]
-/// let mut vec: Vec<i32> = vec![1., 2., 3.];
+/// let mut vec: Vec<f64> = vec![1., 2., 3.];
 /// vec.mul_vec(vec![3., 4., 5.]);
 /// asserteq!(vec, vec![3., 8., 15.,]);
 /// ```
@@ -185,7 +184,7 @@ impl MultipleVec for Vec<f64>  {
 ///
 /// ```
 /// # #![allow(unused_mut)]
-/// let mut vec: Vec<i32> = vec![2., 4., 6.];
+/// let mut vec: Vec<f64> = vec![2., 4., 6.];
 /// vec.div_vec(vec![1., 2., 3.]);
 /// asserteq!(vec, vec![2., 2., 2.,]);
 /// ```

@@ -1,7 +1,11 @@
+//! Срезающая сила
 use crate::math::vec::SumAbove;
 
-///срезающая сила, интегрирование путем вычисления суммы сверху, s_f[i] = s_f[i-1] + f[i], s_f[0] = 0
+/// Срезающая сила, вычисляется интегрированием  
+/// путем вычисления суммы сверху результирующей нагрузки по шпациям:  
+/// $SF_i = SF_{i-1} + TF_i, SF_0 = 0$
 pub struct ShearForce {
+    /// массив значений результирующей нагрузки по шпациям
     total_force_values: Vec<f64>,
 }
 
@@ -12,7 +16,6 @@ impl ShearForce {
     }
     ///
     pub fn values(&self) -> Vec<f64> {
-//        dbg!(&self.total_force.values().sum_above());
         self.total_force_values.sum_above()
     }
 }
