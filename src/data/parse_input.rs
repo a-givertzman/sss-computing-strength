@@ -8,7 +8,7 @@ pub struct ParsedShipData {
     pub ship_length: f64,
     /// кривая отстояния центра тяжести ватерлинии по длине от миделя  
     pub center_waterline: Vec<(f64, f64)>,
-    /// кривая продольного метацентрический радиус
+    /// кривая продольного метацентрического радиуса
     pub rad_long: Vec<(f64, f64)>,
     /// кривая средней осадки
     pub mean_draught: Vec<(f64, f64)>,
@@ -52,8 +52,11 @@ impl ParsedFramesData {
 /// Груз
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LoadSpaceData {
+    /// общая масса
     pub mass: f64,
+    /// границы груза
     pub bound: (f64, f64, f64, f64),
+    /// центер масс
     pub center: (f64, f64, f64),
 }
 /// Цистерна

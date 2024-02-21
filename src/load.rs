@@ -21,18 +21,18 @@ pub trait ILoad {
 
 /// Груз, контенер, трюм и т.п. твердый груз, имеет границы, центр масс и значение
 pub struct LoadSpace {
-    /// границы
+    /// общая масса
+    mass: f64,     
+    /// границы груза
     bound: Bound,  
     /// центер масс
-    center: Position,
-    /// общая масса
-    mass: f64,      
+    center: Position, 
 }
 
 #[allow(dead_code)]
 impl LoadSpace {
     ///
-    pub fn new(bound: Bound, center: Position, mass: f64) -> Self {
+    pub fn new(mass: f64, bound: Bound, center: Position) -> Self {
         assert!(bound.start() < center.x(), "bound.start {} < pos.x {}", bound.start(), center.x());
         assert!(bound.end() > center.x(), "bound.end {} > pos.x {}", bound.end(), center.x());
         Self { bound, center, mass }
