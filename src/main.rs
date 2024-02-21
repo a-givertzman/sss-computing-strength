@@ -69,7 +69,6 @@ fn main() {
     let rad_long = Curve::new(vec![(0., 0.), (10., 1.)]);
     // средняя осадка
     let mean_draught = Curve::new(vec![(0., 0.), (1000., 1.), (10000., 10.)]);
-
     // отстояние центра величины погруженной части судна
     let center_draught_shift = PosShift::new(
         Curve::new(vec![(0., 2.), (10., 2.)]),
@@ -95,7 +94,6 @@ fn main() {
         tank_center_draught_shift,
         tank_free_surf_inertia,
     )))];
-
     let mass = Mass::new(loads, bounds.clone());
     let frames = vec![
         Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
