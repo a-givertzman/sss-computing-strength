@@ -29,37 +29,19 @@ mod tests {
         let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
         testDuration.run().unwrap();
 
-        // отстояние центра величины погруженной части судна
-        let center_shift = PosShift::new(
-            Curve::new(vec![(0., 1.), (10., 1.)]),
-            Curve::new(vec![(0., 0.), (10., 0.)]),
-            Curve::new(vec![(0., 0.), (10., 0.)]),
-        );
-        // поперечный метацентрические радиус
-        let rad_trans = Curve::new(vec![(0., 0.), (10., 1.)]);
-
-        let mass = Mass::new(
-            vec![Rc::new(Box::new(LoadSpace::new(
-                Bound::new(-10., 10.),
-                Position::new(0., 0., 0.),
-                10.,
-            )))],
-            vec![Bound::new(-10., 10.)],
-        );
-
         let result = Trim::new(
-            1.,           // плотность окружающей воды
-            mass,         // все грузы судна
-            20.,          // длинна судна
-            center_shift, // отстояние центра величины погруженной части судна
-            rad_trans,    // поперечный метацентрические радиус
+            118.39,
+            Position::new(-0.194609657, 0., 0.735524704),
+            696.702572991,           
+            0.,         
+            2044.10,      
+            Position::new(1.05, 0., 5.32),
         )
         .value();
-
-        let target = 1.;
+        let target = 0.2115;
 
         assert!(
-            result == target,
+            (result-target).abs() < result.abs() * 0.00005, //TODO
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target

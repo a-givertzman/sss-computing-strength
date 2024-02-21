@@ -1,54 +1,70 @@
 use crate::{
     mass::Mass,
-    math::{curve::Curve, pos_shift::PosShift},
+    math::{curve::Curve, pos_shift::PosShift, position::Position},
 };
 
 ///класс с данными для вычисления дифферента судна
 pub struct Trim {
-    water_density: f64,     // плотность окружающей воды
-    mass: Mass,             // все грузы судна
-    ship_length: f64,       // длинна судна
-    center_draught_shift: PosShift, // отстояние центра величины погруженной части судна
-    rad_trans: Curve,       // поперечный метацентрические радиус
+    ship_length: f64,               // длинна судна
+    center_draught_shift: Position, // отстояние центра величины погруженной части судна
+    rad_long: f64,                 // продольный метацентрические радиус
+    delta_m_h: f64,                 //Поправка к продольной метацентрической высоте на влияние
+                                    //свободной поверхности жидкости в цистернах
+    mass_sum: f64,        // суммарная масса судна и грузов
+    mass_shift: Position, // отстояние центра тяжести судна
 }
-
 impl Trim {
     ///
     pub fn new(
-        water_density: f64,     // плотность окружающей воды
-        mass: Mass,             // все грузы судна
-        ship_length: f64,       // длинна судна
-        center_draught_shift: PosShift, // отстояние центра величины погруженной части судна
-        rad_trans: Curve,       // поперечный метацентрические радиус
+        ship_length: f64,               // длинна судна
+        center_draught_shift: Position, // отстояние центра величины погруженной части судна
+        rad_long: f64,                 // продольный метацентрические радиус
+        delta_m_h: f64,                 //Поправка к продольной метацентрической высоте на влияние
+                                        //свободной поверхности жидкости в цистернах
+        mass_sum: f64,        // суммарная масса судна и грузов
+        mass_shift: Position, // отстояние центра тяжести судна
     ) -> Self {
         Self {
-            water_density,
-            mass,
             ship_length,
             center_draught_shift,
-            rad_trans,
+            rad_long,
+            delta_m_h,
+            mass_sum,
+            mass_shift,
         }
     }
-    //объемное водоизмещение
-    pub fn volume(&self) -> f64 {
-        //объемное водоизмещение
-        self.mass.sum() / self.water_density
+    ///
+    pub fn from_mass(
+        water_density: f64,             // плотность окружающей воды
+        ship_length: f64,               // длинна судна
+        center_draught_shift: PosShift, // отстояние центра величины погруженной части судна
+        rad_long: Curve,               // продольный метацентрические радиус
+        mass: Mass,                     // все грузы судна
+    ) -> Self {
+        let mass_sum = mass.sum(); // суммарная масса судна и грузов
+        let volume = mass_sum / water_density; //объемное водоизмещение
+        Self::new(
+            ship_length,
+            center_draught_shift.value(volume),
+            rad_long.value(volume),
+            mass.delta_m_h(),
+            mass_sum,
+            mass.shift(),
+        )
     }
     //дифферент судна
     #[allow(non_snake_case)]
     pub fn value(&self) -> f64 {
-        //отстояние центра величины погруженной части судна по длине от миделя
-        let center_draught_shift = self.center_draught_shift.value(self.volume());
         //аппликата продольного метацентра
-        let Z_m = center_draught_shift.z() + self.rad_trans.value(self.volume());
+        let Z_m = self.center_draught_shift.z() + self.rad_long;
         //продольная метацентрическая высота без учета влияния
         //поправки на влияние свободной поверхности
-        let H_0 = Z_m - center_draught_shift.z();
+        let H_0 = Z_m - self.center_draught_shift.z();
         //продольная исправленная метацентрическая высота
-        let H = H_0 - self.mass.delta_m_h();
+        let H = H_0 - self.delta_m_h;
         //момент дифферентующий на 1 см осадки
-        let trim_moment = (self.mass.sum() * H) / (100. * self.ship_length);
+        let trim_moment = (self.mass_sum * H) / (100. * self.ship_length);
         //дифферент судна
-        self.mass.sum() * (self.mass.shift().x() - center_draught_shift.x()) / (100. * trim_moment)
+        self.mass_sum * (self.mass_shift.x() - self.center_draught_shift.x()) / (100. * trim_moment)
     }
 }

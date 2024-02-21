@@ -65,8 +65,8 @@ fn main() {
     let water_density = 1.025;
     // отстояние центра тяжести ватерлинии по длине от миделя
     let center_waterline_shift = Curve::new(vec![(0., 0.), (10., 1.)]);
-    // поперечный метацентрический радиус
-    let rad_trans = Curve::new(vec![(0., 0.), (10., 1.)]);
+    // продольный метацентрический радиус
+    let rad_long = Curve::new(vec![(0., 0.), (10., 1.)]);
     // средняя осадка
     let mean_draught = Curve::new(vec![(0., 0.), (1000., 1.), (10000., 10.)]);
 
@@ -106,19 +106,20 @@ fn main() {
     let shear_force_values = ShearForce::new(
         TotalForce::new(
             mass.values(),
-            Draught::new(
-                Trim::new(
-                    water_density, // плотность окружающей воды
-                    mass,         // все грузы судна
-                    ship_length,   // длинна судна
-                    center_draught_shift,  // отстояние центра величины погруженной части судна
-                    rad_trans,     // поперечный метацентрические радиус
-                ),
-                Displacement::new(frames, ship_length),
+            Draught::from_trim(
                 ship_length,
+                mass.sum()/water_density,
                 bounds,
                 center_waterline_shift,
                 mean_draught,
+                Displacement::new(frames, ship_length),
+                Trim::from_mass(
+                    water_density,
+                    ship_length,   // длинна судна
+                    center_draught_shift,  // отстояние центра величины погруженной части судна
+                    rad_long,     // продольный метацентрические радиус
+                    mass,         // все грузы судна
+                ),
             ).values(),
             gravity_g,
         )
