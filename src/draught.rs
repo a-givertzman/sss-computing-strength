@@ -10,7 +10,7 @@ pub struct Draught {
     displacement: Displacement,
     ship_length: f64,        // длинна судна
     bounds: Vec<Bound>,  // ссылка на вектор разбиения на отрезки для эпюров
-    center_waterline: Curve, // отстояние центра тяжести ватерлинии по длине от миделя
+    center_waterline_shift: Curve, // отстояние центра тяжести ватерлинии по длине от миделя
     mean_draught: Curve,     // средняя осадка
 }
 
@@ -21,7 +21,7 @@ impl Draught {
         displacement: Displacement,
         ship_length: f64,        // длинна судна
         bounds: Vec<Bound>,  // ссылка на вектор разбиения на отрезки для эпюров
-        center_waterline: Curve, // отстояние центра тяжести ватерлинии по длине от миделя
+        center_waterline_shift: Curve, // отстояние центра тяжести ватерлинии по длине от миделя
         mean_draught: Curve,     // средняя осадка
     ) -> Self {
         Self {
@@ -29,14 +29,14 @@ impl Draught {
             displacement,
             ship_length,
             bounds,
-            center_waterline,
+            center_waterline_shift,
             mean_draught,
         }
     }
     ///распределение осадки, м
     pub fn values(&self) -> Vec<f64> {
         //отстояние центра тяжести ватерлинии по длине от миделя
-        let x_f = self.center_waterline.value(self.trim.volume());
+        let x_f = self.center_waterline_shift.value(self.trim.volume());
         //средняя осадка
         let d = self.mean_draught.value(self.trim.volume());
         //дифферент судна

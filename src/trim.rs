@@ -6,9 +6,9 @@ use crate::{
 ///класс с данными для вычисления дифферента судна
 pub struct Trim {
     water_density: f64,     // плотность окружающей воды
-    mass: Mass,     // все грузы судна
+    mass: Mass,             // все грузы судна
     ship_length: f64,       // длинна судна
-    center_shift: PosShift, // отстояние центра величины погруженной части судна
+    center_draught_shift: PosShift, // отстояние центра величины погруженной части судна
     rad_trans: Curve,       // поперечный метацентрические радиус
 }
 
@@ -16,16 +16,16 @@ impl Trim {
     ///
     pub fn new(
         water_density: f64,     // плотность окружающей воды
-        mass: Mass,     // все грузы судна
+        mass: Mass,             // все грузы судна
         ship_length: f64,       // длинна судна
-        center_shift: PosShift, // отстояние центра величины погруженной части судна
+        center_draught_shift: PosShift, // отстояние центра величины погруженной части судна
         rad_trans: Curve,       // поперечный метацентрические радиус
     ) -> Self {
         Self {
             water_density,
             mass,
             ship_length,
-            center_shift,
+            center_draught_shift,
             rad_trans,
         }
     }
@@ -38,17 +38,17 @@ impl Trim {
     #[allow(non_snake_case)]
     pub fn value(&self) -> f64 {
         //отстояние центра величины погруженной части судна по длине от миделя
-        let center_draught = self.center_shift.value(self.volume());
+        let center_draught_shift = self.center_draught_shift.value(self.volume());
         //аппликата продольного метацентра
-        let Z_m = center_draught.z() + self.rad_trans.value(self.volume());
+        let Z_m = center_draught_shift.z() + self.rad_trans.value(self.volume());
         //продольная метацентрическая высота без учета влияния
         //поправки на влияние свободной поверхности
-        let H_0 = Z_m - center_draught.z();
+        let H_0 = Z_m - center_draught_shift.z();
         //продольная исправленная метацентрическая высота
         let H = H_0 - self.mass.delta_m_h();
         //момент дифферентующий на 1 см осадки
         let trim_moment = (self.mass.sum() * H) / (100. * self.ship_length);
         //дифферент судна
-        self.mass.sum() * (self.mass.shift().x() - center_draught.x()) / (100. * trim_moment)
+        self.mass.sum() * (self.mass.shift().x() - center_draught_shift.x()) / (100. * trim_moment)
     }
 }

@@ -64,20 +64,20 @@ fn main() {
     // плотность окружающей воды
     let water_density = 1.025;
     // отстояние центра тяжести ватерлинии по длине от миделя
-    let center_waterline = Curve::new(vec![(0., 0.), (10., 1.)]);
+    let center_waterline_shift = Curve::new(vec![(0., 0.), (10., 1.)]);
     // поперечный метацентрический радиус
     let rad_trans = Curve::new(vec![(0., 0.), (10., 1.)]);
     // средняя осадка
     let mean_draught = Curve::new(vec![(0., 0.), (1000., 1.), (10000., 10.)]);
 
     // отстояние центра величины погруженной части судна
-    let center_shift = PosShift::new(
+    let center_draught_shift = PosShift::new(
         Curve::new(vec![(0., 2.), (10., 2.)]),
         Curve::new(vec![(0., 0.), (10., 0.)]),
         Curve::new(vec![(0., 0.), (10., 0.)]),
     );
     //координаты центра объема жидкости в цистерне в системе координат судна
-    let tank_center_shift = PosShift::new(
+    let tank_center_draught_shift = PosShift::new(
         Curve::new(vec![(0., 2.), (10., 2.)]),
         Curve::new(vec![(0., 0.), (10., 0.)]),
         Curve::new(vec![(0., 0.), (10., 0.)]),
@@ -92,7 +92,7 @@ fn main() {
         2.,
         10.,
         Bound::new(-5., 5.),
-        tank_center_shift,
+        tank_center_draught_shift,
         tank_free_surf_inertia,
     )))];
 
@@ -111,13 +111,13 @@ fn main() {
                     water_density, // плотность окружающей воды
                     mass,         // все грузы судна
                     ship_length,   // длинна судна
-                    center_shift,  // отстояние центра величины погруженной части судна
+                    center_draught_shift,  // отстояние центра величины погруженной части судна
                     rad_trans,     // поперечный метацентрические радиус
                 ),
                 Displacement::new(frames, ship_length),
                 ship_length,
                 bounds,
-                center_waterline,
+                center_waterline_shift,
                 mean_draught,
             ).values(),
             gravity_g,
