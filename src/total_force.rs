@@ -12,7 +12,7 @@ pub struct TotalForce {
     /// ускорение свободного падения
     gravity_g: f64,
 }
-
+///
 impl TotalForce {
     ///
     pub fn new(mass_values: Vec<f64>, draught_values: Vec<f64>, gravity_g: f64) -> Self {

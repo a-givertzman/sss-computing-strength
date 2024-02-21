@@ -1,10 +1,14 @@
-//use std::collections::HashMap;
+//! Водоизмещение судна
 use crate::{frame::Frame, math::bound::Bound};
 
-///Класс, инкапсулирующий функционал расчета водоизмещения
+/// Водоизмещение судна. Вычисляет водоизмещение диапазона по  
+/// интерполированным значениям погруженной площади шпангоутов.
 pub struct Displacement {
+    /// массив шпангоутов
     frames: Vec<Frame>,
+    /// длинна судна
     ship_length: f64,
+    /// шаг шпангоутов
     vec_step: f64,
 }
 
@@ -13,7 +17,9 @@ impl Displacement {
     pub fn new(frames: Vec<Frame>, ship_length: f64) -> Self {
         Self { vec_step: ship_length/(frames.len() as f64 - 1.), frames, ship_length  }
     }
-    ///погруженный объем шпации
+    /// Погруженный объем шпации.
+    /// - bound: диапазон корпуса в длинну, для которого считается водоизмещение
+    /// - draft: средняя осадка корпуса в диапазоне
     pub fn value(&self, bound: Bound, draft: f64) -> f64 {
         let area_start = self.area(bound.start(), draft);
         let area_end = self.area(bound.end(), draft);
@@ -21,7 +27,9 @@ impl Displacement {
         result
     }
     ///Интерполированние значение погруженной площади сечения.  
-    ///Получается методом линейной интерполяции.
+    ///Считается методом линейной интерполяции.
+    /// - length: координата шпангоута по х от центра судна
+    /// - draft: осадка в районе шпангоута
     fn area(&self, mut length: f64, draft: f64) -> f64 {
         assert!(length >= -self.ship_length/2., "length = {} >= -self.ship_length/2. = {}", length, -self.ship_length/2.);
         assert!(length <= self.ship_length/2., "length = {} <= self.ship_length/2. = {}", length, self.ship_length/2.);
@@ -41,7 +49,6 @@ impl Displacement {
         let frame_up = &self.frames[length_up];
         let frame_down = &self.frames[length_down];
         let result = frame_up.area(draft) * coeff_len_up + frame_down.area(draft) * coeff_len_down;
- //       dbg!(&length, &draft, &length_up, &length_down, &delta_len, &coeff_len_up, &coeff_len_down, &result);
         result
     }
 }

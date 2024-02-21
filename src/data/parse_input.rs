@@ -1,12 +1,18 @@
+//! Структуры для ввода данных
 use serde::{Deserialize, Serialize};
 
-///
+/// Данные по корпусу судна
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ParsedShipData {
+    /// длинна корпуса судна
     pub ship_length: f64,
+    /// кривая отстояния центра тяжести ватерлинии по длине от миделя  
     pub center_waterline: Vec<(f64, f64)>,
-    pub rad_trans: Vec<(f64, f64)>,
+    /// кривая продольного метацентрический радиус
+    pub rad_long: Vec<(f64, f64)>,
+    /// кривая средней осадки
     pub mean_draught: Vec<(f64, f64)>,
+    /// кривая отстояния центра величины погруженной части судна
     pub center_shift: Vec<(f64, f64, f64, f64,)>,
 }
 ///
@@ -18,16 +24,19 @@ impl ParsedShipData {
     }
 }
 
-///
+/// Шпангоут
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FrameData {
+    /// порядковый номер шпангоута
     pub index: usize,
+    /// кривая погружаемой площади
     pub immersion_area: Vec<(f64, f64)>,
 }
 
-///
+/// Шпангоуты судна
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ParsedFramesData {
+    /// массив шпангоутов судна
     pub frames: Vec<FrameData>,
 }
 
@@ -40,20 +49,27 @@ impl ParsedFramesData {
 }
 
 
-///
+/// Груз
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LoadSpaceData {
     pub mass: f64,
     pub bound: (f64, f64, f64, f64),
     pub center: (f64, f64, f64),
 }
-
+/// Цистерна
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TankData {
+    /// плотность жидкости в цистерне 
     pub density: f64,
+    /// объем жидкости в цистерне
     pub volume: f64,
+    /// границы цистерны, (x1, x2, y1, y2)
     pub bound: (f64, f64, f64, f64),
+    /// кривая координат центра объема жидкости в цистерне в системе координат судна
+    /// (volume, x, y, z)
     pub center: Vec<(f64, f64, f64, f64)>,
+    /// кривая момента инерции площади свободной поверхности жидкости
+    /// (volume, x - поперечный, y - продольный)
     pub free_surf_inertia: Vec<(f64, f64, f64)>,
 }
 

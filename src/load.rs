@@ -1,26 +1,31 @@
+//! Нагрузка на судно: постоянный и переменный груз
 use crate::math::{bound::Bound, mass_moment::MassMoment, position::Position, surface_moment::SurfaceMoment};
 
 
-///абстрактный груз, имеет массу и может вернуть какая его часть попадает в указанные границы
+/// Абстрактный груз: контейнер, трюм или бак.
+/// Имеет массу и может вернуть какая его часть попадает в указанные границы
 pub trait ILoad {
-    ///центер масс груза
+    /// центер масс груза
     fn center(&self) -> Position;
-    ///масса груза
+    /// масса груза
     fn mass(&self, bound: Option<Bound>) -> f64;
-    ///момент массы
+    /// момент массы
     fn moment_mass(&self) -> MassMoment {
         MassMoment::from_pos(self.center(), self.mass(None))
     }
-    ///момент свободной поверхности
+    /// момент свободной поверхности
     fn moment_surface(&self) -> SurfaceMoment {
         SurfaceMoment::new(0., 0.,)
     }
 }
 
-///груз на судне, имеет границы, центр масс и значение
+/// Груз, контенер, трюм и т.п. твердый груз, имеет границы, центр масс и значение
 pub struct LoadSpace {
+    /// границы
     bound: Bound,  
+    /// центер масс
     center: Position,
+    /// общая масса
     mass: f64,      
 }
 
