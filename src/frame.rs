@@ -1,5 +1,5 @@
 //! Шпангоут
-use crate::math::curve::Curve;
+use crate::math::curve::{Curve, ICurve};
 
 ///Шпангоут, содержит кривую погруженной площади сечения в зависимости от осадки
 pub struct Frame {

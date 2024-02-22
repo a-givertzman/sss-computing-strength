@@ -2,7 +2,7 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::bending_moment::BendingMoment;
+    use crate::{bending_moment::BendingMoment, shear_force::FakeShearForce};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use log::{debug, info, warn};
     use std::{
@@ -20,7 +20,7 @@ mod tests {
         let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
         testDuration.run().unwrap();
 
-        let result = BendingMoment::new(&Vec::from([
+        let result = BendingMoment::new(&FakeShearForce::new(vec![
             0.0, 5.0, 10., 15.0, 10.0, 5.0, 0.0, -5.0, -10.0, -15.0, -15.0, 0.0,
         ]))
         .values();

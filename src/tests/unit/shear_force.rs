@@ -3,9 +3,7 @@
 
 mod tests {
     use crate::{
-        load::{ILoad, LoadSpace},
-        math::{bound::Bound, mass_moment::MassMoment, position::Position},
-        shear_force::ShearForce,
+        shear_force::{IShearForce, ShearForce}, total_force::FakeTotalForce,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use log::{debug, info, warn};
@@ -25,7 +23,7 @@ mod tests {
         testDuration.run().unwrap();
 
         let result =
-            ShearForce::new(Vec::from([15., -5., -5., -5., -5., -5., -5., -5., 5., 15.])).values();
+            ShearForce::new(FakeTotalForce::new(vec![15., -5., -5., -5., -5., -5., -5., -5., 5., 15.])).values();
         let target = Vec::from([
             0.0, 15.0, 10.0, 5.0, 0.0, -5.0, -10.0, -15.0, -20.0, -15.0, 0.0,
         ]);

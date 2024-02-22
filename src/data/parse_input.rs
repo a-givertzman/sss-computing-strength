@@ -23,7 +23,6 @@ impl ParsedShipData {
         serde_json::from_str(src).ok()?
     }
 }
-
 /// Шпангоут
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FrameData {
@@ -32,14 +31,13 @@ pub struct FrameData {
     /// кривая погружаемой площади
     pub immersion_area: Vec<(f64, f64)>,
 }
-
 /// Шпангоуты судна
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ParsedFramesData {
     /// массив шпангоутов судна
     pub frames: Vec<FrameData>,
 }
-
+///
 #[allow(dead_code)]
 impl ParsedFramesData {
     ///
@@ -47,8 +45,6 @@ impl ParsedFramesData {
         serde_json::from_str(src).ok()?
     }
 }
-
-
 /// Груз
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LoadSpaceData {
@@ -75,13 +71,12 @@ pub struct TankData {
     /// (volume, x - поперечный, y - продольный)
     pub free_surf_inertia: Vec<(f64, f64, f64)>,
 }
-
 ///
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ParsedLoadsData {
     pub load_space: Vec<LoadSpaceData>,
 }
-
+///
 #[allow(dead_code)]
 impl ParsedLoadsData {
     ///
@@ -89,13 +84,12 @@ impl ParsedLoadsData {
         serde_json::from_str(src).ok()?
     }
 }
-
 ///
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ParsedTanksData {
     pub tanks: Vec<TankData>,
 }
-
+///
 #[allow(dead_code)]
 impl ParsedTanksData {
     ///

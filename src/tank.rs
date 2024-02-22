@@ -1,5 +1,5 @@
 //! Груз - цистерна с жидкостью
-use crate::{load::ILoad, math::{bound::Bound, inertia_shift::InertiaShift, pos_shift::PosShift, position::Position, surface_moment::SurfaceMoment}};
+use crate::{load::ILoad, math::{bound::Bound, inertia_shift::InertiaShift, pos_shift::{IPosShift, PosShift}, position::Position, surface_moment::SurfaceMoment}};
 
 /// Груз - цистерна с жидкостью, реализует интерфейс ILoad.  
 /// Помимо массы имеет свойства свободной поверхности жидкости.

@@ -9,8 +9,7 @@ pub struct OutData {
     /// эпюр изгибающего момента (координата по х, значение)
     pub bending_moment: Vec<(f64, f64)>,
 }
-
-
+///
 impl OutData {
     ///
     #[allow(dead_code)]

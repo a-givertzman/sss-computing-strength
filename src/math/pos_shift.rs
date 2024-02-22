@@ -1,5 +1,5 @@
 //! Зависимость положения точки от некоторого значения
-use super::{curve::Curve, position::Position};
+use super::{curve::{Curve, ICurve}, position::Position};
 /// Зависимость положения точки от некоторого значения.
 /// Интерполирует значение по ключу.
 ///
@@ -27,8 +27,33 @@ impl PosShift {
     pub fn new(x: Curve, y: Curve, z: Curve ) -> Self {
         Self { x, y, z }
     }
+}
+
+impl IPosShift for PosShift {
     ///
-    pub fn value(&self, key: f64) -> Position {
+    fn value(&self, key: f64) -> Position {
         Position::new(self.x.value(key), self.y.value(key), self.z.value(key))
+    }
+}
+
+#[doc(hidden)]
+pub trait IPosShift {
+    fn value(&self, key: f64) -> Position;
+}
+// заглушка для тестирования
+#[doc(hidden)]
+pub struct FakePosShift {
+    data: Position,
+}
+#[doc(hidden)]
+impl FakePosShift {
+    pub fn new(data: Position) -> Self {
+        Self { data }
+    }
+}
+#[doc(hidden)]
+impl IPosShift for FakePosShift {
+    fn value(&self, key: f64) -> Position {
+        self.data.clone()
     }
 }

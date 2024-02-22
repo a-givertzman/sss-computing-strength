@@ -1,5 +1,5 @@
 //! Кривая момента инерции
-use super::curve::Curve;
+use super::curve::{Curve, ICurve};
 
 ///момент инерции площади свободной поверхности
 #[derive(Clone)]
