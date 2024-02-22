@@ -46,7 +46,7 @@ fn main() {
     debug!("\t string value: {:?}", value);
 
     // длинна судна
-    let ship_length = 200.;
+    let ship_length = 118.39;
     let n = 20;
     let delta_x = ship_length / n as f64;
     let start_x = -ship_length / 2.;

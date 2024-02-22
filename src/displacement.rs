@@ -28,24 +28,23 @@ impl Displacement {
     }
     ///Интерполированние значение погруженной площади сечения.  
     ///Считается методом линейной интерполяции.
-    /// - length: координата шпангоута по х от центра судна
+    /// - pos_x: координата шпангоута по х от центра судна
     /// - draft: осадка в районе шпангоута
-    fn area(&self, mut length: f64, draft: f64) -> f64 {
-        assert!(length >= -self.ship_length/2., "length = {} >= -self.ship_length/2. = {}", length, -self.ship_length/2.);
-        assert!(length <= self.ship_length/2., "length = {} <= self.ship_length/2. = {}", length, self.ship_length/2.);
-        length = (length + self.ship_length/2.)/self.vec_step;
-        let length_up = length.ceil();
-        let length_down = length.floor();
-        if length_up == length_down {
-            return self.frames[length_up as usize].area(draft)
+    fn area(&self, pos_x: f64, draft: f64) -> f64 {
+        assert!(pos_x >= -self.ship_length/2., "length = {} >= -self.ship_length/2. = {}", pos_x, -self.ship_length/2.);
+        assert!(pos_x <= self.ship_length/2., "length = {} <= self.ship_length/2. = {}", pos_x, self.ship_length/2.);
+        let index = (pos_x + self.ship_length/2.)/self.vec_step;
+        let index_up = index.ceil();
+        let index_down = index.floor();
+        assert!(index_down >= 0., "length_down = {} >= 0.", index_down);
+        assert!(index_up < self.frames.len() as f64, "length_up = {} < self.frames.len() = {}", index_up, self.frames.len());
+        if index_up == index_down {
+            return self.frames[index_up as usize].area(draft)
         }
-        let delta_len = length_up - length_down;
-        let coeff_len_up = (length_up - length) / delta_len;        
-        let coeff_len_down = (length - length_down) / delta_len; 
-        assert!(length_down >= 0., "length_down = {} >= 0.", length_down);
-        assert!(length_up < self.frames.len() as f64, "length_up = {} < self.frames.len() = {}", length_up, self.frames.len());
-        let length_up = length_up as usize;
-        let length_down = length_down as usize;               
+        let coeff_len_up = index - index_down;        
+        let coeff_len_down = index_up - index; 
+        let length_up = index_up as usize;
+        let length_down = index_down as usize;               
         let frame_up = &self.frames[length_up];
         let frame_down = &self.frames[length_down];
         let result = frame_up.area(draft) * coeff_len_up + frame_down.area(draft) * coeff_len_down;
