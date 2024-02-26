@@ -1,15 +1,15 @@
-///
-/// Диапазон значений
+//! Диапазон значений
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Bound {
+    /// начало диапазона
     start: f64,
-    end: f64,
+    /// конец диапазона
+    end: f64,   
 }
-///
 /// 
 impl Bound {
     ///
-    /// Creates new instance of Bound
+    /// Конструктор  
     /// - start - начало диапазона
     /// - end - конец диапазона
     pub fn new(start: f64, end: f64) -> Self {
@@ -20,7 +20,7 @@ impl Bound {
         }
     }
     ///
-    /// Отношение общей части пересечения к длине диапазона self
+    /// Отношение общей части пересечения к длине диапазона
     pub fn part_ratio(&self, bound: &Bound) -> f64 {
         self.intersect(bound).map(|v| v.length()/self.length() ).unwrap_or(0.)
     }
@@ -57,11 +57,5 @@ impl Bound {
     /// Центр диапазона
     pub fn center(&self) -> f64 {
         (self.start + self.end)/2.
-    }
-    ///
-    /// Смещение диапазона на величину other
-    pub fn shift(&mut self, other: f64) {
-        self.start += other;
-        self.end += other;
     }
 }
