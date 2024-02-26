@@ -1,51 +1,54 @@
-use crate::math::{bound::Bound, position::Position};
+//! Нагрузка на судно: постоянный и переменный груз
+use crate::math::{bound::Bound, mass_moment::MassMoment, position::Position, surface_moment::SurfaceMoment};
 
 
-///абстрактный груз, имеет массу и может вернуть какая его часть попадает в указанные границы
+/// Абстрактный груз: контейнер, трюм или бак.
+/// Имеет массу и может вернуть какая его часть попадает в указанные границы
 pub trait ILoad {
-    ///момент массы
-    fn moment(&self) -> f64;
-    ///масса груза
+    /// центер масс груза
+    fn center(&self) -> Position;
+    /// масса груза
     fn mass(&self, bound: Option<Bound>) -> f64;
+    /// момент массы
+    fn moment_mass(&self) -> MassMoment {
+        MassMoment::from_pos(self.center(), self.mass(None))
+    }
+    /// момент свободной поверхности
+    fn moment_surface(&self) -> SurfaceMoment {
+        SurfaceMoment::new(0., 0.,)
+    }
 }
 
-///груз на судне, имеет границы, центр масс и значение
+/// Груз, контенер, трюм и т.п. твердый груз, имеет границы, центр масс и значение
 pub struct LoadSpace {
+    /// общая масса
+    mass: f64,     
+    /// границы груза
     bound: Bound,  
-    pos: Position,
-    mass: f64,      
+    /// центер масс
+    center: Position, 
 }
 
+#[allow(dead_code)]
 impl LoadSpace {
     ///
-    pub fn new(bound: Bound, pos: Position, mass: f64) -> Self {
-        assert!(bound.start() < pos.x(), "bound.start {} < pos.x {}", bound.start(), pos.x());
-        assert!(bound.end() > pos.x(), "bound.end {} > pos.x {}", bound.end(), pos.x());
-        Self { bound, pos, mass }
-    }
-    ///
-    pub fn new_empty(bound: Bound, pos: Position) -> Self {
-        Self::new(bound, pos, 0.)
-    }
-    ///
-    pub fn add(&mut self, mass: f64) {
-        assert!(mass > 0., "mass {} > 0", mass);
-        self.mass += mass;
-    }
-    ///
-    pub fn remove(&mut self, mass: f64) {
-        assert!(self.mass >= mass, "LoadSpace.mass {} >= mass {}", self.mass, mass);
-        self.mass -= mass;
+    pub fn new(mass: f64, bound: Bound, center: Position) -> Self {
+        assert!(bound.start() < center.x(), "bound.start {} < pos.x {}", bound.start(), center.x());
+        assert!(bound.end() > center.x(), "bound.end {} > pos.x {}", bound.end(), center.x());
+        Self { bound, center, mass }
     }
 }
 
 impl ILoad for LoadSpace {
     fn mass(&self, bound: Option<Bound>) -> f64 {
-        let bound = bound.unwrap_or(self.bound);
-        self.bound.part_ratio(&bound)*self.mass
+        if let Some(bound) = bound {
+            self.bound.part_ratio(&bound)*self.mass
+        } else {
+            self.mass
+        }
     }
 
-    fn moment(&self) -> f64 {
-        self.mass * self.pos.x()
+    fn center(&self) -> Position {
+        self.center
     }
 }
