@@ -1,6 +1,27 @@
 //! Структуры для ввода данных
 use serde::{Deserialize, Serialize};
 
+/// Данные запроса на расчет
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ParsedRequestData {
+    /// название проекта судна
+    pub project_name: String,
+    /// имя судна 
+    pub ship_name: String,
+    /// разбиение на шпации - количество 
+    pub n_parts: u32,
+    /// плотность воды
+    pub water_density: f64,
+}
+///
+#[allow(dead_code)]
+impl ParsedRequestData {
+    ///
+    pub fn parse(src: &str) -> serde_json::Result<Self> {
+        serde_json::from_str(src)
+    }
+}
+
 /// Данные по корпусу судна
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ParsedShipData {
@@ -19,8 +40,8 @@ pub struct ParsedShipData {
 #[allow(dead_code)]
 impl ParsedShipData {
     ///
-    pub fn parse(src: &str) -> Option<Self> {
-        serde_json::from_str(src).ok()?
+    pub fn parse(src: &str) -> serde_json::Result<Self> {
+        serde_json::from_str(src)
     }
 }
 /// Шпангоут
@@ -41,8 +62,8 @@ pub struct ParsedFramesData {
 #[allow(dead_code)]
 impl ParsedFramesData {
     ///
-    pub fn parse(src: &str) -> Option<Self> {
-        serde_json::from_str(src).ok()?
+    pub fn parse(src: &str) -> serde_json::Result<Self> {
+        serde_json::from_str(src)
     }
 }
 /// Груз
@@ -80,8 +101,8 @@ pub struct ParsedLoadsData {
 #[allow(dead_code)]
 impl ParsedLoadsData {
     ///
-    pub fn parse(src: &str) -> Option<Self> {
-        serde_json::from_str(src).ok()?
+    pub fn parse(src: &str) -> serde_json::Result<Self> {
+        serde_json::from_str(src)
     }
 }
 ///
@@ -93,7 +114,7 @@ pub struct ParsedTanksData {
 #[allow(dead_code)]
 impl ParsedTanksData {
     ///
-    pub fn parse(src: &str) -> Option<Self> {
-        serde_json::from_str(src).ok()?
+    pub fn parse(src: &str) -> serde_json::Result<Self> {
+        serde_json::from_str(src)
     }
 }

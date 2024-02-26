@@ -9,6 +9,35 @@ mod tests {
     use crate::data::parse_input::*;
     
     #[test]
+    fn request() {
+        DebugSession::init(LogLevel::Debug, Backtrace::Short);
+        println!("");
+        let selfId = "test Parse request";
+        println!("{}", selfId);
+        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
+        testDuration.run().unwrap();
+
+        let data = r#"
+        {
+            "project_name": "YURIY ARSHENEVSKIY",
+            "ship_name": "YURIY ARSHENEVSKIY",
+            "n_parts": 20,
+            "water_density": 1.025
+        }"#;        
+    
+        let result = ParsedRequestData::parse(&data).expect("parse error");
+        let target = ParsedRequestData {
+            project_name: "YURIY ARSHENEVSKIY".to_string(),
+            ship_name: "YURIY ARSHENEVSKIY".to_string(),
+            n_parts: 20,
+            water_density: 1.025,     
+        };
+
+        assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
+        testDuration.exit();
+    }
+
+    #[test]
     fn ship() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");

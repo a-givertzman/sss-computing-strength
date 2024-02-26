@@ -96,6 +96,12 @@ fn main() {
     let value = Value::String("66.77".to_string());
     debug!("\t string value: {:?}", value);
 
+
+
+
+
+
+    
     let query = ApiQuery::new(
         ApiQueryKind::Sql(ApiQuerySql::new("database", "sql")),
         false,
@@ -109,6 +115,9 @@ fn main() {
         false,
     );
     let reply = request.fetch(&query, false);
+
+
+    
 
     // длинна судна
     let ship_length = 118.39;
