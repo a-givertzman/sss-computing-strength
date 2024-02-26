@@ -1,44 +1,20 @@
-use crate::math::curve::Curve;
+//! Шпангоут
+use crate::math::curve::{Curve, ICurve};
 
-///Шпангоут
+///Шпангоут, содержит кривую погруженной площади сечения в зависимости от осадки
 pub struct Frame {
-    area: Curve, //кривая погружаемой площади, м^2
-    x: f64,      //расстояние от начала координат, м
+    /// кривая погружаемой площади, $м^2$
+    area: Curve, 
 }
-
+///
 impl Frame {
     ///
-    pub fn new(area: Curve, x: f64) -> Frame {
-        Self { area, x }
+    pub fn new(area: Curve) -> Frame {
+        Self { area }
     }
-    ///погруженная площадь сечения
+    /// Расчет погруженной площади сечения
+    /// - draft: осадка судна в районе шпангоута
     pub fn area(&self, draft: f64) -> f64 {
         self.area.value(draft)
-    }
-    ///расстояние от центра корабля  
-    pub fn x(&self) -> f64 {
-        self.x
-    }
-}
-
-
-///Шпангоут
-pub struct Frame {
-    area: Curve, //кривая погружаемой площади, м^2
-    x: f64,      //расстояние от начала координат, м
-}
-
-impl Frame {
-    ///
-    pub fn new(area: Curve, x: f64) -> Frame {
-        Self { area, x }
-    }
-    ///погруженная площадь сечения
-    pub fn area(&self, draft: f64) -> f64 {
-        self.area.value(draft)
-    }
-    ///расстояние от центра корабля  
-    pub fn x(&self) -> f64 {
-        self.x
     }
 }

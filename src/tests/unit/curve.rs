@@ -7,7 +7,7 @@ mod tests {
     use std::{sync::Once, time::{Duration, Instant}};
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::math::curve::Curve;
+    use crate::math::curve::{Curve, ICurve};
 
     #[test]
     fn sum_above() {
