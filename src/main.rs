@@ -45,28 +45,19 @@
 //!   7. Вычисляется изгибающий момент BendingMoment для каждой шпации как интегриральнуа сумма срезающей силы:
 //!      $M_i = M_{i-1} + Fs_{i-1} + Fs_i, M_0 = 0$.
 
-use std::rc::Rc;
+use std::{io, process, rc::Rc};
 
 use api_tools::client::{
     api_query::{ApiQuery, ApiQueryKind, ApiQuerySql},
     api_request::ApiRequest,
 };
+use data::parse_input::ParsedInputData;
 use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-use log::debug;
+use log::*;
 use testing::entities::test_value::Value;
 
 use crate::{
-    bending_moment::BendingMoment,
-    displacement::Displacement,
-    draught::Draught,
-    frame::Frame,
-    load::ILoad,
-    mass::{IMass, Mass},
-    math::{bound::Bound, curve::Curve, inertia_shift::InertiaShift, pos_shift::PosShift},
-    shear_force::{IShearForce, ShearForce},
-    tank::Tank,
-    total_force::TotalForce,
-    trim::Trim,
+    bending_moment::BendingMoment, data::parse_input::ParsedShipData, displacement::Displacement, draught::Draught, frame::Frame, load::ILoad, mass::{IMass, Mass}, math::{bound::Bound, curve::Curve, inertia_shift::InertiaShift, pos_shift::PosShift}, shear_force::{IShearForce, ShearForce}, tank::Tank, total_force::TotalForce, trim::Trim
 };
 
 mod bending_moment;
@@ -96,12 +87,11 @@ fn main() {
     let value = Value::String("66.77".to_string());
     debug!("\t string value: {:?}", value);
 
+    let data = read().unwrap_or_else(|err| {
+        error!("Parsing arguments: {err}");
+        process::exit(1);
+    });
 
-
-
-
-
-    
     let query = ApiQuery::new(
         ApiQueryKind::Sql(ApiQuerySql::new("database", "sql")),
         false,
@@ -114,10 +104,20 @@ fn main() {
         false,
         false,
     );
-    let reply = request.fetch(&query, false);
+   // let reply = request.fetch(&query, false);
 
-
-    
+    let reply_data = request.fetch(&query, false).unwrap_or_else(|err| {
+        error!("request.fetch: {err}");
+        process::exit(1);
+    });
+    let string = String::from_utf8(reply_data).unwrap_or_else(|err| {
+        error!("String::from_utf8: {err}");
+        process::exit(1);
+    });
+    let ship_data = ParsedShipData::parse(&string.to_lowercase().trim().to_owned()).unwrap_or_else(|err| {
+        error!("ParsedShipData::parse: {err}");
+        process::exit(1);
+    });
 
     // длинна судна
     let ship_length = 118.39;
@@ -198,3 +198,25 @@ fn main() {
     let bending_moment = BendingMoment::new(&shear_force);
     dbg!(&shear_force.values(), &bending_moment.values());
 }
+
+/// Чтение данных из стандартного потока ввода
+pub fn read() -> Result<ParsedInputData, Box<dyn std::error::Error>> {
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+    Ok(ParsedInputData::parse(
+        &input.to_lowercase().trim().to_owned(),
+    )?)
+}
+
+/*
+/// Writes a given value to the writer, serializing it into JSON.
+pub fn write<W: Write, T: serde::Serialize>(mut writer: W, t: &T) -> Result<(), WriteError> {
+    // We use to_string here instead of to_vec because it verifies that the JSON is valid UTF-8,
+    // which is required by the JSON Lines specification (https://jsonlines.org).
+    let json = serde_json::to_string(t).map_err(WriteError::Serialize)?;
+
+    writer.write_all(json.as_bytes()).map_err(WriteError::Io)?;
+    writer.write_all(b"\n").map_err(WriteError::Io)?;
+
+    Ok(())
+}*/

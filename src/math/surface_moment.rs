@@ -41,3 +41,9 @@ impl Sum for SurfaceMoment {
         iter.fold(Self::new(0., 0., ),|a, b| a + b )
     }
 }
+///
+impl std::fmt::Display for SurfaceMoment {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x(), self.y(),)
+    }
+}

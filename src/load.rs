@@ -42,7 +42,7 @@ impl LoadSpace {
 impl ILoad for LoadSpace {
     fn mass(&self, bound: Option<Bound>) -> f64 {
         if let Some(bound) = bound {
-        self.bound.part_ratio(&bound)*self.mass
+            self.bound.part_ratio(&bound)*self.mass
         } else {
             self.mass
         }

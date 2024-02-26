@@ -9,7 +9,7 @@ mod tests {
     use crate::data::parse_input::*;
     
     #[test]
-    fn request() {
+    fn input() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
         let selfId = "test Parse request";
@@ -25,8 +25,8 @@ mod tests {
             "water_density": 1.025
         }"#;        
     
-        let result = ParsedRequestData::parse(&data).expect("parse error");
-        let target = ParsedRequestData {
+        let result = ParsedInputData::parse(&data).expect("parse error");
+        let target = ParsedInputData {
             project_name: "YURIY ARSHENEVSKIY".to_string(),
             ship_name: "YURIY ARSHENEVSKIY".to_string(),
             n_parts: 20,

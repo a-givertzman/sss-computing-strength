@@ -1,11 +1,11 @@
-//! Дифферент судна
+//! Дифферент. Угол наклона корпуса судна в продольной плоскости.
 use std::rc::Rc;
 
 use crate::{
     mass::IMass,
     math::{curve::ICurve, pos_shift::IPosShift},
 };
-/// Дифферента судна. Вычисляется с учетом влияния свободных  
+/// Дифферент судна. Вычисляется с учетом влияния свободных  
 /// поверхностей жидкости.
 pub struct Trim {
     water_density: f64, // плотность окружающей воды
@@ -27,6 +27,8 @@ impl Trim {
         rad_long: impl ICurve + 'static,                // продольный метацентрические радиус
         mass: Rc<dyn IMass>,                            // все грузы судна
     ) -> Self {
+        assert!(water_density > 0., "water_density {water_density} > 0.");
+        assert!(ship_length > 0., "ship_length {ship_length} > 0.");
         Self {
             water_density,
             ship_length,
@@ -56,6 +58,8 @@ impl Trim {
         //момент дифферентующий на 1 см осадки
         let trim_moment = (mass_sum * H) / (100. * self.ship_length);
         //дифферент судна
-        mass_sum * (self.mass.shift().x() - center_draught_shift.x()) / (100. * trim_moment)
+        let value = mass_sum * (self.mass.shift().x() - center_draught_shift.x()) / (100. * trim_moment);
+        log::debug!("\t Trim mass:{mass_sum} volume:{volume} center:{center_draught_shift} rad:{rad_long} Z_m:{Z_m} H_0:{H_0} H:{H} M:{trim_moment} result:{value}");
+        value
     }
 }

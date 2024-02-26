@@ -1,24 +1,39 @@
 //! Структуры для ввода данных
-use serde::{Deserialize, Serialize};
+use serde::{de::Error, Deserialize, Serialize, de::Unexpected};
+
+pub type Result<T> = serde_json::Result<T>;
 
 /// Данные запроса на расчет
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct ParsedRequestData {
+pub struct ParsedInputData {
     /// название проекта судна
     pub project_name: String,
     /// имя судна 
     pub ship_name: String,
     /// разбиение на шпации - количество 
-    pub n_parts: u32,
+    pub n_parts: u64,
     /// плотность воды
     pub water_density: f64,
 }
 ///
 #[allow(dead_code)]
-impl ParsedRequestData {
+impl ParsedInputData {
     ///
-    pub fn parse(src: &str) -> serde_json::Result<Self> {
-        serde_json::from_str(src)
+    pub fn parse(src: &str) -> Result<Self> {
+        let result: ParsedInputData = serde_json::from_str(src)?;
+        if result.project_name.len() == 0 {
+            return Err(Error::invalid_value(Unexpected::Str(&result.project_name), &"project_name"));
+        }
+        if result.ship_name.len() == 0 {
+            return Err(Error::invalid_value(Unexpected::Str(&result.ship_name), &"ship_name"));
+        }
+        if result.n_parts == 0 {
+            return Err(Error::invalid_value(Unexpected::Unsigned(result.n_parts), &"positive number of frames"));
+        }
+        if result.water_density <= 0. {
+            return Err(Error::invalid_value(Unexpected::Float(result.water_density), &"positive value of water density"));
+        }
+        Ok(result)
     }
 }
 
@@ -40,8 +55,21 @@ pub struct ParsedShipData {
 #[allow(dead_code)]
 impl ParsedShipData {
     ///
-    pub fn parse(src: &str) -> serde_json::Result<Self> {
-        serde_json::from_str(src)
+    pub fn parse(src: &str) -> Result<Self> {
+        let result: ParsedShipData = serde_json::from_str(src)?;
+        if result.ship_length <= 0. {
+            return Err(Error::invalid_value(Unexpected::Float(result.ship_length), &"positive value of ship length"));
+        }
+        if result.center_waterline.len() <= 1 {
+            return Err(Error::invalid_value(Unexpected::Unsigned(result.center_waterline.len() as u64), &"number of waterline points greater or equal 2"));
+        }
+        if result.mean_draught.len() <= 1 {
+            return Err(Error::invalid_value(Unexpected::Unsigned(result.mean_draught.len() as u64), &"number of mean_draught points greater or equal 2"));
+        }
+        if result.center_shift.len() <= 1 {
+            return Err(Error::invalid_value(Unexpected::Unsigned(result.center_shift.len() as u64), &"number of center_shift points greater or equal 2"));
+        }
+        Ok(result)
     }
 }
 /// Шпангоут
@@ -62,7 +90,7 @@ pub struct ParsedFramesData {
 #[allow(dead_code)]
 impl ParsedFramesData {
     ///
-    pub fn parse(src: &str) -> serde_json::Result<Self> {
+    pub fn parse(src: &str) -> Result<Self> {
         serde_json::from_str(src)
     }
 }
@@ -101,7 +129,7 @@ pub struct ParsedLoadsData {
 #[allow(dead_code)]
 impl ParsedLoadsData {
     ///
-    pub fn parse(src: &str) -> serde_json::Result<Self> {
+    pub fn parse(src: &str) -> Result<Self> {
         serde_json::from_str(src)
     }
 }
@@ -114,7 +142,7 @@ pub struct ParsedTanksData {
 #[allow(dead_code)]
 impl ParsedTanksData {
     ///
-    pub fn parse(src: &str) -> serde_json::Result<Self> {
+    pub fn parse(src: &str) -> Result<Self> {
         serde_json::from_str(src)
     }
 }

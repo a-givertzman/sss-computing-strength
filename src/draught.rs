@@ -93,6 +93,7 @@ impl IDraught for Draught {
                 }
             })
             .collect();
+        log::debug!("\t Draught trim:{trim} volume:{volume} x_f:{x_f} d:{d} bow_draught:{bow_draught} trim_x_f_sl:{trim_x_f_sl} delta_draught:{delta_draught} result:{:?}", result);
         result
     }
 }

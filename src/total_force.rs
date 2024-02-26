@@ -18,6 +18,7 @@ pub struct TotalForce {
 impl TotalForce {
     ///
     pub fn new(mass: Rc<dyn IMass>, draught: impl IDraught + 'static, gravity_g: f64) -> Self {
+        assert!(gravity_g > 0., "gravity_g {gravity_g} > 0.");
         Self {
             mass,
             draught: Box::new(draught),
@@ -34,6 +35,7 @@ impl ITotalForce for TotalForce {
         assert!(mass_values.len() == draught_values.len(), "mass.len() {} == draught.len() {}", mass_values.len(), draught_values.len());
         mass_values.sub_vec(&draught_values);
         mass_values.mul_single(self.gravity_g);
+        log::debug!("\t TotalForce result:{:?}", mass_values);
         mass_values
     }
 }
