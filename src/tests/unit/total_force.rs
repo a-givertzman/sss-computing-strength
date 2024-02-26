@@ -2,12 +2,11 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{math::vec::MultipleSingle, total_force::TotalForce};
+    use crate::{draught::{FakeDraught, IDraught}, mass::FakeMass, math::{position::Position, vec::MultipleSingle}, total_force::{ITotalForce, TotalForce}};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use log::{debug, info, warn};
     use std::{
-        sync::Once,
-        time::{Duration, Instant},
+        rc::Rc, sync::Once, time::{Duration, Instant}
     };
     use testing::stuff::max_test_duration::TestDuration;
 
@@ -22,8 +21,8 @@ mod tests {
 
         let gravity_g = 9.81;
         let result = TotalForce::new(
-            Vec::from([20.; 10]),
-            Vec::from([5., 25., 25., 25., 25., 25., 25., 25., 15., 5.]),
+            Rc::new(FakeMass::new(30., vec![20.; 10], Position::new(0., 0., 0.,), 0.)),
+            FakeDraught::new(vec![5., 25., 25., 25., 25., 25., 25., 25., 15., 5.]),
             gravity_g,
         ).values();
         let mut target = Vec::from([15., -5., -5., -5., -5., -5., -5., -5., 5., 15.]);

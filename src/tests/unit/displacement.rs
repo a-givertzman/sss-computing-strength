@@ -25,13 +25,12 @@ mod tests {
         testDuration.run().unwrap();
 
         let mut frames = vec![
-            Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-            Frame::new(Curve::new(vec![(0., 0.), (10., 20.)])),
-            Frame::new(Curve::new(vec![(0., 0.), (10., 30.)])),
+            Frame::new(Curve::new(vec![(0., 0.), (10., 0.)])),
+            Frame::new(Curve::new(vec![(0., 0.), (10., 40.)])),
         ];
 
-        let result = Displacement::new(frames, 20.).value(Bound::new(-5., 5.), 10.);
-        let target = 200.;
+        let result = Displacement::new(frames, 20.).value(Bound::new(-10., 0.), 10.);
+        let target = 100.;
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",

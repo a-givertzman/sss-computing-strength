@@ -4,10 +4,10 @@
 mod tests {
     use crate::{
         load::{ILoad, LoadSpace},
-        mass::Mass,
+        mass::{FakeMass, Mass},
         math::{
-            bound::Bound, curve::Curve, inertia_shift::InertiaShift, mass_moment::MassMoment,
-            pos_shift::PosShift, position::Position,
+            bound::Bound, curve::{Curve, FakeCurve}, inertia_shift::InertiaShift, mass_moment::MassMoment,
+            pos_shift::{FakePosShift, PosShift}, position::Position,
         },
         trim::Trim,
     };
@@ -30,12 +30,11 @@ mod tests {
         testDuration.run().unwrap();
 
         let result = Trim::new(
+            1.025,
             118.39,
-            Position::new(-0.194609657, 0., 0.735524704),
-            696.702572991,           
-            0.,         
-            2044.10,      
-            Position::new(1.05, 0., 5.32),
+            FakePosShift::new(Position::new(-0.194609657, 0., 0.735524704)),
+            FakeCurve::new(696.702572991),                  
+            Rc::new(FakeMass::new(2044.10, vec![0.], Position::new(1.05, 0., 5.32,), 0.)), 
         )
         .value();
         let target = 0.2115;

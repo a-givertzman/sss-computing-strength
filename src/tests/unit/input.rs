@@ -9,6 +9,35 @@ mod tests {
     use crate::data::parse_input::*;
     
     #[test]
+    fn input() {
+        DebugSession::init(LogLevel::Debug, Backtrace::Short);
+        println!("");
+        let selfId = "test Parse request";
+        println!("{}", selfId);
+        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
+        testDuration.run().unwrap();
+
+        let data = r#"
+        {
+            "project_name": "YURIY ARSHENEVSKIY",
+            "ship_name": "YURIY ARSHENEVSKIY",
+            "n_parts": 20,
+            "water_density": 1.025
+        }"#;        
+    
+        let result = ParsedInputData::parse(&data).expect("parse error");
+        let target = ParsedInputData {
+            project_name: "YURIY ARSHENEVSKIY".to_string(),
+            ship_name: "YURIY ARSHENEVSKIY".to_string(),
+            n_parts: 20,
+            water_density: 1.025,     
+        };
+
+        assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
+        testDuration.exit();
+    }
+
+    #[test]
     fn ship() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
@@ -21,7 +50,7 @@ mod tests {
         {
             "ship_length": 200.0, 
             "center_waterline": [[0.0, 0.0], [10.0, 1.0]],
-            "rad_trans": [[0.0, 0.0], [10.0, 2.0]],
+            "rad_long": [[0.0, 0.0], [10.0, 2.0]],
             "mean_draught": [[0.0, 0.0], [10.0, 3.0]],
             "center_shift": [[0.0, 2.0, 0.0, 0.0], [10.0, 2.0, 0.0, 0.0]]
         }"#;        
@@ -30,7 +59,7 @@ mod tests {
         let target = ParsedShipData {
             ship_length: 200.,
             center_waterline: vec![ (0.0, 0.0), (10.0, 1.0)],
-            rad_trans: vec![ (0.0, 0.0), (10.0, 2.0)],
+            rad_long: vec![ (0.0, 0.0), (10.0, 2.0)],
             mean_draught: vec![ (0.0, 0.0), (10.0, 3.0)],
             center_shift: vec![(0.0, 2.0, 0.0, 0.0), (10.0, 2.0, 0.0, 0.0),],           
         };

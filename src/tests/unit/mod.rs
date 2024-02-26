@@ -1,3 +1,4 @@
+//! Юнит-тесты
 mod input;
 mod bound;
 mod vec;
