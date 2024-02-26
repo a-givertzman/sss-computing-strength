@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 #[cfg(test)]
 
 mod tests {
@@ -12,10 +11,10 @@ mod tests {
     fn intersect() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Bound intersect";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Bound intersect";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
         let test_data = [
             (Bound::new(2., 4.), Bound::new(0., 1.,), None),
             (Bound::new(2., 4.), Bound::new(4., 5.,), None),
@@ -28,17 +27,17 @@ mod tests {
             let result = left.intersect(&right);
             assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         }
-        testDuration.exit();
+        test_duration.exit();
     }
 
     #[test]
     fn part_ratio() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Bound part_ratio";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Bound part_ratio";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
         let test_data = [
             (Bound::new(2., 4.), Bound::new(0., 1.,), 0.),
             (Bound::new(2., 4.), Bound::new(4., 5.,), 0.),
@@ -51,35 +50,35 @@ mod tests {
             let result = left.part_ratio(&right);
             assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         }
-        testDuration.exit();
+        test_duration.exit();
     }
 
     #[test]
     fn center() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Bound center";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Bound center";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
         let result = Bound::new(-2., 4.).center();   
         let target = 1.;
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
-        testDuration.exit();
+        test_duration.exit();
     }
 
     #[test]
     fn shift() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Bound add";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Bound add";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
         let mut result = Bound::new(2., 4.);
         result.shift(-5.);
         let target = Bound::new(-3., -1.);
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
-        testDuration.exit();
+        test_duration.exit();
     }
 }
