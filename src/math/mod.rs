@@ -1,3 +1,4 @@
+//! Коллекция примитивов для математических операций
 pub mod vec;
 pub mod position;
 pub mod mass_moment;
