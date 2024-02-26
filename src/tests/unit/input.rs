@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 #[cfg(test)]
 
 mod tests {
@@ -9,10 +8,10 @@ mod tests {
     use crate::data::parse_input::*;
     
     #[test]
-    fn input() {
+    fn parse() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Input";
+        let selfId = "test Parse input";
         println!("{}", selfId);
         let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
         testDuration.run().unwrap();
@@ -34,8 +33,7 @@ mod tests {
                 {"mass": 10.0, "displacement_curve": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]},
                 {"mass": 10.0, "displacement_curve": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]}
             ]
-        }"#;
-        
+        }"#;        
     
         let result = ParsedData::parse(&data).expect("parse error");
         let target = ParsedData {
