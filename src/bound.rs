@@ -59,9 +59,9 @@ impl Bound {
         (self.start + self.end)/2.
     }
     ///
-    /// Смещение диапазона на величину other
-    pub fn shift(&mut self, other: f64) {
-        self.start += other;
-        self.end += other;
+    /// Смещение диапазона на величину offset
+    pub fn shift(&mut self, offset: f64) {
+        self.start += offset;
+        self.end += offset;
     }
 }
