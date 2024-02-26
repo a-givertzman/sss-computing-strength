@@ -17,7 +17,7 @@ mod tests {
         let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
         testDuration.run().unwrap();
 
-        let result = LoadSpace::new( Bound::new(-1., 3.), Position::new( 1., 0., 0.), 20.).mass(Some(Bound::new(1., 3.)));
+        let result = LoadSpace::new( 20., Bound::new(-1., 3.), Position::new( 1., 0., 0.)).mass(Some(Bound::new(1., 3.)));
         let target = 10.;
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
@@ -33,7 +33,7 @@ mod tests {
         let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
         testDuration.run().unwrap();
 
-        let result = LoadSpace::new( Bound::new(-1., 3.), Position::new( 1., 0., 0.), 20.).moment_mass();
+        let result = LoadSpace::new( 20., Bound::new(-1., 3.), Position::new( 1., 0., 0.),).moment_mass();
         let target = MassMoment::new(20., 0., 0.);
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
