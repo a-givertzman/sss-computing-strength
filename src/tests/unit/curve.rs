@@ -8,14 +8,13 @@ mod tests {
     use crate::math::curve::Curve;
 
     #[test]
-    fn sum_above() {
+    fn curve() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
         let self_id = "test Curve value";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
-
         let curve = Curve::new(vec![
             (0., 0.),
             (2., 2.),
@@ -28,7 +27,6 @@ mod tests {
         for (result, target) in test_data {
             assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         }
-
         test_duration.exit();
     }
 }
