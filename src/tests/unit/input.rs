@@ -12,10 +12,10 @@ mod tests {
     fn input() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Input";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Input";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
         let data = r#"
         {
@@ -57,6 +57,6 @@ mod tests {
         };
 
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
-        testDuration.exit();
+        test_duration.exit();
     }
 }
