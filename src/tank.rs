@@ -40,6 +40,8 @@ impl ILoad for Tank {
     }
 
     fn moment_surface(&self) -> SurfaceMoment {
-        SurfaceMoment::from_inertia(self.free_surf_inertia.value(self.volume), self.density)
+        let result = SurfaceMoment::from_inertia(self.free_surf_inertia.value(self.volume), self.density);
+        log::debug!("\t Tank result:{:?}", result);
+        result
     }
 }

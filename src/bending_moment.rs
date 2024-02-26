@@ -15,6 +15,8 @@ impl<'a> BendingMoment<'a> {
     }
     ///
     pub fn values(&self) -> Vec<f64>  {
-        self.shear_force.values().integral_sum()
+        let result = self.shear_force.values().integral_sum();
+        log::debug!("\t BendingMoment result:{:?}", result);
+        result
     }
 }
