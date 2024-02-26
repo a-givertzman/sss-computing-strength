@@ -9,10 +9,10 @@ mod tests {
     use crate::{frame::Frame, math::curve::Curve};
     
     #[test]
-    fn area() {
+    fn frame() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Frame area";
+        let selfId = "test Frame";
         println!("{}", selfId);
         let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
         testDuration.run().unwrap();

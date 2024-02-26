@@ -2,11 +2,7 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{
-        displacement::*,
-        frame::Frame,
-        math::{bound::Bound, curve::Curve},
-    };
+    use crate::{bending_moment::BendingMoment, shear_force::FakeShearForce};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use log::{debug, info, warn};
     use std::{
@@ -16,21 +12,20 @@ mod tests {
     use testing::stuff::max_test_duration::TestDuration;
 
     #[test]
-    fn value() {
+    fn bending_moment() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Displacement value";
+        let selfId = "test BendingMoment";
         println!("{}", selfId);
         let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
         testDuration.run().unwrap();
 
-        let mut frames = vec![
-            Frame::new(Curve::new(vec![(0., 0.), (10., 0.)])),
-            Frame::new(Curve::new(vec![(0., 0.), (10., 40.)])),
-        ];
+        let result = BendingMoment::new(&FakeShearForce::new(vec![
+            0.0, 5.0, 10., 15.0, 10.0, 5.0, 0.0, -5.0, -10.0, -15.0, -15.0, 0.0,
+        ]))
+        .values();
+        let target = Vec::from([0.0, 5.0, 20.0, 45.0, 70.0, 85.0, 90.0, 85.0, 70.0, 45.0, 15.0, 0.0]);
 
-        let result = Displacement::new(frames, 20.).value(Bound::new(-10., 0.), 10.);
-        let target = 100.;
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",
