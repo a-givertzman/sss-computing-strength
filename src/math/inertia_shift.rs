@@ -1,4 +1,5 @@
-use super::curve::Curve;
+//! Кривая момента инерции
+use super::curve::{Curve, ICurve};
 
 ///момент инерции площади свободной поверхности
 #[derive(Clone)]
@@ -13,8 +14,7 @@ impl InertiaMoment {
         Self { x, y }
     }
 }
-
-///класс, хранящий зависимость момента инерции от значения
+///
 #[derive(Clone)]
 pub struct InertiaShift {    
     x: Curve, //кривая поперечного момента

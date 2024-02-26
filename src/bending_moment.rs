@@ -1,18 +1,22 @@
-use crate::math::vec::IntegralSum;
+//! Изгибающий момент
+use crate::{math::vec::IntegralSum, shear_force::IShearForce};
 
-
-///изгибающий момент, интегриральная сумма срезающей силы, m[i] = m[i-1] + s_f[i-1] + s_f[i], m[0] = 0
+/// Изгибающий момент, интегриральная сумма срезающей  
+/// силы, $M_i = M_{i-1} + SF_{i-1} + SF_i, M_0 = 0$
 pub struct BendingMoment<'a> {
-    shear_force_values: &'a Vec<f64>,
+    /// массив значений средающей силы по шпациям
+    shear_force: &'a dyn IShearForce,
 }
-
+///
 impl<'a> BendingMoment<'a> {
     ///
-    pub fn new(shear_force_values: &'a Vec<f64> ) -> Self {
-        Self { shear_force_values }
+    pub fn new(shear_force: &'a impl IShearForce ) -> Self {
+        Self { shear_force }
     }
     ///
     pub fn values(&self) -> Vec<f64>  {
-        self.shear_force_values.integral_sum()
+        let result = self.shear_force.values().integral_sum();
+        log::debug!("\t BendingMoment result:{:?}", result);
+        result
     }
 }

@@ -4,7 +4,7 @@
 mod tests {
     use crate::{
         load::{ILoad, LoadSpace},
-        mass::Mass,
+        mass::{IMass, Mass},
         math::{
             bound::Bound, curve::Curve, inertia_shift::InertiaShift, pos_shift::PosShift,
             position::Position,
@@ -40,14 +40,14 @@ mod tests {
 
             let loads: Vec<Rc<Box<dyn ILoad>>> = vec![
                 Rc::new(Box::new(LoadSpace::new(
+                    10.,
                     Bound::new(-10., 0.),
                     Position::new(-5., 0., 0.),
-                    10.,
                 ))),
                 Rc::new(Box::new(LoadSpace::new(
+                    20.,
                     Bound::new(0., 10.),
                     Position::new(5., 0., 0.),
-                    20.,
                 ))),
                 Rc::new(Box::new(Tank::new(
                     2.,
