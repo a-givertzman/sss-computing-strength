@@ -1,10 +1,10 @@
+//! Момент массы
 use std::{iter::Sum, ops::Add};
 
 use super::position::Position;
 
 pub type MassMoment = super::position::Position;
-
-///класс инкапсулирующий момент массы
+///
 impl MassMoment {
     ///рассчет момента из позиции и массы груза
     pub fn from_pos(position: Position, mass: f64) -> Self {
