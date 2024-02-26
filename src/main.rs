@@ -6,7 +6,6 @@ mod data;
 mod tests;
 mod vec_f64;
 mod bound;
-mod vec_f64;
 
 fn main() {
     DebugSession::init(LogLevel::Debug, Backtrace::Short);
