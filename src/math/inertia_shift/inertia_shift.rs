@@ -1,20 +1,11 @@
 //! Кривая момента инерции
-use super::curve::{Curve, ICurve};
+use crate::math::{
+    curve::{Curve, ICurve},
+    inertia_shift::inertia_moment::InertiaMoment,
+};
 
-///момент инерции площади свободной поверхности
-#[derive(Clone)]
-pub struct InertiaMoment {    
-    pub x: f64, //поперечный момент
-    pub y: f64, //продольный момент
-}
-///
-impl InertiaMoment {
-    ///
-    pub fn new(x: f64, y: f64 ) -> Self {
-        Self { x, y }
-    }
-}
-///
+/// 
+/// To be added...
 #[derive(Clone)]
 pub struct InertiaShift {    
     x: Curve, //кривая поперечного момента

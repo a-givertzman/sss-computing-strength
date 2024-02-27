@@ -5,7 +5,7 @@ mod tests {
     use std::{sync::Once, time::{Duration, Instant}};
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::{load::{ILoad, LoadSpace}, math::{bound::Bound, curve::Curve, inertia_shift::InertiaShift, mass_moment::MassMoment, pos_shift::PosShift, position::Position, surface_moment::SurfaceMoment}, tank::Tank};
+    use crate::{load::ILoad, math::{bound::Bound, curve::Curve, inertia_shift::inertia_shift::InertiaShift, pos_shift::PosShift, position::Position, surface_moment::SurfaceMoment}, tank::Tank};
     
     static INIT: Once = Once::new();
     

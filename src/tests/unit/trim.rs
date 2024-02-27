@@ -2,11 +2,9 @@
 
 mod tests {
     use crate::{
-        load::{ILoad, LoadSpace},
-        mass::{FakeMass, Mass},
+        mass::FakeMass,
         math::{
-            bound::Bound, curve::{Curve, FakeCurve}, inertia_shift::InertiaShift, mass_moment::MassMoment,
-            pos_shift::{FakePosShift, PosShift}, position::Position,
+            curve::FakeCurve, pos_shift::FakePosShift, position::Position,
         },
         trim::Trim,
     };

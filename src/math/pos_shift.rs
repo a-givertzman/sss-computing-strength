@@ -40,8 +40,8 @@ impl IPosShift for PosShift {
 pub trait IPosShift {
     fn value(&self, key: f64) -> Position;
 }
-// заглушка для тестирования
 #[doc(hidden)]
+/// заглушка для тестирования
 pub struct FakePosShift {
     data: Position,
 }

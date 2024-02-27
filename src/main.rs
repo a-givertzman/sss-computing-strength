@@ -57,7 +57,7 @@ use log::*;
 use testing::entities::test_value::Value;
 
 use crate::{
-    bending_moment::BendingMoment, data::parse_input::ParsedShipData, displacement::Displacement, draught::Draught, frame::Frame, load::ILoad, mass::{IMass, Mass}, math::{bound::Bound, curve::Curve, inertia_shift::InertiaShift, pos_shift::PosShift}, shear_force::{IShearForce, ShearForce}, tank::Tank, total_force::TotalForce, trim::Trim
+    bending_moment::BendingMoment, data::parse_input::ParsedShipData, displacement::Displacement, draught::Draught, frame::Frame, load::ILoad, mass::{IMass, Mass}, math::{bound::Bound, curve::Curve, inertia_shift::inertia_shift::InertiaShift, pos_shift::PosShift}, shear_force::{IShearForce, ShearForce}, tank::Tank, total_force::TotalForce, trim::Trim
 };
 
 mod bending_moment;

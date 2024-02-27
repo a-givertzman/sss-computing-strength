@@ -5,8 +5,7 @@ mod tests {
         load::{ILoad, LoadSpace},
         mass::{IMass, Mass},
         math::{
-            bound::Bound, curve::Curve, inertia_shift::InertiaShift, pos_shift::PosShift,
-            position::Position,
+            bound::Bound, curve::Curve, inertia_shift::inertia_shift::InertiaShift, pos_shift::PosShift, position::Position
         },
         tank::Tank,
     };

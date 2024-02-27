@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, sync::Once, time::{Duration, Instant}};
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::{displacement::Displacement, draught::Draught, frame::Frame, load::{ILoad, LoadSpace}, mass::Mass, math::{bound::Bound, curve::Curve, inertia_shift::InertiaShift, mass_moment::MassMoment, pos_shift::PosShift, position::Position}, trim::Trim};
+    use crate::{displacement::Displacement, draught::Draught, frame::Frame, load::{ILoad, LoadSpace}, mass::Mass, math::{bound::Bound, curve::Curve, mass_moment::MassMoment, pos_shift::PosShift, position::Position}, trim::Trim};
     
     #[test]
     fn draught() {

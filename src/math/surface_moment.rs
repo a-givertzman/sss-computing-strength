@@ -1,7 +1,8 @@
 //! Момент свободной поверхности
 use std::{iter::Sum, ops::Add};
 
-use super::inertia_shift::InertiaMoment;
+use super::inertia_shift::inertia_moment::InertiaMoment;
+
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct SurfaceMoment {

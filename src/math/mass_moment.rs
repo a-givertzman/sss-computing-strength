@@ -10,7 +10,7 @@ impl MassMoment {
     pub fn from_pos(position: Position, mass: f64) -> Self {
         Self::new(position.x()*mass, position.y()*mass, position.z()*mass,)
     }
-    ///рассчет отстояния центра масс момента
+    ///рассчет отстояния Центра Масс момента
     pub fn to_pos(&self, mass: f64) -> Position {
         Position::new(self.x()/mass, self.y()/mass, self.z()/mass)
     }
