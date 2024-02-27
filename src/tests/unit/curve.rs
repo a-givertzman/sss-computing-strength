@@ -52,7 +52,6 @@ mod tests {
         for (result, target) in test_data {
             assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         }
-
         test_duration.exit();
     }
 }

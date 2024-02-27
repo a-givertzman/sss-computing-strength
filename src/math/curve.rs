@@ -8,7 +8,8 @@ use splines::{Interpolation, Key, Spline};
 pub struct Curve {
     spline: Spline<f64, f64>,
 }
-
+///
+/// 
 impl Curve {
     ///
     /// Creates new instance of the Curve from vector of the key - value pairs
@@ -29,6 +30,7 @@ impl ICurve for Curve {
     /// - если такого ключа нет, то возвращает промежуточное значение между двумя соседними с помощью линейной интерполяции
     /// - если ключ за пределами ключей таблицы, то вернет либо первое либо последнее значение
     /// - panic - если нет ключей
+
     fn value(&self, key: f64) -> f64 {
         self.spline
             .clamped_sample(key)
