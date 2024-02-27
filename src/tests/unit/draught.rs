@@ -1,13 +1,12 @@
 #[cfg(test)]
 
 mod tests {
-    use log::{warn, info, debug};
-    use std::{rc::Rc, sync::Once, time::{Duration, Instant}};
+    use std::time::Duration;
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::{displacement::Displacement, draught::Draught, frame::Frame, load::{ILoad, LoadSpace}, mass::Mass, math::{bound::Bound, curve::Curve, mass_moment::MassMoment, pos_shift::PosShift, position::Position}, trim::Trim};
     
     #[test]
+    #[ignore = "TODO - write test!"]
     fn draught() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");

@@ -5,17 +5,13 @@ mod tests {
         load::{ILoad, LoadSpace},
         mass::{IMass, Mass},
         math::{
-            bound::Bound, curve::Curve, inertia_shift::inertia_shift::InertiaShift, pos_shift::PosShift, position::Position
+            bound::Bound, curve::Curve, inertia_shift::inertia_shift::InertiaShift,
+            pos_shift::PosShift, position::Position,
         },
         tank::Tank,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-    use log::{debug, info, warn};
-    use std::{
-        rc::Rc,
-        sync::Once,
-        time::{Duration, Instant},
-    };
+    use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
     static INIT: Once = Once::new();

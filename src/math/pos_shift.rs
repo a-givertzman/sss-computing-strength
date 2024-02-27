@@ -46,6 +46,7 @@ pub struct FakePosShift {
     data: Position,
 }
 #[doc(hidden)]
+#[allow(dead_code)]
 impl FakePosShift {
     pub fn new(data: Position) -> Self {
         Self { data }

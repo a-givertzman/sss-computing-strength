@@ -1,4 +1,6 @@
 //! Структуры для ввода данных
+use std::collections::HashSet;
+
 use serde::{de::Error, de::Unexpected, Deserialize, Serialize};
 
 pub type Result<T> = serde_json::Result<T>;
@@ -128,10 +130,17 @@ impl ParsedFramesData {
                 &"index of frame lower or equal frames.len()",
             ));
         }
-        if let Some(frame) = result.frames.iter().find(|f| f.immersion_area.len() == 0) {
+        let qnt_unique_index = result.frames.iter().map(|f| f.index ).collect::<HashSet<_>>().len();
+        if result.frames.len() != qnt_unique_index {
+            return Err(Error::invalid_value(
+                Unexpected::Unsigned(qnt_unique_index as u64),
+                &"index of frame must be unique",
+            ));
+        }
+        if let Some(frame) = result.frames.iter().find(|f| f.immersion_area.len() <= 1) {
             return Err(Error::invalid_value(
                 Unexpected::Unsigned(frame.immersion_area.len() as u64),
-                &"number of immersion_area's points greater to 0",
+                &"number of immersion_area's points greater or equal to 2",
             ));
         }
         Ok(result)
@@ -162,6 +171,12 @@ impl ParsedLoadsData {
             return Err(Error::invalid_value(
                 Unexpected::Float(space.mass),
                 &"mass of load_space greater or equal to 0",
+            ));
+        }
+        if let Some(s) = result.load_space.iter().find(|s| s.bound.0 >= s.bound.1 || s.bound.2 >= s.bound.3 ) {
+            return Err(Error::invalid_value(
+                Unexpected::Other(&format!("Bound({}, {}, {}, {})", s.bound.0, s.bound.1, s.bound.2, s.bound.3)),
+                &"Bound: x1 < x2, y1 < y2",
             ));
         }
         Ok(result)
@@ -206,16 +221,22 @@ impl ParsedTanksData {
                 &"volume of tank greater or equal to 0",
             ));
         }
-        if let Some(tank) = result.tanks.iter().find(|t| t.center.len() == 0) {
+        if let Some(t) = result.tanks.iter().find(|t| t.bound.0 >= t.bound.1 || t.bound.2 >= t.bound.3 ) {
             return Err(Error::invalid_value(
-                Unexpected::Unsigned(tank.center.len() as u64),
-                &"number of center's points greater to 0",
+                Unexpected::Other(&format!("Bound({}, {}, {}, {})", t.bound.0, t.bound.1, t.bound.2, t.bound.3)),
+                &"wrong data for Bound",
             ));
         }
-        if let Some(tank) = result.tanks.iter().find(|t| t.free_surf_inertia.len() == 0) {
+        if let Some(tank) = result.tanks.iter().find(|t| t.center.len() <= 1) {
+            return Err(Error::invalid_value(
+                Unexpected::Unsigned(tank.center.len() as u64),
+                &"number of center's points greater or equal to 2",
+            ));
+        }
+        if let Some(tank) = result.tanks.iter().find(|t| t.free_surf_inertia.len() <= 1) {
             return Err(Error::invalid_value(
                 Unexpected::Unsigned(tank.free_surf_inertia.len() as u64),
-                &"number of free_surf_inertia's points greater to 0",
+                &"number of free_surf_inertia's points greater or equal to 2",
             ));
         }
         Ok(result)

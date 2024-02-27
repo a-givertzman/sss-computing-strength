@@ -50,6 +50,7 @@ pub struct FakeTotalForce {
     data: Vec<f64>,
 }
 #[doc(hidden)]
+#[allow(dead_code)]
 impl FakeTotalForce {
     pub fn new(data: Vec<f64>) -> Self {
         Self { data }

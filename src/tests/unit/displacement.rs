@@ -7,11 +7,7 @@ mod tests {
         math::{bound::Bound, curve::Curve},
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-    use log::{debug, info, warn};
-    use std::{
-        sync::Once,
-        time::{Duration, Instant},
-    };
+    use std::time::Duration;
     use testing::stuff::max_test_duration::TestDuration;
 
     #[test]

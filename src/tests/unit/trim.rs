@@ -3,18 +3,11 @@
 mod tests {
     use crate::{
         mass::FakeMass,
-        math::{
-            curve::FakeCurve, pos_shift::FakePosShift, position::Position,
-        },
+        math::{curve::FakeCurve, pos_shift::FakePosShift, position::Position},
         trim::Trim,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-    use log::{debug, info, warn};
-    use std::{
-        rc::Rc,
-        sync::Once,
-        time::{Duration, Instant},
-    };
+    use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
     #[test]
@@ -30,14 +23,19 @@ mod tests {
             1.025,
             118.39,
             FakePosShift::new(Position::new(-0.194609657, 0., 0.735524704)),
-            FakeCurve::new(696.702572991),                  
-            Rc::new(FakeMass::new(2044.10, vec![0.], Position::new(1.05, 0., 5.32,), 0.)), 
+            FakeCurve::new(696.702572991),
+            Rc::new(FakeMass::new(
+                2044.10,
+                vec![0.],
+                Position::new(1.05, 0., 5.32),
+                0.,
+            )),
         )
         .value();
         let target = 0.2115;
 
         assert!(
-            (result-target).abs() < result.abs() * 0.00005, //TODO
+            (result - target).abs() < result.abs() * 0.00005, //TODO
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target

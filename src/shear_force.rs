@@ -36,6 +36,7 @@ pub struct FakeShearForce {
     data: Vec<f64>,
 }
 #[doc(hidden)]
+#[allow(dead_code)]
 impl FakeShearForce {
     pub fn new(data: Vec<f64>) -> Self {
         Self { data }

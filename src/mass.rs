@@ -65,6 +65,7 @@ pub struct FakeMass {
     delta_m_h: f64,
 }
 #[doc(hidden)]
+#[allow(dead_code)]
 impl FakeMass {
     pub fn new( 
         sum: f64,

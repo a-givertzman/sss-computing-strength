@@ -3,11 +3,7 @@
 mod tests {
     use crate::{bending_moment::BendingMoment, shear_force::FakeShearForce};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-    use log::{debug, info, warn};
-    use std::{
-        sync::Once,
-        time::{Duration, Instant},
-    };
+    use std::time::Duration;
     use testing::stuff::max_test_duration::TestDuration;
 
     #[test]

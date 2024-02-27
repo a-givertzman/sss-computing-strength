@@ -50,6 +50,7 @@ pub struct FakeCurve {
     value: f64,
 }
 #[doc(hidden)]
+#[allow(dead_code)]
 impl FakeCurve {
     pub fn new(value: f64) -> Self {
         Self { value }

@@ -109,6 +109,7 @@ pub struct FakeDraught {
     data: Vec<f64>,
 }
 #[doc(hidden)]
+#[allow(dead_code)]
 impl FakeDraught {
     pub fn new(data: Vec<f64>) -> Self {
         Self { data }

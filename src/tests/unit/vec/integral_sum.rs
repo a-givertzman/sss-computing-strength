@@ -1,11 +1,10 @@
 #[cfg(test)]
 
 mod tests {
-    use log::{warn, info, debug};
-    use std::{sync::Once, time::{Duration, Instant}};
+    use std::time::Duration;
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::math::vec::{integral_sum::IntegralSum, vec::*};
+    use crate::math::vec::integral_sum::IntegralSum;
 
     #[test]
     fn integral_sum() {
