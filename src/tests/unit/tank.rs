@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 #[cfg(test)]
 
 mod tests {
@@ -40,16 +39,16 @@ mod tests {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         initOnce();
         println!("");
-        let selfId = "test Tank mass";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Tank mass";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
         let result = unsafe { TANK.clone().unwrap().mass(None) };
         let target = 20.;
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
-        testDuration.exit();
+        test_duration.exit();
     }
 
     #[test]
@@ -57,16 +56,16 @@ mod tests {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         initOnce();
         println!("");
-        let selfId = "test Tank center";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Tank center";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
         let result = unsafe { TANK.clone().unwrap().center() };
         let target = Position::new(2., 0., 0.);
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
-        testDuration.exit();
+        test_duration.exit();
     }
 
     #[test]
@@ -74,15 +73,15 @@ mod tests {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         initOnce();
         println!("");
-        let selfId = "test Tank moment_surface";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Tank moment_surface";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
         let result = unsafe { TANK.clone().unwrap().moment_surface() };
         let target = SurfaceMoment::new(2., 2.,);
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
-        testDuration.exit();
+        test_duration.exit();
     }
 }

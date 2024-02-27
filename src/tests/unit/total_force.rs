@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 #[cfg(test)]
 
 mod tests {
@@ -14,10 +13,10 @@ mod tests {
     fn total_force() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test TotalForce";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test TotalForce";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
         let gravity_g = 9.81;
         let result = TotalForce::new(
@@ -35,6 +34,6 @@ mod tests {
             target
         );
 
-        testDuration.exit();
+        test_duration.exit();
     }
 }

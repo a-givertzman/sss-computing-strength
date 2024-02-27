@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 #[cfg(test)]
 
 mod tests {
@@ -19,10 +18,10 @@ mod tests {
     fn value() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Displacement value";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Displacement value";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
         let mut frames = vec![
             Frame::new(Curve::new(vec![(0., 0.), (10., 0.)])),
@@ -38,6 +37,6 @@ mod tests {
             target
         );
 
-        testDuration.exit();
+        test_duration.exit();
     }
 }

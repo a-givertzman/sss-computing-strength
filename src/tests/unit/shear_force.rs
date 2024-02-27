@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 #[cfg(test)]
 
 mod tests {
@@ -17,10 +16,10 @@ mod tests {
     fn shear_force() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test ShearForce";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test ShearForce";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
         let result =
             ShearForce::new(FakeTotalForce::new(vec![15., -5., -5., -5., -5., -5., -5., -5., 5., 15.])).values();
@@ -35,6 +34,6 @@ mod tests {
             target
         );
 
-        testDuration.exit();
+        test_duration.exit();
     }
 }

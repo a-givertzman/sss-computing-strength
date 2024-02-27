@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 #[cfg(test)]
 
 mod tests {
@@ -76,10 +75,10 @@ mod tests {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         initOnce();
         println!("");
-        let selfId = "test Mass sum";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Mass sum";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
         /*     let loads: Vec<Rc<Box<dyn ILoad>>> = vec![
                     Rc::new(Box::new(LoadSpace::new(
@@ -115,7 +114,7 @@ mod tests {
             target
         );
 
-        testDuration.exit();
+        test_duration.exit();
     }
 
     #[test]
@@ -123,10 +122,10 @@ mod tests {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         initOnce();
         println!("");
-        let selfId = "test Mass values";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Mass values";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
         let result = unsafe { MASS.clone().unwrap().values() };
         let target = vec![5., 15., 20., 10.];
@@ -137,7 +136,7 @@ mod tests {
             target
         );
 
-        testDuration.exit();
+        test_duration.exit();
     }
 
     #[test]
@@ -145,10 +144,10 @@ mod tests {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         initOnce();
         println!("");
-        let selfId = "test Mass delta_m_h";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Mass delta_m_h";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
         let result = unsafe { MASS.clone().unwrap().delta_m_h() };
         let target = 0.04; // valie from curve 1. * density 2. / mass sum 50.
@@ -159,6 +158,6 @@ mod tests {
             target
         );
 
-        testDuration.exit();
+        test_duration.exit();
     }
 }

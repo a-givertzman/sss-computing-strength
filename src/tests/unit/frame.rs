@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 #[cfg(test)]
 
 mod tests {
@@ -12,15 +11,15 @@ mod tests {
     fn frame() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Frame";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Frame";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
         let result = Frame::new(Curve::new(vec![(0., 0.), (2., 2.)])).area(1.);
         let target = 1.;
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
-        testDuration.exit();
+        test_duration.exit();
     }
 }
