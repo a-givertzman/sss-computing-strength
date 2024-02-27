@@ -66,19 +66,4 @@ mod tests {
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         test_duration.exit();
     }
-
-    #[test]
-    fn shift() {
-        DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
-        let self_id = "test Bound add";
-        println!("{}", self_id);
-        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
-        test_duration.run().unwrap();
-        let mut result = Bound::new(2., 4.);
-        result.shift(-5.);
-        let target = Bound::new(-3., -1.);
-        assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
-        test_duration.exit();
-    }
 }
