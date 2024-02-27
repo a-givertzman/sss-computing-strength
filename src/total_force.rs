@@ -1,7 +1,7 @@
 //! Результирующая нагрузка на шпацию
 use std::rc::Rc;
 
-use crate::{draught::IDraught, mass::IMass, math::vec::{MultipleSingle, SubVec}};
+use crate::{draught::IDraught, mass::IMass, math::vec::vec::{MultipleSingle, SubVec}};
 
 /// Результирующей нагрузка на шпацию, вычисляется
 /// суммированием силы выталкивания воды и суммарной  

@@ -1,5 +1,5 @@
 //! Срезающая сила
-use crate::{math::vec::SumAbove, total_force::ITotalForce};
+use crate::{math::vec::vec::SumAbove, total_force::ITotalForce};
 
 /// Срезающая сила, вычисляется интегрированием  
 /// путем вычисления суммы сверху результирующей нагрузки по шпациям:  
