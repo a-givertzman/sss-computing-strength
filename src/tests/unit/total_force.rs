@@ -1,7 +1,7 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{draught::{FakeDraught, IDraught}, mass::FakeMass, math::{position::Position, vec::MultipleSingle}, total_force::{ITotalForce, TotalForce}};
+    use crate::{draught::{FakeDraught, IDraught}, mass::FakeMass, math::{position::Position, vec::vec::MultipleSingle}, total_force::{ITotalForce, TotalForce}};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use log::{debug, info, warn};
     use std::{

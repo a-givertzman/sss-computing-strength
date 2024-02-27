@@ -5,7 +5,7 @@ mod tests {
     use std::{sync::Once, time::{Duration, Instant}};
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::math::vec::*;
+    use crate::math::vec::{integral_sum::IntegralSum, vec::*};
 
     #[test]
     fn sum_above() {
