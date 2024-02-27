@@ -13,6 +13,7 @@ impl Curve {
     ///
     /// Creates new instance of the Curve from vector of the key - value pairs
     pub fn new(values: Vec<(f64, f64)>) -> Curve {
+        assert!(values.len() > 1, "Curve.new | Input array must have at least two elements (values.len > 1), \nvalues: {:?}", values);
         let values: Vec<_> = values
             .into_iter()
             .map(|v| Key::new(v.0, v.1, Interpolation::default()))
