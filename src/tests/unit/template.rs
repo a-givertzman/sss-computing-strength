@@ -15,7 +15,7 @@ mod tests {
     
     ///
     /// once called initialisation
-    fn initOnce() {
+    fn init_once() {
         INIT.call_once(|| {
                 // implement your initialisation code to be called only once for current test file
             }
@@ -33,7 +33,7 @@ mod tests {
     #[test]
     fn test_task_cycle() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        initOnce();
+        init_once();
         initEach();
         println!("");
         let self_id = "test Template";

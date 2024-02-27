@@ -23,7 +23,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let mut frames = vec![
+        let frames = vec![
             Frame::new(Curve::new(vec![(0., 0.), (10., 0.)])),
             Frame::new(Curve::new(vec![(0., 0.), (10., 40.)])),
         ];

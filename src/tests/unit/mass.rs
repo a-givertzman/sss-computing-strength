@@ -24,7 +24,7 @@ mod tests {
     unsafe impl Sync for Mass {} //for static
     static mut MASS: Option<Mass> = None;
 
-    fn initOnce() {
+    fn init_once() {
         INIT.call_once(|| {
             let center = PosShift::new(
                 Curve::new(vec![(0., 1.), (10., 1.)]),
@@ -73,7 +73,7 @@ mod tests {
     #[test]
     fn sum() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        initOnce();
+        init_once();
         println!("");
         let self_id = "test Mass sum";
         println!("{}", self_id);
@@ -120,7 +120,7 @@ mod tests {
     #[test]
     fn values() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        initOnce();
+        init_once();
         println!("");
         let self_id = "test Mass values";
         println!("{}", self_id);
@@ -142,7 +142,7 @@ mod tests {
     #[test]
     fn delta_m_h() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        initOnce();
+        init_once();
         println!("");
         let self_id = "test Mass delta_m_h";
         println!("{}", self_id);

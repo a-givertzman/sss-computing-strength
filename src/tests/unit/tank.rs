@@ -11,7 +11,7 @@ mod tests {
     
     static mut TANK: Option<Tank> = None;
 
-    fn initOnce() {
+    fn init_once() {
         INIT.call_once(|| {
                 let tank_center_shift = PosShift::new(
                     Curve::new(vec![(0., 2.), (10., 2.)]),
@@ -37,7 +37,7 @@ mod tests {
     #[test]
     fn mass() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        initOnce();
+        init_once();
         println!("");
         let self_id = "test Tank mass";
         println!("{}", self_id);
@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn center() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        initOnce();
+        init_once();
         println!("");
         let self_id = "test Tank center";
         println!("{}", self_id);
@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn moment_surface() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        initOnce();
+        init_once();
         println!("");
         let self_id = "test Tank moment_surface";
         println!("{}", self_id);

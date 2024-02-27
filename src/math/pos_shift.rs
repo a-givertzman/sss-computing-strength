@@ -53,7 +53,7 @@ impl FakePosShift {
 }
 #[doc(hidden)]
 impl IPosShift for FakePosShift {
-    fn value(&self, key: f64) -> Position {
+    fn value(&self, _: f64) -> Position {
         self.data.clone()
     }
 }

@@ -47,7 +47,7 @@ impl FakeCurve {
 }
 #[doc(hidden)]
 impl ICurve for FakeCurve {
-    fn value(&self, key: f64) -> f64 {
+    fn value(&self, _: f64) -> f64 {
         self.value
     }
 }
