@@ -1,4 +1,4 @@
-//! Кривая, позволяет получать интерполированные значения 
+//! Кривая, позволяет получать интерполированные значения
 use splines::{Interpolation, Key, Spline};
 
 ///
@@ -10,7 +10,8 @@ pub struct Curve {
 }
 
 impl Curve {
-    ///конструктор, получает вектор пар ключ/значение
+    ///
+    /// Creates new instance of the Curve from vector of the key - value pairs
     pub fn new(values: Vec<(f64, f64)>) -> Curve {
         let values: Vec<_> = values
             .into_iter()
@@ -24,20 +25,25 @@ impl Curve {
 
 impl ICurve for Curve {
     ///интерполированное значение, при выходе за границу приводится к ближайшему
+    /// Возвращает значение из таблицы по его ключу
+    /// - если такого ключа нет, то возвращает промежуточное значение между двумя соседними с помощью линейной интерполяции
+    /// - если ключ за пределами ключей таблицы, то вернет либо первое либо последнее значение
+    /// - panic - если нет ключей
     fn value(&self, key: f64) -> f64 {
         self.spline
             .clamped_sample(key)
-            .expect("ошибка полуения значения")
+            .expect(&format!("Curve.value | Ошибка полуения значения: нет ключей"))
     }
 }
 
-
 #[doc(hidden)]
+///
+/// Interface used for testing purposes only 
 pub trait ICurve {
     fn value(&self, key: f64) -> f64;
 }
-// заглушка для тестирования
 #[doc(hidden)]
+// заглушка для тестирования
 pub struct FakeCurve {
     value: f64,
 }
@@ -53,4 +59,3 @@ impl ICurve for FakeCurve {
         self.value
     }
 }
-

@@ -14,4 +14,4 @@ mod tank;
 mod total_force;
 mod trim;
 mod bending_moment;
-mod full_calc;
+// mod full_calc;
