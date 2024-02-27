@@ -2,11 +2,14 @@
 use splines::{Interpolation, Key, Spline};
 
 ///
+/// Представление кривой в виде массива пар значений
+/// - Обеспечивает получение промежуточных значений с помощью простой линейной интерполяции
 #[derive(Clone)]
 pub struct Curve {
     spline: Spline<f64, f64>,
 }
-
+///
+/// 
 impl Curve {
     ///конструктор, получает вектор пар ключ/значение
     pub fn new(values: Vec<(f64, f64)>) -> Curve {
@@ -19,7 +22,8 @@ impl Curve {
         }
     }
 }
-
+///
+/// 
 impl ICurve for Curve {
     ///интерполированное значение, при выходе за границу приводится к ближайшему
     fn value(&self, key: f64) -> f64 {
@@ -29,7 +33,8 @@ impl ICurve for Curve {
     }
 }
 
-
+///
+/// 
 #[doc(hidden)]
 pub trait ICurve {
     fn value(&self, key: f64) -> f64;
