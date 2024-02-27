@@ -26,7 +26,7 @@ mod tests {
     ///
     /// returns:
     ///  - ...
-    fn initEach() -> () {
+    fn init_each() -> () {
     
     }
     
@@ -34,7 +34,7 @@ mod tests {
     fn test_task_cycle() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        initEach();
+        init_each();
         println!("");
         let self_id = "test Template";
         println!("{}", self_id);
