@@ -82,15 +82,25 @@ mod tests {
                 {
                     "index": 0, 
                     "immersion_area": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]
+                },
+                {
+                    "index": 1, 
+                    "immersion_area": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]
                 }
             ]
         }"#;        
     
-        let result = ParsedFramesData::parse(&data).expect("parse error");
-        let target = ParsedFramesData { frames: vec![ FrameData {
-            index: 0,
-            immersion_area: vec![ (0.0, 0.0), (1.0, 1.0), (5.0, 10.0),],            
-        },] };
+        let result = ParsedFramesData::parse(&data).unwrap();
+        let target = ParsedFramesData { frames: vec![ 
+            FrameData {
+                index: 0,
+                immersion_area: vec![ (0.0, 0.0), (1.0, 1.0), (5.0, 10.0),],            
+            },
+            FrameData {
+                index: 1,
+                immersion_area: vec![ (0.0, 0.0), (1.0, 1.0), (5.0, 10.0),],            
+            },
+        ] };
 
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         test_duration.exit();

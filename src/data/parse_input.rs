@@ -99,7 +99,7 @@ impl ParsedShipData {
 /// Шпангоут
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FrameData {
-    /// порядковый номер шпангоута
+    /// порядковый номер шпангоута от кормы
     pub index: usize,
     /// кривая погружаемой площади
     pub immersion_area: Vec<(f64, f64)>,
