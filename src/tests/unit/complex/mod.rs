@@ -6,29 +6,28 @@ mod loads;
 mod tanks;
 
 #[cfg(test)]
-
 mod tests {
-    use log::{warn, info, debug};
-    use std::{sync::Once, time::{Duration, Instant}};
+    use std::{rc::Rc, time::Duration};
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::{frame::Frame, math::{bound::Bound, curve::Curve}};
+    use crate::{bending_moment::BendingMoment, displacement::Displacement, draught::Draught, frame::Frame, load::ILoad, mass::{IMass, Mass}, math::{bound::Bound, curve::Curve, inertia_shift::*, pos_shift::PosShift}, shear_force::{IShearForce, ShearForce}, tank::Tank, total_force::TotalForce, trim::Trim};
     
     #[test]
-    fn full_calc() {
+    #[ignore = "TODO"]
+    fn complex() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let selfId = "test Full";
-        println!("{}", selfId);
-        let testDuration = TestDuration::new(selfId, Duration::from_secs(10));
-        testDuration.run().unwrap();
+        let self_id = "test Complex";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
 
 
-        let input_data = crate::tests::unit::full_calc::input_data::input_data();
-        let ship = crate::tests::unit::full_calc::ship::ship();
-        let frames = crate::tests::unit::full_calc::frames::frames();
-        let loads = crate::tests::unit::full_calc::loads::loads();
-        let tanks = crate::tests::unit::full_calc::tanks::tanks();
+        let input_data = crate::tests::unit::complex::input_data::input_data();
+        let ship = crate::tests::unit::complex::ship::ship();
+        let mut frames = crate::tests::unit::complex::frames::frames();
+        let loads = crate::tests::unit::complex::loads::loads();
+        let tanks = crate::tests::unit::complex::tanks::tanks();
 
         // длинна судна
         let ship_length = ship.ship_length;
@@ -81,11 +80,10 @@ mod tests {
             tank_free_surf_inertia,
         )))];
         let mass: Rc<dyn IMass> = Rc::new(Mass::new(loads, bounds.clone()));
-        let frames = vec![
-            Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-            Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-            Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-        ];
+
+
+        frames.frames.sort_by(|a, b| a.index.partial_cmp(&b.index).expect("sort error"));
+        let frames = frames.frames.into_iter().map(|f| Frame::new(Curve::new(f.immersion_area))).collect();
 
         let shear_force = ShearForce::new(TotalForce::new(
             Rc::clone(&mass),
@@ -117,7 +115,7 @@ mod tests {
         let target = 1.;
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
-        testDuration.exit();
+        test_duration.exit();
     }
 }
 

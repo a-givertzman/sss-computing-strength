@@ -1,4 +1,6 @@
 {
+    "n_parts": 20,
+    "water_density": 1.025,
     "ship_length": 200.0,
     "center_waterline": [[0.0, 0.0], [10.0, 1.0]],
     "rad_long": [[0.0, 0.0], [10.0, 2.0]],

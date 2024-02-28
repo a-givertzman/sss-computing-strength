@@ -14,7 +14,7 @@ pub struct Displacement {
 
 impl Displacement {
     ///
-    pub fn new(frames: Vec<Frame>, ship_length: f64) -> Self {
+    pub fn new(mut frames: Vec<Frame>, ship_length: f64) -> Self {
         assert!(frames.len() > 0, "frames.len() {} > 0", frames.len() );
         assert!(ship_length > 0., "ship_length {ship_length} > 0.");
         Self { vec_step: ship_length/(frames.len() as f64 - 1.), frames, ship_length  }

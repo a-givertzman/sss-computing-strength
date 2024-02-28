@@ -3,6 +3,8 @@ use std::collections::HashSet;
 
 use serde::{de::Error, de::Unexpected, Deserialize, Serialize};
 
+use crate::frame::Frame;
+
 pub type Result<T> = serde_json::Result<T>;
 
 /// Данные запроса на расчет
@@ -124,10 +126,10 @@ impl ParsedFramesData {
                 &"number of frames greater or equal to 2",
             ));
         }
-        if let Some(frame) = result.frames.iter().find(|f| f.index > result.frames.len()) {
+        if let Some(frame) = result.frames.iter().find(|f| f.index >= result.frames.len()) {
             return Err(Error::invalid_value(
                 Unexpected::Unsigned(frame.index as u64),
-                &"index of frame lower or equal frames.len()",
+                &"index of frame lower then frames.len()",
             ));
         }
         let qnt_unique_index = result.frames.iter().map(|f| f.index ).collect::<HashSet<_>>().len();
@@ -149,11 +151,11 @@ impl ParsedFramesData {
 /// Груз
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LoadSpaceData {
-    /// общая масса
+    /// Общая масса
     pub mass: f64,
-    /// границы груза
+    /// Границы груза
     pub bound: (f64, f64, f64, f64),
-    /// центер масс
+    /// Центер масс 
     pub center: (f64, f64, f64),
 }
 ///

@@ -1,8 +1,6 @@
 //! Кривая момента инерции
-use crate::math::{
-    curve::{Curve, ICurve},
-    inertia_shift::inertia_moment::InertiaMoment,
-};
+use crate::math::curve::{Curve, ICurve};
+use super::inertia_moment::InertiaMoment;
 
 /// 
 /// To be added...

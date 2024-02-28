@@ -6,7 +6,7 @@ mod tests {
     use testing::stuff::max_test_duration::TestDuration;
     
     #[test]
-    #[ignore = "TODO - write test!"]
+    #[ignore = "TODO"]
     fn draught() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");

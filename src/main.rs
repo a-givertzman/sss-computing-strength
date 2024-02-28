@@ -87,7 +87,7 @@ fn main() {
     let value = Value::String("66.77".to_string());
     debug!("\t string value: {:?}", value);
 
-    let data = read().unwrap_or_else(|err| {
+/*    let data = read().unwrap_or_else(|err| {
         error!("Parsing arguments: {err}");
         process::exit(1);
     });
@@ -197,6 +197,10 @@ fn main() {
     ));
     let bending_moment = BendingMoment::new(&shear_force);
     dbg!(&shear_force.values(), &bending_moment.values());
+    */
+
+
+    
 }
 
 /// Чтение данных из стандартного потока ввода

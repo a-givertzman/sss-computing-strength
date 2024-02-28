@@ -1,5 +1,6 @@
 use crate::data::parse_input::ParsedTanksData;
 
+#[allow(dead_code)]
 pub(crate) fn tanks() -> ParsedTanksData {
     let data = r#"
     {

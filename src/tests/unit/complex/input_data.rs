@@ -1,5 +1,6 @@
 use crate::data::parse_input::ParsedInputData;
 
+#[allow(dead_code)]
 pub(crate) fn input_data() -> ParsedInputData {
     let data = r#"
     {
