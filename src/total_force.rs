@@ -1,12 +1,11 @@
 //! Результирующая нагрузка на шпацию
-use std::rc::Rc;
-
 use crate::{
     draught::IDraught,
     mass::IMass,
     math::vec::{MultipleSingle, SubVec},
 };
-
+use std::rc::Rc;
+///
 /// Результирующая нагрузка на шпацию. Вычисляется
 /// суммированием сил действующих на шпацию.
 pub struct TotalForce {
@@ -33,7 +32,7 @@ impl TotalForce {
 impl ITotalForce for TotalForce {
     /// Распределение результирующей силы. Вычисляется как сумма массы выталкивания воды и
     /// суммарной массы грузов, приходящихся на шпацию помноженное на ускорение свободного
-    /// падения
+    /// падения.
     fn values(&self) -> Vec<f64> {
         let mut mass_values = self.mass.values();
         let draught_values = self.draught.values();
@@ -49,7 +48,7 @@ impl ITotalForce for TotalForce {
         mass_values
     }
 }
-
+///
 #[doc(hidden)]
 pub trait ITotalForce {
     fn values(&self) -> Vec<f64>;

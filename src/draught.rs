@@ -4,27 +4,30 @@ use std::rc::Rc;
 use crate::{
     displacement::Displacement,
     mass::IMass,
-    math::{bound::Bound, curve::{Curve, ICurve}},
+    math::{
+        bound::Bound,
+        curve::{Curve, ICurve},
+    },
     trim::Trim,
 };
 ///
 /// Распределение массы вытесненной воды по шпациям
 pub struct Draught {
-    /// длинна судна
+    /// Длинна судна
     ship_length: f64,
-    /// плотность окружающей воды
+    /// Плотность окружающей воды
     water_density: f64,
-    /// вектор разбиения на отрезки для эпюров
+    /// Вектор разбиения на отрезки для эпюров
     bounds: Vec<Bound>,
-    /// объемное водоизмещение
+    /// Объемное водоизмещение
     mass: Rc<dyn IMass>,
-    /// отстояние центра тяжести ватерлинии по длине от миделя
+    /// Отстояние центра тяжести ватерлинии по длине от миделя
     center_waterline_shift: Curve,
-    /// средняя осадка
+    /// Средняя осадка
     mean_draught: Curve,
-    /// водоизмещение судна
+    /// Водоизмещение судна
     displacement: Displacement,
-    /// дифферент судна
+    /// Дифферент судна
     trim: Trim,
 }
 ///
@@ -39,14 +42,14 @@ impl Draught {
     /// - displacement: класс водоизмещения судна
     /// - trim: класс дифферента судна
     pub fn new(
-        ship_length: f64,              // длинна судна
-        water_density: f64,            // плотность окружающей воды
-        bounds: Vec<Bound>,            // вектор разбиения на отрезки для эпюров
-        mass: Rc<dyn IMass>,                    // все грузы судна
-        center_waterline_shift: Curve, // отстояние центра тяжести ватерлинии по длине от миделя
-        mean_draught: Curve,           // средняя осадка
-        displacement: Displacement,    // водоизмещение судна
-        trim: Trim,                    // дифферент судна
+        ship_length: f64,              // Длинна судна
+        water_density: f64,            // Плотность окружающей воды
+        bounds: Vec<Bound>,            // Вектор разбиения на отрезки для эпюров
+        mass: Rc<dyn IMass>,           // Грузы судна
+        center_waterline_shift: Curve, // Отстояние центра тяжести ватерлинии по длине от миделя
+        mean_draught: Curve,           // Средняя осадка
+        displacement: Displacement,    // Водоизмещение судна
+        trim: Trim,                    // Дифферент судна
     ) -> Self {
         Self {
             ship_length,
@@ -64,17 +67,17 @@ impl Draught {
 impl IDraught for Draught {
     /// Распределение массы вытесненной воды по шпациям
     fn values(&self) -> Vec<f64> {
-        // дифферент судна
+        // Дифферент судна
         let trim = self.trim.value();
-        //объемное водоизмещение
+        // Объемное водоизмещение
         let volume = self.mass.sum() / self.water_density;
-        //отстояние центра тяжести ватерлинии по длине от миделя
+        // Отстояние центра тяжести ватерлинии по длине от миделя
         let x_f = self.center_waterline_shift.value(volume);
-        //средняя осадка
+        // Средняя осадка
         let d = self.mean_draught.value(volume);
-        //осадка на носовом перпендикуляре
+        // Осадка на носовом перпендикуляре
         //let stern_draught = d - (0.5 - x_f/self.ship_length)*trim;
-        //осадка на кормовом перпендикуляре
+        // Осадка на кормовом перпендикуляре
         let bow_draught = d - (0.5 + x_f / self.ship_length) * trim;
         //let delta_draught = (bow_draught - stern_draught)/self.bounds.len() as f64;
         //self.bounds.iter().map(|v| self.displacement.value(*v, delta_draught*(v.center() + self.ship_length/2.)/self.ship_length)).collect()
@@ -84,21 +87,18 @@ impl IDraught for Draught {
             .bounds
             .iter()
             .map(|v| {
-                {
-                    let displacement = self.displacement.value(
-                        *v,
-                        bow_draught + delta_draught * (v.center() + self.ship_length / 2.),
-                    );
-                    displacement*self.water_density
-                }
+                let displacement = self.displacement.value(
+                    *v,
+                    bow_draught + delta_draught * (v.center() + self.ship_length / 2.),
+                );
+                displacement * self.water_density
             })
             .collect();
         log::debug!("\t Draught trim:{trim} volume:{volume} x_f:{x_f} d:{d} bow_draught:{bow_draught} trim_x_f_sl:{trim_x_f_sl} delta_draught:{delta_draught} result:{:?}", result);
         result
     }
 }
-
-
+///
 #[doc(hidden)]
 pub trait IDraught {
     fn values(&self) -> Vec<f64>;

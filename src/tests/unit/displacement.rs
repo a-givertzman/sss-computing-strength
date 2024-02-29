@@ -20,11 +20,11 @@ mod tests {
         test_duration.run().unwrap();
 
         let frames = vec![
-            Frame::new(Curve::new(vec![(0., 0.), (10., 0.)])),
-            Frame::new(Curve::new(vec![(0., 0.), (10., 40.)])),
+            Frame::new(-10., Curve::new(vec![(0., 0.), (10., 0.)])),
+            Frame::new(10., Curve::new(vec![(0., 0.), (10., 40.)])),
         ];
 
-        let result = Displacement::new(frames, 20.).value(Bound::new(-10., 0.), 10.);
+        let result = Displacement::from_frames(frames).value(Bound::new(-10., 0.), 10.);
         let target = 100.;
         assert!(
             result == target,

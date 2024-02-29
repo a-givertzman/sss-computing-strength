@@ -80,10 +80,12 @@ mod tests {
             "frames": [ 
                 {
                     "index": 0, 
+                    "delta_x": 0,
                     "immersion_area": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]
                 },
                 {
                     "index": 1, 
+                    "delta_x": 10,
                     "immersion_area": [[0.0, 0.0], [1.0, 1.0], [5.0, 10.0]]
                 }
             ]
@@ -93,10 +95,12 @@ mod tests {
         let target = ParsedFramesData { frames: vec![ 
             FrameData {
                 index: 0,
+                delta_x: 0.,
                 immersion_area: vec![ (0.0, 0.0), (1.0, 1.0), (5.0, 10.0),],            
             },
             FrameData {
                 index: 1,
+                delta_x: 10.,
                 immersion_area: vec![ (0.0, 0.0), (1.0, 1.0), (5.0, 10.0),],            
             },
         ] };

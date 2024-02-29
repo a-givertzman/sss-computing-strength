@@ -1,24 +1,23 @@
 //! Срезающая сила, действующая на корпус судна
 use crate::{math::vec::SumAbove, total_force::ITotalForce};
 
-/// Срезающая сила, действующая на корпус судна. Вычисляется интегрированием  
-/// путем вычисления суммы сверху результирующей нагрузки по шпациям:  
-/// $SF_i = SF_{i-1} + TF_i, SF_0 = 0$
-
+/// Срезающая сила, действующая на корпус судна.
 pub struct ShearForce {
-    /// Результирующая нагрузки по шпациям
+    /// Результирующая сила, распределение по шпациям
     total_force: Box<dyn ITotalForce>,
 }
 ///
 impl ShearForce {
-    ///
+    ///Основной конструктор
     pub fn new (total_force: impl ITotalForce + 'static) -> Self {
         Self { total_force: Box::new(total_force) }
     }
 }
 ///
 impl IShearForce for ShearForce {
-    ///
+    /// Вычисление срезающей силы. Вычисляется интегрированием  
+    /// путем вычисления суммы сверху результирующей нагрузки по шпациям:  
+    /// $SF_i = SF_{i-1} + TF_i, SF_0 = 0$
     fn values(&self) -> Vec<f64> {
         let result = self.total_force.values().sum_above();
         log::debug!("\t ShearForce result:{:?}", result);

@@ -105,6 +105,8 @@ impl ParsedShipData {
 pub struct FrameData {
     /// порядковый номер шпангоута от кормы
     pub index: usize,
+    /// смещение шпангоута относительно предыдущего
+    pub delta_x: f64,
     /// кривая погружаемой площади
     pub immersion_area: Vec<(f64, f64)>,
 }
