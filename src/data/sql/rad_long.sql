@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS rad_long;
+
 CREATE TABLE if not exists rad_long (
   id INT GENERATED ALWAYS AS IDENTITY,
   project_id INT,
