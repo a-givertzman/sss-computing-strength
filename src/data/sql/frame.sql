@@ -15,14 +15,3 @@ CREATE TABLE if not exists frame (
   CONSTRAINT frame_key_non_negative UNIQUE (key >= 0),
   CONSTRAINT frame_pk PRIMARY KEY (id)
 );
-
-INSERT INTO frame
-  (project_id, ship_id, index, delta_x, key, value)
-VALUES
-  (NULL, 1, 0, -10, 0, 'Ship Length', 'm'),
-  (NULL, 1, 'water_density', 1.025, 'Water Density', 'g/ml'),
-  (NULL, 1, 'n_parts', 20, 'Number of Parts', NULL);
-
-SELECT * FROM ship_parameters WHERE ship_id=1;
-
-SELECT (key, value) FROM ship_parameters WHERE ship_id=1;
