@@ -1,22 +1,25 @@
 //! Результирующая нагрузка на шпацию
 use std::rc::Rc;
 
-use crate::{draught::IDraught, mass::IMass, math::vec::{MultipleSingle, SubVec}};
+use crate::{
+    draught::IDraught,
+    mass::IMass,
+    math::vec::{MultipleSingle, SubVec},
+};
 
-/// Результирующей нагрузка на шпацию, вычисляется
-/// суммированием силы выталкивания воды и суммарной  
-/// нагрузки на судно
+/// Результирующая нагрузка на шпацию. Вычисляется
+/// суммированием сил действующих на шпацию.
 pub struct TotalForce {
-    /// нагрузка на судно
+    /// Распределение всей нагрузки на судно
     mass: Rc<dyn IMass>,
-    /// масса вытесненной воды
+    /// Распределение массы вытесненной воды
     draught: Box<dyn IDraught>,
-    /// ускорение свободного падения
+    /// Ускорение свободного падения
     gravity_g: f64,
 }
 ///
 impl TotalForce {
-    ///
+    /// Основной конструктор
     pub fn new(mass: Rc<dyn IMass>, draught: impl IDraught + 'static, gravity_g: f64) -> Self {
         assert!(gravity_g > 0., "gravity_g {gravity_g} > 0.");
         Self {
@@ -28,11 +31,18 @@ impl TotalForce {
 }
 ///
 impl ITotalForce for TotalForce {
-    ///
+    /// Распределение результирующей силы. Вычисляется как сумма массы выталкивания воды и
+    /// суммарной массы грузов, приходящихся на шпацию помноженное на ускорение свободного
+    /// падения
     fn values(&self) -> Vec<f64> {
         let mut mass_values = self.mass.values();
         let draught_values = self.draught.values();
-        assert!(mass_values.len() == draught_values.len(), "mass.len() {} == draught.len() {}", mass_values.len(), draught_values.len());
+        assert!(
+            mass_values.len() == draught_values.len(),
+            "mass.len() {} == draught.len() {}",
+            mass_values.len(),
+            draught_values.len()
+        );
         mass_values.sub_vec(&draught_values);
         mass_values.mul_single(self.gravity_g);
         log::debug!("\t TotalForce result:{:?}", mass_values);
