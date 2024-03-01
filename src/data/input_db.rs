@@ -12,9 +12,9 @@ pub struct FrameData {
     /// Порядковый номер шпангоута от кормы
     pub index: usize,
     /// Расстояние в продольной плоскости от предыдущего шпангоута
-    pub delta_x: f64,
+    pub delta_x: f32,
     /// Кривая погружаемой площади от осадки
-    pub immersion_area: Vec<(f64, f64)>,
+    pub immersion_area: Vec<(f32, f32)>,
 }
 ///
 impl Display for FrameData {
@@ -32,11 +32,11 @@ impl Display for FrameData {
 #[derive(Debug)]
 pub struct LoadSpaceData {
     /// Общая масса
-    pub mass: f64,
+    pub mass: f32,
     /// Границы груза
-    pub bound: (f64, f64, f64, f64),
+    pub bound: (f32, f32, f32, f32),
     /// Центер масс
-    pub center: (f64, f64, f64),
+    pub center: (f32, f32, f32),
 }
 ///
 impl Display for LoadSpaceData {
@@ -59,17 +59,17 @@ impl Display for LoadSpaceData {
 #[derive(Debug)]
 pub struct TankData {
     /// плотность жидкости в цистерне
-    pub density: f64,
+    pub density: f32,
     /// объем жидкости в цистерне
-    pub volume: f64,
+    pub volume: f32,
     /// границы цистерны, (x1, x2, y1, y2)
-    pub bound: (f64, f64, f64, f64),
+    pub bound: (f32, f32, f32, f32),
     /// кривая координат центра объема жидкости в цистерне в системе координат судна
     /// (volume, x, y, z)
-    pub center: Vec<(f64, f64, f64, f64)>,
+    pub center: Vec<(f32, f32, f32, f32)>,
     /// кривая момента инерции площади свободной поверхности жидкости
     /// (volume, x - поперечный, y - продольный)
-    pub free_surf_inertia: Vec<(f64, f64, f64)>,
+    pub free_surf_inertia: Vec<(f32, f32, f32)>,
 }
 impl Display for TankData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -94,17 +94,17 @@ pub struct InputData {
     /// разбиение на шпации - количество
     pub n_parts: u32,
     /// плотность воды
-    pub water_density: f64,
+    pub water_density: f32,
     /// длинна корпуса судна
-    pub ship_length: f64,
+    pub ship_length: f32,
     /// кривая отстояния центра тяжести ватерлинии по длине от миделя  
-    pub center_waterline: Vec<(f64, f64)>,
+    pub center_waterline: Vec<(f32, f32)>,
     /// кривая продольного метацентрического радиуса
-    pub rad_long: Vec<(f64, f64)>,
+    pub rad_long: Vec<(f32, f32)>,
     /// кривая средней осадки
-    pub mean_draught: Vec<(f64, f64)>,
+    pub mean_draught: Vec<(f32, f32)>,
     /// кривая отстояния центра величины погруженной части судна
-    pub center_shift: Vec<(f64, f64, f64, f64)>,
+    pub center_shift: Vec<(f32, f32, f32, f32)>,
     /// Шпангоуты судна
     pub frames: Vec<FrameData>,
     /// Нагрузка судна без жидких грузов
@@ -113,13 +113,34 @@ pub struct InputData {
     pub tanks: Vec<TankData>,
 }
 
-pub async fn get_data() -> Result<InputData, MyError> {
+pub async fn create_test_db() -> std::result::Result<Vec<tokio_postgres::SimpleQueryMessage>, tokio_postgres::Error> {
+    let my_str = include_str!("../../src/data/sql/ship.sql");
+ //   let my_str = include_str!("../../src/data/sql/create_postgres_db.sql");
+
     let (client, connection) = tokio_postgres::Config::new()
         .user("postgres")
         .password("123qwe")
         .host("localhost")
         .port(5432)
         .dbname("test")
+        .connect(tokio_postgres::NoTls)
+        .await.unwrap();
+    let connection = connection.map(|r| {
+        if let Err(e) = r {
+            error!("connection error: {}", e);
+        }
+    });
+    tokio::spawn(connection);
+    tokio::join!(client.simple_query(my_str)).0
+}
+
+pub async fn get_data(db_name: &str) -> Result<InputData, MyError> {
+    let (client, connection) = tokio_postgres::Config::new()
+        .user("postgres")
+        .password("123qwe")
+        .host("localhost")
+        .port(5432)
+        .dbname(db_name)
         .connect(tokio_postgres::NoTls)
         .await?;
     let connection = connection.map(|r| {
@@ -181,7 +202,7 @@ pub async fn get_data() -> Result<InputData, MyError> {
     for row in ship_parameters {
         match row.get("key") {
             "n_parts" => {
-                let value: f64 = row.get("value");
+                let value: f32 = row.get("value");
                 data.n_parts = value as u32;
             }
             "water_density" => data.water_density = row.get("value"),
@@ -267,22 +288,17 @@ pub async fn get_data() -> Result<InputData, MyError> {
         )));
     }
     if let Some(tank) = data.tanks.iter().find(|t| t.density <= 0.) {
-        return Err(MyError::Parameter(format!(
-            "tank.density error: {}",
-            tank
-        )));
+        return Err(MyError::Parameter(format!("tank.density error: {}", tank)));
     }
     if let Some(tank) = data.tanks.iter().find(|t| t.volume < 0.) {
-        return Err(MyError::Parameter(format!(
-            "tank.volume error: {}",
-            tank
-        )));
+        return Err(MyError::Parameter(format!("tank.volume error: {}", tank)));
     }
-    if let Some(tank) = data.tanks.iter().find(|t| t.bound.0 >= t.bound.1 || t.bound.2 >= t.bound.3 ) {
-        return Err(MyError::Parameter(format!(
-            "tank.bound error: {}",
-            tank,
-        )));
+    if let Some(tank) = data
+        .tanks
+        .iter()
+        .find(|t| t.bound.0 >= t.bound.1 || t.bound.2 >= t.bound.3)
+    {
+        return Err(MyError::Parameter(format!("tank.bound error: {}", tank,)));
     }
     if let Some(tank) = data.tanks.iter().find(|t| t.center.len() <= 1) {
         return Err(MyError::Parameter(format!(

@@ -96,8 +96,10 @@ mod error;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
 
-    let parsed_data = data::input_db::get_data().await?;
-    dbg!(&parsed_data);
+    data::input_db::create_test_db().await?;
+    
+   let parsed_data = data::input_db::get_data("test").await?;
+   dbg!(&parsed_data);
 
 
     /*
