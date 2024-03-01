@@ -4,10 +4,10 @@ CREATE TABLE if not exists rad_long (
   id INT GENERATED ALWAYS AS IDENTITY,
   project_id INT,
   ship_id INT NOT NULL,
-  key FLOAT8 NOT NULL,
-  value FLOAT8 NOT NULL,
-  CONSTRAINT rad_long_unique UNIQUE (ship_id, key),
-  CONSTRAINT rad_long_pk PRIMARY KEY (id)
+  key REAL NOT NULL,
+  value REAL NOT NULL,
+  CONSTRAINT rad_long_pk PRIMARY KEY (id),
+  CONSTRAINT rad_long_unique UNIQUE (ship_id, key)
 );
 
 INSERT INTO rad_long
