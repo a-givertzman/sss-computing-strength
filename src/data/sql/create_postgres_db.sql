@@ -50,4 +50,3 @@
 	data references
 */
 \i references.sql
-*/

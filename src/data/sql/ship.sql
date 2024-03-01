@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS ship CASCADE;
+DROP TABLE IF EXISTS ship;
 
 CREATE TABLE if not exists ship (
   ship_id INT NOT NULL UNIQUE,
@@ -13,3 +13,4 @@ VALUES
 SELECT * FROM ship WHERE ship_id=1;
 
 SELECT (ship_id) FROM ship WHERE ship_id=1;
+
