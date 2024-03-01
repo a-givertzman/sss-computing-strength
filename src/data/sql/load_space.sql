@@ -14,8 +14,7 @@ CREATE TABLE if not exists load_space (
 INSERT INTO load_space
   (project_id, ship_id, key, value)
 VALUES
-  (NULL, 1, 'density', 1),
-  (NULL, 1, 'volume', 1000),
+  (NULL, 1, 'mass', 1000),
   (NULL, 1, 'bound_x1', -10),
   (NULL, 1, 'bound_x2', 4),
   (NULL, 1, 'bound_y1', -2),
