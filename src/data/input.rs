@@ -46,7 +46,7 @@ pub struct LoadSpaceData {
     /// Центер масс 
     pub center: (f64, f64, f64),
 }
-/// /// Цистерна
+/// Цистерна
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TankData {
     /// плотность жидкости в цистерне
