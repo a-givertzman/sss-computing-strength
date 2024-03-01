@@ -53,6 +53,7 @@ use api_tools::client::{
 };
 use data::parse_input::ParsedInputData;
 use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
+use error::Error;
 use log::*;
 use testing::entities::test_value::Value;
 use tokio::task::JoinHandle;
@@ -74,8 +75,7 @@ use crate::{
     trim::Trim,
 };
 use futures::FutureExt;
-use tokio_postgres::{Error, NoTls, Row};
-use thiserror::Error;
+use tokio_postgres::{Error as TokioError, NoTls, Row};
 
 mod bending_moment;
 mod data;
@@ -90,80 +90,14 @@ mod tank;
 mod tests;
 mod total_force;
 mod trim;
+mod error;
+
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let (client, connection) = tokio_postgres::Config::new()
-        .user("postgres")
-        .password("123qwe")
-        .host("localhost")
-        .port(5432)
-        .dbname("test")
-        .connect(tokio_postgres::NoTls)
-        .await?;
 
-    println!("Connected to Postgres.");
-    let connection = connection.map(|r| {
-        if let Err(e) = r {
-            error!("connection error: {}", e);
-        }
-    });   
-    tokio::spawn(connection);
-
-    let ship_parameters = client.query("SELECT * FROM ship_parameters WHERE ship_id=1;", &[]);
-    let center_waterline = client.query("SELECT * FROM center_waterline WHERE ship_id=1;", &[]);
-    let center_shift = client.query("SELECT * FROM center_shift WHERE ship_id=1;", &[]);
-    let mean_draught = client.query("SELECT * FROM mean_draught WHERE ship_id=1;", &[]);
-    let rad_long = client.query("SELECT * FROM rad_long WHERE ship_id=1;", &[]);
-
-    let (ship_parameters, 
-        center_waterline, 
-        center_shift, 
-        mean_draught, 
-        rad_long) = tokio::join!(
-        ship_parameters,
-        center_waterline,
-        center_shift,
-        mean_draught,
-        rad_long
-    );
-
-    println!("Receive data from Postgres.");
-
-    let ship_parameters = ship_parameters?;
-    let center_waterline = center_waterline?;
-    let center_shift = center_shift?;
-    let mean_draught = mean_draught?;
-    let rad_long = rad_long?;
-
-    if ship_parameters.len() < 3 {
-        error!("wrong ship_parameters: ship_parameters.len() < 3");
-        return Ok(());
-    };
-
-    let mut parsed_data = data::input::InputData { 
-        n_parts: 0,
-        water_density: 0.,
-        ship_length: 0.,
-        center_waterline: center_waterline.into_iter().map(|row| (row.get("key"), row.get("value")) ).collect(), 
-        rad_long: rad_long.into_iter().map(|row| (row.get("key"), row.get("value")) ).collect(), 
-        mean_draught: mean_draught.into_iter().map(|row| (row.get("key"), row.get("value")) ).collect(), 
-        center_shift: center_shift.into_iter().map(|row| (row.get("key"), row.get("value_x"), row.get("value_y"), row.get("value_z")) ).collect(), 
-    };
-
-    for row in ship_parameters {
-        match row.get("key") {
-            "n_parts" => {
-                let value: f64 = row.get("value");
-                parsed_data.n_parts = value as u32;
-            },
-            "water_density" => parsed_data.water_density = row.get("value"),
-            "ship_length" => parsed_data.ship_length = row.get("value"),
-            s => error!("wrong ship parameter: {}", s),
-        }
-    }
-
-    dbg!(parsed_data);
+    let parsed_data = data::input_db::get_data().await?;
+    dbg!(&parsed_data);
 
 
     /*
