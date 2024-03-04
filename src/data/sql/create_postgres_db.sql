@@ -35,9 +35,13 @@
 */
 \i load_space.sql
 /*
-	tanks data
+	unique tank_id
 */
 \i tank.sql
+/*
+	tanks data
+*/
+tank_parameters
 /*
 	tank shift of center mass data
 */
@@ -46,7 +50,4 @@
 	tank free surf inertia data
 */
 \i tank_inertia.sql
-/*
-	data references
-*/
-\i references.sql
+

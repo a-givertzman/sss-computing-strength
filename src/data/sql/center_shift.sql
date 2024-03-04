@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS center_shift;
+DROP TABLE IF EXISTS center_shift CASCADE;
 
 CREATE TABLE if not exists center_shift (
   id INT GENERATED ALWAYS AS IDENTITY,
