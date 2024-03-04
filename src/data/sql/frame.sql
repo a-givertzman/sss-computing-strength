@@ -13,10 +13,12 @@ CREATE TABLE if not exists frame (
 );
 
 INSERT INTO frame
-  (project_id, ship_id, index, delta_x)
+  (project_id, ship_id, frame_id, key, value)
 VALUES
-  (NULL, 1, 0, 0),
-  (NULL, 1, 1, 5.87);
+  (NULL, 1, 1, 'index', 0),
+  (NULL, 1, 1, 'delta_x', 5.87),
+  (NULL, 1, 2, 'index', 1),
+  (NULL, 1, 2, 'delta_x', 5.87);
 
 SELECT * FROM frame WHERE frame_id=1;
 
