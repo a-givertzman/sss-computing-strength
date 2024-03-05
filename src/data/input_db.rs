@@ -6,6 +6,8 @@ use crate::error::Error as MyError;
 use futures::FutureExt;
 use log::error;
 
+use super::structs::ship::ShipData;
+/*
 /// Шпангоут
 #[derive(Debug)]
 pub struct FrameData {
@@ -112,10 +114,11 @@ pub struct InputData {
     /// Нагрузка судна, жидкие грузы
     pub tanks: Vec<TankData>,
 }
+*/
 
-pub async fn create_test_db() -> std::result::Result<Vec<tokio_postgres::SimpleQueryMessage>, tokio_postgres::Error> {
-    let my_str = include_str!("../../src/data/sql/ship.sql");
- //   let my_str = include_str!("../../src/data/sql/create_postgres_db.sql");
+
+pub async fn create_test_db() {
+ //   let my_str = include_str!("../../src/data/sql/ship.sql");
 
     let (client, connection) = tokio_postgres::Config::new()
         .user("postgres")
@@ -131,10 +134,103 @@ pub async fn create_test_db() -> std::result::Result<Vec<tokio_postgres::SimpleQ
         }
     });
     tokio::spawn(connection);
-    tokio::join!(client.simple_query(my_str)).0
+
+    client.simple_query(include_str!("../../src/data/sql/ship.sql")).await.unwrap();
+    client.simple_query(include_str!("../../src/data/sql/center_waterline.sql")).await.unwrap();
+    client.simple_query(include_str!("../../src/data/sql/rad_long.sql")).await.unwrap();
+    client.simple_query(include_str!("../../src/data/sql/mean_draught.sql")).await.unwrap();
+    client.simple_query(include_str!("../../src/data/sql/center_shift.sql")).await.unwrap();
+    client.simple_query(include_str!("../../src/data/sql/frame.sql")).await.unwrap();
+    client.simple_query(include_str!("../../src/data/sql/frame_area.sql")).await.unwrap();
+    client.simple_query(include_str!("../../src/data/sql/load_space.sql")).await.unwrap();
+    client.simple_query(include_str!("../../src/data/sql/tank.sql")).await.unwrap();
+    client.simple_query(include_str!("../../src/data/sql/tank_center.sql")).await.unwrap();
+    client.simple_query(include_str!("../../src/data/sql/tank_inertia.sql")).await.unwrap();
+    client.simple_query(include_str!("../../src/data/sql/create_postgres_db.sql")).await.unwrap();
+/*
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/ship.sql"))).await.unwrap();
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/center_waterline.sql"))).0?;
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/rad_long.sql"))).0?;
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/mean_draught.sql"))).0?;
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/center_shift.sql"))).0?;
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/frame.sql"))).0?;
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/frame_area.sql"))).0?;
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/load_space.sql"))).0?;
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/tank.sql"))).0?;
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/tank_center.sql"))).0?;
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/tank_inertia.sql"))).0?;
+    tokio::join!(client.simple_query(include_str!("../../src/data/sql/create_postgres_db.sql"))).0?;
+    
+    Ok(())
+    */
 }
 
-pub async fn get_data(db_name: &str) -> Result<InputData, MyError> {
+/*
+pub fn get_data(db_name: &str) -> Result<(), Error> {
+    let query = ApiQuery::new(
+        ApiQueryKind::Sql(ApiQuerySql::new("test", "SELECT (key, value) FROM ship WHERE ship_id=1;")),
+        false,
+    );
+
+    let mut request = ApiRequest::new(
+        "parent",
+        "0.0.0.0:8080",
+        "auth_token",
+        query.clone(),
+        false,
+        false,
+    );
+    // ship
+    let ship = ShipArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
+
+    // center_waterline
+    let query = ApiQuery::new(
+        ApiQueryKind::Sql(ApiQuerySql::new("test", "SELECT key, value FROM center_waterline WHERE ship_id=1;")),
+        false,
+    );
+    let res = &String::from_utf8(request.fetch(&query, false)?)?;
+    dbg!(res);
+    let center_waterline = CenterWaterlineArray::parse(res)?;
+    dbg!(center_waterline);
+    // center_shift
+    let query = ApiQuery::new(
+        ApiQueryKind::Sql(ApiQuerySql::new("test", "SELECT key, value_x, value_y, value_z FROM center_shift WHERE ship_id=1;")),
+        false,
+    );
+    let center_shift = CenterShiftDataArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
+
+    // mean_draught
+    let query = ApiQuery::new(
+        ApiQueryKind::Sql(ApiQuerySql::new("test", "SELECT key, value FROM mean_draught WHERE ship_id=1;")),
+        false,
+    );
+    let mean_draught = MeanDraughtDataArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
+
+    // rad_long
+    let query = ApiQuery::new(
+        ApiQueryKind::Sql(ApiQuerySql::new("test", "SELECT key, value FROM rad_long WHERE ship_id=1;")),
+        false,
+    );
+    let rad_long = RadLongDataArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
+
+    //frame
+    let query = ApiQuery::new(
+        ApiQueryKind::Sql(ApiQuerySql::new("test", "SELECT index, key, value FROM frame WHERE ship_id=1;")),
+        false,
+    );
+    let frame = FrameDataArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
+
+    //frame_area
+    let query = ApiQuery::new(
+        ApiQueryKind::Sql(ApiQuerySql::new("test", "SELECT frame_index, key, value FROM frame_area WHERE ship_id=1;")),
+        false,
+    );
+
+    Ok(())
+}
+*/
+/*
+pub async fn get_data(db_name: &str) -> Result<ShipData, MyError> {
     let (client, connection) = tokio_postgres::Config::new()
         .user("postgres")
         .password("123qwe")
@@ -168,7 +264,7 @@ pub async fn get_data(db_name: &str) -> Result<InputData, MyError> {
         mean_draught?,
         rad_long?,
     );
-    let mut data = InputData {
+    let mut data = ShipData {
         n_parts: 0,
         water_density: 0.,
         ship_length: 0.,
@@ -315,3 +411,4 @@ pub async fn get_data(db_name: &str) -> Result<InputData, MyError> {
     dbg!(&data);
     Ok(data)
 }
+*/

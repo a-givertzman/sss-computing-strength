@@ -18,4 +18,4 @@ VALUES
 
 SELECT * FROM rad_long WHERE ship_id=1;
 
-SELECT (key, value) FROM rad_long WHERE ship_id=1;
+SELECT key, value FROM rad_long WHERE ship_id=1;

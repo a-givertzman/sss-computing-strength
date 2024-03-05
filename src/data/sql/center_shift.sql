@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS center_shift CASCADE;
+DROP TABLE IF EXISTS center_shift;
 
 CREATE TABLE if not exists center_shift (
   id INT GENERATED ALWAYS AS IDENTITY,
@@ -20,4 +20,4 @@ VALUES
 
 SELECT * FROM center_shift WHERE ship_id=1;
 
-SELECT (key, value) FROM center_shift WHERE ship_id=1;
+SELECT key, value FROM center_shift WHERE ship_id=1;

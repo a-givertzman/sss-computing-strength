@@ -24,4 +24,4 @@ VALUES
 
 SELECT * FROM ship WHERE ship_id=1;
 
-SELECT (key, value) FROM ship WHERE ship_id=1;
+SELECT key, value FROM ship WHERE ship_id=1;

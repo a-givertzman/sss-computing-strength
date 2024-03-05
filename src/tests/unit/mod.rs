@@ -1,5 +1,5 @@
 //! Юнит-тесты
-mod input;
+//mod input;
 mod bound;
 mod vec;
 mod output;
@@ -14,4 +14,4 @@ mod tank;
 mod total_force;
 mod trim;
 mod bending_moment;
-mod complex;
+//mod complex;

@@ -18,4 +18,4 @@ VALUES
 
 SELECT * FROM mean_draught WHERE ship_id=1;
 
-SELECT (key, value) FROM mean_draught WHERE ship_id=1;
+SELECT key, value FROM mean_draught WHERE ship_id=1;

@@ -3,43 +3,33 @@ use std::collections::HashSet;
 
 use serde::{de::Error, de::Unexpected, Deserialize, Serialize};
 
-use crate::frame::Frame;
-
 pub type Result<T> = serde_json::Result<T>;
 
-/// Данные запроса на расчет
+/// Данные по судну
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct ParsedInputData {
-    /// название проекта судна
-    pub project_name: String,
-    /// имя судна
-    pub ship_name: String,
+pub struct ParsedShipData {
+    /// длинна корпуса судна
+    pub ship_length: f64,
     /// разбиение на шпации - количество
-    pub n_parts: u64,
+    pub n_parts: f64,
     /// плотность воды
     pub water_density: f64,
 }
 ///
 #[allow(dead_code)]
-impl ParsedInputData {
+impl ParsedShipData {
     ///
     pub fn parse(src: &str) -> Result<Self> {
-        let result: ParsedInputData = serde_json::from_str(src)?;
-        if result.project_name.len() == 0 {
+        let result: Self = serde_json::from_str(src)?;
+        if result.ship_length <= 0. {
             return Err(Error::invalid_value(
-                Unexpected::Str(&result.project_name),
-                &"project_name",
+                Unexpected::Float(result.ship_length),
+                &"positive value of ship's length",
             ));
         }
-        if result.ship_name.len() == 0 {
+        if result.n_parts == 0. {
             return Err(Error::invalid_value(
-                Unexpected::Str(&result.ship_name),
-                &"ship_name",
-            ));
-        }
-        if result.n_parts == 0 {
-            return Err(Error::invalid_value(
-                Unexpected::Unsigned(result.n_parts),
+                Unexpected::Float(result.n_parts),
                 &"positive number of frames",
             ));
         }
@@ -53,44 +43,81 @@ impl ParsedInputData {
     }
 }
 
-/// Данные по корпусу судна
+/// Кривая отстояния центра тяжести ватерлинии по длине от миделя  
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct ParsedShipData {
-    /// длинна корпуса судна
-    pub ship_length: f64,
-    /// кривая отстояния центра тяжести ватерлинии по длине от миделя  
+pub struct ParsedCenterWaterline {
+    /// Кривая отстояния центра тяжести ватерлинии по длине от миделя  
     pub center_waterline: Vec<(f64, f64)>,
-    /// кривая продольного метацентрического радиуса
-    pub rad_long: Vec<(f64, f64)>,
-    /// кривая средней осадки
-    pub mean_draught: Vec<(f64, f64)>,
-    /// кривая отстояния центра величины погруженной части судна
-    pub center_shift: Vec<(f64, f64, f64, f64)>,
 }
 ///
 #[allow(dead_code)]
-impl ParsedShipData {
+impl ParsedCenterWaterline {
     ///
     pub fn parse(src: &str) -> Result<Self> {
-        let result: ParsedShipData = serde_json::from_str(src)?;
-        if result.ship_length <= 0. {
-            return Err(Error::invalid_value(
-                Unexpected::Float(result.ship_length),
-                &"positive value of ship's length",
-            ));
-        }
+        let result: Self = serde_json::from_str(src)?;
         if result.center_waterline.len() <= 1 {
             return Err(Error::invalid_value(
                 Unexpected::Unsigned(result.center_waterline.len() as u64),
                 &"number of waterline's points greater or equal to 2",
             ));
         }
+        Ok(result)
+    }
+}
+/// Кривая продольного метацентрического радиуса
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ParsedRadLong {
+    /// Кривая продольного метацентрического радиуса
+    pub rad_long: Vec<(f64, f64)>,
+}
+///
+#[allow(dead_code)]
+impl ParsedRadLong {
+    ///
+    pub fn parse(src: &str) -> Result<Self> {
+        let result: Self = serde_json::from_str(src)?;
+        if result.rad_long.len() <= 1 {
+            return Err(Error::invalid_value(
+                Unexpected::Unsigned(result.rad_long.len() as u64),
+                &"number of rad_long's points greater or equal to 2",
+            ));
+        }
+        Ok(result)
+    }
+}
+/// Кривая средней осадки
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ParsedMeanDraught {
+    /// Кривая средней осадки
+    pub mean_draught: Vec<(f64, f64)>,
+}
+///
+#[allow(dead_code)]
+impl ParsedMeanDraught {
+    ///
+    pub fn parse(src: &str) -> Result<Self> {
+        let result: Self = serde_json::from_str(src)?;
         if result.mean_draught.len() <= 1 {
             return Err(Error::invalid_value(
                 Unexpected::Unsigned(result.mean_draught.len() as u64),
                 &"number of mean_draught's points greater or equal to 2",
             ));
         }
+        Ok(result)
+    }
+}
+/// Кривая отстояния центра величины погруженной части судна
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ParsedCenterShift {
+    /// кривая отстояния центра величины погруженной части судна
+    pub center_shift: Vec<(f64, f64, f64, f64)>,
+}
+///
+#[allow(dead_code)]
+impl ParsedCenterShift {
+    ///
+    pub fn parse(src: &str) -> Result<Self> {
+        let result: Self = serde_json::from_str(src)?;
         if result.center_shift.len() <= 1 {
             return Err(Error::invalid_value(
                 Unexpected::Unsigned(result.center_shift.len() as u64),
@@ -244,3 +271,32 @@ impl ParsedTanksData {
         Ok(result)
     }
 }
+
+
+/*
+/// Общая структура для ввода данных. Содержит все данные
+/// для расчетов, при заполнении проверяет данные на корректность.
+#[derive(Debug)]
+pub struct ShipData {
+    /// разбиение на шпации - количество
+    pub n_parts: u32,
+    /// плотность воды
+    pub water_density: f32,
+    /// длинна корпуса судна
+    pub ship_length: f32,
+    /// кривая отстояния центра тяжести ватерлинии по длине от миделя  
+    pub center_waterline: Vec<(f32, f32)>,
+    /// кривая продольного метацентрического радиуса
+    pub rad_long: Vec<(f32, f32)>,
+    /// кривая средней осадки
+    pub mean_draught: Vec<(f32, f32)>,
+    /// кривая отстояния центра величины погруженной части судна
+    pub center_shift: Vec<(f32, f32, f32, f32)>,
+    /// Шпангоуты судна
+    pub frames: Vec<super::frame::ShipData>,
+    /// Нагрузка судна без жидких грузов
+    pub load_space: Vec<super::load_space::LoadSpaceData>,
+    /// Нагрузка судна, жидкие грузы
+    pub tanks: Vec<super::tank::TankData>,
+}
+*/

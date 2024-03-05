@@ -55,7 +55,7 @@ use api_tools::client::{
     api_query::{ApiQuery, ApiQueryKind, ApiQuerySql},
     api_request::ApiRequest,
 };
-use data::parse_input::ParsedInputData;
+use data::input_api_server::get_data;
 use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
 use error::Error;
 use log::*;
@@ -64,15 +64,12 @@ use tokio::task::JoinHandle;
 
 use crate::{
     bending_moment::BendingMoment,
-    data::parse_input::ParsedShipData,
     displacement::Displacement,
     draught::Draught,
     frame::Frame,
     load::ILoad,
     mass::{IMass, Mass},
-    math::{
-        bound::Bound, curve::Curve, inertia_shift::inertia_shift::InertiaShift, pos_shift::PosShift,
-    },
+    math::*,
     shear_force::{IShearForce, ShearForce},
     tank::Tank,
     total_force::TotalForce,
@@ -98,11 +95,14 @@ mod trim;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    data::input_db::create_test_db().await?;
-    
+   // data::input_api_server::create_test_db("test")?;
+   // data::input_db::create_test_db("test");
+
+    get_data("test", 1)?;
+/*    
     let parsed_data = data::input_db::get_data("test").await?;
     dbg!(&parsed_data);
-    
+*/    
 
     /*
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
@@ -123,9 +123,11 @@ async fn main() -> Result<(), Error> {
              process::exit(1);
          });
     */
+    
+
     /*
     let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new("test", "SELECT * FROM frame WHERE frame_id=1;")),
+        ApiQueryKind::Sql(ApiQuerySql::new("test", "SELECT frame_id, key, value FROM frame WHERE ship_id=3;")),
         false,
     );
 
@@ -140,8 +142,13 @@ async fn main() -> Result<(), Error> {
 
     let reply = request.fetch(&query, false)?;
     let reply = String::from_utf8(reply)?;
-    dbg!(reply);
-    */
+    dbg!(&reply);
+
+    let frame: FrameDataArray = serde_json::from_str(&reply)?;
+//    let frame = data::serde::ParsedArray2fi::parse(&reply)?;
+    dbg!(&frame);
+*/
+
     /*
     let reply_data = request.fetch(&query, false).unwrap_or_else(|err| {
         error!("request.fetch: {err}");
@@ -239,6 +246,7 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
+/*
 /// Чтение данных из стандартного потока ввода
 pub fn read() -> Result<ParsedInputData, Box<dyn std::error::Error>> {
     let mut input = String::new();
@@ -247,7 +255,7 @@ pub fn read() -> Result<ParsedInputData, Box<dyn std::error::Error>> {
         &input.to_lowercase().trim().to_owned(),
     )?)
 }
-
+*/
 /*
 /// Writes a given value to the writer, serializing it into JSON.
 pub fn write<W: Write, T: serde::Serialize>(mut writer: W, t: &T) -> Result<(), WriteError> {

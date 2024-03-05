@@ -3,10 +3,6 @@
 */
 \i ship.sql
 /*
-	ship parameters
-*/
-\i ship_parameters.sql
-/*
 	ship center waterline
 */
 \i center_waterline.sql

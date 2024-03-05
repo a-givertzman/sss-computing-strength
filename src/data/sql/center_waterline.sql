@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS center_waterline CASCADE;
+DROP TABLE IF EXISTS center_waterline;
 
 CREATE TABLE if not exists center_waterline (
   id INT GENERATED ALWAYS AS IDENTITY,
@@ -18,5 +18,5 @@ VALUES
 
 SELECT * FROM center_waterline WHERE ship_id=1;
 
-SELECT (key, value) FROM center_waterline WHERE ship_id=1;
+SELECT key, value FROM center_waterline WHERE ship_id=1;
 

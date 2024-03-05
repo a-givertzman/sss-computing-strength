@@ -26,4 +26,4 @@ VALUES
 
 SELECT * FROM load_space WHERE ship_id=1;
 
-SELECT (space_id, key, value) FROM load_space WHERE ship_id=1;
+SELECT space_id, key, value FROM load_space WHERE ship_id=1;

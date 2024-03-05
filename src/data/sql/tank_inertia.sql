@@ -2,6 +2,8 @@ DROP TABLE IF EXISTS tank_inertia;
 
 CREATE TABLE if not exists tank_inertia (
   id INT GENERATED ALWAYS AS IDENTITY,
+  project_id INT,
+  ship_id INT NOT NULL,
   tank_id INT NOT NULL,
   key REAL NOT NULL,
   value_x REAL NOT NULL,
@@ -12,11 +14,12 @@ CREATE TABLE if not exists tank_inertia (
 );
 
 INSERT INTO tank_inertia
-  (tank_id, key, value_x, value_y)
+  (project_id, ship_id, tank_id, key, value_x, value_y)
 VALUES
-  (1, 0, 0, 0),
-  (1, 10, 1, 1);
+  (NULL, 1, 1, 0, 0, 0),
+  (NULL, 1, 1, 10, 1, 1);
 
-SELECT * FROM tank_inertia WHERE tank_id=1;
+SELECT * FROM tank_center WHERE tank_id=1;
 
-SELECT (key, value) FROM tank_inertia WHERE tank_id=1;
+SELECT tank_id, key, value_x, value_y FROM tank_center WHERE tank_id=1;
+

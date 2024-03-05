@@ -11,8 +11,8 @@ pub enum Error {
     FromUtf8Error(#[from] std::string::FromUtf8Error),
     #[error("Error")]
     FromString(String),
-//    #[error("Serde error")]
-//    Serde(String),
+    #[error("Serde error")]
+    Serde(#[from] serde_json::Error),
     #[error("Parameter error")]
     Parameter(String),
     #[error(transparent)]
