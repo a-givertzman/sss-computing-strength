@@ -20,13 +20,13 @@ mod tests {
     fn init_once() {
         INIT.call_once(|| {
             let tank_center_shift = PosShift::new(
-                Curve::new(vec![(0., 2.), (10., 2.)]),
-                Curve::new(vec![(0., 0.), (10., 0.)]),
-                Curve::new(vec![(0., 0.), (10., 0.)]),
+                Curve::new(&vec![(0., 2.), (10., 2.)]),
+                Curve::new(&vec![(0., 0.), (10., 0.)]),
+                Curve::new(&vec![(0., 0.), (10., 0.)]),
             );
             let tank_free_surf_inertia = InertiaShift::new(
-                Curve::new(vec![(0., 0.), (10., 1.)]),
-                Curve::new(vec![(0., 0.), (10., 1.)]),
+                Curve::new(&vec![(0., 0.), (10., 1.)]),
+                Curve::new(&vec![(0., 0.), (10., 1.)]),
             );
 
             unsafe {

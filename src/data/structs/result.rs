@@ -6,7 +6,9 @@ use std::collections::HashSet;
 use crate::error::Error;
 
 use super::{
-    CenterShiftDataArray, CenterVolumeData, CenterWaterlineArray, FrameAreaData, FrameDataArray, FreeMomentInertiaData, LoadSpaceArray, MeanDraughtDataArray, RadLongDataArray, ShipArray, TankDataArray
+    CenterShiftDataArray, CenterVolumeData, CenterWaterlineArray, FrameAreaData, FrameDataArray,
+    FreeMomentInertiaData, LoadSpaceArray, MeanDraughtDataArray, RadLongDataArray, ShipArray,
+    TankDataArray,
 };
 
 /// Шпангоут
@@ -14,6 +16,8 @@ use super::{
 pub struct ParsedFrameData {
     /// Порядковый номер шпангоута от кормы
     pub index: usize,
+    /// Координата по х относительно кормы
+    pub x: f64,
     /// Смещение относительно предыдущего шпангоута
     pub delta_x: f64,
     /// кривая погружаемой площади
@@ -24,8 +28,11 @@ impl std::fmt::Display for ParsedFrameData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "ParsedFrameData(index:{}, delta_x:{}, immersion_area.len:{} )",
-            self.index, self.delta_x, self.immersion_area.len(),
+            "ParsedFrameData(index:{}, x:{}, delta_x:{}, immersion_area.len:{} )",
+            self.index,
+            self.x,
+            self.delta_x,
+            self.immersion_area.len(),
         )
     }
 }
@@ -149,6 +156,10 @@ impl ParsedShipData {
         for (index, map) in frame_src.data() {
             frames.push(ParsedFrameData {
                 index,
+                x: *map.get("x").ok_or(format!(
+                    "ParsedShipData parse error: no x for frame index:{}",
+                    index
+                ))?,
                 delta_x: *map.get("delta_x").ok_or(format!(
                     "ParsedShipData parse error: no delta_x for frame index:{}",
                     index
@@ -159,6 +170,7 @@ impl ParsedShipData {
                 ))?,
             });
         }
+        frames.sort_by(|a, b| a.index.cmp(&b.index));
 
         let mut load_spaces = Vec::new();
         for (space_id, map) in load_spaces_src.data() {
@@ -276,24 +288,40 @@ impl ParsedShipData {
             frames,
             load_spaces,
             tanks,
-        }.check()
+        }
+        .check()
     }
     /// Проверка данных на корректность
     fn check(self) -> Result<Self, Error> {
         if self.ship_length <= 0. {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: value of ship's length must be positive {}", self.ship_length)));
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of ship's length must be positive {}",
+                self.ship_length
+            )));
         }
         if self.n_parts <= 0. {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of frames must be positive {}", self.n_parts)));
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of frames must be positive {}",
+                self.n_parts
+            )));
         }
         if self.water_density <= 0. {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: value of water density must be positive {}", self.water_density)));
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of water density must be positive {}",
+                self.water_density
+            )));
         }
         if self.center_waterline.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of waterline's points greater or equal to 2 {}", self.center_waterline.len())));
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of waterline's points greater or equal to 2 {}",
+                self.center_waterline.len()
+            )));
         }
         if self.rad_long.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of rad_long's points greater or equal to 2 {}", self.rad_long.len())));
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of rad_long's points greater or equal to 2 {}",
+                self.rad_long.len()
+            )));
         }
         if self.mean_draught.len() <= 1 {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of mean_draught's points greater or equal to 2 {}", self.mean_draught.len())));
@@ -308,37 +336,113 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_shift_z's points greater or equal to 2 {}", self.center_shift_z.len())));
         }
         if self.frames.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of frames must be greater or equal to 2 {}", self.center_shift_z.len())));
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of frames must be greater or equal to 2 {}",
+                self.center_shift_z.len()
+            )));
         }
         if let Some(frame) = self.frames.iter().find(|f| f.index >= self.frames.len()) {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: index of frame bigger or equal then frames.len(), {}", frame)));
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: index of frame bigger or equal then frames.len(), {}",
+                frame
+            )));
         }
-        let qnt_unique_index = self.frames.iter().map(|f| f.index ).collect::<HashSet<_>>().len();
+        let qnt_unique_index = self
+            .frames
+            .iter()
+            .map(|f| f.index)
+            .collect::<HashSet<_>>()
+            .len();
         if self.frames.len() != qnt_unique_index {
             return Err(Error::Parameter(format!("Error check ParsedShipData: index of frame must be unique frames:{}, unique index:{}", self.frames.len(), qnt_unique_index )));
         }
-        if let Some(frame) = self.frames.iter().find(|f| f.delta_x < 0. ) {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: delta_x of frame must be greater or equal to 0, {}", frame)));
+        if self
+            .frames
+            .iter()
+            .find(|f| f.index == 0)
+            .ok_or(format!(
+                "ParsedShipData parse error: no frame with index = 0"
+            ))?
+            .x
+            != 0.
+        {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: x of frame with index = 0 must be equal to 0"
+            )));
         }
-        if let Some(frame) = self.frames.iter().find(|f| f.immersion_area.iter().find(|v| v.0 < 0. || v.1 < 0.).is_some() )  {
+        if (self
+            .frames
+            .iter()
+            .find(|f| f.index == self.frames.len() - 1)
+            .ok_or(format!(
+                "ParsedShipData parse error: no frame with last index = len-1"
+            ))?
+            .x - self.ship_length).abs() > 0.01
+        {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: x of frame with last index must be equal to ship_length"
+            )));
+        }
+        if let Some(frame) = self.frames.iter().find(|f| f.x < 0.) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: x of frame must be greater or equal to 0, {}",
+                frame
+            )));
+        }
+        if let Some(frame) = self.frames.iter().find(|f| f.delta_x < 0.) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: delta_x of frame must be greater or equal to 0, {}",
+                frame
+            )));
+        }
+        if let Some(frame) = self.frames.iter().find(|f| {
+            f.immersion_area
+                .iter()
+                .find(|v| v.0 < 0. || v.1 < 0.)
+                .is_some()
+        }) {
             return Err(Error::Parameter(format!("Error check ParsedShipData: values of immersion_area in frame must be greater or equal to 0, {}", frame)));
         }
         if let Some(s) = self.load_spaces.iter().find(|s| s.mass < 0.) {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: mass of load_space must be greater or equal to 0, {}", s)));
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: mass of load_space must be greater or equal to 0, {}",
+                s
+            )));
         }
-        if let Some(s) = self.load_spaces.iter().find(|s| s.bound.0 >= s.bound.1 || s.bound.2 >= s.bound.3 ) {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: load_space Bound error! {}", s)));
+        if let Some(s) = self
+            .load_spaces
+            .iter()
+            .find(|s| s.bound.0 >= s.bound.1 || s.bound.2 >= s.bound.3)
+        {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: load_space Bound error! {}",
+                s
+            )));
         }
         if let Some(tank) = self.tanks.iter().find(|t| t.density <= 0.) {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: density of liquid must be greater or equal to 0 {}", tank)));
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: density of liquid must be greater or equal to 0 {}",
+                tank
+            )));
         }
         if let Some(tank) = self.tanks.iter().find(|t| t.volume <= 0.) {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: volume of liquid must be greater or equal to 0 {}", tank)));
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: volume of liquid must be greater or equal to 0 {}",
+                tank
+            )));
         }
-        if let Some(tank) = self.tanks.iter().find(|t| t.center_x.len() <= 1 || t.center_y.len() <= 1 || t.center_z.len() <= 1 ) {
+        if let Some(tank) = self
+            .tanks
+            .iter()
+            .find(|t| t.center_x.len() <= 1 || t.center_y.len() <= 1 || t.center_z.len() <= 1)
+        {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of center's points must be greater or equal to 2 {}", tank)));
         }
-        if let Some(tank) = self.tanks.iter().find(|t| t.free_surf_inertia_x.len() <= 1 || t.free_surf_inertia_y.len() <= 1 ) {
+        if let Some(tank) = self
+            .tanks
+            .iter()
+            .find(|t| t.free_surf_inertia_x.len() <= 1 || t.free_surf_inertia_y.len() <= 1)
+        {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of free_surf_inertia's points must be greater or equal to 2 {}", tank)));
         }
         Ok(self)

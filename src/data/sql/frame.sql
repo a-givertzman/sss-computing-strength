@@ -15,7 +15,9 @@ CREATE TABLE if not exists frame (
 INSERT INTO frame
   (project_id, ship_id, index, key, value)
 VALUES
+  (NULL, 1, 0, 'x', 0),
   (NULL, 1, 0, 'delta_x', 5.87),
+  (NULL, 1, 1, 'x', 5.87),
   (NULL, 1, 1, 'delta_x', 5.87);
 
 SELECT * FROM frame WHERE ship_id=1;

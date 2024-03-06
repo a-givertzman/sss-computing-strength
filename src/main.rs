@@ -63,12 +63,17 @@ use testing::entities::test_value::Value;
 
 use crate::{
     bending_moment::BendingMoment,
+    bound::Bound,
+    curve::Curve,
     displacement::Displacement,
     draught::Draught,
     frame::Frame,
-    load::ILoad,
+    inertia_shift::InertiaShift,
+    load::{ILoad, LoadSpace},
     mass::{IMass, Mass},
     math::*,
+    pos_shift::PosShift,
+    position::Position,
     shear_force::{IShearForce, ShearForce},
     tank::Tank,
     total_force::TotalForce,
@@ -90,17 +95,12 @@ mod tests;
 mod total_force;
 mod trim;
 
-
 fn main() -> Result<(), Error> {
-   // data::input_api_server::create_test_db("test")?;
-   // data::input_db::create_test_db("test");
+    // data::input_api_server::create_test_db("test")?;
+    // data::input_db::create_test_db("test");
 
-   dbg!(get_data("test", 1)?);
-
-/*    
-    let parsed_data = data::input_db::get_data("test").await?;
-    dbg!(&parsed_data);
-*/    
+    let data = get_data("test", 1)?;
+    dbg!(&data);
 
     /*
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
@@ -121,49 +121,10 @@ fn main() -> Result<(), Error> {
              process::exit(1);
          });
     */
-    
-
-    /*
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new("test", "SELECT frame_id, key, value FROM frame WHERE ship_id=3;")),
-        false,
-    );
-
-    let mut request = ApiRequest::new(
-        "parent",
-        "0.0.0.0:8080",
-        "auth_token",
-        query.clone(),
-        false,
-        false,
-    );
-
-    let reply = request.fetch(&query, false)?;
-    let reply = String::from_utf8(reply)?;
-    dbg!(&reply);
-
-    let frame: FrameDataArray = serde_json::from_str(&reply)?;
-//    let frame = data::serde::ParsedArray2fi::parse(&reply)?;
-    dbg!(&frame);
-*/
-
-    /*
-    let reply_data = request.fetch(&query, false).unwrap_or_else(|err| {
-        error!("request.fetch: {err}");
-        process::exit(1);
-    });
-    let string = String::from_utf8(reply_data).unwrap_or_else(|err| {
-        error!("String::from_utf8: {err}");
-        process::exit(1);
-    });
-    let ship_data = ParsedShipData::parse(&string.to_lowercase().trim().to_owned()).unwrap_or_else(|err| {
-        error!("ParsedShipData::parse: {err}");
-        process::exit(1);
-    });
 
     // длинна судна
-    let ship_length = 118.39;
-    let n = 20;
+    let ship_length = data.ship_length;
+    let n = data.n_parts as usize;
     let delta_x = ship_length / n as f64;
     let start_x = -ship_length / 2.;
     // вектор разбиения судна на отрезки
@@ -178,44 +139,62 @@ fn main() -> Result<(), Error> {
     // ускорение свободного падения
     let gravity_g = 9.81;
     // плотность окружающей воды
-    let water_density = 1.025;
+    let water_density = data.water_density;
     // отстояние центра тяжести ватерлинии по длине от миделя
-    let center_waterline_shift = Curve::new(vec![(0., 0.), (10., 1.)]);
+    let center_waterline_shift = Curve::new(&data.center_waterline);
     // продольный метацентрический радиус
-    let rad_long = Curve::new(vec![(0., 0.), (10., 1.)]);
+    let rad_long = Curve::new(&data.rad_long);
     // средняя осадка
-    let mean_draught = Curve::new(vec![(0., 0.), (1000., 1.), (10000., 10.)]);
+    let mean_draught = Curve::new(&data.mean_draught);
     // отстояние центра величины погруженной части судна
     let center_draught_shift = PosShift::new(
-        Curve::new(vec![(0., 2.), (10., 2.)]),
-        Curve::new(vec![(0., 0.), (10., 0.)]),
-        Curve::new(vec![(0., 0.), (10., 0.)]),
+        Curve::new(&data.center_shift_x),
+        Curve::new(&data.center_shift_y),
+        Curve::new(&data.center_shift_z),
     );
-    //координаты центра объема жидкости в цистерне в системе координат судна
-    let tank_center_draught_shift = PosShift::new(
-        Curve::new(vec![(0., 2.), (10., 2.)]),
-        Curve::new(vec![(0., 0.), (10., 0.)]),
-        Curve::new(vec![(0., 0.), (10., 0.)]),
-    );
-    //момент инерции площади свободной поверхности жидкости
-    let tank_free_surf_inertia = InertiaShift::new(
-        Curve::new(vec![(0., 0.), (10., 1.)]),
-        Curve::new(vec![(0., 0.), (10., 1.)]),
-    );
-    // все грузы судна
-    let loads: Vec<Rc<Box<dyn ILoad>>> = vec![Rc::new(Box::new(Tank::new(
-        2.,
-        10.,
-        Bound::new(-5., 5.),
-        tank_center_draught_shift,
-        tank_free_surf_inertia,
-    )))];
+    // шпангоуты
+    let frames = data
+        .frames
+        .iter()
+        .map(|v| {
+            assert!(
+                v.delta_x >= 0. && v.delta_x <= ship_length,
+                "frame delta_x {} >= 0. && delta_x {} <= ship_length {}",
+                v.delta_x,
+                v.delta_x,
+                ship_length
+            );
+            Frame::new(v.delta_x - ship_length / 2., Curve::new(&v.immersion_area))
+        })
+        .collect();
+    // Грузы
+    let mut loads: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
+    data.load_spaces.iter().for_each(|v| {
+        loads.push(Rc::new(Box::new(LoadSpace::new(
+            v.mass,
+            Bound::new(v.bound.0, v.bound.1),
+            Position::new(v.center.0, v.center.1, v.center.2),
+        ))));
+    });
+    // Цистерны
+    data.tanks.iter().for_each(|v| {
+        loads.push(Rc::new(Box::new(Tank::new(
+            v.density,
+            v.volume,
+            Bound::new(v.bound.0, v.bound.1),
+            PosShift::new(
+                Curve::new(&v.center_x),
+                Curve::new(&v.center_y),
+                Curve::new(&v.center_z),
+            ),
+            InertiaShift::new(
+                Curve::new(&v.free_surf_inertia_x),
+                Curve::new(&v.free_surf_inertia_y),
+            ),
+        ))));
+    });
+
     let mass: Rc<dyn IMass> = Rc::new(Mass::new(loads, bounds.clone()));
-    let frames = vec![
-        Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-        Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-        Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-    ];
 
     let shear_force = ShearForce::new(TotalForce::new(
         Rc::clone(&mass),
@@ -226,7 +205,7 @@ fn main() -> Result<(), Error> {
             Rc::clone(&mass),
             center_waterline_shift,
             mean_draught,
-            Displacement::new(frames, ship_length),
+            Displacement::new(frames),
             Trim::new(
                 water_density,
                 ship_length,
@@ -239,7 +218,6 @@ fn main() -> Result<(), Error> {
     ));
     let bending_moment = BendingMoment::new(&shear_force);
     dbg!(&shear_force.values(), &bending_moment.values());
-    */
 
     Ok(())
 }

@@ -15,7 +15,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = Frame::new(Curve::new(vec![(0., 0.), (2., 2.)])).area(1.);
+        let result = Frame::new(0., Curve::new(&vec![(0., 0.), (2., 2.)])).area(1.);
         let target = 1.;
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
