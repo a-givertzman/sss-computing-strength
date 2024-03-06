@@ -60,7 +60,6 @@ use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
 use error::Error;
 use log::*;
 use testing::entities::test_value::Value;
-use tokio::task::JoinHandle;
 
 use crate::{
     bending_moment::BendingMoment,
@@ -75,8 +74,6 @@ use crate::{
     total_force::TotalForce,
     trim::Trim,
 };
-use futures::FutureExt;
-use tokio_postgres::{Error as TokioError, NoTls, Row};
 
 mod bending_moment;
 mod data;
@@ -93,12 +90,13 @@ mod tests;
 mod total_force;
 mod trim;
 
-#[tokio::main]
-async fn main() -> Result<(), Error> {
+
+fn main() -> Result<(), Error> {
    // data::input_api_server::create_test_db("test")?;
    // data::input_db::create_test_db("test");
 
-    get_data("test", 1)?;
+   dbg!(get_data("test", 1)?);
+
 /*    
     let parsed_data = data::input_db::get_data("test").await?;
     dbg!(&parsed_data);

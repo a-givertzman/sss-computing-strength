@@ -35,26 +35,7 @@ pub struct TankDataArray {
 impl TankDataArray {
     /// Парсинг данных из json строки
     pub fn parse(src: &str) -> Result<Self, Error> {
-        let result: Self = serde_json::from_str(src)?;
- /*       if let Some(tank) = result.data.iter().find(|t| t.key.contains("density") && t.value <= 0.) {
-            return Err(Error::Parameter(format!("Error parse TankDataArray: density of liquid must be greater or equal to 0 {}", tank)));
-        }
-        if let Some(tank) = result.data.iter().find(|t| t.key.contains("volume") && t.value <= 0.) {
-            return Err(Error::Parameter(format!("Error parse TankDataArray: volume of liquid must be greater or equal to 0 {}", tank)));
-        }
-        if let Some(tank) = result.tanks.iter().find(|t| t.center.len() <= 1) {
-            return Err(Error::invalid_value(
-                Unexpected::Unsigned(tank.center.len() as u64),
-                &"number of center's points greater or equal to 2",
-            ));
-        }
-        if let Some(tank) = result.tanks.iter().find(|t| t.free_surf_inertia.len() <= 1) {
-            return Err(Error::invalid_value(
-                Unexpected::Unsigned(tank.free_surf_inertia.len() as u64),
-                &"number of free_surf_inertia's points greater or equal to 2",
-            ));
-        }*/
-        Ok(result)
+        Ok(serde_json::from_str(src)?)
     }
     /// Преобразование и возвращает данные в виде мапы индекс груза/данные груза
     pub fn data(self) -> HashMap<usize, HashMap<String, f64>> {
@@ -127,14 +108,7 @@ pub struct CenterVolumeArray {
 impl CenterVolumeArray {
     /// Парсинг данных из json строки
     pub fn parse(src: &str) -> Result<Self, Error> {
-        let result: Self = serde_json::from_str(src)?;
-        if result.data.len() <= 1 {
-            return Err(Error::Parameter(format!("Error parse CenterVolumeArray: number of points must be greater or equal to 2")));
-        }
-        if let Some(v) = result.data.iter().find(|v| v.key < 0. ) {
-            return Err(Error::Parameter(format!("Error parse CenterVolumeArray: key of immersion_area's points must be greater or equal to 0, {}", v)));
-        }
-        Ok(result)
+        Ok(serde_json::from_str(src)?)
     }
     /// Преобразование и возвращает данные в виде мапы индекс груза/вектор данных по кривой
     pub fn data(self) -> HashMap<usize, Vec<(f64, f64, f64, f64)>> {
@@ -201,14 +175,7 @@ pub struct FreeMomentInertiaArray {
 impl FreeMomentInertiaArray {
     /// Парсинг данных из json строки
     pub fn parse(src: &str) -> Result<Self, Error> {
-        let result: Self = serde_json::from_str(src)?;
-        if result.data.len() <= 1 {
-            return Err(Error::Parameter(format!("Error parse FreeMomentInertiaArray: number of points must be greater or equal to 2")));
-        }
-        if let Some(v) = result.data.iter().find(|v| v.key < 0. ) {
-            return Err(Error::Parameter(format!("Error parse FreeMomentInertiaArray: key of inertia's points must be greater or equal to 0, {}", v)));
-        }
-        Ok(result)
+        Ok(serde_json::from_str(src)?)
     }
     /// Преобразование и возвращает данные в виде мапы индекс груза/вектор данных по кривой
     pub fn data(self) -> HashMap<usize, Vec<(f64, f64, f64)>> {

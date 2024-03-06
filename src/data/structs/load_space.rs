@@ -36,14 +36,7 @@ pub struct LoadSpaceArray {
 impl LoadSpaceArray {
     /// Парсинг данных из json строки
     pub fn parse(src: &str) -> Result<Self, Error> {
-        let result: Self = serde_json::from_str(src)?;
-  /*      if let Some(s) = result.data.iter().find(|s| s.mass < 0.) {
-            return Err(Error::Parameter(format!("Error parse LoadSpaceArray: mass of load_space must be greater or equal to 0, {}", s)));
-        }
-        if let Some(s) = result.data.iter().find(|s| s.bound.0 >= s.bound.1 || s.bound.2 >= s.bound.3 ) {
-            return Err(Error::Parameter(format!("Error parse LoadSpaceArray: Bound error! {}", s)));
-        }*/
-        Ok(result)
+        Ok(serde_json::from_str(src)?)
     }
     /// Преобразование и возвращает данные в виде мапы id/данные груза
     pub fn data(self) -> HashMap<usize, HashMap<String, f64>> {

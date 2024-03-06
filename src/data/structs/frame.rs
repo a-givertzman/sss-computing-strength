@@ -33,21 +33,7 @@ pub struct FrameDataArray {
 impl FrameDataArray {
     ///
     pub fn parse(src: &str) -> Result<Self, Error> {
-        let result: Self = serde_json::from_str(src)?;
-        /*        if result.data.len() <= 1 {
-            return Err(Error::Parameter(format!("Error parse FrameDataArray: number of frames must be greater or equal to 2")));
-        }
-        if let Some(frame) = result.data.iter().find(|f| f.index >= result.data.len()) {
-            return Err(Error::Parameter(format!("Error parse FrameDataArray: index of frame lower then frames.len(), {}", frame)));
-        }
-        let qnt_unique_index = result.data.iter().map(|f| f.index ).collect::<HashSet<_>>().len();
-        if result.data.len() != qnt_unique_index {
-            return Err(Error::Parameter(format!("Error parse FrameDataArray: index of frame must be unique")));
-        }
-        if let Some(frame) = result.data.iter().find(|f| f.value < 0. ) {
-            return Err(Error::Parameter(format!("Error parse FrameDataArray: value of frame must be greater or equal to 0, {}", frame)));
-        }*/
-        Ok(result)
+        Ok(serde_json::from_str(src)?)
     }
     /// Преобразование и возвращает данные в виде мапы индекс/данные шпангоута
     pub fn data(self) -> HashMap<usize, HashMap<String, f64>> {
@@ -108,19 +94,7 @@ pub struct FrameAreaArray {
 impl FrameAreaArray {
     /// Парсинг данных из json строки
     pub fn parse(src: &str) -> Result<Self, Error> {
-        let result: Self = serde_json::from_str(src)?;
-        if result.data.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error parse FrameAreaArray: number of frames area must be greater or equal to 2"
-            )));
-        }
-        if let Some(frame) = result.data.iter().find(|f| f.key < 0.) {
-            return Err(Error::Parameter(format!("Error parse FrameAreaArray: key of immersion_area's points must be greater or equal to 0, {}", frame)));
-        }
-        if let Some(frame) = result.data.iter().find(|f| f.value < 0.) {
-            return Err(Error::Parameter(format!("Error parse FrameAreaArray: value of immersion_area's points must be greater or equal to 0, {}", frame)));
-        }
-        Ok(result)
+        Ok(serde_json::from_str(src)?)
     }
     /// Преобразование и возвращает данные в виде мапы индекс фрейма/кривая площади
     pub fn data(&self) -> HashMap<usize, Vec<(f64, f64)>> {
