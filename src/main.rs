@@ -1,7 +1,6 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
 use std::{io, process, rc::Rc};
-use aquamarine::aquamarine;
 use api_tools::client::{
     api_query::{ApiQuery, ApiQueryKind, ApiQuerySql},
     api_request::ApiRequest,
@@ -29,16 +28,8 @@ mod tests;
 mod total_force;
 mod trim;
 
-#[aquamarine]
-/// ```mermaid
-///    flowchart TB
-///    %% создаем узел
-///       A --> B 
-///    %% Кстати да, комментарии задаются двумя знаками процента
-///    %% Описываем действия для клика по узлу
-///
-///    click A "http://www.github.com"
-/// ```
+#[doc = simple_mermaid::mermaid!("../design/schema.mmd")]
+
 fn main() {
     DebugSession::init(LogLevel::Debug, Backtrace::Short);
     debug!("Test the debugging...");
