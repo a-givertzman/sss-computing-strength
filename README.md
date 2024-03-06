@@ -2,25 +2,6 @@
 
 sss-computing-strength
 
-## Markdown Mermaid Inline 
-Browsing github/gitlab the following diagram in README.md would be rendered in your browser.
-```mermaid
- graph LR
-     s([Source]) --> a[[aquamarine]]
-     r[[rustdoc]] --> f([Docs w/ Mermaid!])
-     subgraph rustc[Rust Compiler]
-     a -. inject mermaid.js .-> r
-```
-
-#[aquamarine]
-```mermaid
-   graph LR
-     s([Source]) --> a[[aquamarine]]
-     r[[rustdoc]] --> f([Docs w/ Mermaid!])
-     subgraph rustc[Rust Compiler]
-     a -. inject mermaid.js .-> r
-```
-
 ```mermaid
    flowchart TB
    %% создаем узел
