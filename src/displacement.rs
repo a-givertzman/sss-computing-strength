@@ -57,7 +57,7 @@ impl Displacement {
                 .shift_x()
         );
         let (index_up, frame_up) = &self.frames.iter().enumerate().find(|(_, v)| v.shift_x() >= pos_x ).expect("Displacement error: can't find frame");
-        if *index_up == 0 || *index_up == self.frames.len() - 1 {
+        if *index_up == 0 {
             return self.frames[*index_up].area(draft);
         }
         let frame_down = &self.frames[*index_up - 1];

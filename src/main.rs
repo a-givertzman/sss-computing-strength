@@ -45,21 +45,12 @@
 //!   7. Вычисляется изгибающий момент BendingMoment для каждой шпации как интегриральнуа сумма срезающей силы:
 //!      $M_i = M_{i-1} + Fs_{i-1} + Fs_i, M_0 = 0$.
 
-use std::{
-    fmt::{self, Display},
-    io, process,
-    rc::Rc,
-};
+use std::
+    rc::Rc
+;
 
-use api_tools::client::{
-    api_query::{ApiQuery, ApiQueryKind, ApiQuerySql},
-    api_request::ApiRequest,
-};
 use data::input_api_server::get_data;
-use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
 use error::Error;
-use log::*;
-use testing::entities::test_value::Value;
 
 use crate::{
     bending_moment::BendingMoment,
