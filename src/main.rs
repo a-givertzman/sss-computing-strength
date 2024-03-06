@@ -44,13 +44,35 @@
 //!   6. Вычисляется срезающуя сила ShearForce для каждой шпации через интегрирование. Интегрирование проводим путем вычисления суммы сверху: $Fs_i = Fs_{i-1} + Ft_i, Fs_0 = 0$.
 //!   7. Вычисляется изгибающий момент BendingMoment для каждой шпации как интегриральнуа сумма срезающей силы:
 //!      $M_i = M_{i-1} + Fs_{i-1} + Fs_i, M_0 = 0$.
-
+/// #[cfg_attr(doc, aquamarine::aquamarine)]
+/// ```mermaid
+/// %%{init: {
+///     'theme': 'base',
+///     'themeVariables': {
+///            'primaryColor': '#ffcccc', 
+///            'edgeLabelBackground':'#ccccff', 
+///            'tertiaryColor': '#fff0f0' }}}%%
+///  graph TD
+///     A(Diagram needs to be drawn) --> B{Does it have 'init' annotation?}
+///      B -->|No| C(Apply default theme)
+///      B -->|Yes| D(Apply customized theme)
+/// ```
+#[aquamarine]
+/// ```mermaid
+/// graph LR
+///     s([Source]) --> a[[aquamarine]]
+///     r[[rustdoc]] --> f([Docs w/ Mermaid!])
+///     subgraph rustc[Rust Compiler]
+///     a -. inject mermaid.js .-> r
+///     end
+/// ```
 use std::{io, process, rc::Rc};
 
 use api_tools::client::{
     api_query::{ApiQuery, ApiQueryKind, ApiQuerySql},
     api_request::ApiRequest,
 };
+use aquamarine::aquamarine;
 use data::parse_input::ParsedInputData;
 use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
 use log::*;
@@ -74,6 +96,11 @@ mod tests;
 mod total_force;
 mod trim;
 
+#[cfg_attr(doc, aquamarine::aquamarine)]
+/// ```mermaid
+/// graph LR
+///     fa:fa-check-->fa:fa-coffee
+/// ```
 fn main() {
     DebugSession::init(LogLevel::Debug, Backtrace::Short);
     debug!("Test the debugging...");
