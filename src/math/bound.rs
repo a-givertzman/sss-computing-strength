@@ -15,8 +15,8 @@ impl Bound {
     pub fn new(start: f64, end: f64) -> Self {
         assert!(end > start);
         Self {
-            start: start,
-            end: end,
+            start,
+            end,
         }
     }
     ///
@@ -59,3 +59,37 @@ impl Bound {
         (self.start + self.end)/2.
     }
 }
+
+/// Набор диапазонов значений
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Bounds {
+    // непрерывный вектор диапазонов
+    data: Vec<f64>, 
+}
+
+impl Bounds {
+    /// Основной конструктор 
+    pub fn new(data: Vec<f64>) -> Self {
+        assert!(!data.is_empty(), "data.is_empty()");
+        Self { data }
+    }
+    /// Вспомогательный конструктор 
+    pub fn from_n(ship_length: f64, n: usize) -> Self {
+        assert!(!data.is_empty(), "data.is_empty()");
+        Self { data }
+    }
+}
+    // длинна судна
+    let ship_length = data.ship_length;
+    let n = data.n_parts as usize;
+    let delta_x = ship_length / n as f64;
+    let start_x = -ship_length / 2.;
+    // вектор разбиения судна на отрезки
+    let bounds = (0..n as usize)
+        .map(|v| {
+            Bound::new(
+                start_x + delta_x * v as f64,
+                start_x + delta_x * (v as f64 + 1.),
+            )
+        })
+        .collect::<Vec<_>>();

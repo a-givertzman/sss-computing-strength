@@ -130,19 +130,19 @@ fn main() -> Result<(), Error> {
     // ускорение свободного падения
     let gravity_g = 9.81;
     // плотность окружающей воды
-    let water_density = data.water_density;
+//    let water_density = data.water_density;
     // отстояние центра тяжести ватерлинии по длине от миделя
-    let center_waterline_shift = Curve::new(&data.center_waterline);
+//    let center_waterline_shift = Curve::new(&data.center_waterline);
     // продольный метацентрический радиус
-    let rad_long = Curve::new(&data.rad_long);
+//    let rad_long = Curve::new(&data.rad_long);
     // средняя осадка
-    let mean_draught = Curve::new(&data.mean_draught);
+//    let mean_draught = Curve::new(&data.mean_draught);
     // отстояние центра величины погруженной части судна
-    let center_draught_shift = PosShift::new(
+/*    let center_draught_shift = PosShift::new(
         Curve::new(&data.center_shift_x),
         Curve::new(&data.center_shift_y),
         Curve::new(&data.center_shift_z),
-    );
+    );*/
     // шпангоуты
     let frames = data
         .frames
@@ -191,17 +191,21 @@ fn main() -> Result<(), Error> {
         Rc::clone(&mass),
         Draught::new(
             ship_length,
-            water_density,
+            data.water_density,
             bounds,
             Rc::clone(&mass),
-            center_waterline_shift,
-            mean_draught,
+            Curve::new(&data.center_waterline),
+            Curve::new(&data.mean_draught),
             Displacement::new(frames),
             Trim::new(
-                water_density,
+                data.water_density,
                 ship_length,
-                center_draught_shift, // отстояние центра величины погруженной части судна
-                rad_long,             // продольный метацентрические радиус
+                PosShift::new(
+                    Curve::new(&data.center_shift_x),
+                    Curve::new(&data.center_shift_y),
+                    Curve::new(&data.center_shift_z),
+                ), // отстояние центра величины погруженной части судна
+                Curve::new(&data.rad_long),             // продольный метацентрические радиус
                 Rc::clone(&mass),     // все грузы судна
             ),
         ),
