@@ -114,19 +114,19 @@ fn main() -> Result<(), Error> {
     */
 
     // длинна судна
-    let ship_length = data.ship_length;
-    let n = data.n_parts as usize;
-    let delta_x = ship_length / n as f64;
-    let start_x = -ship_length / 2.;
+ //   let ship_length = data.ship_length;
+   // let n = data.n_parts as usize;
     // вектор разбиения судна на отрезки
-    let bounds = (0..n as usize)
+    let bounds = Bounds::from_n(data.ship_length, data.n_parts as usize);    
+    
+ /*   (0..n as usize)
         .map(|v| {
             Bound::new(
                 start_x + delta_x * v as f64,
                 start_x + delta_x * (v as f64 + 1.),
             )
         })
-        .collect::<Vec<_>>();
+        .collect::<Vec<_>>();*/
     // ускорение свободного падения
     let gravity_g = 9.81;
     // плотность окружающей воды
@@ -149,13 +149,13 @@ fn main() -> Result<(), Error> {
         .iter()
         .map(|v| {
             assert!(
-                v.delta_x >= 0. && v.delta_x <= ship_length,
+                v.delta_x >= 0. && v.delta_x <= bounds.length(),
                 "frame delta_x {} >= 0. && delta_x {} <= ship_length {}",
                 v.delta_x,
                 v.delta_x,
-                ship_length
+                bounds.length()
             );
-            Frame::new(v.delta_x - ship_length / 2., Curve::new(&v.immersion_area))
+            Frame::new(v.delta_x - bounds.length() / 2., Curve::new(&v.immersion_area))
         })
         .collect();
     // Грузы
@@ -190,16 +190,14 @@ fn main() -> Result<(), Error> {
     let shear_force = ShearForce::new(TotalForce::new(
         Rc::clone(&mass),
         Draught::new(
-            ship_length,
             data.water_density,
-            bounds,
             Rc::clone(&mass),
             Curve::new(&data.center_waterline),
             Curve::new(&data.mean_draught),
             Displacement::new(frames),
             Trim::new(
                 data.water_density,
-                ship_length,
+                bounds.length(),
                 PosShift::new(
                     Curve::new(&data.center_shift_x),
                     Curve::new(&data.center_shift_y),
@@ -208,6 +206,7 @@ fn main() -> Result<(), Error> {
                 Curve::new(&data.rad_long),             // продольный метацентрические радиус
                 Rc::clone(&mass),     // все грузы судна
             ),
+            bounds
         ),
         gravity_g,
     ));

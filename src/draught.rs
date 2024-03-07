@@ -1,21 +1,14 @@
 //! Распределение массы вытесненной воды по шпациям
 use std::rc::Rc;
 
-use crate::{
-    displacement::Displacement,
-    mass::IMass,
-    math::{bound::Bound, curve::{Curve, ICurve}},
-    trim::Trim,
-};
+use crate::{displacement::Displacement, mass::IMass, math::*, trim::Trim};
 ///
 /// Распределение массы вытесненной воды по шпациям
 pub struct Draught {
-    /// длинна судна
-    ship_length: f64,
     /// плотность окружающей воды
     water_density: f64,
     /// вектор разбиения на отрезки для эпюров
-    bounds: Vec<Bound>,
+    bounds: Bounds,
     /// объемное водоизмещение
     mass: Rc<dyn IMass>,
     /// отстояние центра тяжести ватерлинии по длине от миделя
@@ -30,7 +23,6 @@ pub struct Draught {
 ///
 impl Draught {
     /// Основной конструктор. Аргументы:  
-    /// - ship_length: длинна судна
     /// - water_density: плотность окружающей воды    
     /// - bounds: вектор разбиения на отрезки для эпюров
     /// - mass: все грузы судна
@@ -39,17 +31,15 @@ impl Draught {
     /// - displacement: класс водоизмещения судна
     /// - trim: класс дифферента судна
     pub fn new(
-        ship_length: f64,              // длинна судна
-        water_density: f64,            // плотность окружающей воды
-        bounds: Vec<Bound>,            // вектор разбиения на отрезки для эпюров
-        mass: Rc<dyn IMass>,                    // все грузы судна
+        water_density: f64,            // плотность окружающей воды        
+        mass: Rc<dyn IMass>,           // все грузы судна
         center_waterline_shift: Curve, // отстояние центра тяжести ватерлинии по длине от миделя
         mean_draught: Curve,           // средняя осадка
         displacement: Displacement,    // водоизмещение судна
         trim: Trim,                    // дифферент судна
+        bounds: Bounds,                // вектор разбиения на отрезки для эпюров
     ) -> Self {
         Self {
-            ship_length,
             water_density,
             bounds,
             mass,
@@ -64,6 +54,8 @@ impl Draught {
 impl IDraught for Draught {
     /// Распределение массы вытесненной воды по шпациям
     fn values(&self) -> Vec<f64> {
+        // длинна судна
+        let ship_length = self.bounds.length();
         // дифферент судна
         let trim = self.trim.value();
         //объемное водоизмещение
@@ -75,29 +67,26 @@ impl IDraught for Draught {
         //осадка на носовом перпендикуляре
         //let stern_draught = d - (0.5 - x_f/self.ship_length)*trim;
         //осадка на кормовом перпендикуляре
-        let bow_draught = d - (0.5 + x_f / self.ship_length) * trim;
+        let bow_draught = d - (0.5 + x_f / ship_length) * trim;
         //let delta_draught = (bow_draught - stern_draught)/self.bounds.len() as f64;
         //self.bounds.iter().map(|v| self.displacement.value(*v, delta_draught*(v.center() + self.ship_length/2.)/self.ship_length)).collect()
-        let trim_x_f_sl = x_f * trim / self.ship_length;
-        let delta_draught = (-2. * trim_x_f_sl) / (self.bounds.len() as f64 * self.ship_length);
+        let trim_x_f_sl = x_f * trim / ship_length;
+        let delta_draught = (-2. * trim_x_f_sl) / (self.bounds.qnt() as f64 * ship_length);
         let result = self
             .bounds
             .iter()
             .map(|v| {
-                {
-                    let displacement = self.displacement.value(
-                        *v,
-                        bow_draught + delta_draught * (v.center() + self.ship_length / 2.),
-                    );
-                    displacement*self.water_density
-                }
+                let displacement = self.displacement.value(
+                    *v,
+                    bow_draught + delta_draught * (v.center() + ship_length / 2.),
+                );
+                displacement * self.water_density
             })
             .collect();
         log::debug!("\t Draught trim:{trim} volume:{volume} x_f:{x_f} d:{d} bow_draught:{bow_draught} trim_x_f_sl:{trim_x_f_sl} delta_draught:{delta_draught} result:{:?}", result);
         result
     }
 }
-
 
 #[doc(hidden)]
 pub trait IDraught {

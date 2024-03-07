@@ -1,7 +1,7 @@
 //! Нагрузка на корпус судна
 use std::rc::Rc;
 
-use crate::{load::ILoad, math::{bound::Bound, mass_moment::MassMoment, position::Position, surface_moment::SurfaceMoment}};
+use crate::{load::ILoad, math::*};
 
 /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
 #[derive(Clone)]
@@ -9,14 +9,14 @@ pub struct Mass {
     /// все грузы судна
     loads: Vec<Rc<Box<dyn ILoad>>>,
     /// ссылка на вектор разбиения на отрезки для эпюров
-    bounds: Vec<Bound>,
+    bounds: Bounds,
 }
 
 impl Mass {
     /// Аргументы конструктора:  
     /// * loads - вектор абстрактных грузов
     /// * bounds - ссылка на вектор разбиения на отрезки для эпюров
-    pub fn new (loads: Vec<Rc<Box<dyn ILoad>>>, bounds: Vec<Bound>) -> Self {
+    pub fn new (loads: Vec<Rc<Box<dyn ILoad>>>, bounds: Bounds) -> Self {
         Self { loads, bounds, }
     }
     ///Суммарный статический момент
