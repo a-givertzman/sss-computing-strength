@@ -1,0 +1,4 @@
+-- Удаление всех данных из таблицы по шпангоутам
+TRUNCATE TABLE rad_long;
+
+TRUNCATE TABLE rad_cross;

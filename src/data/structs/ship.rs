@@ -111,7 +111,7 @@ impl MeanDraughtDataArray {
 }
 /// Кривая отстояния центра величины погруженной части судна
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct CenterShiftData {
+pub struct CenterDraughtShiftData {
     pub key: f64,
     pub value_x: f64,
     pub value_y: f64,
@@ -119,12 +119,12 @@ pub struct CenterShiftData {
 }
 /// Массив кривых отстояния центра величины погруженной части судна
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct CenterShiftDataArray {
-    pub data: Vec<CenterShiftData>,
+pub struct CenterDraughtShiftDataArray {
+    pub data: Vec<CenterDraughtShiftData>,
 }
 ///
 #[allow(dead_code)]
-impl CenterShiftDataArray {
+impl CenterDraughtShiftDataArray {
     /// Парсинг данных из json строки
     pub fn parse(src: &str) -> Result<Self, Error> {
         Ok(serde_json::from_str(src)?)

@@ -57,7 +57,7 @@ pub fn create_test_db(db_name: &str) -> Result<(), Error> {
     let query = ApiQuery::new(
         ApiQueryKind::Sql(ApiQuerySql::new(
             db_name,
-            include_str!("../../src/data/sql/center_shift.sql"),
+            include_str!("../../src/data/sql/center_draught_shift.sql"),
         )),
         false,
     );
@@ -162,8 +162,8 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         )),
         false,
     );
-    let center_shift =
-        CenterShiftDataArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
+    let center_draught_shift =
+        CenterDraughtShiftDataArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
 
     let query = ApiQuery::new(
         ApiQueryKind::Sql(ApiQuerySql::new(
@@ -270,7 +270,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         center_waterline,
         rad_long,
         mean_draught,
-        center_shift,
+        center_draught_shift,
         frame,
         frame_area,
         load_space,

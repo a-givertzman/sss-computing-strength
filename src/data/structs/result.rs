@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use crate::error::Error;
 
 use super::{
-    CenterShiftDataArray, CenterVolumeData, CenterWaterlineArray, FrameAreaData, FrameDataArray,
+    CenterDraughtShiftDataArray, CenterVolumeData, CenterWaterlineArray, FrameAreaData, FrameDataArray,
     FreeMomentInertiaData, LoadSpaceArray, MeanDraughtDataArray, RadLongDataArray, ShipArray,
     TankDataArray,
 };
@@ -120,11 +120,11 @@ pub struct ParsedShipData {
     /// кривая средней осадки
     pub mean_draught: Vec<(f64, f64)>,
     /// кривая отстояния центра величины погруженной части судна по x
-    pub center_shift_x: Vec<(f64, f64)>,
+    pub center_draught_shift_x: Vec<(f64, f64)>,
     /// кривая отстояния центра величины погруженной части судна по y
-    pub center_shift_y: Vec<(f64, f64)>,
+    pub center_draught_shift_y: Vec<(f64, f64)>,
     /// кривая отстояния центра величины погруженной части судна по z
-    pub center_shift_z: Vec<(f64, f64)>,
+    pub center_draught_shift_z: Vec<(f64, f64)>,
     /// Шпангоуты судна
     pub frames: Vec<ParsedFrameData>,
     /// Нагрузка судна без жидких грузов
@@ -142,7 +142,7 @@ impl ParsedShipData {
         center_waterline: CenterWaterlineArray,
         rad_long: RadLongDataArray,
         mean_draught: MeanDraughtDataArray,
-        center_shift: CenterShiftDataArray,
+        center_draught_shift: CenterDraughtShiftDataArray,
         frame_src: FrameDataArray,
         frame_area: FrameAreaData,
         load_spaces_src: LoadSpaceArray,
@@ -282,9 +282,9 @@ impl ParsedShipData {
             center_waterline: center_waterline.data(),
             rad_long: rad_long.data(),
             mean_draught: mean_draught.data(),
-            center_shift_x: center_shift.x(),
-            center_shift_y: center_shift.y(),
-            center_shift_z: center_shift.z(),
+            center_draught_shift_x: center_draught_shift.x(),
+            center_draught_shift_y: center_draught_shift.y(),
+            center_draught_shift_z: center_draught_shift.z(),
             frames,
             load_spaces,
             tanks,
@@ -326,19 +326,19 @@ impl ParsedShipData {
         if self.mean_draught.len() <= 1 {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of mean_draught's points greater or equal to 2 {}", self.mean_draught.len())));
         }
-        if self.center_shift_x.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_shift_x's points greater or equal to 2 {}", self.center_shift_x.len())));
+        if self.center_draught_shift_x.len() <= 1 {
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_draught_shift_x's points greater or equal to 2 {}", self.center_draught_shift_x.len())));
         }
-        if self.center_shift_y.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_shift_y's points greater or equal to 2 {}", self.center_shift_y.len())));
+        if self.center_draught_shift_y.len() <= 1 {
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_draught_shift_y's points greater or equal to 2 {}", self.center_draught_shift_y.len())));
         }
-        if self.center_shift_z.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_shift_z's points greater or equal to 2 {}", self.center_shift_z.len())));
+        if self.center_draught_shift_z.len() <= 1 {
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_draught_shift_z's points greater or equal to 2 {}", self.center_draught_shift_z.len())));
         }
         if self.frames.len() <= 1 {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: number of frames must be greater or equal to 2 {}",
-                self.center_shift_z.len()
+                self.center_draught_shift_z.len()
             )));
         }
         if let Some(frame) = self.frames.iter().find(|f| f.index >= self.frames.len()) {

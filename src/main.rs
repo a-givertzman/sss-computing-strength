@@ -90,7 +90,7 @@ fn main() -> Result<(), Error> {
     // data::input_api_server::create_test_db("test")?;
     // data::input_db::create_test_db("test");
 
-    let data = get_data("test", 1)?;
+    let data = get_data("test_ship", 1)?;
     dbg!(&data);
 
     /*
@@ -199,9 +199,9 @@ fn main() -> Result<(), Error> {
                 data.water_density,
                 bounds.length(),
                 PosShift::new(
-                    Curve::new(&data.center_shift_x),
-                    Curve::new(&data.center_shift_y),
-                    Curve::new(&data.center_shift_z),
+                    Curve::new(&data.center_draught_shift_x),
+                    Curve::new(&data.center_draught_shift_y),
+                    Curve::new(&data.center_draught_shift_z),
                 ), // отстояние центра величины погруженной части судна
                 Curve::new(&data.rad_long),             // продольный метацентрические радиус
                 Rc::clone(&mass),     // все грузы судна
