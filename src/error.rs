@@ -12,6 +12,8 @@ pub enum Error {
     Serde(#[from] serde_json::Error),
     #[error("Parameter error")]
     Parameter(String),
+    #[error("ApiRequest error")]
+    ApiRequest(String),
     #[error(transparent)]
     Other(#[from] std::io::Error),
 }

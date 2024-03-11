@@ -8,7 +8,7 @@ CREATE TABLE if not exists load_space (
   key TEXT NOT NULL,
   value REAL NOT NULL,
   CONSTRAINT load_space_pk PRIMARY KEY (id),
-  CONSTRAINT load_space_key_unique UNIQUE (space_id, key),
+  CONSTRAINT load_space_key_unique UNIQUE (ship_id, space_id, key),
   CONSTRAINT load_space_key_check CHECK(char_length(key) <= 50)
 );
 

@@ -1,8 +1,9 @@
 //! Промежуточные структуры для serde_json для парсинга данных шпангоутов
 use std::collections::HashMap;
-
-use crate::error::Error;
 use serde::{Deserialize, Serialize};
+
+use super::DataArray;
+
 /// Данные по шпангоуту
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FrameData {
@@ -23,18 +24,9 @@ impl std::fmt::Display for FrameData {
         )
     }
 }
-/// Массив данных по шпангоутам
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct FrameDataArray {
-    pub data: Vec<FrameData>,
-}
+pub type FrameDataArray = DataArray<FrameData>;
 ///
-#[allow(dead_code)]
 impl FrameDataArray {
-    ///
-    pub fn parse(src: &str) -> Result<Self, Error> {
-        Ok(serde_json::from_str(src)?)
-    }
     /// Преобразование и возвращает данные в виде мапы индекс/данные шпангоута
     pub fn data(self) -> HashMap<usize, HashMap<String, f64>> {
         let mut map: HashMap<usize, HashMap<String, f64>> = HashMap::new();
@@ -86,16 +78,9 @@ impl std::fmt::Display for FrameAreaUnit {
     }
 }
 /// Кривая погружаемой площади шпангоута от осадки
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct FrameAreaArray {
-    pub data: Vec<FrameAreaUnit>,
-}
-#[allow(dead_code)]
-impl FrameAreaArray {
-    /// Парсинг данных из json строки
-    pub fn parse(src: &str) -> Result<Self, Error> {
-        Ok(serde_json::from_str(src)?)
-    }
+pub type FrameAreaArray = DataArray<FrameAreaUnit>;
+///
+impl DataArray<FrameAreaUnit> {
     /// Преобразование и возвращает данные в виде мапы индекс фрейма/кривая площади
     pub fn data(&self) -> HashMap<usize, Vec<(f64, f64)>> {
         let mut map: HashMap<usize, Vec<(f64, f64)>> = HashMap::new();
@@ -109,3 +94,4 @@ impl FrameAreaArray {
         map
     }
 }
+

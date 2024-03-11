@@ -8,7 +8,7 @@ CREATE TABLE if not exists frame (
   key TEXT NOT NULL,
   value REAL NOT NULL,
   CONSTRAINT frame_pk PRIMARY KEY (id),
-  CONSTRAINT frame_index_unique UNIQUE (index, key),
+  CONSTRAINT frame_index_unique UNIQUE (ship_id, index, key),
   CONSTRAINT frame_key_check CHECK(char_length(key) <= 50)
 );
 

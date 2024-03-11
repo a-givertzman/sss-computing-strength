@@ -8,7 +8,7 @@ CREATE TABLE if not exists tank (
   key TEXT NOT NULL,
   value REAL NOT NULL,
   CONSTRAINT tank_pk PRIMARY KEY (id),
-  CONSTRAINT tank_key_unique UNIQUE (tank_id, key),
+  CONSTRAINT tank_key_unique UNIQUE (ship_id, tank_id, key),
   CONSTRAINT tank_key_check CHECK(char_length(key) <= 50)
 );
 

@@ -45,9 +45,7 @@
 //!   7. Вычисляется изгибающий момент BendingMoment для каждой шпации как интегриральнуа сумма срезающей силы:
 //!      $M_i = M_{i-1} + Fs_{i-1} + Fs_i, M_0 = 0$.
 
-use std::
-    rc::Rc
-;
+use std::rc::Rc;
 
 use data::input_api_server::get_data;
 use error::Error;
@@ -91,7 +89,7 @@ fn main() -> Result<(), Error> {
     // data::input_db::create_test_db("test");
 
     let data = get_data("test_ship", 1)?;
-    dbg!(&data);
+    //   dbg!(&data);
 
     /*
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
@@ -114,52 +112,63 @@ fn main() -> Result<(), Error> {
     */
 
     // длинна судна
- //   let ship_length = data.ship_length;
-   // let n = data.n_parts as usize;
+    //   let ship_length = data.ship_length;
+    // let n = data.n_parts as usize;
     // вектор разбиения судна на отрезки
-    let bounds = Bounds::from_n(data.ship_length, data.n_parts as usize);    
-    
- /*   (0..n as usize)
-        .map(|v| {
-            Bound::new(
-                start_x + delta_x * v as f64,
-                start_x + delta_x * (v as f64 + 1.),
-            )
-        })
-        .collect::<Vec<_>>();*/
+    let bounds = Bounds::from_n(data.ship_length, data.n_parts as usize);
+
+    /*   (0..n as usize)
+    .map(|v| {
+        Bound::new(
+            start_x + delta_x * v as f64,
+            start_x + delta_x * (v as f64 + 1.),
+        )
+    })
+    .collect::<Vec<_>>();*/
     // ускорение свободного падения
     let gravity_g = 9.81;
     // плотность окружающей воды
-//    let water_density = data.water_density;
+    //    let water_density = data.water_density;
     // отстояние центра тяжести ватерлинии по длине от миделя
-//    let center_waterline_shift = Curve::new(&data.center_waterline);
+    //    let center_waterline_shift = Curve::new(&data.center_waterline);
     // продольный метацентрический радиус
-//    let rad_long = Curve::new(&data.rad_long);
+    //    let rad_long = Curve::new(&data.rad_long);
     // средняя осадка
-//    let mean_draught = Curve::new(&data.mean_draught);
+    //    let mean_draught = Curve::new(&data.mean_draught);
     // отстояние центра величины погруженной части судна
-/*    let center_draught_shift = PosShift::new(
+    /*    let center_draught_shift = PosShift::new(
         Curve::new(&data.center_shift_x),
         Curve::new(&data.center_shift_y),
         Curve::new(&data.center_shift_z),
     );*/
     // шпангоуты
-    let frames = data
+    let frames: Vec<Frame> = data
         .frames
         .iter()
         .map(|v| {
-            assert!(
-                v.delta_x >= 0. && v.delta_x <= bounds.length(),
-                "frame delta_x {} >= 0. && delta_x {} <= ship_length {}",
-                v.delta_x,
-                v.delta_x,
-                bounds.length()
-            );
-            Frame::new(v.delta_x - bounds.length() / 2., Curve::new(&v.immersion_area))
+            Frame::new(v.x - data
+                .frames.last().expect("frames last error: no frame").x / 2., Curve::new(&v.immersion_area))
         })
         .collect();
     // Грузы
     let mut loads: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
+    for index in 0..frames.len() - 1 {
+        let bound = Bound::new(frames[index].shift_x(), frames[index + 1].shift_x());
+        if let Some(mass) = data.load_constant.data().get(&index) {
+            loads.push(Rc::new(Box::new(LoadSpace::new(
+                *mass,
+                bound,
+                Position::new(bound.center(), 0., 0.),
+            ))));
+        }
+        if let Some(mass) = data.load_stock.data(data.stock).get(&index) {
+            loads.push(Rc::new(Box::new(LoadSpace::new(
+                *mass,
+                bound,
+                Position::new(bound.center(), 0., 0.),
+            ))));
+        }
+    }
     data.load_spaces.iter().for_each(|v| {
         loads.push(Rc::new(Box::new(LoadSpace::new(
             v.mass,
@@ -167,6 +176,7 @@ fn main() -> Result<(), Error> {
             Position::new(v.center.0, v.center.1, v.center.2),
         ))));
     });
+
     // Цистерны
     data.tanks.iter().for_each(|v| {
         loads.push(Rc::new(Box::new(Tank::new(
@@ -203,10 +213,10 @@ fn main() -> Result<(), Error> {
                     Curve::new(&data.center_draught_shift_y),
                     Curve::new(&data.center_draught_shift_z),
                 ), // отстояние центра величины погруженной части судна
-                Curve::new(&data.rad_long),             // продольный метацентрические радиус
-                Rc::clone(&mass),     // все грузы судна
+                Curve::new(&data.rad_long), // продольный метацентрические радиус
+                Rc::clone(&mass),           // все грузы судна
             ),
-            bounds
+            bounds,
         ),
         gravity_g,
     ));

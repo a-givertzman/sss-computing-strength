@@ -1,8 +1,7 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
 use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
-use crate::error::Error;
+use super::DataArray;
 
 /// Груз, конструкции корпуса, контейнер или другой твердый груз
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -27,25 +26,17 @@ impl std::fmt::Display for LoadSpaceData {
     }
 }
 /// Массив данных по грузам
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct LoadSpaceArray {
-    pub data: Vec<LoadSpaceData>,
-}
+pub type LoadSpaceArray = DataArray<LoadSpaceData>;
 ///
-#[allow(dead_code)]
 impl LoadSpaceArray {
-    /// Парсинг данных из json строки
-    pub fn parse(src: &str) -> Result<Self, Error> {
-        Ok(serde_json::from_str(src)?)
-    }
     /// Преобразование и возвращает данные в виде мапы id/данные груза
-    pub fn data(self) -> HashMap<usize, HashMap<String, f64>> {
+    pub fn data(&self) -> HashMap<usize, HashMap<String, f64>> {
         let mut map: HashMap<usize, HashMap<String, f64>> = HashMap::new();
-        self.data.into_iter().for_each(|v| {
+        self.data.iter().for_each(|v| {
             if let Some(sub_map) = map.get_mut(&v.space_id) {
-                sub_map.insert(v.key, v.value);
+                sub_map.insert(v.key.clone(), v.value);
             } else {
-                map.insert(v.space_id, HashMap::from([(v.key, v.value)]));       
+                map.insert(v.space_id, HashMap::from([(v.key.clone(), v.value)]));       
             }
         });
         map

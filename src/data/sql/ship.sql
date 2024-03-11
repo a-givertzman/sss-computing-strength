@@ -20,7 +20,8 @@ INSERT INTO ship
 VALUES
   (NULL, 1, 'ship_length', 200, 'Ship Length', 'm'),
   (NULL, 1, 'water_density', 1.025, 'Water Density', 'g/ml'),
-  (NULL, 1, 'n_parts', 20, 'Number of Parts', NULL);
+  (NULL, 1, 'n_parts', 20, 'Number of Parts', NULL),
+  (NULL, 1, 'stock', 0, 'Percentage of stocks', '%');
 
 SELECT * FROM ship WHERE ship_id=1;
 

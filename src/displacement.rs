@@ -28,7 +28,7 @@ impl Displacement {
     /// - pos_x: координата шпангоута по х от центра судна
     /// - draft: осадка в районе шпангоута
     fn area(&self, pos_x: f64, draft: f64) -> f64 {
-        assert!(
+    /*    assert!(
             pos_x
                 >= self
                     .frames
@@ -55,8 +55,15 @@ impl Displacement {
                 .last()
                 .expect("Displacement error: no frames!")
                 .shift_x()
-        );
-        let (index_up, frame_up) = &self.frames.iter().enumerate().find(|(_, v)| v.shift_x() >= pos_x ).expect("Displacement error: can't find frame");
+        );*/
+
+        if self.frames.first().expect("Displacement error: can't find first frame").shift_x() >= pos_x  {
+            return self.frames[0].area(draft);
+        }
+        if self.frames.last().expect("Displacement error: can't find last frame").shift_x() <= pos_x  {
+            return self.frames.last().unwrap().area(draft);
+        }
+        let (index_up, frame_up) = &self.frames.iter().enumerate().find(|(_, v)| v.shift_x() >= pos_x ).expect("Displacement error: can't find frame");             
         if *index_up == 0 {
             return self.frames[*index_up].area(draft);
         }

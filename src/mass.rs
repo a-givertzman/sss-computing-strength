@@ -45,6 +45,7 @@ impl IMass for Mass {
     }
     /// Поправка к продольной метацентрической высоте на влияние свободной поверхности жидкости в цистернах 
     fn delta_m_h(&self) -> f64 {
+        assert!(self.sum() > 0., "Mass delta_m_h sum > 0");
         self.moment_surface().y()/self.sum()
     }
 }

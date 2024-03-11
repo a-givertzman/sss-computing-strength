@@ -5,11 +5,7 @@ use std::collections::HashSet;
 
 use crate::error::Error;
 
-use super::{
-    CenterDraughtShiftDataArray, CenterVolumeData, CenterWaterlineArray, FrameAreaData, FrameDataArray,
-    FreeMomentInertiaData, LoadSpaceArray, MeanDraughtDataArray, RadLongDataArray, ShipArray,
-    TankDataArray,
-};
+use super::*;
 
 /// Шпангоут
 #[derive(Debug)]
@@ -113,6 +109,8 @@ pub struct ParsedShipData {
     pub water_density: f64,
     /// длинна корпуса судна
     pub ship_length: f64,
+    /// Процент запасов судна
+    pub stock: f64,
     /// кривая отстояния центра тяжести ватерлинии по длине от миделя  
     pub center_waterline: Vec<(f64, f64)>,
     /// кривая продольного метацентрического радиуса
@@ -127,6 +125,10 @@ pub struct ParsedShipData {
     pub center_draught_shift_z: Vec<(f64, f64)>,
     /// Шпангоуты судна
     pub frames: Vec<ParsedFrameData>,
+    /// Постоянный груз, приходящийся на шпацию
+    pub load_constant: LoadConstantArray,
+    /// Переменный груз, приходящийся на шпацию
+    pub load_stock: LoadStockArray,
     /// Нагрузка судна без жидких грузов
     pub load_spaces: Vec<ParsedLoadSpaceData>,
     /// Нагрузка судна, жидкие грузы
@@ -145,14 +147,18 @@ impl ParsedShipData {
         center_draught_shift: CenterDraughtShiftDataArray,
         frame_src: FrameDataArray,
         frame_area: FrameAreaData,
+        load_constant: LoadConstantArray,
+        load_stock: LoadStockArray,
         load_spaces_src: LoadSpaceArray,
         tank_data: TankDataArray,
         tank_centetr_volume: CenterVolumeData,
         tanks_free_moment_inertia: FreeMomentInertiaData,
     ) -> Result<Self, Error> {
+        log::debug!("result parse begin");
         let ship_data = ship_data.data();
 
         let mut frames = Vec::new();
+        
         for (index, map) in frame_src.data() {
             frames.push(ParsedFrameData {
                 index,
@@ -167,11 +173,10 @@ impl ParsedShipData {
                 immersion_area: frame_area.get(index).ok_or(format!(
                     "ParsedShipData parse error: no immersion_area for frame index:{}",
                     index
-                ))?,
+                ))?.to_vec(),
             });
         }
         frames.sort_by(|a, b| a.index.cmp(&b.index));
-
         let mut load_spaces = Vec::new();
         for (space_id, map) in load_spaces_src.data() {
             load_spaces.push(ParsedLoadSpaceData {
@@ -265,7 +270,8 @@ impl ParsedShipData {
                 ))?,
             });
         }
-
+        log::debug!("result parse ok");
+        log::debug!("result check begin");
         Self {
             n_parts: *ship_data.get("n_parts").ok_or(format!(
                 "ParsedShipData parse error: no n_parts for ship id:{}",
@@ -279,6 +285,10 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no ship_length for ship id:{}",
                 ship_id
             ))?,
+            stock: *ship_data.get("stock").ok_or(format!(
+                "ParsedShipData parse error: no ship_length for ship id:{}",
+                ship_id
+            ))?,
             center_waterline: center_waterline.data(),
             rad_long: rad_long.data(),
             mean_draught: mean_draught.data(),
@@ -286,6 +296,8 @@ impl ParsedShipData {
             center_draught_shift_y: center_draught_shift.y(),
             center_draught_shift_z: center_draught_shift.z(),
             frames,
+            load_constant,
+            load_stock,
             load_spaces,
             tanks,
         }
@@ -370,6 +382,7 @@ impl ParsedShipData {
                 "Error check ParsedShipData: x of frame with index = 0 must be equal to 0"
             )));
         }
+        /* длинна судна не обязательно совпадает с расстоянием между крайними шпангоутами
         if (self
             .frames
             .iter()
@@ -382,7 +395,7 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: x of frame with last index must be equal to ship_length"
             )));
-        }
+        }*/
         if let Some(frame) = self.frames.iter().find(|f| f.x < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: x of frame must be greater or equal to 0, {}",
@@ -403,21 +416,41 @@ impl ParsedShipData {
         }) {
             return Err(Error::Parameter(format!("Error check ParsedShipData: values of immersion_area in frame must be greater or equal to 0, {}", frame)));
         }
+        let load_constant_data = self.load_constant.data();
+        if let Some((index, value)) = load_constant_data.iter().find(|(_, value)| **value < 0.) {
+            return Err(Error::Parameter(format!(
+                "Error check LoadConstantArray: mass of load_constant must be greater or equal to 0, index:{}, value:{}",
+                index, value, 
+            )));
+        } 
+        if let Some((index, _)) = load_constant_data.iter().find(|(index, _)| self.frames.iter().find(|frame| &&frame.index == index ).is_none()) {
+            return Err(Error::Parameter(format!(
+                "Error check LoadConstantArray: index of load_constant must be contained in frames, index:{}", index)));
+        }
+        let load_stock_data = self.load_stock.data(self.stock);
+        if let Some((index, value)) = load_stock_data.iter().find(|(_, value)| **value < 0.) {
+            return Err(Error::Parameter(format!(
+                "Error check LoadStockArray: mass of load_stock must be greater or equal to 0, index:{}, value:{}",
+                index, value, 
+            )));
+        }
+        if let Some((index, _)) = load_stock_data.iter().find(|(index, _)| self.frames.iter().find(|frame| &&frame.index == index ).is_none()) {
+            return Err(Error::Parameter(format!(
+                "Error check LoadStockArray: index of load_stock must be contained in frames, index:{}", index)));
+        }
         if let Some(s) = self.load_spaces.iter().find(|s| s.mass < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: mass of load_space must be greater or equal to 0, {}",
                 s
             )));
-        }
+        }        
         if let Some(s) = self
             .load_spaces
             .iter()
             .find(|s| s.bound.0 >= s.bound.1 || s.bound.2 >= s.bound.3)
         {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: load_space Bound error! {}",
-                s
-            )));
+                "Error check ParsedShipData: load_space Bound error! {}", s )));
         }
         if let Some(tank) = self.tanks.iter().find(|t| t.density <= 0.) {
             return Err(Error::Parameter(format!(
@@ -445,6 +478,7 @@ impl ParsedShipData {
         {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of free_surf_inertia's points must be greater or equal to 2 {}", tank)));
         }
+        log::debug!("result parse ok");
         Ok(self)
     }
 }

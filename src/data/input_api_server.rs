@@ -8,6 +8,15 @@ use crate::{data::structs::*, error::Error};
 pub fn create_test_db(db_name: &str) -> Result<(), Error> {
     //   let script = include_str!("../../src/data/sql/create_postgres_db.sql");
 
+    let mut request = ApiRequest::new(
+        "parent",
+        "0.0.0.0:8080",
+        "auth_token",
+        ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(db_name, "")), false),
+        false,
+        false,
+    );
+
     let query = ApiQuery::new(
         ApiQueryKind::Sql(ApiQuerySql::new(
             db_name,
@@ -15,16 +24,6 @@ pub fn create_test_db(db_name: &str) -> Result<(), Error> {
         )),
         false,
     );
-
-    let mut request = ApiRequest::new(
-        "parent",
-        "0.0.0.0:8080",
-        "auth_token",
-        query.clone(),
-        false,
-        false,
-    );
-
     dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
 
     let query = ApiQuery::new(
@@ -57,7 +56,7 @@ pub fn create_test_db(db_name: &str) -> Result<(), Error> {
     let query = ApiQuery::new(
         ApiQueryKind::Sql(ApiQuerySql::new(
             db_name,
-            include_str!("../../src/data/sql/center_draught_shift.sql"),
+            include_str!("../../src/data/sql/center_draught.sql"),
         )),
         false,
     );
@@ -93,6 +92,24 @@ pub fn create_test_db(db_name: &str) -> Result<(), Error> {
     let query = ApiQuery::new(
         ApiQueryKind::Sql(ApiQuerySql::new(
             db_name,
+            include_str!("../../src/data/sql/load_constant.sql"),
+        )),
+        false,
+    );
+    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
+
+    let query = ApiQuery::new(
+        ApiQueryKind::Sql(ApiQuerySql::new(
+            db_name,
+            include_str!("../../src/data/sql/load_stock.sql"),
+        )),
+        false,
+    );
+    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
+
+    let query = ApiQuery::new(
+        ApiQueryKind::Sql(ApiQuerySql::new(
+            db_name,
             include_str!("../../src/data/sql/tank.sql"),
         )),
         false,
@@ -118,152 +135,147 @@ pub fn create_test_db(db_name: &str) -> Result<(), Error> {
     dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
     Ok(())
 }
-/// Чтение данных из БД. Функция читает данные за несколько запросов, 
+
+/// Чтение данных из БД. Функция читает данные за несколько запросов,
 /// парсит их и проверяет данные на корректность.
 pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> {
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            format!("SELECT key, value FROM ship WHERE ship_id={};", ship_id),
-        )),
-        false,
-    );
-
     let mut request = ApiRequest::new(
         "parent",
         "0.0.0.0:8080",
         "auth_token",
-        query.clone(),
+        ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(db_name, "")), false),
         false,
         false,
     );
-    let ship = ShipArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            format!(
-                "SELECT key, value FROM center_waterline WHERE ship_id={};",
-                ship_id
-            ),
-        )),
-        false,
-    );
-    let center_waterline =
-        CenterWaterlineArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            format!(
-                "SELECT key, value_x, value_y, value_z FROM center_shift WHERE ship_id={};",
-                ship_id
-            ),
-        )),
-        false,
-    );
-    let center_draught_shift =
-        CenterDraughtShiftDataArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            format!(
-                "SELECT key, value FROM mean_draught WHERE ship_id={};",
-                ship_id
-            ),
-        )),
-        false,
-    );
+    log::debug!("input_api_server  read begin");
+    let ship = ShipArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!("SELECT key, value FROM ship WHERE ship_id={};", ship_id),
+    )?)?;
+    //dbg!(&ship);
+    log::debug!("input_api_server  ship read ok");
+    let center_waterline = CenterWaterlineArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM center_waterline WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+//    dbg!(&center_waterline);
+    log::debug!("input_api_server  center_waterline read ok");
+    let center_draught_shift = CenterDraughtShiftDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value_x, value_y, value_z FROM center_draught WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+  //  dbg!(&center_draught_shift);
+    log::debug!("input_api_server  center_draught_shift read ok");
     let mean_draught =
-        MeanDraughtDataArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            format!("SELECT key, value FROM rad_long WHERE ship_id={};", ship_id),
-        )),
-        false,
-    );
-    let rad_long = RadLongDataArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            format!(
-                "SELECT index, key, value FROM frame WHERE ship_id={};",
-                ship_id
-            ),
-        )),
-        false,
-    );
-    let frame = FrameDataArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            format!(
-                "SELECT frame_index, key, value FROM frame_area WHERE ship_id={};",
-                ship_id
-            ),
-        )),
-        false,
-    );
-    let frame_area = FrameAreaData::new(
-        FrameAreaArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?.data(),
-    );
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            format!(
-                "SELECT space_id, key, value FROM load_space WHERE ship_id={};",
-                ship_id
-            ),
-        )),
-        false,
-    );
-    let load_space = LoadSpaceArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            format!(
-                "SELECT tank_id, key, value FROM tank WHERE ship_id={};",
-                ship_id
-            ),
-        )),
-        false,
-    );
-    let tank = TankDataArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?;
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            format!(
-                "SELECT tank_id, key, value_x, value_y, value_z FROM tank_center WHERE tank_id={};",
-                ship_id
-            ),
-        )),
-        false,
-    );
+        MeanDraughtDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM mean_draught WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+//    dbg!(&mean_draught);
+    log::debug!("input_api_server  mean_draught read ok");
+    let rad_long = RadLongDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!("SELECT key, value FROM rad_long WHERE ship_id={};", ship_id),
+    )?)?;
+//    dbg!(&rad_long);
+    log::debug!("input_api_server  rad_long read ok");
+    let frame = FrameDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT index, key, value FROM frame WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+//    dbg!(&frame);
+    log::debug!("input_api_server  frame read ok");
+    let frame_area = FrameAreaData::new(FrameAreaArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT frame_index, key, value FROM frame_area WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?.data());
+//    dbg!(&frame_area);
+    log::debug!("input_api_server  frame_area read ok");
+    let load_space = LoadSpaceArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT space_id, key, value FROM load_space WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+//    dbg!(&load_space);
+    log::debug!("input_api_server  load_space read ok");
+    let load_constant = LoadConstantArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT frame_space_index, key, value FROM load_constant WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+//    dbg!(&load_constant);
+    log::debug!("input_api_server  load_constant read ok");
+    let load_stock = LoadStockArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT frame_space_index, key, value FROM load_stock WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+ //   dbg!(&load_stock);
+    log::debug!("input_api_server  load_stock read ok");
+    let tank = TankDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT tank_id, key, value FROM tank WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+   // dbg!(&tank);
+    log::debug!("input_api_server  tank read ok");
     let tank_center = CenterVolumeData::new(
-        CenterVolumeArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?.data(),
-    );
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            format!(
-                "SELECT tank_id, key, value_x, value_y FROM tank_center WHERE tank_id={};",
-                ship_id
-            ),
-        )),
-        false,
-    );
+        CenterVolumeArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT tank_id, key, value_x, value_y, value_z FROM tank_center WHERE tank_id={};",
+            ship_id
+        ),
+    )?)?.data());
+   // dbg!(&tank_center);
+    log::debug!("input_api_server  tank_center read ok");
     let tank_inertia = FreeMomentInertiaData::new(
-        FreeMomentInertiaArray::parse(&String::from_utf8(request.fetch(&query, false)?)?)?.data(),
-    );
+        FreeMomentInertiaArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT tank_id, key, value_x, value_y FROM tank_center WHERE tank_id={};",
+            ship_id
+        ),
+    )?)?.data());
+  //  dbg!(&tank_inertia);
+    log::debug!("input_api_server  tank_inertia read ok");
+    log::debug!("input_api_server  read ok");
     ParsedShipData::parse(
         ship_id,
         ship,
@@ -273,9 +285,20 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         center_draught_shift,
         frame,
         frame_area,
+        load_constant,
+        load_stock,
         load_space,
         tank,
         tank_center,
         tank_inertia,
     )
+}
+/// Вспомогательная функция для выполнения запроса к апи-серверу
+fn fetch_query(
+    request: &mut ApiRequest,
+    database: impl Into<String>,
+    sql: impl Into<String>,
+) -> Result<String, Error> {
+    let query = ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(database, sql)), false);
+    Ok(String::from_utf8(request.fetch(&query, false)?)?)
 }
