@@ -6,42 +6,64 @@ use crate::{load::ILoad, math::*};
 /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
 #[derive(Clone)]
 pub struct Mass {
-    /// все грузы судна
-    loads: Vec<Rc<Box<dyn ILoad>>>,
-    /// ссылка на вектор разбиения на отрезки для эпюров
+    /// Постоянная масса судна распределенная по шпациям
+    loads_const: Vec<Rc<Box<dyn ILoad>>>,
+    /// Смещение постоянный массы судна
+    shift_const: Position,
+    /// Все грузы судна
+    loads_cargo: Vec<Rc<Box<dyn ILoad>>>,
+    /// Вектор разбиения на отрезки для эпюров
     bounds: Bounds,
 }
 
 impl Mass {
     /// Аргументы конструктора:  
-    /// * loads - вектор абстрактных грузов
-    /// * bounds - ссылка на вектор разбиения на отрезки для эпюров
-    pub fn new (loads: Vec<Rc<Box<dyn ILoad>>>, bounds: Bounds) -> Self {
-        Self { loads, bounds, }
+    /// * loads_const - постоянная масса судна распределенная по шпациям
+    /// * shift_const - смещение постоянный массы судна
+    /// * loads_stock - масса запасов судна распределенная по шпациям
+    /// * shift_stock - смещение массы запасов судна
+    /// * loads_cargo - грузы судна
+    /// * bounds - вектор разбиения на отрезки для эпюров
+    pub fn new (
+        loads_const: Vec<Rc<Box<dyn ILoad>>>,
+        shift_const: Position,
+        loads_cargo: Vec<Rc<Box<dyn ILoad>>>, bounds: Bounds) -> Self {
+        Self { loads_const, shift_const, loads_cargo, bounds, }
     }
-    ///Суммарный статический момент
+    /// Суммарный статический момент. Для постоянной массы и для запасов считается по 
+    /// заданным значениям смещения центра масс
     fn moment_mass (&self) -> MassMoment {
-        self.loads.iter().map(|c| c.moment_mass() ).sum::<MassMoment>()
+        let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| MassMoment::from_pos(self.shift_const, c.mass(None)) ).sum::<MassMoment>() +
+     //   let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| c.moment_mass() ).sum::<MassMoment>() +
+        self.loads_cargo.iter().map(|c| c.moment_mass() ).sum::<MassMoment>();
+        log::info!("\t Mass moment_mass:{res} ");
+        res
     }
     /// Суммарный момент свободной поверхности
     fn moment_surface (&self) -> SurfaceMoment {
-        self.loads.iter().map(|c| c.moment_surface() ).sum::<SurfaceMoment>()
+        self.loads_cargo.iter().map(|c| c.moment_surface() ).sum::<SurfaceMoment>()
     }
 }
 
 impl IMass for Mass {
     /// Суммарная масса
     fn sum(&self) -> f64 {
-        self.loads.iter().map(|v| v.mass(None)).sum::<f64>()
+        let res = self.loads_const.iter().map(|v| v.mass(None)).sum::<f64>() +
+        self.loads_cargo.iter().map(|v| v.mass(None)).sum::<f64>();
+        log::info!("\t Mass sum:{res} ");
+        res
     }    
     /// Распределение массы по вектору разбиения
     fn values(&self) -> Vec<f64> {
         self.bounds.iter().map(|b| 
-            self.loads.iter().map(|v| v.mass(Some(*b))).sum::<f64>()).collect()
+            self.loads_const.iter().map(|v| v.mass(Some(*b))).sum::<f64>() + 
+            self.loads_cargo.iter().map(|v| v.mass(Some(*b))).sum::<f64>()).collect()
     }
     /// Отстояние центра масс
     fn shift(&self) -> Position {
-        self.moment_mass().to_pos(self.sum())
+        let res = self.moment_mass().to_pos(self.sum());
+        log::info!("\t Mass shift:{res} ");
+        res
     }
     /// Поправка к продольной метацентрической высоте на влияние свободной поверхности жидкости в цистернах 
     fn delta_m_h(&self) -> f64 {
@@ -52,9 +74,13 @@ impl IMass for Mass {
 
 #[doc(hidden)]
 pub trait IMass {
+    /// Суммарная масса
     fn sum(&self) -> f64;
+    /// Распределение массы по вектору разбиения
     fn values(&self) -> Vec<f64>;
+    /// Отстояние центра масс
     fn shift(&self) -> Position;
+    /// Поправка к продольной метацентрической высоте на влияние свободной поверхности жидкости в цистернах 
     fn delta_m_h(&self) -> f64;
 }
 // заглушка для тестирования

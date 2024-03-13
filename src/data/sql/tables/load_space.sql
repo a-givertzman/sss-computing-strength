@@ -6,7 +6,7 @@ CREATE TABLE if not exists load_space (
   ship_id INT NOT NULL,
   space_id INT NOT NULL,
   key TEXT NOT NULL,
-  value REAL NOT NULL,
+  value FLOAT8 NOT NULL,
   CONSTRAINT load_space_pk PRIMARY KEY (id),
   CONSTRAINT load_space_key_unique UNIQUE (ship_id, space_id, key),
   CONSTRAINT load_space_key_check CHECK(char_length(key) <= 50)
@@ -25,5 +25,7 @@ VALUES
   (NULL, 1, 1, 'center_z', 1);
 
 SELECT * FROM load_space WHERE ship_id=1;
+
+TRUNCATE TABLE load_space;
 
 SELECT space_id, key, value FROM load_space WHERE ship_id=1;

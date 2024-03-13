@@ -5,7 +5,7 @@ CREATE TABLE if not exists ship (
   project_id INT,
   ship_id INT NOT NULL,
   key TEXT NOT NULL,
-  value REAL NOT NULL,
+  value FLOAT8 NOT NULL,
   name TEXT NOT NULL,
   unit TEXT,
   CONSTRAINT ship_pk PRIMARY KEY (id),
@@ -18,11 +18,12 @@ CREATE TABLE if not exists ship (
 INSERT INTO ship
   (project_id, ship_id, key, value, name, unit)
 VALUES
-  (NULL, 1, 'ship_length', 200, 'Ship Length', 'm'),
   (NULL, 1, 'water_density', 1.025, 'Water Density', 'g/ml'),
   (NULL, 1, 'n_parts', 20, 'Number of Parts', NULL),
-  (NULL, 1, 'stock', 0, 'Percentage of stocks', '%');
+  (NULL, 1, 'const_mass_shift_x', 1.05, 'Center of mass shift x', NULL),
+  (NULL, 1, 'const_mass_shift_y', 0, 'Center of mass shift y', NULL),
+  (NULL, 1, 'const_mass_shift_z', 5.32, 'Center of mass shift z', NULL);
 
 SELECT * FROM ship WHERE ship_id=1;
 
-SELECT key, value FROM ship WHERE ship_id=1;
+TRUNCATE TABLE ship;

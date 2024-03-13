@@ -7,7 +7,7 @@ CREATE TABLE if not exists load_constant (
   ship_id INT NOT NULL,
   frame_space_index INT NOT NULL,
   key TEXT NOT NULL,
-  value REAL NOT NULL,
+  value FLOAT8 NOT NULL,
   CONSTRAINT load_constant_pk PRIMARY KEY (id),
   CONSTRAINT load_constant_key_unique UNIQUE (ship_id, frame_space_index, key),
   CONSTRAINT load_constant_key_check CHECK(char_length(key) <= 50)
@@ -22,3 +22,5 @@ VALUES
   (NULL, 1, 1, 'equipment', 129.48);
 
 SELECT * FROM load_constant WHERE ship_id=1;
+
+TRUNCATE TABLE load_constant;

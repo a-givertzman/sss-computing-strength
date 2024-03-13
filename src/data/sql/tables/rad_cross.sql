@@ -4,8 +4,8 @@ CREATE TABLE if not exists rad_cross (
   id INT GENERATED ALWAYS AS IDENTITY,
   project_id INT,
   ship_id INT NOT NULL,
-  key REAL NOT NULL,
-  value REAL NOT NULL,
+  key FLOAT8 NOT NULL,
+  value FLOAT8 NOT NULL,
   CONSTRAINT rad_cross_pk PRIMARY KEY (id),
   CONSTRAINT rad_cross_unique UNIQUE (ship_id, key)
 );
@@ -18,4 +18,4 @@ VALUES
 
 SELECT * FROM rad_cross WHERE ship_id=1;
 
-SELECT key, value FROM rad_cross WHERE ship_id=1;
+TRUNCATE TABLE rad_cross;

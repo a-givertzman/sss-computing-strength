@@ -21,14 +21,16 @@ impl Bounds {
         let delta_x = ship_length / n as f64;
         let start_x = -ship_length / 2.;
         // вектор разбиения судна на отрезки
-        Self::new((0..n )
+        let res = Self::new((0..n )
             .map(|v| {
                 Bound::new(
                     start_x + delta_x * v as f64,
                     start_x + delta_x * (v as f64 + 1.),
                 )
             })
-            .collect::<Vec<_>>() )
+            .collect::<Vec<_>>() );
+        log::info!("\t Bounds from_n: ship_length:{ship_length} n:{n} values:{:?} ", res.values);
+        res
     }
     /// Итератор по коллекции
     pub fn iter(&self) -> std::slice::Iter<'_, Bound> {

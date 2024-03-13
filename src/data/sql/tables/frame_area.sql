@@ -5,8 +5,8 @@ CREATE TABLE if not exists frame_area (
   project_id INT,
   ship_id INT NOT NULL,
   frame_index INT NOT NULL,
-  key REAL NOT NULL,
-  value REAL NOT NULL,
+  key FLOAT8 NOT NULL,
+  value FLOAT8 NOT NULL,
   CONSTRAINT frame_area_pk PRIMARY KEY (id),
   CONSTRAINT frame_area_key_unique UNIQUE (frame_index, key),
   CONSTRAINT frame_area_key_non_negative CHECK (key >= 0),
@@ -23,4 +23,4 @@ VALUES
 
 SELECT * FROM frame_area WHERE ship_id=1;
 
-SELECT frame_index, key, value FROM frame_area WHERE ship_id=1;
+TRUNCATE TABLE frame_area;

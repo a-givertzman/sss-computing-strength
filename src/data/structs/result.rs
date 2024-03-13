@@ -107,10 +107,12 @@ pub struct ParsedShipData {
     pub n_parts: f64,
     /// плотность воды
     pub water_density: f64,
-    /// длинна корпуса судна
-    pub ship_length: f64,
-    /// Процент запасов судна
-    pub stock: f64,
+    /// отстояние центра тяжести постоянной массы судна по x  
+    pub const_mass_shift_x: f64,
+    /// отстояние центра тяжести постоянной массы судна по y
+    pub const_mass_shift_y: f64,
+    /// отстояние центра тяжести постоянной массы судна по z
+    pub const_mass_shift_z: f64,
     /// кривая отстояния центра тяжести ватерлинии по длине от миделя  
     pub center_waterline: Vec<(f64, f64)>,
     /// кривая продольного метацентрического радиуса
@@ -127,9 +129,7 @@ pub struct ParsedShipData {
     pub frames: Vec<ParsedFrameData>,
     /// Постоянный груз, приходящийся на шпацию
     pub load_constant: LoadConstantArray,
-    /// Переменный груз, приходящийся на шпацию
-    pub load_stock: LoadStockArray,
-    /// Нагрузка судна без жидких грузов
+    /// Нагрузка судна без жидких грузов    
     pub load_spaces: Vec<ParsedLoadSpaceData>,
     /// Нагрузка судна, жидкие грузы
     pub tanks: Vec<ParsedTankData>,
@@ -148,13 +148,12 @@ impl ParsedShipData {
         frame_src: FrameDataArray,
         frame_area: FrameAreaData,
         load_constant: LoadConstantArray,
-        load_stock: LoadStockArray,
         load_spaces_src: LoadSpaceArray,
         tank_data: TankDataArray,
         tank_centetr_volume: CenterVolumeData,
         tanks_free_moment_inertia: FreeMomentInertiaData,
     ) -> Result<Self, Error> {
-        log::debug!("result parse begin");
+        log::info!("result parse begin");
         let ship_data = ship_data.data();
 
         let mut frames = Vec::new();
@@ -270,8 +269,8 @@ impl ParsedShipData {
                 ))?,
             });
         }
-        log::debug!("result parse ok");
-        log::debug!("result check begin");
+        log::info!("result parse ok");
+        log::info!("result check begin");
         Self {
             n_parts: *ship_data.get("n_parts").ok_or(format!(
                 "ParsedShipData parse error: no n_parts for ship id:{}",
@@ -281,12 +280,16 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no water_density for ship id:{}",
                 ship_id
             ))?,
-            ship_length: *ship_data.get("ship_length").ok_or(format!(
-                "ParsedShipData parse error: no ship_length for ship id:{}",
+            const_mass_shift_x: *ship_data.get("const_mass_shift_x").ok_or(format!(
+                "ParsedShipData parse error: no const_mass_shift_x for ship id:{}",
                 ship_id
             ))?,
-            stock: *ship_data.get("stock").ok_or(format!(
-                "ParsedShipData parse error: no ship_length for ship id:{}",
+            const_mass_shift_y: *ship_data.get("const_mass_shift_y").ok_or(format!(
+                "ParsedShipData parse error: no const_mass_shift_y for ship id:{}",
+                ship_id
+            ))?,
+            const_mass_shift_z: *ship_data.get("const_mass_shift_z").ok_or(format!(
+                "ParsedShipData parse error: no const_mass_shift_z for ship id:{}",
                 ship_id
             ))?,
             center_waterline: center_waterline.data(),
@@ -297,7 +300,6 @@ impl ParsedShipData {
             center_draught_shift_z: center_draught_shift.z(),
             frames,
             load_constant,
-            load_stock,
             load_spaces,
             tanks,
         }
@@ -305,12 +307,6 @@ impl ParsedShipData {
     }
     /// Проверка данных на корректность
     fn check(self) -> Result<Self, Error> {
-        if self.ship_length <= 0. {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: value of ship's length must be positive {}",
-                self.ship_length
-            )));
-        }
         if self.n_parts <= 0. {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: number of frames must be positive {}",
@@ -350,7 +346,7 @@ impl ParsedShipData {
         if self.frames.len() <= 1 {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: number of frames must be greater or equal to 2 {}",
-                self.center_draught_shift_z.len()
+                self.frames.len()
             )));
         }
         if let Some(frame) = self.frames.iter().find(|f| f.index >= self.frames.len()) {
@@ -427,17 +423,6 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check LoadConstantArray: index of load_constant must be contained in frames, index:{}", index)));
         }
-        let load_stock_data = self.load_stock.data(self.stock);
-        if let Some((index, value)) = load_stock_data.iter().find(|(_, value)| **value < 0.) {
-            return Err(Error::Parameter(format!(
-                "Error check LoadStockArray: mass of load_stock must be greater or equal to 0, index:{}, value:{}",
-                index, value, 
-            )));
-        }
-        if let Some((index, _)) = load_stock_data.iter().find(|(index, _)| self.frames.iter().find(|frame| &&frame.index == index ).is_none()) {
-            return Err(Error::Parameter(format!(
-                "Error check LoadStockArray: index of load_stock must be contained in frames, index:{}", index)));
-        }
         if let Some(s) = self.load_spaces.iter().find(|s| s.mass < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: mass of load_space must be greater or equal to 0, {}",
@@ -478,7 +463,7 @@ impl ParsedShipData {
         {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of free_surf_inertia's points must be greater or equal to 2 {}", tank)));
         }
-        log::debug!("result parse ok");
+        log::info!("result parse ok");
         Ok(self)
     }
 }

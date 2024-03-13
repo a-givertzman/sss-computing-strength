@@ -49,6 +49,7 @@ use std::rc::Rc;
 
 use data::input_api_server::get_data;
 use error::Error;
+use log::info;
 
 use crate::{
     bending_moment::BendingMoment,
@@ -85,6 +86,9 @@ mod total_force;
 mod trim;
 
 fn main() -> Result<(), Error> {
+    env_logger::init();
+    info!("starting up");
+
     // data::input_api_server::create_test_db("test")?;
     // data::input_db::create_test_db("test");
 
@@ -93,16 +97,16 @@ fn main() -> Result<(), Error> {
 
     /*
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        debug!("Test the debugging...");
-        debug!("Test the testing...");
+        info!("Test the debugging...");
+        info!("Test the testing...");
         let value = Value::Bool(false);
-        debug!("\t bool value: {:?}", value);
+        info!("\t bool value: {:?}", value);
         let value = Value::Int(444);
-        debug!("\t int value: {:?}", value);
+        info!("\t int value: {:?}", value);
         let value = Value::Float(55.55);
-        debug!("\t float value: {:?}", value);
+        info!("\t float value: {:?}", value);
         let value = Value::String("66.77".to_string());
-        debug!("\t string value: {:?}", value);
+        info!("\t string value: {:?}", value);
     */
 
     /*    let data = read().unwrap_or_else(|err| {
@@ -110,12 +114,6 @@ fn main() -> Result<(), Error> {
              process::exit(1);
          });
     */
-
-    // длинна судна
-    //   let ship_length = data.ship_length;
-    // let n = data.n_parts as usize;
-    // вектор разбиения судна на отрезки
-    let bounds = Bounds::from_n(data.ship_length, data.n_parts as usize);
 
     /*   (0..n as usize)
     .map(|v| {
@@ -146,43 +144,55 @@ fn main() -> Result<(), Error> {
         .frames
         .iter()
         .map(|v| {
-            Frame::new(v.x - data
-                .frames.last().expect("frames last error: no frame").x / 2., Curve::new(&v.immersion_area))
+            Frame::new(
+                v.x - data.frames.last().expect("frames last error: no frame").x / 2.,
+                Curve::new(&v.immersion_area),
+            )
         })
         .collect();
-    // Грузы
-    let mut loads: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
+
+    // длинна судна
+    //   let ship_length = data.ship_length;
+    // let n = data.n_parts as usize;
+    // вектор разбиения судна на отрезки
+   // let bounds = Bounds::from_n(data.ship_length, data.n_parts as usize);
+    let bounds = Bounds::from_n(frames.last().unwrap().shift_x() - frames.first().unwrap().shift_x(), data.n_parts as usize);
+    let half_length = bounds.length()/2.;
+
+
+    // Постоянная масса судна
+    let mut loads_const: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
+    let const_shift = Position::new(
+        data.const_mass_shift_x,
+        data.const_mass_shift_y,
+        data.const_mass_shift_z,
+    );
     for index in 0..frames.len() - 1 {
         let bound = Bound::new(frames[index].shift_x(), frames[index + 1].shift_x());
         if let Some(mass) = data.load_constant.data().get(&index) {
-            loads.push(Rc::new(Box::new(LoadSpace::new(
+            loads_const.push(Rc::new(Box::new(LoadSpace::new(
                 *mass,
                 bound,
-                Position::new(bound.center(), 0., 0.),
-            ))));
-        }
-        if let Some(mass) = data.load_stock.data(data.stock).get(&index) {
-            loads.push(Rc::new(Box::new(LoadSpace::new(
-                *mass,
-                bound,
-                Position::new(bound.center(), 0., 0.),
+                Position::new(bound.center(), const_shift.y(), const_shift.z()),
             ))));
         }
     }
+    // Грузы судна
+    let mut loads_cargo: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
     data.load_spaces.iter().for_each(|v| {
-        loads.push(Rc::new(Box::new(LoadSpace::new(
+        loads_cargo.push(Rc::new(Box::new(LoadSpace::new(
             v.mass,
-            Bound::new(v.bound.0, v.bound.1),
-            Position::new(v.center.0, v.center.1, v.center.2),
+            Bound::new(v.bound.0 - half_length, v.bound.1 - half_length),
+            Position::new(v.center.0 - half_length, v.center.1, v.center.2),
         ))));
     });
 
     // Цистерны
     data.tanks.iter().for_each(|v| {
-        loads.push(Rc::new(Box::new(Tank::new(
+        loads_cargo.push(Rc::new(Box::new(Tank::new(
             v.density,
             v.volume,
-            Bound::new(v.bound.0, v.bound.1),
+            Bound::new(v.bound.0 - half_length, v.bound.1 - half_length),
             PosShift::new(
                 Curve::new(&v.center_x),
                 Curve::new(&v.center_y),
@@ -195,7 +205,12 @@ fn main() -> Result<(), Error> {
         ))));
     });
 
-    let mass: Rc<dyn IMass> = Rc::new(Mass::new(loads, bounds.clone()));
+    let mass: Rc<dyn IMass> = Rc::new(Mass::new(
+        loads_const,
+        const_shift,
+        loads_cargo,
+        bounds.clone(),
+    ));
 
     let shear_force = ShearForce::new(TotalForce::new(
         Rc::clone(&mass),
@@ -220,8 +235,9 @@ fn main() -> Result<(), Error> {
         ),
         gravity_g,
     ));
-    let bending_moment = BendingMoment::new(&shear_force);
-    dbg!(&shear_force.values(), &bending_moment.values());
+   dbg!(&shear_force.values());
+      let bending_moment = BendingMoment::new(&shear_force);
+       dbg!(&shear_force.values(), &bending_moment.values());
 
     Ok(())
 }

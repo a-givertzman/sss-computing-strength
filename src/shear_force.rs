@@ -21,7 +21,7 @@ impl IShearForce for ShearForce {
     ///
     fn values(&self) -> Vec<f64> {
         let result = self.total_force.values().sum_above();
-        log::debug!("\t ShearForce result:{:?}", result);
+        log::info!("\t ShearForce result:{:?}", result);
         result
     }
 }

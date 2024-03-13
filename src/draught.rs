@@ -65,25 +65,23 @@ impl IDraught for Draught {
         //средняя осадка
         let d = self.mean_draught.value(volume);
         //осадка на носовом перпендикуляре
-        //let stern_draught = d - (0.5 - x_f/self.ship_length)*trim;
+        let stern_draught = d + (0.5 - x_f/ship_length)*trim;
         //осадка на кормовом перпендикуляре
-        let bow_draught = d - (0.5 + x_f / ship_length) * trim;
-        //let delta_draught = (bow_draught - stern_draught)/self.bounds.len() as f64;
-        //self.bounds.iter().map(|v| self.displacement.value(*v, delta_draught*(v.center() + self.ship_length/2.)/self.ship_length)).collect()
-        let trim_x_f_sl = x_f * trim / ship_length;
-        let delta_draught = (-2. * trim_x_f_sl) / (self.bounds.qnt() as f64 * ship_length);
-        let result = self
+        let bow_draught = d - (0.5 + x_f/ship_length) * trim;
+        //изменение осадки
+        let delta_draught = (stern_draught - bow_draught) / self.bounds.length();
+        let result: Vec<f64> = self
             .bounds
             .iter()
             .map(|v| {
                 let displacement = self.displacement.value(
                     *v,
-                    bow_draught + delta_draught * (v.center() + ship_length / 2.),
+                    d + delta_draught * v.center(),
                 );
                 displacement * self.water_density
             })
             .collect();
-        log::debug!("\t Draught trim:{trim} volume:{volume} x_f:{x_f} d:{d} bow_draught:{bow_draught} trim_x_f_sl:{trim_x_f_sl} delta_draught:{delta_draught} result:{:?}", result);
+        log::info!("\t Draught ship_length:{ship_length} trim:{trim} volume:{volume} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} result:{:?}, res_sum:{}", result, result.iter().sum::<f64>());
         result
     }
 }

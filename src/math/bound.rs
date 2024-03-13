@@ -59,3 +59,9 @@ impl Bound {
         (self.start + self.end)/2.
     }
 }
+///
+impl std::fmt::Display for Bound {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Bound({}, {})", self.start, self.end)
+    }
+}

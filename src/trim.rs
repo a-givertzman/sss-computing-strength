@@ -52,14 +52,14 @@ impl Trim {
         let Z_m = center_draught_shift.z() + rad_long;
         //продольная метацентрическая высота без учета влияния
         //поправки на влияние свободной поверхности
-        let H_0 = Z_m - center_draught_shift.z();
+        let H_0 = Z_m - self.mass.shift().z();
         //продольная исправленная метацентрическая высота
         let H = H_0 - self.mass.delta_m_h();
         //момент дифферентующий на 1 см осадки
         let trim_moment = (mass_sum * H) / (100. * self.ship_length);
         //дифферент судна
         let value = mass_sum * (self.mass.shift().x() - center_draught_shift.x()) / (100. * trim_moment);
-        log::debug!("\t Trim mass:{mass_sum} volume:{volume} center:{center_draught_shift} rad:{rad_long} Z_m:{Z_m} H_0:{H_0} H:{H} M:{trim_moment} result:{value}");
+        log::info!("\t Trim mass:{mass_sum} volume:{volume} center:{center_draught_shift} rad:{rad_long} Z_m:{Z_m} H_0:{H_0} H:{H} M:{trim_moment} result:{value}");
         value
     }
 }

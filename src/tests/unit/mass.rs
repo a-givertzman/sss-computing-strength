@@ -8,7 +8,8 @@ mod tests {
             bound::Bound, curve::Curve, inertia_shift::inertia_shift::InertiaShift,
             pos_shift::PosShift, position::Position,
         },
-        tank::Tank, Bounds,
+        tank::Tank,
+        Bounds,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
@@ -32,7 +33,7 @@ mod tests {
                 Curve::new(&vec![(0., 0.), (10., 1.)]),
             );
 
-            let loads: Vec<Rc<Box<dyn ILoad>>> = vec![
+            let loads_const: Vec<Rc<Box<dyn ILoad>>> = vec![
                 Rc::new(Box::new(LoadSpace::new(
                     10.,
                     Bound::new(-10., 0.),
@@ -43,17 +44,23 @@ mod tests {
                     Bound::new(0., 10.),
                     Position::new(5., 0., 0.),
                 ))),
-                Rc::new(Box::new(Tank::new(
-                    2.,
-                    10.,
-                    Bound::new(-5., 5.),
-                    center,
-                    free_surf_inertia,
-                ))),
             ];
 
+            let loads_cargo: Vec<Rc<Box<dyn ILoad>>> = vec![Rc::new(Box::new(Tank::new(
+                2.,
+                10.,
+                Bound::new(-5., 5.),
+                center,
+                free_surf_inertia,
+            )))];
+
             unsafe {
-                MASS.replace(Mass::new(loads, Bounds::from_n(20., 4)));
+                MASS.replace(Mass::new(
+                    loads_const, 
+                    Position::new(0., 0., 0.,),
+                    loads_cargo, 
+                    Bounds::from_n(20., 4)
+                ));
             }
         })
     }
@@ -68,31 +75,6 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        /*     let loads: Vec<Rc<Box<dyn ILoad>>> = vec![
-                    Rc::new(Box::new(LoadSpace::new(
-                        Bound::new(-10., 0.),
-                        Position::new(-5., 0., 0.),
-                        10.,
-                    ))),
-                    Rc::new(Box::new(LoadSpace::new(
-                        Bound::new(0., 10.),
-                        Position::new(5., 0., 0.),
-                        20.,
-                    ))),
-                    Rc::new(Box::new(LoadSpace::new(
-                        Bound::new(-5., 5.),
-                        Position::new(0., 0., 0.),
-                        10.,
-                    ))),
-                ];
-
-                let bounds = vec![
-                    Bound::new(-10., -5.),
-                    Bound::new(-5., 0.),
-                    Bound::new(0., 5.),
-                    Bound::new(5., 10.),
-                ];
-        */
         let result = unsafe { MASS.clone().unwrap().sum() };
         let target = 50.;
         assert!(

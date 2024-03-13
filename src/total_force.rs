@@ -30,13 +30,14 @@ impl TotalForce {
 impl ITotalForce for TotalForce {
     ///
     fn values(&self) -> Vec<f64> {
-        let mut mass_values = self.mass.values();
+        let mass_values = self.mass.values();
         let draught_values = self.draught.values();
         assert!(mass_values.len() == draught_values.len(), "mass.len() {} == draught.len() {}", mass_values.len(), draught_values.len());
-        mass_values.sub_vec(&draught_values);
-        mass_values.mul_single(self.gravity_g);
-        log::debug!("\t TotalForce result:{:?}", mass_values);
-        mass_values
+        let mut result = mass_values.clone();
+        result.sub_vec(&draught_values);
+        result.mul_single(self.gravity_g);
+        log::info!("\t TotalForce mass:{:?} draught:{:?} result:{:?}", mass_values, draught_values, result);
+        result
     }
 }
 

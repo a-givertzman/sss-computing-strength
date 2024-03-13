@@ -6,7 +6,7 @@ CREATE TABLE if not exists frame (
   ship_id INT NOT NULL,
   index INT NOT NULL, 
   key TEXT NOT NULL,
-  value REAL NOT NULL,
+  value FLOAT8 NOT NULL,
   CONSTRAINT frame_pk PRIMARY KEY (id),
   CONSTRAINT frame_index_unique UNIQUE (ship_id, index, key),
   CONSTRAINT frame_key_check CHECK(char_length(key) <= 50)
@@ -22,4 +22,4 @@ VALUES
 
 SELECT * FROM frame WHERE ship_id=1;
 
-SELECT index, key, value FROM frame WHERE ship_id=1;
+TRUNCATE TABLE frame;

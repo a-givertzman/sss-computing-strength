@@ -6,7 +6,7 @@ CREATE TABLE if not exists tank (
   ship_id INT NOT NULL,
   tank_id INT NOT NULL,
   key TEXT NOT NULL,
-  value REAL NOT NULL,
+  value FLOAT8 NOT NULL,
   CONSTRAINT tank_pk PRIMARY KEY (id),
   CONSTRAINT tank_key_unique UNIQUE (ship_id, tank_id, key),
   CONSTRAINT tank_key_check CHECK(char_length(key) <= 50)
@@ -24,4 +24,4 @@ VALUES
 
 SELECT * FROM tank WHERE ship_id=1;
 
-SELECT tank_id, key, value FROM tank WHERE ship_id=1;
+TRUNCATE TABLE tank;
