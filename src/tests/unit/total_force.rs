@@ -28,6 +28,7 @@ mod tests {
                 Position::new(0., 0., 0.),
                 DeltaMH::new(0., 0.),
             )),
+            1.0,
             FakeDraught::new(vec![5., 25., 25., 25., 25., 25., 25., 25., 15., 5.]),
             gravity_g,
         )

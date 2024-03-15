@@ -1,20 +1,18 @@
-//! Распределение массы вытесненной воды по шпациям
+//! Распределение объема вытесненной воды по шпациям
 use std::rc::Rc;
 
 use crate::{displacement::Displacement, mass::IMass, math::*, trim::Trim};
 ///
-/// Распределение массы вытесненной воды по шпациям
+/// Распределение объема вытесненной воды по шпациям
 pub struct Draught {
-    /// плотность окружающей воды
-    water_density: f64,
     /// вектор разбиения на отрезки для эпюров
     bounds: Bounds,
     /// объемное водоизмещение
     mass: Rc<dyn IMass>,
     /// отстояние центра тяжести ватерлинии по длине от миделя
-    center_waterline_shift: Curve,
+    center_waterline_shift: f64,
     /// средняя осадка
-    mean_draught: Curve,
+    mean_draught: f64,
     /// водоизмещение судна
     displacement: Displacement,
     /// дифферент судна
@@ -23,24 +21,21 @@ pub struct Draught {
 ///
 impl Draught {
     /// Основной конструктор. Аргументы:  
-    /// - water_density: плотность окружающей воды    
     /// - bounds: вектор разбиения на отрезки для эпюров
     /// - mass: все грузы судна
     /// - center_waterline_shift: кривая отстояния центра тяжести ватерлинии по длине от миделя
     /// - mean_draught: кривая средняй осадки
     /// - displacement: класс водоизмещения судна
     /// - trim: класс дифферента судна
-    pub fn new(
-        water_density: f64,            // плотность окружающей воды        
+    pub fn new(    
         mass: Rc<dyn IMass>,           // все грузы судна
-        center_waterline_shift: Curve, // отстояние центра тяжести ватерлинии по длине от миделя
-        mean_draught: Curve,           // средняя осадка
+        center_waterline_shift: f64, // отстояние центра тяжести ватерлинии по длине от миделя
+        mean_draught: f64,           // средняя осадка
         displacement: Displacement,    // водоизмещение судна
         trim: Trim,                    // дифферент судна
         bounds: Bounds,                // вектор разбиения на отрезки для эпюров
     ) -> Self {
         Self {
-            water_density,
             bounds,
             mass,
             center_waterline_shift,
@@ -52,18 +47,16 @@ impl Draught {
 }
 ///
 impl IDraught for Draught {
-    /// Распределение массы вытесненной воды по шпациям
+    /// Распределение объема вытесненной воды по шпациям
     fn values(&self) -> Vec<f64> {
         // длинна судна
         let ship_length = self.bounds.length();
         // дифферент судна
         let trim = self.trim.value();
-        //объемное водоизмещение
-        let volume = self.mass.sum() / self.water_density;
         //отстояние центра тяжести ватерлинии по длине от миделя
-        let x_f = self.center_waterline_shift.value(volume);
+        let x_f = self.center_waterline_shift;
         //средняя осадка
-        let d = self.mean_draught.value(volume);
+        let d = self.mean_draught;
         //осадка на носовом перпендикуляре (6)
         let stern_draught = d + (0.5 - x_f/ship_length) * trim;
         //осадка на кормовом перпендикуляре (7)
@@ -79,10 +72,10 @@ impl IDraught for Draught {
                     d + delta_draught * v.start(),
                     d + delta_draught * v.end(),
                 );
-                displacement * self.water_density
+                displacement
             })
             .collect();
-        log::info!("\t Draught ship_length:{ship_length} trim:{trim} volume:{volume} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} result:{:?}, res_sum:{}", result, result.iter().sum::<f64>());
+        log::info!("\t Draught ship_length:{ship_length} trim:{trim} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} result:{:?}, res_sum:{}", result, result.iter().sum::<f64>());
         result
     }
 }

@@ -70,7 +70,7 @@ impl IMass for Mass {
     fn delta_m_h(&self) -> DeltaMH {
         assert!(self.sum() > 0., "Mass delta_m_h sum > 0");
         let res = DeltaMH::from_moment(self.moment_surface(), self.sum());
-        log::info!("\t Mass delta_m_h:({}, {})", res.long(), res.lat());
+        log::info!("\t Mass delta_m_h:({}, {})", res.long(), res.cross());
         res
     }
 }

@@ -20,11 +20,10 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = Trim::new(
-            1.025,
             118.39,
-            FakePosShift::new(Position::new(-0.194609657, 0., 0.735524704)),
-            FakeCurve::new(696.702572991),
-            FakeCurve::new(696.702572991),
+            Position::new(-0.194609657, 0., 0.735524704),
+            696.702572991,
+            100.,
             Rc::new(FakeMass::new(
                 2044.10,
                 vec![0.],

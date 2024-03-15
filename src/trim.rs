@@ -8,78 +8,64 @@ use crate::{
 /// Дифферент судна. Вычисляется с учетом влияния свободных  
 /// поверхностей жидкости.
 pub struct Trim {
-    water_density: f64, // плотность окружающей воды
     /// длинна судна
     ship_length: f64,
     /// отстояние центра величины погруженной части судна       
-    center_draught_shift: Box<dyn IPosShift>,
+    center_draught_shift: Position,
     /// продольный метацентрические радиус
-    rad_long: Box<dyn ICurve>,
+    rad_long: f64,
     /// поперечный метацентрические радиус
-    rad_lat: Box<dyn ICurve>,
+    rad_cross: f64,
     /// все грузы судна
     mass: Rc<dyn IMass>,
 }
 impl Trim {
     /// Основной конструктор
     pub fn new(
-        water_density: f64,                             // плотность окружающей воды
         ship_length: f64,                               // длинна судна
-        center_draught_shift: impl IPosShift + 'static, // отстояние центра величины погруженной части судна
-        rad_long: impl ICurve + 'static,                // продольный метацентрические радиус
-        rad_lat: impl ICurve + 'static,                 // поперечный метацентрические радиус
+        center_draught_shift: Position, // отстояние центра величины погруженной части судна
+        rad_long: f64,                // продольный метацентрические радиус
+        rad_cross: f64,                 // поперечный метацентрические радиус
         mass: Rc<dyn IMass>,                            // все грузы судна
     ) -> Self {
-        assert!(water_density > 0., "water_density {water_density} > 0.");
         assert!(ship_length > 0., "ship_length {ship_length} > 0.");
         Self {
-            water_density,
             ship_length,
-            center_draught_shift: Box::new(center_draught_shift),
-            rad_long: Box::new(rad_long),
-            rad_lat: Box::new(rad_lat),
+            center_draught_shift,
+            rad_long,
+            rad_cross,
             mass,
         }
     }
     /// Значение дифферента, коэффициент используемый при вычислении осадки носа и кормы
     #[allow(non_snake_case)]
     pub fn value(&self) -> f64 {
-        // Суммарная масса судна и грузов
-        let mass_sum = self.mass.sum(); 
-        // Объемное водоизмещение (1)
-        let volume = mass_sum / self.water_density;
-        // Отстояние центра величины погруженной части судна
-        let center_draught_shift = self.center_draught_shift.value(volume); 
-        // Отстояние центра масс
-        let mass_shift = self.mass.shift();
-        // Продольный метацентрические радиус
-        let rad_long = self.rad_long.value(volume);
         // Аппликата продольного метацентра (2)
-        let Z_m = center_draught_shift.z() + rad_long;
+        let Z_m = self.center_draught_shift.z() + self.rad_long;
         // Поправка к продольной метацентрической высоте на влияние   
         // свободной поверхности жидкости в цистернах (2) 
         let delta_m_h = self.mass.delta_m_h(); 
         // Продольная метацентрическая высота без учета влияния
         // поправки на влияние свободной поверхности (3)
-        let H_0 = Z_m - mass_shift.z(); 
+        let H_0 = Z_m - self.mass.shift().z(); 
         // Продольная исправленная метацентрическая высота (3)
         let H = H_0 - delta_m_h.long(); 
         // Момент дифферентующий на 1 см осадки (4)
-        let trim_moment = (mass_sum * H) / (100. * self.ship_length);
+        let trim_moment = (self.mass.sum() * H) / (100. * self.ship_length);
         // Дифферент судна (5)
-        let value = mass_sum * (mass_shift.x() - center_draught_shift.x()) / (100. * trim_moment);
-        log::info!("\t Trim mass:{mass_sum} volume:{volume} center_draught:{center_draught_shift} rad:{rad_long} Z_m:{Z_m} H_0:{H_0} H:{H} M:{trim_moment} result:{value}");
-        // Поперечный метацентрические радиус
-        let rad_lat = self.rad_lat.value(volume);
+        let value = self.mass.sum() * (self.mass.shift().x() - self.center_draught_shift.x()) / (100. * trim_moment);
+        log::info!("\t Trim mass:{} center_draught:{} rad_cross:{} rad_long:{} Z_m:{Z_m} H_0:{H_0} H:{H} M:{trim_moment} result:{value}", 
+        self.mass.sum(), self.center_draught_shift, self.rad_cross, self.rad_long );
+
         // Ааппликата поперечного метацентра (8)
-        let z_m = center_draught_shift.z() + rad_lat;//        
+        let z_m = self.center_draught_shift.z() + self.rad_cross;//        
         // Поперечная метацентрическая высота без учета влияния
         // поправки на влияние свободной поверхности (9)
-        let h_0 = z_m - mass_shift.z();         
+        let h_0 = z_m - self.mass.shift().z();         
         // Поперечная исправленная метацентрическая высота (9)
-        let h = h_0 - delta_m_h.lat();   
+        let h = h_0 - delta_m_h.cross();   
         // Исправленное отстояние центра масс судна по высоте (10) 
-        let z_g_fix = mass_shift.z() + delta_m_h.lat(); 
+        let z_g_fix = self.mass.shift().z() + delta_m_h.cross(); 
 
         value
 

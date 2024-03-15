@@ -18,7 +18,7 @@ use data_array::*;
 pub use load_constant::*;
 
 pub type RadLongDataArray = DataArray<Pair>;
-pub type RadLatDataArray = DataArray<Pair>;
+pub type RadCrossDataArray = DataArray<Pair>;
 pub type MeanDraughtDataArray = DataArray<Pair>;
 pub type CenterWaterlineArray = DataArray<Pair>;
 pub type CenterDraughtShiftDataArray = DataArray<Quadruple>;

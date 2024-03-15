@@ -185,13 +185,13 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //    dbg!(&rad_long);
     log::info!("input_api_server rad_long read ok");
-    let rad_lat = RadLongDataArray::parse(&fetch_query(
+    let rad_cross = RadLongDataArray::parse(&fetch_query(
         &mut request,
         db_name,
-        format!("SELECT key, value FROM rad_lat WHERE ship_id={};", ship_id),
+        format!("SELECT key, value FROM rad_cross WHERE ship_id={};", ship_id),
     )?)?;
-    //    dbg!(&rad_lat);
-    log::info!("input_api_server rad_lat read ok");
+    //    dbg!(&rad_cross);
+    log::info!("input_api_server rad_cross read ok");
     let frame = FrameDataArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -277,7 +277,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         ship,
         center_waterline,
         rad_long,
-        rad_lat,
+        rad_cross,
         mean_draught,
         center_draught_shift,
         frame,
@@ -342,12 +342,12 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
     );
     //    dbg!(&rad_long);
     log::info!("input_api_server rad_long read ok");
-    let rad_lat = async_query(
+    let rad_cross = async_query(
         db_name,
-        format!("SELECT key, value FROM rad_lat WHERE ship_id={};", ship_id),
+        format!("SELECT key, value FROM rad_cross WHERE ship_id={};", ship_id),
     );
-    //    dbg!(&rad_lat);
-    log::info!("input_api_server rad_lat read ok");
+    //    dbg!(&rad_cross);
+    log::info!("input_api_server rad_cross read ok");
     let frame = async_query(
         db_name,
         format!(
@@ -419,7 +419,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
         center_draught_shift,
         mean_draught,
         rad_long,
-        rad_lat,
+        rad_cross,
         frame,
         frame_area,
         load_space,
@@ -433,7 +433,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
         center_draught_shift,
         mean_draught,
         rad_long,
-        rad_lat,
+        rad_cross,
         frame,
         frame_area,
         load_space,
@@ -449,7 +449,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
         ShipArray::parse(&ship?)?,
         CenterWaterlineArray::parse(&center_waterline?)?,
         RadLongDataArray::parse(&rad_long?)?,
-        RadLatDataArray::parse(&rad_lat?)?,
+        RadCrossDataArray::parse(&rad_cross?)?,
         MeanDraughtDataArray::parse(&mean_draught?)?,
         CenterDraughtShiftDataArray::parse(&center_draught_shift?)?,
         FrameDataArray::parse(&frame?)?,

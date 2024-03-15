@@ -7,13 +7,13 @@ pub struct DeltaMH {
     /// Продольная составляющая
     pub long: f64, 
     /// Поперечная составляющая
-    pub lat: f64,
+    pub cross: f64,
 }
 
 impl DeltaMH {
     ///рассчет отстояния Центра Масс момента
     pub fn new(long: f64, lat: f64) -> Self {
-        Self{ long, lat }
+        Self{ long, cross: lat }
     }
     ///рассчет поправки из момента свободной поверхности
     pub fn from_moment(moment: SurfaceMoment, mass: f64) -> Self {
@@ -24,7 +24,7 @@ impl DeltaMH {
         self.long
     }
     /// Поперечная составляющая
-    pub fn lat(&self) -> f64 {
-        self.lat
+    pub fn cross(&self) -> f64 {
+        self.cross
     }
 }
