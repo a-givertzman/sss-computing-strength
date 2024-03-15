@@ -45,11 +45,11 @@
 //!   7. Вычисляется изгибающий момент BendingMoment для каждой шпации как интегриральнуа сумма срезающей силы:
 //!      $M_i = M_{i-1} + Fs_{i-1} + Fs_i, M_0 = 0$.
 
-use std::{collections::HashMap, rc::Rc, time::Instant};
 use data::input_api_server::*;
-use futures::executor::block_on;
 use error::Error;
+use futures::executor::block_on;
 use log::info;
+use std::{collections::HashMap, rc::Rc, time::Instant};
 
 use crate::{
     bending_moment::BendingMoment,
@@ -94,11 +94,11 @@ fn main() -> Result<(), Error> {
 
     let mut elapsed = HashMap::new();
 
-    let time = Instant::now();    
+    let time = Instant::now();
     let data = get_data("test_ship", 1)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
 
-    let time = Instant::now();    
+    let time = Instant::now();
     let data = async_get_data("test_ship", 1);
     let data = block_on(data)?;
     elapsed.insert("ParsedShipData async", time.elapsed());
@@ -167,10 +167,9 @@ fn main() -> Result<(), Error> {
     //let ship_length = 120.0;
     // let n = data.n_parts as usize;
     // вектор разбиения судна на отрезки
-   // let bounds = Bounds::from_n(data.ship_length, data.n_parts as usize);
+    // let bounds = Bounds::from_n(data.ship_length, data.n_parts as usize);
     let bounds = Bounds::from_n(ship_length, data.n_parts as usize);
-  //  let half_length = bounds.length()/2.;
-
+    //  let half_length = bounds.length()/2.;
 
     // Постоянная масса судна
     let mut loads_const: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
@@ -223,12 +222,31 @@ fn main() -> Result<(), Error> {
         ))));
     });
 
+    // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     let mass: Rc<dyn IMass> = Rc::new(Mass::new(
         loads_const,
         const_shift,
         loads_cargo,
         bounds.clone(),
     ));
+
+    // Объемное водоизмещение (1)
+    let volume = mass.sum() / data.water_density;
+    // Отстояние центра величины погруженной части судна
+    let center_draught_shift = PosShift::new(
+        Curve::new(&data.center_draught_shift_x),
+        Curve::new(&data.center_draught_shift_y),
+        Curve::new(&data.center_draught_shift_z),
+    )
+    .value(volume);
+    // Продольный метацентрические радиус
+    let rad_long = Curve::new(&data.rad_long).value(volume);
+    // Поперечный метацентрические радиус
+    let rad_lat = Curve::new(&data.rad_lat).value(volume);
+    //отстояние центра тяжести ватерлинии по длине от миделя
+    let x_f = Curve::new(&data.center_waterline).value(volume);
+    //средняя осадка
+    let d = Curve::new(&data.mean_draught).value(volume);
 
     let shear_force = ShearForce::new(TotalForce::new(
         Rc::clone(&mass),
@@ -247,16 +265,17 @@ fn main() -> Result<(), Error> {
                     Curve::new(&data.center_draught_shift_z),
                 ), // отстояние центра величины погруженной части судна
                 Curve::new(&data.rad_long), // продольный метацентрические радиус
+                Curve::new(&data.rad_lat),  // Поперечный метацентрические радиус
                 Rc::clone(&mass),           // все грузы судна
             ),
             bounds,
         ),
         gravity_g,
     ));
-  // dbg!(&shear_force.values());
+    // dbg!(&shear_force.values());
     let bending_moment = BendingMoment::new(&shear_force);
     let bending_moment_values = bending_moment.values();
-   // let shear_force_values = shear_force.values();
+    // let shear_force_values = shear_force.values();
     dbg!(&bending_moment_values);
 
     elapsed.insert("Completed", time.elapsed());

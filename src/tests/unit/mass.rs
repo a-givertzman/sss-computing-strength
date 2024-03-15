@@ -123,7 +123,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { MASS.clone().unwrap().delta_m_h() };
+        let result = unsafe { MASS.clone().unwrap().delta_m_h().long() };
         let target = 0.04; // valie from curve 1. * density 2. / mass sum 50.
         assert!(
             result == target,

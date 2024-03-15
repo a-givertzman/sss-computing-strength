@@ -64,9 +64,9 @@ impl IDraught for Draught {
         let x_f = self.center_waterline_shift.value(volume);
         //средняя осадка
         let d = self.mean_draught.value(volume);
-        //осадка на носовом перпендикуляре
-        let stern_draught = d + (0.5 - x_f/ship_length)*trim;
-        //осадка на кормовом перпендикуляре
+        //осадка на носовом перпендикуляре (6)
+        let stern_draught = d + (0.5 - x_f/ship_length) * trim;
+        //осадка на кормовом перпендикуляре (7)
         let bow_draught = d - (0.5 + x_f/ship_length) * trim;
         //изменение осадки
         let delta_draught = (stern_draught - bow_draught) / self.bounds.length();

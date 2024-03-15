@@ -66,11 +66,11 @@ impl IMass for Mass {
         res
     }
     /// Поправка к продольной метацентрической высоте на влияние  
-    /// свободной поверхности жидкости в цистернах 
-    fn delta_m_h(&self) -> f64 {
+    /// свободной поверхности жидкости в цистернах (2)
+    fn delta_m_h(&self) -> DeltaMH {
         assert!(self.sum() > 0., "Mass delta_m_h sum > 0");
-        let res = self.moment_surface().y()/self.sum();
-        log::info!("\t Mass delta_m_h:{res} ");
+        let res = DeltaMH::from_moment(self.moment_surface(), self.sum());
+        log::info!("\t Mass delta_m_h:({}, {})", res.long(), res.lat());
         res
     }
 }
@@ -83,8 +83,9 @@ pub trait IMass {
     fn values(&self) -> Vec<f64>;
     /// Отстояние центра масс
     fn shift(&self) -> Position;
-    /// Поправка к продольной метацентрической высоте на влияние свободной поверхности жидкости в цистернах 
-    fn delta_m_h(&self) -> f64;
+    /// Поправка к продольной метацентрической высоте на  
+    /// влияние свободной поверхности жидкости в цистернах 
+    fn delta_m_h(&self) -> DeltaMH;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -92,7 +93,7 @@ pub struct FakeMass {
     sum: f64,
     values: Vec<f64>,
     shift: Position,
-    delta_m_h: f64,
+    delta_m_h: DeltaMH,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
@@ -101,7 +102,7 @@ impl FakeMass {
         sum: f64,
         values: Vec<f64>,
         shift: Position,
-        delta_m_h: f64,
+        delta_m_h: DeltaMH,
     ) -> Self {
         Self { sum, values, shift, delta_m_h, }
     }
@@ -117,7 +118,7 @@ impl IMass for FakeMass {
     fn shift(&self) -> Position {
         self.shift.clone()
     }
-    fn delta_m_h(&self) -> f64 {
-        self.delta_m_h
+    fn delta_m_h(&self) -> DeltaMH {
+        self.delta_m_h.clone()
     }
 }

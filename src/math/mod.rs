@@ -8,6 +8,7 @@ pub mod bound;
 pub mod pos_shift;
 pub mod inertia_shift;
 pub mod bounds;
+pub mod delta_m_h;
 
 pub use vec::*;
 pub use position::*;
@@ -18,3 +19,4 @@ pub use bound::*;
 pub use pos_shift::*;
 pub use inertia_shift::*;
 pub use bounds::*;
+pub use delta_m_h::*;

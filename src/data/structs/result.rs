@@ -121,6 +121,8 @@ pub struct ParsedShipData {
     pub center_waterline: Vec<(f64, f64)>,
     /// кривая продольного метацентрического радиуса
     pub rad_long: Vec<(f64, f64)>,
+    /// кривая поперечного метацентрического радиуса 
+    pub rad_lat: Vec<(f64, f64)>,
     /// кривая средней осадки
     pub mean_draught: Vec<(f64, f64)>,
     /// кривая отстояния центра величины погруженной части судна по x
@@ -147,6 +149,7 @@ impl ParsedShipData {
         ship_data: ShipArray,
         center_waterline: CenterWaterlineArray,
         rad_long: RadLongDataArray,
+        rad_lat: RadLatDataArray,
         mean_draught: MeanDraughtDataArray,
         center_draught_shift: CenterDraughtShiftDataArray,
         frame_src: FrameDataArray,
@@ -298,6 +301,7 @@ impl ParsedShipData {
             ))?,
             center_waterline: center_waterline.data(),
             rad_long: rad_long.data(),
+            rad_lat: rad_lat.data(),
             mean_draught: mean_draught.data(),
             center_draught_shift_x: center_draught_shift.x(),
             center_draught_shift_y: center_draught_shift.y(),
@@ -333,6 +337,12 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: number of rad_long's points greater or equal to 2 {}",
                 self.rad_long.len()
+            )));
+        }
+        if self.rad_lat.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of rad_lat's points greater or equal to 2 {}",
+                self.rad_lat.len()
             )));
         }
         if self.mean_draught.len() <= 1 {
