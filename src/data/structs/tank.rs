@@ -34,8 +34,8 @@ pub struct TankDataArray {
 #[allow(dead_code)]
 impl TankDataArray {
     /// Парсинг данных из json строки
-    pub fn parse(src: &str) -> Result<Self, Error> {
-        Ok(serde_json::from_str(src)?)
+    pub fn parse(src: &[u8]) -> Result<Self, Error> {
+        Ok(serde_json::from_slice(src)?)
     }
     /// Преобразование и возвращает данные в виде мапы индекс груза/данные груза
     pub fn data(self) -> HashMap<usize, HashMap<String, f64>> {
@@ -107,8 +107,8 @@ pub struct CenterVolumeArray {
 #[allow(dead_code)]
 impl CenterVolumeArray {
     /// Парсинг данных из json строки
-    pub fn parse(src: &str) -> Result<Self, Error> {
-        Ok(serde_json::from_str(src)?)
+    pub fn parse(src: &[u8]) -> Result<Self, Error> {
+        Ok(serde_json::from_slice(src)?)
     }
     /// Преобразование и возвращает данные в виде мапы индекс груза/вектор данных по кривой
     pub fn data(self) -> HashMap<usize, Vec<(f64, f64, f64, f64)>> {
@@ -174,8 +174,8 @@ pub struct FreeMomentInertiaArray {
 #[allow(dead_code)]
 impl FreeMomentInertiaArray {
     /// Парсинг данных из json строки
-    pub fn parse(src: &str) -> Result<Self, Error> {
-        Ok(serde_json::from_str(src)?)
+    pub fn parse(src: &[u8]) -> Result<Self, Error> {
+        Ok(serde_json::from_slice(src)?)
     }
     /// Преобразование и возвращает данные в виде мапы индекс груза/вектор данных по кривой
     pub fn data(self) -> HashMap<usize, Vec<(f64, f64, f64)>> {

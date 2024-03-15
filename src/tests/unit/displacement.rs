@@ -24,7 +24,7 @@ mod tests {
             Frame::new(10., Curve::new(&vec![(0., 0.), (10., 40.)])),
         ];
 
-        let result = Displacement::new(frames,).value(Bound::new(-10., 0.), 10.);
+        let result = Displacement::new(frames,).value(Bound::new(-10., 0.), 10., 10.);
         let target = 100.;
         assert!(
             result == target,

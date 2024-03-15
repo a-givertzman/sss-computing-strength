@@ -17,11 +17,11 @@ impl Displacement {
     /// Погруженный объем шпации.
     /// - bound: диапазон корпуса в длинну, для которого считается водоизмещение
     /// - draft: средняя осадка корпуса в диапазоне
-    pub fn value(&self, bound: Bound, draft: f64) -> f64 {
-        let area_start = self.area(bound.start(), draft);
-        let area_end = self.area(bound.end(), draft);
+    pub fn value(&self, bound: Bound, draft_start: f64, draft_end: f64) -> f64 {
+        let area_start = self.area(bound.start(), draft_start);
+        let area_end = self.area(bound.end(), draft_end);
         let result = bound.length() * (area_start + area_end) / 2.;
- //       log::info!("\t Displacement value bound:{bound} draft:{draft}  area_start:{area_start} area_end:{area_end} result:{result}");
+    //    log::info!("\t Displacement value bound:{bound} draft_start:{draft_start} draft_end:{draft_end} area_start:{area_start} area_end:{area_end} result:{result}");
         result
     }
     ///Интерполированние значение погруженной площади сечения.  
@@ -31,15 +31,15 @@ impl Displacement {
     fn area(&self, pos_x: f64, draft: f64) -> f64 {
         if self.frames.first().expect("Displacement error: can't find first frame").shift_x() >= pos_x {
   //          log::info!("\t Displacement area pos_x:{pos_x} draft:{draft}  frames.first().shift_x() >= pos_x");      
-            return self.frames.first().unwrap().area(draft);
+            return self.frames.first().unwrap().area(draft)*2.; // для крайних шпангоутов удваеваем площадь
         }
         if self.frames.last().expect("Displacement error: can't find last frame").shift_x() <= pos_x {
   //          log::info!("\t Displacement area pos_x:{pos_x} draft:{draft}  frames.last().shift_x() <= pos_x");
-            return self.frames.last().unwrap().area(draft);
+            return self.frames.last().unwrap().area(draft)*2.; // для крайних шпангоутов удваеваем площадь
         }
         let (index_up, frame_up) = &self.frames.iter().enumerate().find(|(_, v)| v.shift_x() >= pos_x ).expect("Displacement error: can't find frame");             
         if *index_up == 0 {
-            return self.frames[*index_up].area(draft);
+            return self.frames[*index_up].area(draft)*2.; // для крайних шпангоутов удваеваем площадь
         }
         let frame_down = &self.frames[*index_up - 1];
         let delta_x = frame_up.shift_x() - frame_down.shift_x();

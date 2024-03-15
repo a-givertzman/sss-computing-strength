@@ -34,7 +34,7 @@ impl Mass {
     /// заданным значениям смещения центра масс
     fn moment_mass (&self) -> MassMoment {
         let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| MassMoment::from_pos(self.shift_const, c.mass(None)) ).sum::<MassMoment>() +
-     //   let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| c.moment_mass() ).sum::<MassMoment>() +
+    //    let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| c.moment_mass() ).sum::<MassMoment>() +
         self.loads_cargo.iter().map(|c| c.moment_mass() ).sum::<MassMoment>();
         log::info!("\t Mass moment_mass:{res} ");
         res
@@ -65,10 +65,13 @@ impl IMass for Mass {
         log::info!("\t Mass shift:{res} ");
         res
     }
-    /// Поправка к продольной метацентрической высоте на влияние свободной поверхности жидкости в цистернах 
-    fn delta_m_h(&self) -> f64 {
+    /// Поправка к продольной метацентрической высоте на влияние  
+    /// свободной поверхности жидкости в цистернах 
+    fn delta_am_h(&self) -> f64 {
         assert!(self.sum() > 0., "Mass delta_m_h sum > 0");
-        self.moment_surface().y()/self.sum()
+        let res = self.moment_surface().y()/self.sum();
+        log::info!("\t Mass delta_m_h:{res} ");
+        res
     }
 }
 

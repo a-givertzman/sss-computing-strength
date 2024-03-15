@@ -76,7 +76,8 @@ impl IDraught for Draught {
             .map(|v| {
                 let displacement = self.displacement.value(
                     *v,
-                    d + delta_draught * v.center(),
+                    d + delta_draught * v.start(),
+                    d + delta_draught * v.end(),
                 );
                 displacement * self.water_density
             })

@@ -45,9 +45,9 @@
 //!   7. Вычисляется изгибающий момент BendingMoment для каждой шпации как интегриральнуа сумма срезающей силы:
 //!      $M_i = M_{i-1} + Fs_{i-1} + Fs_i, M_0 = 0$.
 
-use std::rc::Rc;
-
-use data::input_api_server::get_data;
+use std::{collections::HashMap, rc::Rc, time::Instant};
+use data::input_api_server::*;
+use futures::executor::block_on;
 use error::Error;
 use log::info;
 
@@ -92,7 +92,18 @@ fn main() -> Result<(), Error> {
     // data::input_api_server::create_test_db("test")?;
     // data::input_db::create_test_db("test");
 
+    let mut elapsed = HashMap::new();
+
+    let time = Instant::now();    
     let data = get_data("test_ship", 1)?;
+    elapsed.insert("ParsedShipData sync", time.elapsed());
+
+    let time = Instant::now();    
+    let data = async_get_data("test_ship", 1);
+    let data = block_on(data)?;
+    elapsed.insert("ParsedShipData async", time.elapsed());
+
+    let time = Instant::now();
     //   dbg!(&data);
 
     /*
@@ -152,12 +163,13 @@ fn main() -> Result<(), Error> {
         .collect();
 
     // длинна судна
-    //   let ship_length = data.ship_length;
+    let ship_length = frames.last().unwrap().shift_x() - frames.first().unwrap().shift_x();
+    //let ship_length = 120.0;
     // let n = data.n_parts as usize;
     // вектор разбиения судна на отрезки
    // let bounds = Bounds::from_n(data.ship_length, data.n_parts as usize);
-    let bounds = Bounds::from_n(frames.last().unwrap().shift_x() - frames.first().unwrap().shift_x(), data.n_parts as usize);
-    let half_length = bounds.length()/2.;
+    let bounds = Bounds::from_n(ship_length, data.n_parts as usize);
+  //  let half_length = bounds.length()/2.;
 
 
     // Постоянная масса судна
@@ -174,17 +186,23 @@ fn main() -> Result<(), Error> {
                 *mass,
                 bound,
                 Position::new(bound.center(), const_shift.y(), const_shift.z()),
+                0.,
+                0.,
             ))));
         }
     }
     // Грузы судна
     let mut loads_cargo: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
     data.load_spaces.iter().for_each(|v| {
-        loads_cargo.push(Rc::new(Box::new(LoadSpace::new(
-            v.mass,
-            Bound::new(v.bound.0 - half_length, v.bound.1 - half_length),
-            Position::new(v.center.0 - half_length, v.center.1, v.center.2),
-        ))));
+        if v.mass != 0. {
+            loads_cargo.push(Rc::new(Box::new(LoadSpace::new(
+                v.mass,
+                Bound::new(v.bound.0, v.bound.1),
+                Position::new(v.center.0, v.center.1, v.center.2),
+                v.m_f_s_y,
+                v.m_f_s_x,
+            ))));
+        }
     });
 
     // Цистерны
@@ -192,7 +210,7 @@ fn main() -> Result<(), Error> {
         loads_cargo.push(Rc::new(Box::new(Tank::new(
             v.density,
             v.volume,
-            Bound::new(v.bound.0 - half_length, v.bound.1 - half_length),
+            Bound::new(v.bound.0, v.bound.1),
             PosShift::new(
                 Curve::new(&v.center_x),
                 Curve::new(&v.center_y),
@@ -235,10 +253,16 @@ fn main() -> Result<(), Error> {
         ),
         gravity_g,
     ));
-   dbg!(&shear_force.values());
-      let bending_moment = BendingMoment::new(&shear_force);
-       dbg!(&shear_force.values(), &bending_moment.values());
+  // dbg!(&shear_force.values());
+    let bending_moment = BendingMoment::new(&shear_force);
+    let bending_moment_values = bending_moment.values();
+   // let shear_force_values = shear_force.values();
+    dbg!(&bending_moment_values);
 
+    elapsed.insert("Completed", time.elapsed());
+    for (key, e) in elapsed {
+        println!("{}:\t{:?}", key, e);
+    }
     Ok(())
 }
 

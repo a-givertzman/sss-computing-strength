@@ -1,13 +1,13 @@
+//! Непрерывный набор диапазонов значений
 use super::Bound;
 
-
-/// Набор диапазонов значений
+/// Непрерывный набор диапазонов значений
 #[derive(Debug, Clone, PartialEq)]
 pub struct Bounds {
     // непрерывный вектор диапазонов
     values: Vec<Bound>, 
 }
-
+///
 impl Bounds {
     /// Основной конструктор 
     pub fn new(values: Vec<Bound>) -> Self {
@@ -35,10 +35,6 @@ impl Bounds {
     /// Итератор по коллекции
     pub fn iter(&self) -> std::slice::Iter<'_, Bound> {
         self.values.iter()
-    }
-    /// Количество элементов разбиения
-    pub fn qnt(&self) -> usize {
-        self.values.len()
     }
     /// Длинна диапазона
     pub fn length(&self) -> f64 {

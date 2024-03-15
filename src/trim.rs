@@ -41,25 +41,42 @@ impl Trim {
     #[allow(non_snake_case)]
     pub fn value(&self) -> f64 {
         // суммарная масса судна и грузов
-        let mass_sum = self.mass.sum();
+        let mass_sum = self.mass.sum(); //2354.3786
         //объемное водоизмещение
-        let volume = mass_sum / self.water_density;
+        let volume = mass_sum / self.water_density; //2296.9547317
         //отстояние центра величины погруженной части судна
-        let center_draught_shift = self.center_draught_shift.value(volume);
+        let center_draught_shift = self.center_draught_shift.value(volume); //center_draught:Position(-0.2798811092549283, 0, 0.8431351820915471)
         //продольный метацентрические радиус
-        let rad_long = self.rad_long.value(volume);
+        let rad_long = self.rad_long.value(volume);//621.1053725359169
         //аппликата продольного метацентра
-        let Z_m = center_draught_shift.z() + rad_long;
+        let Z_m = center_draught_shift.z() + rad_long;//621,948507718
         //продольная метацентрическая высота без учета влияния
         //поправки на влияние свободной поверхности
-        let H_0 = Z_m - self.mass.shift().z();
+        // Mass shift:Position(-3.5246486210841343, -0.02762147090531659, 5.07403924500503) 
+        let H_0 = Z_m - self.mass.shift().z(); // 616,874468473
         //продольная исправленная метацентрическая высота
-        let H = H_0 - self.mass.delta_m_h();
+        let H = H_0 - self.mass.delta_m_h(); //427.356959387;
         //момент дифферентующий на 1 см осадки
         let trim_moment = (mass_sum * H) / (100. * self.ship_length);
         //дифферент судна
         let value = mass_sum * (self.mass.shift().x() - center_draught_shift.x()) / (100. * trim_moment);
-        log::info!("\t Trim mass:{mass_sum} volume:{volume} center:{center_draught_shift} rad:{rad_long} Z_m:{Z_m} H_0:{H_0} H:{H} M:{trim_moment} result:{value}");
+        log::info!("\t Trim mass:{mass_sum} volume:{volume} center_draught:{center_draught_shift} rad:{rad_long} Z_m:{Z_m} H_0:{H_0} H:{H} M:{trim_moment} result:{value}");
         value
+
+        // Trim mass:2354.3786000000005  
+        // Mass shift:Position(-3.5246486210841343, -0.02762147090531659, 5.07403924500503) 
+        //  volume:2296.954731707318 
+        // center_draught:Position(-0.2798811092549283, 0, 0.8431351820915471) 
+        // rad:621.1053725359169 
+        // Z_m:621.9485077180085 
+        // H_0:616.8744684730035 
+        // H:616.7540545344806 
+        // M:124.53452379581597 
+        // result:-0.6134372187708639  //-0.8853018196   
+        // -0.8853018196  = 2354.3786 * (-3.524648621 - -0.2798811) / (100. * trim_moment);
+        // 8629,160185019 = (100. * trim_moment);
+        // 86,29160185 = trim_moment 
+        //86.29160185 = (2354.3786 * H) / (100. * 116.6);
+        //427,356959387 = H;
     }
 }

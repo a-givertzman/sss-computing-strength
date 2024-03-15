@@ -38,24 +38,28 @@ pub struct ParsedLoadSpaceData {
     /// Общая масса
     pub mass: f64,
     /// Границы груза
-    pub bound: (f64, f64, f64, f64),
+    pub bound: (f64, f64),
     /// Центер масс
     pub center: (f64, f64, f64),
+    /// Продольный момент свободной поверхности жидкости
+    pub m_f_s_y: f64,
+    /// Поперечный момент инерции свободной поверхности жидкости в цистерне
+    pub m_f_s_x: f64,
 }
 ///
 impl std::fmt::Display for ParsedLoadSpaceData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadSpaceData(mass:{}, bound:(x1:{}, x2:{}, y1:{}, y2:{}), center:(x:{}, y:{}, z:{}) )",
+            "LoadSpaceData(mass:{}, bound:(x1:{}, x2:{}), center:(x:{}, y:{}, z:{}), m_f_s_y:{}, m_f_s_x:{} )",
             self.mass,
             self.bound.0,
             self.bound.1,
-            self.bound.2,
-            self.bound.3,
             self.center.0,
             self.center.1,
             self.center.2,
+            self.m_f_s_y,
+            self.m_f_s_x,
         )
     }
 }
@@ -192,14 +196,6 @@ impl ParsedShipData {
                         "ParsedShipData parse error: no bound_x2 for load_space id:{}",
                         space_id
                     ))?,
-                    *map.get("bound_y1").ok_or(format!(
-                        "ParsedShipData parse error: no bound_y1 for load_space id:{}",
-                        space_id
-                    ))?,
-                    *map.get("bound_y2").ok_or(format!(
-                        "ParsedShipData parse error: no bound_y2 for load_space id:{}",
-                        space_id
-                    ))?,
                 ),
                 center: (
                     *map.get("center_x").ok_or(format!(
@@ -215,6 +211,14 @@ impl ParsedShipData {
                         space_id
                     ))?,
                 ),
+                m_f_s_y: *map.get("m_f_s_y").ok_or(format!(
+                    "ParsedShipData parse error: no m_f_s_y for load_space id:{}",
+                    space_id
+                ))?,
+                m_f_s_x: *map.get("m_f_s_x").ok_or(format!(
+                    "ParsedShipData parse error: no m_f_s_x for load_space id:{}",
+                    space_id
+                ))?,
             });
         }
 
@@ -432,10 +436,18 @@ impl ParsedShipData {
         if let Some(s) = self
             .load_spaces
             .iter()
-            .find(|s| s.bound.0 >= s.bound.1 || s.bound.2 >= s.bound.3)
+            .find(|s| s.bound.0 >= s.bound.1)
         {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: load_space Bound error! {}", s )));
+                "Error check ParsedShipData: load_space bound error! {}", s )));
+        }
+        if let Some(s) = self
+        .load_spaces
+        .iter()
+        .find(|s| s.bound.0 >= s.center.0 || s.center.0 >= s.bound.1)
+        {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: load_space center out of bound error! {}", s )));
         }
         if let Some(tank) = self.tanks.iter().find(|t| t.density <= 0.) {
             return Err(Error::Parameter(format!(
