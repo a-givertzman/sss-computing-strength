@@ -86,6 +86,7 @@ mod total_force;
 mod trim;
 
 fn main() -> Result<(), Error> {
+    std::env::set_var("RUST_LOG", "info");
     env_logger::init();
     info!("starting up");
 
@@ -274,7 +275,7 @@ fn main() -> Result<(), Error> {
         gravity_g,
     ));
     // dbg!(&shear_force.values());
-    let bending_moment = BendingMoment::new(&shear_force);
+    let bending_moment = BendingMoment::new(&shear_force, ship_length/data.n_parts as f64);
     let bending_moment_values = bending_moment.values();
     // let shear_force_values = shear_force.values();
     dbg!(&bending_moment_values);

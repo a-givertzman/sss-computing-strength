@@ -25,5 +25,3 @@ VALUES
 SELECT * FROM load_space WHERE ship_id=1;
 
 TRUNCATE TABLE load_space;
-
-SELECT space_id, key, value FROM load_space WHERE ship_id=1;

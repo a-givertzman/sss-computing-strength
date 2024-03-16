@@ -7,3 +7,4 @@ VALUES
   (NULL, 1, 1, 'volume', 1000),
   (NULL, 1, 1, 'bound_x1', -10),
   (NULL, 1, 1, 'bound_x2', 4);
+  
