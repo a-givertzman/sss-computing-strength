@@ -45,6 +45,7 @@ impl DataArray<Pair> {
     }
 }
 ///
+#[allow(dead_code)]
 impl DataArray<Triple> {
     /// Преобразование данных в массив ключ + значение по х
     pub fn x(&self) -> Vec<(f64, f64)> {

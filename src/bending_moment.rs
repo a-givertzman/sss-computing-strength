@@ -5,18 +5,18 @@ use crate::{math::IntegralSum, shear_force::IShearForce, MultipleSingle};
 /// силы, $M_i = M_{i-1} + SF_{i-1} + SF_i, M_0 = 0$
 pub struct BendingMoment<'a> {
     /// массив значений средающей силы по шпациям
-    shear_force: &'a dyn IShearForce,
+    shear_force: &'a mut dyn IShearForce,
     /// длинна элемента разбиения   
     delta_l: f64, 
 }
 ///
 impl<'a> BendingMoment<'a> {
     ///
-    pub fn new(shear_force: &'a impl IShearForce, delta_l: f64 ) -> Self {
+    pub fn new(shear_force: &'a mut (dyn IShearForce + 'a), delta_l: f64 ) -> Self {
         Self { shear_force, delta_l }
     }
     ///
-    pub fn values(&self) -> Vec<f64>  {
+    pub fn values(&mut self) -> Vec<f64>  {
         let mut result = self.shear_force.values().integral_sum();
         result.mul_single(self.delta_l/2.);
         let last_value = result.last().expect("BendingMoment error: no result values!");

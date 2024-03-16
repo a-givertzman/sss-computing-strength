@@ -19,7 +19,7 @@ impl ShearForce {
 ///
 impl IShearForce for ShearForce {
     ///
-    fn values(&self) -> Vec<f64> {
+    fn values(&mut self) -> Vec<f64> {
         let mut result = self.total_force.values().sum_above();
         // поправка
         let last_value = result.last().expect("ShearForce error: no result values!");
@@ -33,7 +33,7 @@ impl IShearForce for ShearForce {
 
 #[doc(hidden)]
 pub trait IShearForce {
-    fn values(&self) -> Vec<f64>;
+    fn values(&mut self) -> Vec<f64>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -49,7 +49,7 @@ impl FakeShearForce {
 }
 #[doc(hidden)]
 impl IShearForce for FakeShearForce {
-    fn values(&self) -> Vec<f64> {
+    fn values(&mut self) -> Vec<f64> {
         self.data.clone()
     }
 }

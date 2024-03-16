@@ -50,7 +50,6 @@ use error::Error;
 use futures::executor::block_on;
 use log::info;
 use std::{collections::HashMap, rc::Rc, time::Instant};
-
 use crate::{
     bending_moment::BendingMoment,
     bound::Bound,
@@ -64,10 +63,11 @@ use crate::{
     math::*,
     pos_shift::PosShift,
     position::Position,
-    shear_force::{IShearForce, ShearForce},
+    shear_force::ShearForce,
     tank::Tank,
     total_force::TotalForce,
     trim::Trim,
+    metacentric_height::MetacentricHeight,
 };
 
 mod bending_moment;
@@ -84,6 +84,7 @@ mod tank;
 mod tests;
 mod total_force;
 mod trim;
+pub mod metacentric_height;
 
 fn main() -> Result<(), Error> {
     std::env::set_var("RUST_LOG", "info");
@@ -96,7 +97,7 @@ fn main() -> Result<(), Error> {
     let mut elapsed = HashMap::new();
 
     let time = Instant::now();
-    let data = get_data("test_ship", 1)?;
+    let _data = get_data("test_ship", 1)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
 
     let time = Instant::now();
@@ -232,11 +233,6 @@ fn main() -> Result<(), Error> {
     ));
     // Суммарная масса судна и грузов
     let mass_sum = mass.sum(); 
-    // Отстояние центра масс
-    let mass_shift = mass.shift();
-    // Поправка к продольной метацентрической высоте на влияние   
-    // свободной поверхности жидкости в цистернах (2) 
-    let delta_m_h = mass.delta_m_h(); 
     // Объемное водоизмещение (1)
     let volume = mass_sum / data.water_density;
     // Отстояние центра величины погруженной части судна
@@ -255,19 +251,22 @@ fn main() -> Result<(), Error> {
     //средняя осадка
     let mean_draught = Curve::new(&data.mean_draught).value(volume);
 
-    let shear_force = ShearForce::new(TotalForce::new(
+    let mut shear_force = ShearForce::new(TotalForce::new(
         Rc::clone(&mass),
         data.water_density,
         Draught::new(
-            Rc::clone(&mass),
             center_waterline_shift,
             mean_draught,
             Displacement::new(frames),
             Trim::new(
                 bounds.length(),
                 center_draught_shift, // отстояние центра величины погруженной части судна
-                rad_long, // продольный метацентрические радиус
-                rad_cross,  // Поперечный метацентрические радиус
+                MetacentricHeight::new(
+                    center_draught_shift, // отстояние центра величины погруженной части судна
+                    rad_long,                  // продольный метацентрические радиус
+                    rad_cross,                 // поперечный метацентрические радиус
+                    Rc::clone(&mass),              // все грузы судна
+                ),
                 Rc::clone(&mass),           // все грузы судна
             ),
             bounds,
@@ -275,7 +274,7 @@ fn main() -> Result<(), Error> {
         gravity_g,
     ));
     // dbg!(&shear_force.values());
-    let bending_moment = BendingMoment::new(&shear_force, ship_length/data.n_parts as f64);
+    let mut bending_moment = BendingMoment::new(&mut shear_force, ship_length/data.n_parts as f64);
     let bending_moment_values = bending_moment.values();
     // let shear_force_values = shear_force.values();
     dbg!(&bending_moment_values);

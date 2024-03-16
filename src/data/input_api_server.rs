@@ -1,6 +1,4 @@
 //! Функции для работы с АПИ-сервером
-use std::collections::HashMap;
-
 use api_tools::client::{api_query::*, api_request::ApiRequest};
 
 use crate::{data::structs::*, error::Error};

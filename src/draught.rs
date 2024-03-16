@@ -1,14 +1,11 @@
 //! Распределение объема вытесненной воды по шпациям
-use std::rc::Rc;
+use crate::{displacement::Displacement, math::*, trim::Trim};
 
-use crate::{displacement::Displacement, mass::IMass, math::*, trim::Trim};
 ///
 /// Распределение объема вытесненной воды по шпациям
 pub struct Draught {
     /// вектор разбиения на отрезки для эпюров
     bounds: Bounds,
-    /// объемное водоизмещение
-    mass: Rc<dyn IMass>,
     /// отстояние центра тяжести ватерлинии по длине от миделя
     center_waterline_shift: f64,
     /// средняя осадка
@@ -22,13 +19,11 @@ pub struct Draught {
 impl Draught {
     /// Основной конструктор. Аргументы:  
     /// - bounds: вектор разбиения на отрезки для эпюров
-    /// - mass: все грузы судна
     /// - center_waterline_shift: кривая отстояния центра тяжести ватерлинии по длине от миделя
     /// - mean_draught: кривая средняй осадки
     /// - displacement: класс водоизмещения судна
     /// - trim: класс дифферента судна
     pub fn new(    
-        mass: Rc<dyn IMass>,           // все грузы судна
         center_waterline_shift: f64, // отстояние центра тяжести ватерлинии по длине от миделя
         mean_draught: f64,           // средняя осадка
         displacement: Displacement,    // водоизмещение судна
@@ -37,7 +32,6 @@ impl Draught {
     ) -> Self {
         Self {
             bounds,
-            mass,
             center_waterline_shift,
             mean_draught,
             displacement,
@@ -48,7 +42,7 @@ impl Draught {
 ///
 impl IDraught for Draught {
     /// Распределение объема вытесненной воды по шпациям
-    fn values(&self) -> Vec<f64> {
+    fn values(&mut self) -> Vec<f64> {
         // длинна судна
         let ship_length = self.bounds.length();
         // дифферент судна
@@ -82,7 +76,7 @@ impl IDraught for Draught {
 
 #[doc(hidden)]
 pub trait IDraught {
-    fn values(&self) -> Vec<f64>;
+    fn values(&mut self) -> Vec<f64>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -98,7 +92,7 @@ impl FakeDraught {
 }
 #[doc(hidden)]
 impl IDraught for FakeDraught {
-    fn values(&self) -> Vec<f64> {
+    fn values(&mut self) -> Vec<f64> {
         self.data.clone()
     }
 }

@@ -15,7 +15,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = BendingMoment::new(&FakeShearForce::new(vec![
+        let result = BendingMoment::new(&mut FakeShearForce::new(vec![
             0.0, 5.0, 10., 15.0, 10.0, 5.0, 0.0, -5.0, -10.0, -15.0, -15.0, 0.0,
         ]), 2.)
         .values();
