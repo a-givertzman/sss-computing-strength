@@ -20,11 +20,11 @@ mod tests {
         let result = Trim::new(
             118.39,
             Position::new(-0.194609657, 0., 0.735524704),
-            FakeMetacentricHeight::new(
+            Rc::new(FakeMetacentricHeight::new(
                 696.702572991,
                     100.,
                     100.,
-            ),
+            )),
             Rc::new(FakeMass::new(
                 2044.10,
                 vec![0.],

@@ -51,23 +51,7 @@ use futures::executor::block_on;
 use log::info;
 use std::{collections::HashMap, rc::Rc, time::Instant};
 use crate::{
-    bending_moment::BendingMoment,
-    bound::Bound,
-    curve::Curve,
-    displacement::Displacement,
-    draught::Draught,
-    frame::Frame,
-    inertia_shift::InertiaShift,
-    load::{ILoad, LoadSpace},
-    mass::{IMass, Mass},
-    math::*,
-    pos_shift::PosShift,
-    position::Position,
-    shear_force::ShearForce,
-    tank::Tank,
-    total_force::TotalForce,
-    trim::Trim,
-    metacentric_height::MetacentricHeight,
+    bending_moment::BendingMoment, bound::Bound, curve::Curve, displacement::Displacement, draught::Draught, frame::Frame, inertia_shift::InertiaShift, load::{ILoad, LoadSpace}, mass::{IMass, Mass}, math::*, metacentric_height::{IMetacentricHeight, MetacentricHeight}, pos_shift::PosShift, position::Position, shear_force::ShearForce, stability_arm::StabilityArm, tank::Tank, total_force::TotalForce, trim::Trim
 };
 
 mod bending_moment;
@@ -84,7 +68,8 @@ mod tank;
 mod tests;
 mod total_force;
 mod trim;
-pub mod metacentric_height;
+mod metacentric_height;
+mod stability_arm;
 
 fn main() -> Result<(), Error> {
     std::env::set_var("RUST_LOG", "info");
@@ -251,6 +236,13 @@ fn main() -> Result<(), Error> {
     //средняя осадка
     let mean_draught = Curve::new(&data.mean_draught).value(volume);
 
+    let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
+        center_draught_shift, // отстояние центра величины погруженной части судна
+        rad_long,                  // продольный метацентрические радиус
+        rad_cross,                 // поперечный метацентрические радиус
+        Rc::clone(&mass),              // все грузы судна
+    ));
+
     let mut shear_force = ShearForce::new(TotalForce::new(
         Rc::clone(&mass),
         data.water_density,
@@ -261,12 +253,7 @@ fn main() -> Result<(), Error> {
             Trim::new(
                 bounds.length(),
                 center_draught_shift, // отстояние центра величины погруженной части судна
-                MetacentricHeight::new(
-                    center_draught_shift, // отстояние центра величины погруженной части судна
-                    rad_long,                  // продольный метацентрические радиус
-                    rad_cross,                 // поперечный метацентрические радиус
-                    Rc::clone(&mass),              // все грузы судна
-                ),
+                Rc::clone(&metacentric_height),
                 Rc::clone(&mass),           // все грузы судна
             ),
             bounds,
@@ -278,6 +265,8 @@ fn main() -> Result<(), Error> {
     let bending_moment_values = bending_moment.values();
     // let shear_force_values = shear_force.values();
     dbg!(&bending_moment_values);
+
+//    let mut stability_arm = StabilityArm::new(Curve2D::new());
 
     elapsed.insert("Completed", time.elapsed());
     for (key, e) in elapsed {

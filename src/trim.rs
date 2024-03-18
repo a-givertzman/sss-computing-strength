@@ -11,7 +11,7 @@ pub struct Trim {
     /// отстояние центра величины погруженной части судна       
     center_draught_shift: Position,
     /// Исправленная метацентрическая высота
-    metacentric_height: Box<dyn IMetacentricHeight>,
+    metacentric_height: Rc<dyn IMetacentricHeight>,
     /// все грузы судна
     mass: Rc<dyn IMass>,
 }
@@ -20,14 +20,14 @@ impl Trim {
     pub fn new(
         ship_length: f64,                      // длинна судна
         center_draught_shift: Position,        // отстояние центра величины погруженной части судна
-        metacentric_height: impl IMetacentricHeight + 'static, // Исправленная метацентрическая высота
+        metacentric_height: Rc<dyn IMetacentricHeight>, // Исправленная метацентрическая высота
         mass: Rc<dyn IMass>,                   // все грузы судна
     ) -> Self {
         assert!(ship_length > 0., "ship_length {ship_length} > 0.");
         Self {
             ship_length,
             center_draught_shift,
-            metacentric_height: Box::new(metacentric_height),
+            metacentric_height,
             mass,
         }
     }

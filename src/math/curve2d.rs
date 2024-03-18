@@ -49,12 +49,17 @@ impl ICurve2D for Curve2D {
         }
         self.curves.last().expect("Curve2D value error: no last curve").1.value(key2)
     }
+    /// Количество элементов
+    fn len(&self) -> usize {
+        self.curves.len()
+    }
 }
 
 #[doc(hidden)]
 ///
 /// Interface used for testing purposes only 
 pub trait ICurve2D {
+    fn len(&self) -> usize;
     fn value(&self, key1: f64, key2: f64,) -> f64;
 }
 #[doc(hidden)]
@@ -71,7 +76,12 @@ impl FakeCurve2D {
 }
 #[doc(hidden)]
 impl ICurve2D for FakeCurve2D {
+    ///
     fn value(&self, _: f64, _: f64,) -> f64 {
         self.value
+    }
+    ///
+    fn len(&self) -> usize {
+        20
     }
 }
