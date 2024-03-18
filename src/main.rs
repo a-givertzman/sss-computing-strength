@@ -99,11 +99,11 @@ fn main() -> Result<(), Error> {
     let data = get_data("test_ship", 1)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
 
-    let time = Instant::now();
+ /*   let time = Instant::now();
     let data = async_get_data("test_ship", 1);
     let data = block_on(data)?;
     elapsed.insert("ParsedShipData async", time.elapsed());
-
+*/
     let time = Instant::now();
     //   dbg!(&data);
 
@@ -169,7 +169,8 @@ fn main() -> Result<(), Error> {
     // let n = data.n_parts as usize;
     // вектор разбиения судна на отрезки
     // let bounds = Bounds::from_n(data.ship_length, data.n_parts as usize);
-    let bounds = Bounds::from_n(ship_length, data.n_parts as usize);
+    //let bounds = Bounds::from_n(ship_length, data.n_parts as usize);
+    let bounds = Bounds::from_n(ship_length, 100);
     //  let half_length = bounds.length()/2.;
 
     // Постоянная масса судна
