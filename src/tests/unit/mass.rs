@@ -63,7 +63,7 @@ mod tests {
                     loads_const, 
                     Position::new(0., 0., 0.,),
                     loads_cargo, 
-                    Bounds::from_n(20., 4)
+                    Rc::new(Bounds::from_n(20., 4)),
                 ));
             }
         })

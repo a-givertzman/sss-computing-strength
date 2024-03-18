@@ -1,3 +1,5 @@
+TRUNCATE TABLE frame;
+
 INSERT INTO frame
     (project_id, ship_id, index, key, value)
 VALUES

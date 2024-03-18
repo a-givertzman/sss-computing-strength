@@ -13,7 +13,7 @@ pub struct Mass {
     /// Все грузы судна
     loads_cargo: Vec<Rc<Box<dyn ILoad>>>,
     /// Вектор разбиения на отрезки для эпюров
-    bounds: Bounds,
+    bounds: Rc<Bounds>,
 }
 
 impl Mass {
@@ -27,7 +27,7 @@ impl Mass {
     pub fn new (
         loads_const: Vec<Rc<Box<dyn ILoad>>>,
         shift_const: Position,
-        loads_cargo: Vec<Rc<Box<dyn ILoad>>>, bounds: Bounds) -> Self {
+        loads_cargo: Vec<Rc<Box<dyn ILoad>>>, bounds: Rc<Bounds>) -> Self {
         Self { loads_const, shift_const, loads_cargo, bounds, }
     }
     /// Суммарный статический момент. Для постоянной массы и для запасов считается по 
