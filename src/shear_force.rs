@@ -27,7 +27,7 @@ impl IShearForce for ShearForce {
         let delta = *last_value/((result.len()-1) as f64);
         result.iter_mut().enumerate().for_each(|(i, v)| *v -= delta*(i as f64) );
         log::info!("\t ShearForce result_fixed:{:?}", result);
-        assert!(*result.last().expect("ShearForce error: no result values!") == 0., "ShearForce result.last {} == 0", result.last().expect("ShearForce error: no result values!"));
+        assert!(result.last().expect("ShearForce error: no result values!").abs() <= 0.0000001, "ShearForce result.last {} <= 0.0000001", result.last().expect("ShearForce error: no result values!"));
         result
     }
 }

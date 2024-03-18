@@ -277,7 +277,7 @@ fn main() -> Result<(), Error> {
     let mut bending_moment = BendingMoment::new(&mut shear_force, ship_length/n_parts as f64);
     let bending_moment_values = bending_moment.values();
     // let shear_force_values = shear_force.values();
-    dbg!(&bending_moment_values);
+    dbg!(&bending_moment_values.len());
 
     elapsed.insert("Completed", time.elapsed());
     for (key, e) in elapsed {
