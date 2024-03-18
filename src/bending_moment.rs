@@ -19,11 +19,12 @@ impl<'a> BendingMoment<'a> {
     pub fn values(&mut self) -> Vec<f64>  {
         let mut result = self.shear_force.values().integral_sum();
         result.mul_single(self.delta_l/2.);
+        log::info!("\t BendingMoment result:{:?}", result); 
         let last_value = result.last().expect("BendingMoment error: no result values!");
-        let delta = *last_value/result.len() as f64;
+        let delta = *last_value/((result.len()-1) as f64);
         result.iter_mut().enumerate().for_each(|(i, v)| *v -= delta*(i as f64) );
-        assert!(*result.last().expect("BendingMoment error: no result values!") == 0., "BendingMoment result.last {} == 0", result.last().expect("ShearForce error: no result values!"));
-        log::info!("\t BendingMoment result:{:?}", result);  
+        log::info!("\t BendingMoment result_fixed:{:?}", result); 
+        assert!(*result.last().expect("BendingMoment error: no result values!") == 0., "BendingMoment result.last {} == 0", result.last().expect("ShearForce error: no result values!")); 
         result
     }
 }

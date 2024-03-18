@@ -167,10 +167,10 @@ fn main() -> Result<(), Error> {
     // длинна судна
     let ship_length = frames.last().unwrap().shift_x() - frames.first().unwrap().shift_x();
     //let ship_length = 120.0;
-    // let n = data.n_parts as usize;
-    // вектор разбиения судна на отрезки
-    // let bounds = Bounds::from_n(data.ship_length, data.n_parts as usize);
-    let bounds = Bounds::from_n(ship_length, data.n_parts as usize);
+    let n_parts = 20;//data.n_parts as usize;
+    // вектор разбиения судна на отрезки    
+    // let bounds = Bounds::from_n(data.ship_length, n_parts);
+    let bounds = Bounds::from_n(ship_length, n_parts);
     //  let half_length = bounds.length()/2.;
 
     // Постоянная масса судна
@@ -274,7 +274,7 @@ fn main() -> Result<(), Error> {
         gravity_g,
     ));
     // dbg!(&shear_force.values());
-    let mut bending_moment = BendingMoment::new(&mut shear_force, ship_length/data.n_parts as f64);
+    let mut bending_moment = BendingMoment::new(&mut shear_force, ship_length/n_parts as f64);
     let bending_moment_values = bending_moment.values();
     // let shear_force_values = shear_force.values();
     dbg!(&bending_moment_values);
