@@ -11,11 +11,13 @@ pub struct Curve2D {
 ///
 impl Curve2D {
     /// Основной конструктор
+    #[allow(dead_code)]
     pub fn new(curves: Vec<(f64, Curve)>) -> Self {
         assert!(curves.len() > 1, "curves.len() {} > 0", curves.len());
         Self { curves }
     }
     /// Конструктор из матрицы значений
+    #[allow(dead_code)]
     pub fn from_values(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Self {
         assert!(values.len() > 1, "values.len() {} > 0", values.len());
         values.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());

@@ -4,7 +4,7 @@ mod tests {
     use crate::{
         mass::FakeMass,
         math::position::Position,
-        metacentric_height::{FakeMetacentricHeight, MetacentricHeight},
+        metacentric_height::MetacentricHeight,
         DeltaMH,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
