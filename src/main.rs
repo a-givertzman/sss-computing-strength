@@ -259,6 +259,14 @@ fn main() -> Result<(), Error> {
     
     // Для расчета прочности дифферент находится подбором 
     // как условие для схождения изгибающего момента в 0
+    let computer = Computer::new(
+        gravity_g,
+        data.water_density,
+        Rc::clone(&mass), 
+        Rc::clone(&displacement), 
+        Rc::clone(&bounds),
+    );
+
     let mut trim = 0.;
     let mut delta = 1.;    
     for i in 0..20 {
@@ -278,7 +286,7 @@ fn main() -> Result<(), Error> {
         if last_value.abs() < 0.1 {
             break; 
         }
-        trim -= last_value.signum()*delta;
+        trim    -= last_value.signum()*delta;
         delta *= 0.5;
     }
 
@@ -308,7 +316,7 @@ fn main() -> Result<(), Error> {
         rad_cross,                 // поперечный метацентрические радиус
         Rc::clone(&mass),              // все грузы судна
     )));
-    let mut stability_arm = StabilityArm::new(Curve2D::from_values(data.pantocarens));
+    //let mut stability_arm = StabilityArm::new(Curve2D::from_values(data.pantocarens));
 
     elapsed.insert("Completed", time.elapsed());
     for (key, e) in elapsed {
