@@ -53,7 +53,7 @@ use crate::{
     displacement::Displacement,
     draught::Draught,
     frame::Frame,
-    inertia_shift::InertiaShift,
+    inertia::InertiaShift,
     load::{ILoad, LoadSpace},
     mass::{IMass, Mass},
     math::*,
@@ -279,7 +279,7 @@ fn main() -> Result<(), Error> {
             rad_cross,            // поперечный метацентрические радиус
             Rc::clone(&mass),     // все грузы судна
         )));
-    //let mut stability_arm = StabilityArm::new(Curve2D::from_values(data.pantocarens));
+    let mut stability_arm = StabilityArm::new(Curve2D::from_values(data.pantocarens));
 
     elapsed.insert("Completed", time.elapsed());
     for (key, e) in elapsed {

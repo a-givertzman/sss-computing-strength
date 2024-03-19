@@ -4,7 +4,7 @@ mod tests {
     use crate::{
         draught::FakeDraught,
         mass::FakeMass,
-        math::{position::Position, vec::vec::MultipleSingle},
+        math::{position::Position, vec::MultipleSingle},
         total_force::{ITotalForce, TotalForce}, DeltaMH, SurfaceMoment,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};

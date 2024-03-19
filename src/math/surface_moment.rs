@@ -1,7 +1,7 @@
 //! Момент свободной поверхности
 use std::{iter::Sum, ops::Add};
 
-use super::inertia_shift::inertia_moment::InertiaMoment;
+use super::inertia::inertia_moment::InertiaMoment;
 
 
 #[derive(Clone, Copy, Debug, PartialEq)]

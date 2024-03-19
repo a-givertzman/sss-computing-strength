@@ -29,7 +29,7 @@ impl StabilityArm {
     /// для каждого угла крена (11)
     pub fn calculate(&mut self, mean_draught: f64) -> Vec<(f64, f64)> {
         let delta = 90./self.data.len() as f64;
-        self.diagram = Some((0..self.data.len()).into_iter().map(|v| {
+        self.diagram = Some((0..self.data.len()).map(|v| {
             let angle = v as f64*delta;
             (angle, self.data.value(mean_draught, angle))
         }).collect());

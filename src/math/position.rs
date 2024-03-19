@@ -1,5 +1,5 @@
 //! Точка относительно Центра Судна
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Position {
     x: f64,
     y: f64,

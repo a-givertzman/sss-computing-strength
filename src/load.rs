@@ -53,7 +53,7 @@ impl ILoad for LoadSpace {
     }
 
     fn center(&self) -> Position {
-        self.center
+        self.center.clone()
     }
 
     /// момент свободной поверхности - TODO - удалить
