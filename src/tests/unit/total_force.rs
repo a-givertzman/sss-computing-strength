@@ -5,7 +5,7 @@ mod tests {
         draught::FakeDraught,
         mass::FakeMass,
         math::{position::Position, vec::vec::MultipleSingle},
-        total_force::{ITotalForce, TotalForce}, DeltaMH,
+        total_force::{ITotalForce, TotalForce}, DeltaMH, SurfaceMoment,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, time::Duration};
@@ -27,6 +27,8 @@ mod tests {
                 vec![20.; 10],
                 Position::new(0., 0., 0.),
                 DeltaMH::new(0., 0.),
+                Position::new(0., 0., 0.,), 
+                SurfaceMoment::new(0., 0.,),
             )),
             1.0,
             FakeDraught::new(vec![5., 25., 25., 25., 25., 25., 25., 25., 15., 5.]),

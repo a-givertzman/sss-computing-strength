@@ -20,7 +20,7 @@ impl ShearForce {
 impl IShearForce for ShearForce {
     ///
     fn values(&mut self) -> Vec<f64> {
-        let mut result = self.total_force.values().sum_above();
+        let result = self.total_force.values().sum_above();
         log::info!("\t ShearForce result:{:?}", result);
         // поправка
  /*       let last_value = result.last().expect("ShearForce error: no result values!");

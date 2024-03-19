@@ -262,7 +262,7 @@ fn main() -> Result<(), Error> {
     let mut trim = 0.;
     let mut delta = 1.;    
     for i in 0..20 {
-        let value = *BendingMoment::new(Box::new(ShearForce::new(TotalForce::new(
+        let last_value = *BendingMoment::new(Box::new(ShearForce::new(TotalForce::new(
             Rc::clone(&mass),
             data.water_density,
             Draught::new(
@@ -273,12 +273,12 @@ fn main() -> Result<(), Error> {
                 Rc::clone(&bounds),
             ),
             gravity_g,
-        ))), ship_length/n_parts as f64).values().last().expect("ShearForce values error: no last value");
-        dbg!(i, value, trim, delta);
-        if value.abs() < 0.1 {
+        ))), ship_length/n_parts as f64).values().last().expect("BendingMoment values error: no last value");
+        log::info!("Computing Trim: BendingMoment last value:{last_value} trim:{trim} i:{i} delta:{delta} ");
+        if last_value.abs() < 0.1 {
             break; 
         }
-        trim -= value.signum()*delta;
+        trim -= last_value.signum()*delta;
         delta *= 0.5;
     }
 
@@ -308,7 +308,7 @@ fn main() -> Result<(), Error> {
         rad_cross,                 // поперечный метацентрические радиус
         Rc::clone(&mass),              // все грузы судна
     )));
-   // let mut stability_arm = StabilityArm::new(Curve2D::new());
+    let mut stability_arm = StabilityArm::new(Curve2D::from_values(data.pantocarens));
 
     elapsed.insert("Completed", time.elapsed());
     for (key, e) in elapsed {
