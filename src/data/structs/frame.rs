@@ -41,7 +41,7 @@ impl FrameDataArray {
     }
 }
 /// Кривая погружаемой площади шпангоута от осадки
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct FrameAreaData {
     data: HashMap<usize, Vec<(f64, f64)>>,
 }
