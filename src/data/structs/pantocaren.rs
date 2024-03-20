@@ -27,6 +27,7 @@ impl std::fmt::Display for PantocarenData {
         )
     }
 }
+///
 pub type PantocarenDataArray = DataArray<PantocarenData>;
 ///
 impl PantocarenDataArray {
@@ -38,16 +39,13 @@ impl PantocarenDataArray {
                 .partial_cmp(&b.draught)
                 .expect("PantocarenDataArray data sort error!")
         });
-        
         self.data.into_iter().for_each(|v| {
-            let last_draught = f64::NAN;
-            if last_draught == v.draught {
-                sub_vec.push(v.roll, v.moment);
+            if vec.last_mut().unwrap_or(&mut (v.draught, Vec::new())).0 == v.draught {
+                vec.last_mut().unwrap().1.push((v.moment, v.roll));
             } else {
-                vec.push(Vec::<(f64, f64)>::new());
-                map.insert(v.index, HashMap::from([(v.key, v.value)]));
+                vec.push((v.draught, Vec::new()));
             }
         });
-        map
+        vec
     }
 }
