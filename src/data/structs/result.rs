@@ -131,6 +131,8 @@ pub struct ParsedShipData {
     pub center_draught_shift_y: Vec<(f64, f64)>,
     /// кривая отстояния центра величины погруженной части судна по z
     pub center_draught_shift_z: Vec<(f64, f64)>,
+    /// Кривые плечей остойчивости формы
+    pub pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
     /// Шпангоуты судна
     pub frames: Vec<ParsedFrameData>,
     /// Постоянный груз, приходящийся на шпацию
@@ -152,6 +154,7 @@ impl ParsedShipData {
         rad_cross: RadCrossDataArray,
         mean_draught: MeanDraughtDataArray,
         center_draught_shift: CenterDraughtShiftDataArray,
+        pantocaren: PantocarenDataArray,
         frame_src: FrameDataArray,
         frame_area: FrameAreaData,
         load_constant: LoadConstantArray,
@@ -306,6 +309,7 @@ impl ParsedShipData {
             center_draught_shift_x: center_draught_shift.x(),
             center_draught_shift_y: center_draught_shift.y(),
             center_draught_shift_z: center_draught_shift.z(),
+            pantocaren: pantocaren.data(),
             frames,
             load_constant,
             load_spaces,

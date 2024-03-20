@@ -32,7 +32,7 @@ impl TotalForce {
 ///
 impl ITotalForce for TotalForce {
     ///
-    fn values(&self) -> Vec<f64> {
+    fn values(&mut self) -> Vec<f64> {
         let mass_values = self.mass.values();
         let mut draught_values = self.draught.values();
         assert!(mass_values.len() == draught_values.len(), "mass.len() {} == draught.len() {}", mass_values.len(), draught_values.len());
@@ -47,7 +47,7 @@ impl ITotalForce for TotalForce {
 
 #[doc(hidden)]
 pub trait ITotalForce {
-    fn values(&self) -> Vec<f64>;
+    fn values(&mut self) -> Vec<f64>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -63,7 +63,7 @@ impl FakeTotalForce {
 }
 #[doc(hidden)]
 impl ITotalForce for FakeTotalForce {
-    fn values(&self) -> Vec<f64> {
+    fn values(&mut self) -> Vec<f64> {
         self.data.clone()
     }
 }

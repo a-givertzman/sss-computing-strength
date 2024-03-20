@@ -19,21 +19,23 @@ impl ShearForce {
 ///
 impl IShearForce for ShearForce {
     ///
-    fn values(&self) -> Vec<f64> {
-        let mut result = self.total_force.values().sum_above();
-        // поправка
-        let last_value = result.last().expect("ShearForce error: no result values!");
-        let delta = *last_value/result.len() as f64;
-        result.iter_mut().enumerate().for_each(|(i, v)| *v -= delta*(i as f64) );
-        assert!(*result.last().expect("ShearForce error: no result values!") == 0., "ShearForce result.last {} == 0", result.last().expect("ShearForce error: no result values!"));
+    fn values(&mut self) -> Vec<f64> {
+        let result = self.total_force.values().sum_above();
         log::info!("\t ShearForce result:{:?}", result);
-        result
+ /*     // поправка
+        let last_value = result.last().expect("ShearForce error: no result values!");
+        let delta = *last_value/((result.len()-1) as f64);
+        result.iter_mut().enumerate().for_each(|(i, v)| *v -= delta*(i as f64) );
+        log::info!("\t ShearForce result_fixed:{:?}", result);
+
+        assert!(*result.last().expect("ShearForce error: no result values!") == 0., "ShearForce result.last {} == 0", result.last().expect("ShearForce error: no result values!"));
+ */     result
     }
 }
 
 #[doc(hidden)]
 pub trait IShearForce {
-    fn values(&self) -> Vec<f64>;
+    fn values(&mut self) -> Vec<f64>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -49,7 +51,7 @@ impl FakeShearForce {
 }
 #[doc(hidden)]
 impl IShearForce for FakeShearForce {
-    fn values(&self) -> Vec<f64> {
+    fn values(&mut self) -> Vec<f64> {
         self.data.clone()
     }
 }
