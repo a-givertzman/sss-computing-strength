@@ -21,7 +21,7 @@ impl Displacement {
         let area_start = self.area(bound.start(), draft_start);
         let area_end = self.area(bound.end(), draft_end);
         let result = bound.length() * (area_start + area_end) / 2.;
- //       log::info!("\t Displacement value bound:{bound} draft_start:{draft_start} draft_end:{draft_end} area_start:{area_start} area_end:{area_end} result:{result}");
+ //     log::info!("\t Displacement value bound:{bound} draft_start:{draft_start} draft_end:{draft_end} area_start:{area_start} area_end:{area_end} result:{result}");
         result
     }
     ///Интерполированние значение погруженной площади сечения.  
