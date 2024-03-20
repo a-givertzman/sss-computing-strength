@@ -8,7 +8,7 @@ mod tests {
             bound::Bound, curve::Curve, inertia_shift::inertia_shift::InertiaShift,
             pos_shift::PosShift, position::Position,
         },
-        tank::Tank,
+        tank::Tank, Bounds,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
@@ -52,15 +52,8 @@ mod tests {
                 ))),
             ];
 
-            let bounds = vec![
-                Bound::new(-10., -5.),
-                Bound::new(-5., 0.),
-                Bound::new(0., 5.),
-                Bound::new(5., 10.),
-            ];
-
             unsafe {
-                MASS.replace(Mass::new(loads, bounds));
+                MASS.replace(Mass::new(loads, Bounds::from_n(20., 4)));
             }
         })
     }

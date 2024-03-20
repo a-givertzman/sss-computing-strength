@@ -1,5 +1,5 @@
 //! Нагрузка на судно: постоянный и переменный груз
-use crate::math::{bound::Bound, mass_moment::MassMoment, position::Position, surface_moment::SurfaceMoment};
+use crate::math::*;
 
 
 /// Абстрактный груз: контейнер, трюм или бак.

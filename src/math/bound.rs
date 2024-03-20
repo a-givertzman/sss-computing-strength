@@ -15,8 +15,8 @@ impl Bound {
     pub fn new(start: f64, end: f64) -> Self {
         assert!(end > start);
         Self {
-            start: start,
-            end: end,
+            start,
+            end,
         }
     }
     ///

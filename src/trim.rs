@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::{
     mass::IMass,
-    math::{curve::ICurve, pos_shift::IPosShift},
+    math::*,
 };
 /// Дифферент судна. Вычисляется с учетом влияния свободных  
 /// поверхностей жидкости.

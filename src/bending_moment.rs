@@ -1,5 +1,5 @@
 //! Изгибающий момент
-use crate::{math::vec::IntegralSum, shear_force::IShearForce};
+use crate::{math::IntegralSum, shear_force::IShearForce};
 
 /// Изгибающий момент, интегриральная сумма срезающей  
 /// силы, $M_i = M_{i-1} + SF_{i-1} + SF_i, M_0 = 0$
