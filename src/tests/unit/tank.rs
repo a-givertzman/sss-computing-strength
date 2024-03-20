@@ -4,7 +4,7 @@ mod tests {
     use crate::{
         load::ILoad,
         math::{
-            bound::Bound, curve::Curve, inertia_shift::inertia_shift::InertiaShift,
+            bound::Bound, curve::Curve, inertia::inertia_shift::InertiaShift,
             pos_shift::PosShift, position::Position, surface_moment::SurfaceMoment,
         },
         tank::Tank,

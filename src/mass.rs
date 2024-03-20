@@ -125,7 +125,7 @@ impl IMass for Mass {
     /// заданным значениям смещения центра масс
     fn moment_mass(&self) -> MassMoment {
         if self.moment_mass.borrow().is_none() {
-            let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| MassMoment::from_pos(self.shift_const, c.mass(None)) ).sum::<MassMoment>() +
+            let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| MassMoment::from_pos(self.shift_const.clone(), c.mass(None)) ).sum::<MassMoment>() +
         //    let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| c.moment_mass() ).sum::<MassMoment>() +
             self.loads_cargo.iter().map(|c| c.moment_mass() ).sum::<MassMoment>();
             log::info!("\t Mass moment_mass:{res} ");

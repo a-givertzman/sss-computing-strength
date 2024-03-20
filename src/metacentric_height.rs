@@ -18,6 +18,8 @@ pub struct MetacentricHeight {
     h_cross: Rc<RefCell<Option<f64>>>,
     /// Исправленное отстояние центра масс судна по высоте
     z_g_fix: Rc<RefCell<Option<f64>>>,
+    /// Плечо кренящего момента
+    l_0: Rc<RefCell<Option<f64>>>,
 }
 ///
 impl MetacentricHeight {
@@ -36,6 +38,7 @@ impl MetacentricHeight {
             h_long: Rc::new(RefCell::new(None)),
             h_cross: Rc::new(RefCell::new(None)),
             z_g_fix: Rc::new(RefCell::new(None)),
+            l_0: Rc::new(RefCell::new(None)),
         }
     }
     /// Вычисление значений
@@ -60,11 +63,14 @@ impl MetacentricHeight {
         let h_cross = h_0 - delta_m_h.cross();
         // Исправленное отстояние центра масс судна по высоте (10)
         let z_g_fix: f64 = self.mass.shift().z() + delta_m_h.cross();
-        log::info!("\t MetacentricHeight mass:{} center_draught:{} rad_cross:{} rad_long:{} Z_m:{Z_m} H:{} z_m:{z_m} h:{} z_g_fix:{}", 
-        self.mass.sum(), self.center_draught_shift, self.rad_cross, self.rad_long, h_long, h_cross, z_g_fix );
+        // Плечо кренящего момента (12) 
+        let l_0: f64 = self.mass.shift().y() - self.center_draught_shift.y();        
+        log::info!("\t MetacentricHeight mass:{} center_draught:{} rad_cross:{} rad_long:{} Z_m:{Z_m} H:{} z_m:{z_m} h:{} z_g_fix:{} l_0:{}", 
+        self.mass.sum(), self.center_draught_shift, self.rad_cross, self.rad_long, h_long, h_cross, z_g_fix, l_0 );
         *self.h_long.borrow_mut() = Some(h_long);
         *self.h_cross.borrow_mut() = Some(h_cross);
         *self.z_g_fix.borrow_mut() = Some(z_g_fix);
+        *self.l_0.borrow_mut() = Some(l_0);
     }
 }
 ///
@@ -91,6 +97,13 @@ impl IMetacentricHeight for MetacentricHeight {
         }
         self.z_g_fix.borrow().clone().expect("MetacentricHeight z_g_fix error")
     }
+    /// Плечо кренящего момента
+    fn l_0(&self) -> f64 {
+        if self.l_0.borrow().is_none() {
+            self.calculate();
+        }
+        self.l_0.borrow().clone().expect("MetacentricHeight z_g_fix error")
+    }
 }
 ///
 #[doc(hidden)]
@@ -101,6 +114,8 @@ pub trait IMetacentricHeight {
     fn h_cross(&self) -> f64;
     /// Исправленное отстояние центра масс судна по высоте
     fn z_g_fix(&self) -> f64;
+    /// Плечо кренящего момента
+    fn l_0(&self) -> f64;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -111,6 +126,8 @@ pub struct FakeMetacentricHeight {
     h_cross: f64,
     /// Исправленное отстояние центра масс судна по высоте
     z_g_fix: f64,
+    /// Плечо кренящего момента
+    l_0: f64,
 }
 ///
 #[doc(hidden)]
@@ -121,11 +138,13 @@ impl FakeMetacentricHeight {
         h_long: f64,
         h_cross: f64,
         z_g_fix: f64,
+        l_0: f64,
     ) -> Self {
         Self {
             h_long,
             h_cross,
             z_g_fix,
+            l_0,
         }
     }
 }
@@ -144,6 +163,10 @@ impl IMetacentricHeight for FakeMetacentricHeight {
     /// Исправленное отстояние центра масс судна по высоте
     fn z_g_fix(&self) -> f64 {
         self.z_g_fix
+    }
+    /// Плечо кренящего момента
+    fn l_0(&self) -> f64  {
+        self.l_0
     }
 }
 
