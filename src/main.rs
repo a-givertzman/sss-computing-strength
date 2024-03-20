@@ -250,7 +250,7 @@ fn main() -> Result<(), Error> {
     let rad_long = Curve::new(&data.rad_long).value(volume);
     // Поперечный метацентрические радиус
     let rad_cross = Curve::new(&data.rad_cross).value(volume);
-    //отстояние центра тяжести ватерлинии по длине от миделя
+    // Отстояние центра тяжести ватерлинии по длине от миделя
     let center_waterline_shift = Curve::new(&data.center_waterline).value(volume);
     // Средняя осадка
     let mean_draught = Curve::new(&data.mean_draught).value(volume);
@@ -272,15 +272,16 @@ fn main() -> Result<(), Error> {
         &computer.bending_moment().len()
     );
 
-    let mut metacentric_height: Rc<RefCell<dyn IMetacentricHeight>> =
-        Rc::new(RefCell::new(MetacentricHeight::new(
-            center_draught_shift, // отстояние центра величины погруженной части судна
-            rad_long,             // продольный метацентрические радиус
-            rad_cross,            // поперечный метацентрические радиус
-            Rc::clone(&mass),     // все грузы судна
-        )));
-    let mut stability_arm = StabilityArm::new(Curve2D::from_values(data.pantocarens));
+    let mut metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
+        center_draught_shift, // отстояние центра величины погруженной части судна
+        rad_long,             // продольный метацентрические радиус
+        rad_cross,            // поперечный метацентрические радиус
+        Rc::clone(&mass),     // все грузы судна
+    ));
+    let mut stability_arm = StabilityArm::new(Curve2D::from_values(data.pantocaren), mean_draught, metacentric_height);
 
+    dbg!(stability_arm.angle_static_roll());
+    
     elapsed.insert("Completed", time.elapsed());
     for (key, e) in elapsed {
         println!("{}:\t{:?}", key, e);
