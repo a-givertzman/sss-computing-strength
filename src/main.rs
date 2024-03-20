@@ -278,7 +278,9 @@ fn main() -> Result<(), Error> {
         rad_cross,            // поперечный метацентрические радиус
         Rc::clone(&mass),     // все грузы судна
     ));
+
     let mut stability_arm = StabilityArm::new(Curve2D::from_values(data.pantocaren), mean_draught, metacentric_height);
+
 
     dbg!(stability_arm.angle_static_roll());
     
