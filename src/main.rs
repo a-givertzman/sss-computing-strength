@@ -101,7 +101,7 @@ fn main() -> Result<(), Error> {
     let mut elapsed = HashMap::new();
 
     let time = Instant::now();
-    let _data = get_data("test_ship", 1)?;
+    let data = get_data("test_ship", 1)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
 
  /*   let time = Instant::now();
