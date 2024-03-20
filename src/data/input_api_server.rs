@@ -190,6 +190,16 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //    dbg!(&rad_cross);
     log::info!("input_api_server rad_cross read ok");
+    let pantocaren = PantocarenDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT draught, roll, moment FROM pantocaren WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&pantocaren);
+    log::info!("input_api_server pantocaren read ok");
     let frame = FrameDataArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -278,6 +288,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         rad_cross,
         mean_draught,
         center_draught_shift,
+        pantocaren,
         frame,
         frame_area,
         load_constant,
@@ -346,6 +357,15 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
     );
     //    dbg!(&rad_cross);
     log::info!("input_api_server rad_cross read ok");
+    let pantocaren = async_query(
+        db_name,
+        format!(
+            "SELECT draught, roll, moment FROM pantocaren WHERE ship_id={};",
+            ship_id
+        ),
+    );
+    //    dbg!(&pantocaren);
+    log::info!("input_api_server pantocaren read ok");
     let frame = async_query(
         db_name,
         format!(
@@ -418,6 +438,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
         mean_draught,
         rad_long,
         rad_cross,
+        pantocaren,
         frame,
         frame_area,
         load_space,
@@ -432,6 +453,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
         mean_draught,
         rad_long,
         rad_cross,
+        pantocaren,
         frame,
         frame_area,
         load_space,
@@ -450,6 +472,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
         RadCrossDataArray::parse(&rad_cross?)?,
         MeanDraughtDataArray::parse(&mean_draught?)?,
         CenterDraughtShiftDataArray::parse(&center_draught_shift?)?,
+        PantocarenDataArray::parse(&pantocaren?)?,
         FrameDataArray::parse(&frame?)?,
         FrameAreaData::new(
             FrameAreaArray::parse(&frame_area?)?

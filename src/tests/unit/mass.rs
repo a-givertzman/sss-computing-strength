@@ -5,7 +5,7 @@ mod tests {
         load::{ILoad, LoadSpace},
         mass::{IMass, Mass},
         math::{
-            bound::Bound, curve::Curve, inertia_shift::inertia_shift::InertiaShift,
+            bound::Bound, curve::Curve, inertia::inertia_shift::InertiaShift,
             pos_shift::PosShift, position::Position,
         },
         tank::Tank,
@@ -63,7 +63,7 @@ mod tests {
                     loads_const, 
                     Position::new(0., 0., 0.,),
                     loads_cargo, 
-                    Bounds::from_n(20., 4)
+                    Rc::new(Bounds::from_n(20., 4)),
                 ));
             }
         })

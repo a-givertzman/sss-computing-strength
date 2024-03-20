@@ -4,8 +4,8 @@ mod tests {
     use crate::{
         mass::FakeMass,
         math::position::Position,
-        metacentric_height::{FakeMetacentricHeight, MetacentricHeight},
-        DeltaMH,
+        metacentric_height::MetacentricHeight,
+        DeltaMH, SurfaceMoment,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
@@ -23,6 +23,8 @@ mod tests {
                 vec![0.],
                 Position::new(1.05, 0., 5.32),
                 DeltaMH::new(0., 0.),
+                Position::new(0., 0., 0.,), 
+                SurfaceMoment::new(0., 0.,),
             ));
 
             unsafe {

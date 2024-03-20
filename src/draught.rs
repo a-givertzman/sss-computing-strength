@@ -1,19 +1,21 @@
 //! Распределение объема вытесненной воды по шпациям
+use std::rc::Rc;
+
 use crate::{displacement::Displacement, math::*, trim::Trim};
 
 ///
 /// Распределение объема вытесненной воды по шпациям
 pub struct Draught {
     /// вектор разбиения на отрезки для эпюров
-    bounds: Bounds,
+    bounds: Rc<Bounds>,
     /// отстояние центра тяжести ватерлинии по длине от миделя
     center_waterline_shift: f64,
     /// средняя осадка
     mean_draught: f64,
     /// водоизмещение судна
-    displacement: Displacement,
+    displacement: Rc<Displacement>,
     /// дифферент судна
-    trim: Trim,
+    trim: f64,//Trim,
 }
 ///
 impl Draught {
@@ -26,9 +28,9 @@ impl Draught {
     pub fn new(    
         center_waterline_shift: f64, // отстояние центра тяжести ватерлинии по длине от миделя
         mean_draught: f64,           // средняя осадка
-        displacement: Displacement,    // водоизмещение судна
-        trim: Trim,                    // дифферент судна
-        bounds: Bounds,                // вектор разбиения на отрезки для эпюров
+        displacement: Rc<Displacement>,    // водоизмещение судна
+        trim: f64,//Trim,                    // дифферент судна
+        bounds: Rc<Bounds>,                // вектор разбиения на отрезки для эпюров
     ) -> Self {
         Self {
             bounds,
@@ -46,7 +48,7 @@ impl IDraught for Draught {
         // длинна судна
         let ship_length = self.bounds.length();
         // дифферент судна
-        let trim = self.trim.value();
+        let trim = self.trim;//.value();
         //отстояние центра тяжести ватерлинии по длине от миделя
         let x_f = self.center_waterline_shift;
         //средняя осадка

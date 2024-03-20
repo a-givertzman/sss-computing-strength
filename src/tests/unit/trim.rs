@@ -2,10 +2,10 @@
 
 mod tests {
     use crate::{
-        mass::FakeMass, math::position::Position, metacentric_height::FakeMetacentricHeight, trim::Trim, DeltaMH
+        mass::FakeMass, math::position::Position, metacentric_height::FakeMetacentricHeight, trim::Trim, DeltaMH, SurfaceMoment
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-    use std::{rc::Rc, time::Duration};
+    use std::{cell::RefCell, rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
     #[test]
@@ -20,16 +20,19 @@ mod tests {
         let result = Trim::new(
             118.39,
             Position::new(-0.194609657, 0., 0.735524704),
-            FakeMetacentricHeight::new(
+            Rc::new(FakeMetacentricHeight::new(
                 696.702572991,
                     100.,
                     100.,
-            ),
+                    100.,
+            )),
             Rc::new(FakeMass::new(
                 2044.10,
                 vec![0.],
                 Position::new(1.05, 0., 5.32),
                 DeltaMH::new(0., 0.),
+                Position::new(0., 0., 0.,), 
+                SurfaceMoment::new(0., 0.,),
             )),
         )
         .value();

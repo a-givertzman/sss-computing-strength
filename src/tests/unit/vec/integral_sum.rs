@@ -4,7 +4,7 @@ mod tests {
     use std::time::Duration;
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::math::vec::integral_sum::IntegralSum;
+    use crate::math::vec::IntegralSum;
 
     #[test]
     fn integral_sum() {
