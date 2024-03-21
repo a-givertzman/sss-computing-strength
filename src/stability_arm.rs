@@ -1,5 +1,6 @@
 //! Диаграмма плеч статической остойчивости.
 use std::rc::Rc;
+use crate::Integral;
 use crate::{math::Curve, Curve2D, ICurve, ICurve2D};
 use crate::metacentric_height::{IMetacentricHeight, MetacentricHeight};
 use crate::math::vec::IntegralCotes;

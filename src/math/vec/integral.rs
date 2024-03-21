@@ -8,7 +8,7 @@
 ///
 /// ```
 /// # #![allow(unused_mut)]
-/// let mut res: Vec<f64> = vec![(1.,1.), (2. ,2.), 3., 3.)].integral();
+/// let mut res: Vec<f64> = vec![(1.,1.), (2. ,2.), (3., 3.)].integral();
 /// asserteq!(res, 4);
 /// ```
 pub trait Integral {
