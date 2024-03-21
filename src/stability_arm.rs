@@ -2,8 +2,7 @@
 use std::rc::Rc;
 use crate::Integral;
 use crate::{math::Curve, Curve2D, ICurve, ICurve2D};
-use crate::metacentric_height::{IMetacentricHeight, MetacentricHeight};
-use crate::math::vec::IntegralCotes;
+use crate::metacentric_height::IMetacentricHeight;
 
 /// Диаграмма плеч статической остойчивости – зависимость  
 /// плеча восстанавливающего момента от угла крена судна.
@@ -94,9 +93,9 @@ impl StabilityArm {
         let curve = Curve::new(&diagram);
         let mut angle = 30.;
         let mut delta_angle = angle*0.5;
-        for i in 0..20 {
+        for _ in 0..20 {
             let last_delta_value = l_0 - curve.value(angle);
-            log::info!("StabilityArm calculate: l_0:{l_0} angle:{angle} last_delta_value:{last_delta_value} i:{i} delta_angle:{delta_angle} ");
+//            log::info!("StabilityArm calculate: l_0:{l_0} angle:{angle} last_delta_value:{last_delta_value} i:{i} delta_angle:{delta_angle} ");
             if last_delta_value.abs() < 0.00001 {
                 break;
             }
