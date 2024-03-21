@@ -316,7 +316,6 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
         db_name,
         format!("SELECT key, value FROM ship WHERE ship_id={};", ship_id),
     );
-    //dbg!(&ship);
     log::info!("input_api_server ship read ok");
     let center_waterline = async_query(
         db_name,
@@ -325,7 +324,6 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
             ship_id
         ),
     );
-    //    dbg!(&center_waterline);
     log::info!("input_api_server center_waterline read ok");
     let center_draught_shift = async_query(
         db_name,
@@ -334,7 +332,6 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
             ship_id
         ),
     );
-    //  dbg!(&center_draught_shift);
     log::info!("input_api_server center_draught_shift read ok");
     let mean_draught = async_query(
         db_name,
@@ -343,19 +340,16 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
             ship_id
         ),
     );
-    //    dbg!(&mean_draught);
     log::info!("input_api_server mean_draught read ok");
     let rad_long = async_query(
         db_name,
         format!("SELECT key, value FROM rad_long WHERE ship_id={};", ship_id),
     );
-    //    dbg!(&rad_long);
     log::info!("input_api_server rad_long read ok");
     let rad_cross = async_query(
         db_name,
         format!("SELECT key, value FROM rad_cross WHERE ship_id={};", ship_id),
     );
-    //    dbg!(&rad_cross);
     log::info!("input_api_server rad_cross read ok");
     let pantocaren = async_query(
         db_name,
@@ -364,7 +358,6 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
             ship_id
         ),
     );
-    //    dbg!(&pantocaren);
     log::info!("input_api_server pantocaren read ok");
     let frame = async_query(
         db_name,
@@ -373,7 +366,6 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
             ship_id
         ),
     );
-    //    dbg!(&frame);
     log::info!("input_api_server frame read ok");
     let frame_area = async_query(
         db_name,
@@ -382,7 +374,6 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
             ship_id
         ),
     );
-    //    dbg!(&frame_area);
     log::info!("input_api_server frame_area read ok");
     let load_space = async_query(
         db_name,
@@ -391,7 +382,6 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
             ship_id
         ),
     );
-    //    dbg!(&load_space);
     log::info!("input_api_server load_space read ok");
     let load_constant = async_query(
         db_name,
@@ -400,7 +390,6 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
             ship_id
         ),
     );
-    //    dbg!(&load_constant);
     log::info!("input_api_server load_constant read ok");
     let tank = async_query(
         db_name,
@@ -409,7 +398,6 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
             ship_id
         ),
     );
-    // dbg!(&tank);
     log::info!("input_api_server tank read ok");
     let tank_center = async_query(
         db_name,
@@ -418,7 +406,6 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
             ship_id
         ),
     );
-    // dbg!(&tank_center);
     log::info!("input_api_server tank_center read ok");
     let tank_inertia = async_query(
         db_name,
@@ -427,10 +414,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
             ship_id
         ),
     );
-
-    //  dbg!(&tank_inertia);
     log::info!("input_api_server tank_inertia read ok");
-
     let (
         ship,
         center_waterline,
@@ -462,7 +446,6 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
         tank_center,
         tank_inertia,
     );
-
     log::info!("input_api_server read ok");
     ParsedShipData::parse(
         ship_id,

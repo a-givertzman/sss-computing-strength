@@ -46,12 +46,10 @@
 //!      $M_i = M_{i-1} + Fs_{i-1} + Fs_i, M_0 = 0$.
 
 use crate::{
-    bending_moment::BendingMoment,
     bound::Bound,
     computer::Computer,
     curve::Curve,
     displacement::Displacement,
-    draught::Draught,
     frame::Frame,
     inertia::InertiaShift,
     load::{ILoad, LoadSpace},
@@ -60,17 +58,14 @@ use crate::{
     metacentric_height::{IMetacentricHeight, MetacentricHeight},
     pos_shift::PosShift,
     position::Position,
-    shear_force::{IShearForce, ShearForce},
     stability_arm::StabilityArm,
     tank::Tank,
-    total_force::TotalForce,
-    trim::Trim,
 };
 use data::input_api_server::*;
 use error::Error;
 use futures::executor::block_on;
 use log::info;
-use std::{cell::RefCell, collections::HashMap, rc::Rc, time::Instant};
+use std::{collections::HashMap, rc::Rc, time::Instant};
 
 mod bending_moment;
 mod computer;
@@ -99,16 +94,18 @@ fn main() -> Result<(), Error> {
     // data::input_db::create_test_db("test");
 
     let mut elapsed = HashMap::new();
-
+ /*
     let time = Instant::now();
     let data = get_data("test_ship", 1)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
-
- /*   let time = Instant::now();
+*/
+    let time = Instant::now();
     let data = async_get_data("test_ship", 1);
     let data = block_on(data)?;
     elapsed.insert("ParsedShipData async", time.elapsed());
-*/
+
+  //  dbg!(&data.pantocaren);
+
     let time = Instant::now();
     //   dbg!(&data);
 
@@ -255,7 +252,7 @@ fn main() -> Result<(), Error> {
 
     // Для расчета прочности дифферент находится подбором
     // как условие для схождения изгибающего момента в 0
-    let mut computer = Computer::new(
+ /*   let mut computer = Computer::new(
         gravity_g,
         data.water_density,
         center_waterline_shift,
@@ -269,8 +266,8 @@ fn main() -> Result<(), Error> {
         computer.shear_force().len(),
         &computer.bending_moment().len()
     );
-
-    let mut metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
+*/
+    let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
         center_draught_shift, // отстояние центра величины погруженной части судна
         rad_long,             // продольный метацентрические радиус
         rad_cross,            // поперечный метацентрические радиус

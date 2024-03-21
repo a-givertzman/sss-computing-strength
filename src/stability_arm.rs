@@ -80,25 +80,33 @@ impl StabilityArm {
                 let value = self.data.value(self.mean_draught, angle_deg)
                     - self.metacentric_height.z_g_fix()
                         * (angle_deg * std::f64::consts::PI / 180.).sin();
+   /*             let moment = self.data.value(self.mean_draught, angle_deg);
+                let sin_angle = (angle_deg * std::f64::consts::PI / 180.).sin();
+                let value = moment - self.metacentric_height.z_g_fix()*sin_angle;                
+                dbg!(moment, self.metacentric_height.z_g_fix(), angle_deg, sin_angle, value);
+*/
                 (angle_deg, value)
             })
             .collect::<Vec<(f64, f64)>>();
 
-        let l_0 = self.metacentric_height.l_0();
+        let l_0 = self.metacentric_height.l_0().abs();
         let curve = Curve::new(&diagram);
-        let mut angle = 45.;
-        let mut delta_angle = angle/2.;
+        let mut angle = 30.;
+        let mut delta_angle = angle*0.5;
         for i in 0..20 {
             let last_delta_value = l_0 - curve.value(angle);
-            if last_delta_value.abs() < 0.001 {
+            log::info!("StabilityArm calculate: l_0:{l_0} angle:{angle} last_delta_value:{last_delta_value} i:{i} delta_angle:{delta_angle} ");
+            if last_delta_value.abs() < 0.00001 {
                 break;
             }
-            log::info!("StabilityArm calculate: last_delta_value:{last_delta_value} i:{i} delta_angle:{delta_angle} ");
-            angle -= delta_angle*last_delta_value.signum();
+            angle += delta_angle*last_delta_value.signum();
             delta_angle *= 0.5;
         }
         let angle_static_roll = angle;
-        let arm_dynamic_stability = diagram.iter().filter(|(angle, _)| angle <= &angle_static_roll ).map(|(_, value)| *value ).collect::<Vec<f64>>().integral_cotes(1.);
+        //let arm_dynamic_stability = diagram.iter().filter(|(angle, _)| angle <= &angle_static_roll ).map(|(_, value)| *value ).collect::<Vec<f64>>().integral_cotes(1.);
+        let mut tmp: Vec<(f64, f64)> = diagram.clone().into_iter().filter(|(angle, _)| *angle < angle_static_roll ).collect();
+        tmp.push((angle_static_roll, l_0));
+        let arm_dynamic_stability = tmp.integral();
         log::info!("\t StabilityArm diagram:{:?}  angle_static_roll:{angle_static_roll} arm_dynamic_stability:{arm_dynamic_stability}", diagram);
         self.diagram = Some(diagram);
         self.angle_static_roll = Some(angle_static_roll);

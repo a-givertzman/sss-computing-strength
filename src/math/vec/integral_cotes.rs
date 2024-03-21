@@ -8,7 +8,7 @@
 ///
 /// ```
 /// # #![allow(unused_mut)]
-/// let mut res: Vec<f64> = vec![1., 2., 3.].integral_cotes();
+/// let mut res: Vec<f64> = vec![1., 2., 3.].integral_cotes(1);
 /// asserteq!(res, 4);
 /// ```
 pub trait IntegralCotes {
