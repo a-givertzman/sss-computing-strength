@@ -51,22 +51,22 @@ impl MetacentricHeight {
         let delta_m_h = self.mass.delta_m_h();
         // Продольная метацентрическая высота без учета влияния
         // поправки на влияние свободной поверхности (3)
-        let H_0 = Z_m - self.mass.shift().z();
+        let h_long_0 = Z_m - self.mass.shift().z();
         // Продольная исправленная метацентрическая высота (3)
-        let h_long = H_0 - delta_m_h.long();
+        let h_long = h_long_0 - delta_m_h.long();
         // Аппликата поперечного метацентра (8)
         let z_m = self.center_draught_shift.z() + self.rad_cross; //
                                                                   // Поперечная метацентрическая высота без учета влияния
                                                                   // поправки на влияние свободной поверхности (9)
-        let h_0 = z_m - self.mass.shift().z();
+        let h_cross_0 = z_m - self.mass.shift().z();
         // Поперечная исправленная метацентрическая высота (9)
-        let h_cross = h_0 - delta_m_h.cross();
+        let h_cross = h_cross_0 - delta_m_h.cross();
         // Исправленное отстояние центра масс судна по высоте (10)
         let z_g_fix: f64 = self.mass.shift().z() + delta_m_h.cross();
         // Плечо кренящего момента (12) 
         let l_0: f64 = self.mass.shift().y() - self.center_draught_shift.y();        
-        log::info!("\t MetacentricHeight mass:{} center_draught:{} rad_cross:{} rad_long:{} Z_m:{Z_m} H:{} z_m:{z_m} h:{} z_g_fix:{} l_0:{}", 
-        self.mass.sum(), self.center_draught_shift, self.rad_cross, self.rad_long, h_long, h_cross, z_g_fix, l_0 );
+        log::info!("\t MetacentricHeight mass:{} center_draught:{} rad_cross:{} rad_long:{} Z_m:{Z_m} H_0:{h_long_0} H:{h_long} z_m:{z_m} h_0:{h_cross_0} h:{h_cross} z_g_fix:{z_g_fix} l_0:{l_0}", 
+        self.mass.sum(), self.center_draught_shift, self.rad_cross, self.rad_long );
         *self.h_long.borrow_mut() = Some(h_long);
         *self.h_cross.borrow_mut() = Some(h_cross);
         *self.z_g_fix.borrow_mut() = Some(z_g_fix);

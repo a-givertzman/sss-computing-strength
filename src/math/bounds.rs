@@ -31,7 +31,7 @@ impl Bounds {
                 )
             })
             .collect::<Vec<_>>(), delta);
-        log::info!("\t Bounds from_n: ship_length:{ship_length} n:{n} values:{:?} ", res.values);
+ //       log::info!("\t Bounds from_n: ship_length:{ship_length} n:{n} values:{:?} ", res.values);
         res
     }
     /// Итератор по коллекции

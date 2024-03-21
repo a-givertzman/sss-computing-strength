@@ -1,6 +1,7 @@
 //! Юнит-тесты
 mod integral_sum;
 mod integral_cotes;
+mod integral;
 
 #[cfg(test)]
 

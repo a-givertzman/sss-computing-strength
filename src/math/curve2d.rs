@@ -35,15 +35,17 @@ impl ICurve2D for Curve2D {
         for index in 0..self.curves.len() {
             if self.curves[index].0 >= key1 {
                 if index == 0 {
-                    return self.curves[0].1.value(key2);
+                    let res = self.curves[0].1.value(key2);
+    //                log::info!("\t Curve2D value key1:{key1} key2:{key2} index = 0 res:{res}");
+                    return res;
                 }
                 let res1 = self.curves[index-1].1.value(key2);
                 let res2 = self.curves[index].1.value(key2);
                 let delta = self.curves[index].0 - self.curves[index-1].0;
-                let coeff1 = (res2 - key1) / delta;
+                let coeff1 = (self.curves[index].0 - key1) / delta;
                 let coeff2 = 1. - coeff1;
                 let result = res1 * coeff1 + res2 * coeff2;
-                log::info!("\t Curve2D value key1:{key1} key2:{key2} res1:{res1} res2:{res2} delta:{delta} coeff1:{coeff1} coeff2:{coeff2} result:{result}");
+   //            log::info!("\t Curve2D value key1:{key1} key2:{key2} res1:{res1} res2:{res2} delta:{delta} coeff1:{coeff1} coeff2:{coeff2} result:{result}");
                 return result;
             }
         }

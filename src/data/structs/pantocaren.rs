@@ -40,10 +40,11 @@ impl PantocarenDataArray {
                 .expect("PantocarenDataArray data sort error!")
         });
         self.data.into_iter().for_each(|v| {
-            if vec.last_mut().unwrap_or(&mut (v.draught, Vec::new())).0 == v.draught {
-                vec.last_mut().unwrap().1.push((v.moment, v.roll));
+            if vec.last().is_none() ||
+                vec.last().unwrap().0 != v.draught {
+                vec.push((v.draught, vec![(v.roll, v.moment)]));
             } else {
-                vec.push((v.draught, Vec::new()));
+                vec.last_mut().unwrap().1.push((v.roll, v.moment));
             }
         });
         vec

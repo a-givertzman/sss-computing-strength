@@ -1,10 +1,12 @@
 //! Дополнительные операции над вектором чисел с плавающей точкой
 pub mod integral_sum;
 pub mod integral_cotes;
+pub mod integral;
 
 #[allow(unused)]
 pub use integral_sum::IntegralSum as IntegralSum;
 pub use integral_cotes::IntegralCotes as IntegralCotes;
+pub use integral::Integral as Integral;
 
 /// Сумма сверху: $res_i = res_{i-1} + src_i, res_0 = 0$
 ///

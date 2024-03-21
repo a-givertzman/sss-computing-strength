@@ -32,9 +32,11 @@ impl ICurve for Curve {
     /// - panic - если нет ключей
 
     fn value(&self, key: f64) -> f64 {
-        self.spline
+        let res = self.spline
             .clamped_sample(key)
-            .expect(&"Curve.value | Ошибка полуения значения: нет ключей".to_string())
+            .expect(&"Curve.value | Ошибка полуения значения: нет ключей".to_string());
+    //    log::info!("\t Curve value key:{key} res:{res}");
+        res
     }
 }
 

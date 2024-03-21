@@ -70,8 +70,8 @@ pub struct ParsedTankData {
     pub density: f64,
     /// объем жидкости в цистерне
     pub volume: f64,
-    /// границы цистерны, (x1, x2, y1, y2)
-    pub bound: (f64, f64, f64, f64),
+    /// границы цистерны, (x1, x2)
+    pub bound: (f64, f64),
     /// кривая координат центра объема жидкости в цистерне в системе координат судна по x
     pub center_x: Vec<(f64, f64)>,
     /// кривая координат центра объема жидкости в цистерне в системе координат судна по y
@@ -88,13 +88,11 @@ impl std::fmt::Display for ParsedTankData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadSpaceData(density:{}, volume:{}, bound:(x1:{}, x2:{}, y1:{}, y2:{}), center_x.len:{}, center_y.len:{}, center_z.len:{}, inertia_x.len:{}, inertia_y.len:{}) )",
+            "LoadSpaceData(density:{}, volume:{}, bound:(x1:{}, x2:{}), center_x.len:{}, center_y.len:{}, center_z.len:{}, inertia_x.len:{}, inertia_y.len:{}) )",
             self.density,
             self.volume,
             self.bound.0,
             self.bound.1,
-            self.bound.2,
-            self.bound.3,
             self.center_x.len(),
             self.center_y.len(),
             self.center_z.len(),
@@ -246,14 +244,6 @@ impl ParsedShipData {
                     ))?,
                     *map.get("bound_x2").ok_or(format!(
                         "ParsedShipData parse error: no bound_x2 for tanks id:{}",
-                        tank_id
-                    ))?,
-                    *map.get("bound_y1").ok_or(format!(
-                        "ParsedShipData parse error: no bound_y1 for tanks id:{}",
-                        tank_id
-                    ))?,
-                    *map.get("bound_y2").ok_or(format!(
-                        "ParsedShipData parse error: no bound_y2 for tanks id:{}",
                         tank_id
                     ))?,
                 ),
