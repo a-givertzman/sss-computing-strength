@@ -1,8 +1,7 @@
 //! Изгибающий момент
 use crate::{math::IntegralSum, shear_force::IShearForce, MultipleSingle};
 
-/// Изгибающий момент, интегриральная сумма срезающей  
-/// силы, $M_i = M_{i-1} + SF_{i-1} + SF_i, M_0 = 0$
+/// Изгибающий момент, действующий на корпус судна
 pub struct BendingMoment {
     /// массив значений средающей силы по шпациям
     shear_force: Box<dyn IShearForce>,

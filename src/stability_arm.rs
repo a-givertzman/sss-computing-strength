@@ -80,11 +80,6 @@ impl StabilityArm {
                 let value = self.data.value(self.mean_draught, angle_deg)
                     - self.metacentric_height.z_g_fix()
                         * (angle_deg * std::f64::consts::PI / 180.).sin();
-   /*             let moment = self.data.value(self.mean_draught, angle_deg);
-                let sin_angle = (angle_deg * std::f64::consts::PI / 180.).sin();
-                let value = moment - self.metacentric_height.z_g_fix()*sin_angle;                
-                dbg!(moment, self.metacentric_height.z_g_fix(), angle_deg, sin_angle, value);
-*/
                 (angle_deg, value)
             })
             .collect::<Vec<(f64, f64)>>();
