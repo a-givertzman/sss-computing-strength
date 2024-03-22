@@ -8,6 +8,7 @@ pub mod ship;
 mod data_array;
 pub mod load_constant;
 mod pantocaren;
+mod navigation_area;
 
 pub use ship::*;
 pub use frame::*;
@@ -18,10 +19,10 @@ pub use serde_parser::*;
 use data_array::*;
 pub use load_constant::*;
 pub use pantocaren::*;
+pub use navigation_area::*;
 
 pub type RadLongDataArray = DataArray<Pair>;
 pub type RadCrossDataArray = DataArray<Pair>;
 pub type MeanDraughtDataArray = DataArray<Pair>;
 pub type CenterWaterlineArray = DataArray<Pair>;
 pub type CenterDraughtShiftDataArray = DataArray<Quadruple>;
-

@@ -139,6 +139,13 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         false,
     );
     log::info!("input_api_server read begin");
+    let navigation_area = NavigationAreaArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!("SELECT area, p_v, m FROM navigation_area;"),
+    )?)?;
+    //dbg!(&navigation_area);
+    log::info!("input_api_server navigation_area read ok");
     let ship = ShipArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -281,6 +288,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     log::info!("input_api_server tank_inertia read ok");
     log::info!("input_api_server read ok");
     ParsedShipData::parse(
+        navigation_area,
         ship_id,
         ship,
         center_waterline,
@@ -312,6 +320,11 @@ fn fetch_query(
 /// парсит их и проверяет данные на корректность.
 pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> {
     log::info!("input_api_server read begin");
+    let navigation_area = async_query(
+        db_name,
+        format!("SELECT area, p_v, m FROM navigation_area;"),
+    );
+    log::info!("input_api_server navigation_area read ok");
     let ship = async_query(
         db_name,
         format!("SELECT key, value FROM ship WHERE ship_id={};", ship_id),
@@ -416,6 +429,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
     );
     log::info!("input_api_server tank_inertia read ok");
     let (
+        navigation_area,
         ship,
         center_waterline,
         center_draught_shift,
@@ -431,6 +445,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
         tank_center,
         tank_inertia,
     ) = futures::join!(
+        navigation_area,
         ship,
         center_waterline,
         center_draught_shift,
@@ -448,6 +463,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
     );
     log::info!("input_api_server read ok");
     ParsedShipData::parse(
+        NavigationAreaArray::parse(&navigation_area?)?,
         ship_id,
         ShipArray::parse(&ship?)?,
         CenterWaterlineArray::parse(&center_waterline?)?,

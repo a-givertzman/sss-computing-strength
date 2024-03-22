@@ -105,6 +105,8 @@ impl std::fmt::Display for ParsedTankData {
 /// для расчетов.
 #[derive(Debug)]
 pub struct ParsedShipData {
+    /// Параметры района плавания судна  
+    pub navigation_area: NavigationAreaArray,
     /// разбиение на шпации - количество
     pub n_parts: f64,
     /// плотность воды
@@ -115,6 +117,12 @@ pub struct ParsedShipData {
     pub const_mass_shift_y: f64,
     /// отстояние центра тяжести постоянной массы судна по z
     pub const_mass_shift_z: f64,
+    /// Суммарная площадь парусности
+    pub windage: f64,
+    /// Отстояние центра парусности по x 
+    pub windage_shift_x: f64,
+    /// Отстояние центра парусности по z 
+    pub windage_shift_z: f64,
     /// кривая отстояния центра тяжести ватерлинии по длине от миделя  
     pub center_waterline: Vec<(f64, f64)>,
     /// кривая продольного метацентрического радиуса
@@ -145,6 +153,7 @@ impl ParsedShipData {
     /// Парсинг данных в общую структуру. Включает в себя  
     /// проверку данных на корректность.
     pub fn parse(
+        navigation_area: NavigationAreaArray,
         ship_id: usize,
         ship_data: ShipArray,
         center_waterline: CenterWaterlineArray,
@@ -272,6 +281,7 @@ impl ParsedShipData {
         log::info!("result parse ok");
         log::info!("result check begin");
         Self {
+            navigation_area,
             n_parts: *ship_data.get("n_parts").ok_or(format!(
                 "ParsedShipData parse error: no n_parts for ship id:{}",
                 ship_id
@@ -290,6 +300,18 @@ impl ParsedShipData {
             ))?,
             const_mass_shift_z: *ship_data.get("const_mass_shift_z").ok_or(format!(
                 "ParsedShipData parse error: no const_mass_shift_z for ship id:{}",
+                ship_id
+            ))?,
+            windage: *ship_data.get("windage").ok_or(format!(
+                "ParsedShipData parse error: no windage for ship id:{}",
+                ship_id
+            ))?,
+            windage_shift_x: *ship_data.get("windage_shift_x").ok_or(format!(
+                "ParsedShipData parse error: no windage_shift_x for ship id:{}",
+                ship_id
+            ))?,
+            windage_shift_z: *ship_data.get("windage_shift_z").ok_or(format!(
+                "ParsedShipData parse error: no windage_shift_z for ship id:{}",
                 ship_id
             ))?,
             center_waterline: center_waterline.data(),

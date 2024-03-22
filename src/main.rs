@@ -14,7 +14,7 @@ use crate::{
     pos_shift::PosShift,
     position::Position,
     stability_arm::StabilityArm,
-    tank::Tank,
+    tank::Tank, wind::Wind,
 };
 use data::input_api_server::*;
 use error::Error;
@@ -93,6 +93,10 @@ fn main() -> Result<(), Error> {
         )
     })
     .collect::<Vec<_>>();*/
+
+    // Предполагаемое давление ветра +
+    // Добавка на порывистость ветра
+    let (p_v, m) = data.navigation_area.get_area("R2".to_owned()).expect("main error no area data!");  
     // ускорение свободного падения
     let gravity_g = 9.81;
     // плотность окружающей воды
@@ -208,7 +212,7 @@ fn main() -> Result<(), Error> {
 
     // Для расчета прочности дифферент находится подбором
     // как условие для схождения изгибающего момента в 0
- /*   let mut computer = Computer::new(
+    let mut computer = Computer::new(
         gravity_g,
         data.water_density,
         center_waterline_shift,
@@ -217,11 +221,11 @@ fn main() -> Result<(), Error> {
         Rc::new(Displacement::new(frames)),
         Rc::clone(&bounds),
     );
-
-    dbg!(
-        computer.shear_force().len(),
-        &computer.bending_moment().len()
-    );
+    computer.shear_force().len();
+/*    println!("shear_force:");
+    computer.shear_force().iter().for_each(|v| { println!("{v};") });
+    println!("bending_moment:");
+    computer.bending_moment().iter().for_each(|v| { println!("{v};") });
 */
     let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
         center_draught_shift, // отстояние центра величины погруженной части судна
@@ -231,12 +235,17 @@ fn main() -> Result<(), Error> {
     ));
 
     let mut stability_arm = StabilityArm::new(Curve2D::from_values_catmull_rom(data.pantocaren), mean_draught, metacentric_height);
-
-
     dbg!(stability_arm.angle_static_roll());
     stability_arm.diagram().iter().for_each(|(k, v)| { println!("{k} {v};") });
 
-    
+    let wind = Wind::new(
+        p_v,
+        m,
+        data.windage,
+        data.windage_shift_z,
+        gravity_g,
+        Rc::clone(&mass));
+
     elapsed.insert("Completed", time.elapsed());
     for (key, e) in elapsed {
         println!("{}:\t{:?}", key, e);

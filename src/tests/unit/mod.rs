@@ -19,3 +19,4 @@ mod metacentric_height;
 mod curve2d;
 mod computer;
 //mod complex;
+mod wind;
