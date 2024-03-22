@@ -40,6 +40,7 @@ mod tests;
 mod total_force;
 mod trim;
 mod wind;
+mod rolling;
 
 fn main() -> Result<(), Error> {
     //    std::env::set_var("RUST_LOG", "info");
