@@ -18,4 +18,5 @@ mod bounds;
 mod metacentric_height;
 mod curve2d;
 mod computer;
+mod stability_arm;
 //mod complex;
