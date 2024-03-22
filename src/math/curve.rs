@@ -12,15 +12,63 @@ pub struct Curve {
 /// 
 impl Curve {
     ///
-    /// Creates new instance of the Curve from vector of the key - value pairs
-    pub fn new(values: &Vec<(f64, f64)>) -> Curve {
-        assert!(values.len() > 1, "Curve.new | Input array must have at least two elements (values.len > 1), \nvalues: {:?}", values);
+    /// Creates new instance of the Curve with linear interpolation  
+    /// from vector of the key - value pairs
+    pub fn new_linear(values: &Vec<(f64, f64)>) -> Curve {
+        assert!(values.len() > 1, "Curve.new_linear | Input array must have at least two elements (values.len > 1), \nvalues: {:?}", values);
         let values: Vec<_> = values
             .iter()
-            .map(|v| Key::new(v.0, v.1, Interpolation::default()))
+            .map(|v| Key::new(v.0, v.1, Interpolation::Linear))
             .collect();
         Self {
             spline: Spline::from_vec(values),
+        }
+    }
+ /*   ///
+    /// Creates new instance of the Curve with Cosine interpolation  
+    /// from vector of the key - value pairs
+    pub fn new_cosine(values: &Vec<(f64, f64)>) -> Curve {
+        assert!(values.len() > 1, "Curve.new | Input array must have at least two elements (values.len > 1), \nvalues: {:?}", values);
+        let mut res: Vec<_> = values
+            .iter()
+            .map(|v| Key::new(v.0, v.1, Interpolation::Cosine))
+            .collect();      
+        Self {
+            spline: Spline::from_vec(res),
+        }
+    }
+*/    ///
+    /// Creates new instance of the Curve with CatmullRom interpolation  
+    /// from vector of the key - value pairs
+    pub fn new_catmull_rom(src: &Vec<(f64, f64)>) -> Curve {
+        assert!(src.len() > 2, "Curve.new | Input array must have at least four elements (values.len > 1), \nvalues: {:?}", src);
+        let mut res = Vec::new();
+
+        // Для метода CatmullRom добавляем по 3 значения вначало и конец вектора
+        let delta_key = src[1].0 - src[0].0;
+        assert!(delta_key > 0., "Curve.new_catmull_rom delta_key > 0");
+        let delta_value = src[1].1 - src[0].1;
+        res.push(Key::new(src[0].0 - delta_key*3., src[0].1 - delta_value*3., Interpolation::CatmullRom));
+        res.push(Key::new(src[0].0 - delta_key*2., src[0].1 - delta_value*2., Interpolation::CatmullRom));
+        res.push(Key::new(src[0].0 - delta_key, src[0].1 - delta_value, Interpolation::CatmullRom));
+
+        let values: Vec<Key<_, _>>  = src
+            .iter()
+            .map(|v| Key::new(v.0, v.1, Interpolation::CatmullRom))
+            .collect();
+        res.append(&mut values.clone());
+
+        let delta_key = src[src.len() - 1].0 - src[src.len() - 2].0;
+        assert!(delta_key > 0., "Curve.new_catmull_rom delta_key > 0");
+        let delta_value = src[src.len() - 1].1 - src[src.len() - 2].1;
+        res.push(Key::new(src.last().unwrap().0 + delta_key, src.last().unwrap().1 + delta_value, Interpolation::CatmullRom));
+        res.push(Key::new(src.last().unwrap().0 + delta_key*2., src.last().unwrap().1 + delta_value*2., Interpolation::CatmullRom));
+        res.push(Key::new(src.last().unwrap().0 + delta_key*3., src.last().unwrap().1 + delta_value*3., Interpolation::CatmullRom));
+
+        
+    //    res.push(Key::new(values.last().unwrap().0, values.last().unwrap().1, Interpolation::CatmullRom));  
+        Self {
+            spline: Spline::from_vec(res),
         }
     }
 }
@@ -30,14 +78,13 @@ impl ICurve for Curve {
     /// - если такого ключа нет, то возвращает промежуточное значение между двумя соседними с помощью линейной интерполяции
     /// - если ключ за пределами ключей таблицы, то вернет либо первое либо последнее значение
     /// - panic - если нет ключей
-
     fn value(&self, key: f64) -> f64 {
         let res = self.spline
             .clamped_sample(key)
-            .expect(&"Curve.value | Ошибка полуения значения: нет ключей".to_string());
-    //    log::info!("\t Curve value key:{key} res:{res}");
+            .expect(&"Curve.clamped_value | Ошибка получения значения: нет ключей".to_string());
+    //    log::info!("\t Curve clamped_value key:{key} res:{res}");
         res
-    }
+    }  
 }
 
 #[doc(hidden)]

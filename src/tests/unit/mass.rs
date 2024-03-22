@@ -23,14 +23,14 @@ mod tests {
     fn init_once() {
         INIT.call_once(|| {
             let center = PosShift::new(
-                Curve::new(&vec![(0., 1.), (10., 1.)]),
-                Curve::new(&vec![(0., 0.), (10., 0.)]),
-                Curve::new(&vec![(0., 0.), (10., 0.)]),
+                Curve::new_linear(&vec![(0., 1.), (10., 1.)]),
+                Curve::new_linear(&vec![(0., 0.), (10., 0.)]),
+                Curve::new_linear(&vec![(0., 0.), (10., 0.)]),
             );
 
             let free_surf_inertia = InertiaShift::new(
-                Curve::new(&vec![(0., 0.), (10., 1.)]),
-                Curve::new(&vec![(0., 0.), (10., 1.)]),
+                Curve::new_linear(&vec![(0., 0.), (10., 1.)]),
+                Curve::new_linear(&vec![(0., 0.), (10., 1.)]),
             );
 
             let loads_const: Vec<Rc<Box<dyn ILoad>>> = vec![

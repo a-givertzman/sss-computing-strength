@@ -15,7 +15,7 @@ mod tests {
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
-        let curve = Curve::new(&vec![
+        let curve = Curve::new_linear(&vec![
             // (2., 2.)
         ]);
         let test_data = [
@@ -38,7 +38,7 @@ mod tests {
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
-        let curve = Curve::new(&vec![
+        let curve = Curve::new_linear(&vec![
             (0., 0.), 
             (2., 2.)
         ]);

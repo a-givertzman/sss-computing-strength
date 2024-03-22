@@ -115,7 +115,7 @@ fn main() -> Result<(), Error> {
         .map(|v| {
             Frame::new(
                 v.x - data.frames.last().expect("frames last error: no frame").x / 2.,
-                Curve::new(&v.immersion_area),
+                Curve::new_linear(&v.immersion_area),
             )
         })
         .collect();
@@ -167,13 +167,13 @@ fn main() -> Result<(), Error> {
             v.volume,
             Bound::new(v.bound.0, v.bound.1),
             PosShift::new(
-                Curve::new(&v.center_x),
-                Curve::new(&v.center_y),
-                Curve::new(&v.center_z),
+                Curve::new_linear(&v.center_x),
+                Curve::new_linear(&v.center_y),
+                Curve::new_linear(&v.center_z),
             ),
             InertiaShift::new(
-                Curve::new(&v.free_surf_inertia_x),
-                Curve::new(&v.free_surf_inertia_y),
+                Curve::new_linear(&v.free_surf_inertia_x),
+                Curve::new_linear(&v.free_surf_inertia_y),
             ),
         ))));
     });
@@ -191,19 +191,19 @@ fn main() -> Result<(), Error> {
     let volume = mass_sum / data.water_density;
     // Отстояние центра величины погруженной части судна
     let center_draught_shift = PosShift::new(
-        Curve::new(&data.center_draught_shift_x),
-        Curve::new(&data.center_draught_shift_y),
-        Curve::new(&data.center_draught_shift_z),
+        Curve::new_linear(&data.center_draught_shift_x),
+        Curve::new_linear(&data.center_draught_shift_y),
+        Curve::new_linear(&data.center_draught_shift_z),
     )
     .value(volume);
     // Продольный метацентрические радиус
-    let rad_long = Curve::new(&data.rad_long).value(volume);
+    let rad_long = Curve::new_linear(&data.rad_long).value(volume);
     // Поперечный метацентрические радиус
-    let rad_cross = Curve::new(&data.rad_cross).value(volume);
+    let rad_cross = Curve::new_linear(&data.rad_cross).value(volume);
     // Отстояние центра тяжести ватерлинии по длине от миделя
-    let center_waterline_shift = Curve::new(&data.center_waterline).value(volume);
+    let center_waterline_shift = Curve::new_linear(&data.center_waterline).value(volume);
     // Средняя осадка
-    let mean_draught = Curve::new(&data.mean_draught).value(volume);
+    let mean_draught = Curve::new_linear(&data.mean_draught).value(volume);
 
     // Для расчета прочности дифферент находится подбором
     // как условие для схождения изгибающего момента в 0
@@ -229,10 +229,12 @@ fn main() -> Result<(), Error> {
         Rc::clone(&mass),     // все грузы судна
     ));
 
-    let mut stability_arm = StabilityArm::new(Curve2D::from_values(data.pantocaren), mean_draught, metacentric_height);
+    let mut stability_arm = StabilityArm::new(Curve2D::from_values_catmull_rom(data.pantocaren), mean_draught, metacentric_height);
 
 
     dbg!(stability_arm.angle_static_roll());
+    stability_arm.diagram().iter().for_each(|(k, v)| { println!("{k} {v};") });
+
     
     elapsed.insert("Completed", time.elapsed());
     for (key, e) in elapsed {

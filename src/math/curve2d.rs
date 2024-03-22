@@ -16,12 +16,21 @@ impl Curve2D {
         assert!(curves.len() > 1, "curves.len() {} > 0", curves.len());
         Self { curves }
     }
-    /// Конструктор из матрицы значений
+    /// Конструктор из матрицы значений,
+    /// создает кривые с линейным методом интерполяции
     #[allow(dead_code)]
-    pub fn from_values(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Self {
+    pub fn from_values_linear(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Self {
         assert!(values.len() > 1, "values.len() {} > 0", values.len());
         values.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-        Self::new(values.into_iter().map(|(value, vector)| (value, Curve::new(&vector))).collect())
+        Self::new(values.into_iter().map(|(value, vector)| (value, Curve::new_linear(&vector))).collect())
+    }
+    /// Конструктор из матрицы значений,
+    /// создает кривые с косинусным методом интерполяции
+    #[allow(dead_code)]
+    pub fn from_values_catmull_rom(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Self {
+        assert!(values.len() > 1, "values.len() {} > 0", values.len());
+        values.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        Self::new(values.into_iter().map(|(value, vector)| (value, Curve::new_catmull_rom(&vector))).collect())
     }
 }
 ///

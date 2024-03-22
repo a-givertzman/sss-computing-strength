@@ -15,7 +15,7 @@ mod tests {
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
-        let curve = Curve2D::from_values(vec![
+        let curve = Curve2D::from_values_catmull_rom(vec![
             // (2., 2.)
         ]);
         let test_data = [
@@ -38,7 +38,7 @@ mod tests {
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
-        let curve = Curve2D::from_values(vec![
+        let curve = Curve2D::from_values_catmull_rom(vec![
             (0., vec!((0., 0.), (0., 0.),)), 
             (2., vec!((0., 2.), (2., 2.),)),
             (-2., vec!((0., -2.), (2., -2.),))

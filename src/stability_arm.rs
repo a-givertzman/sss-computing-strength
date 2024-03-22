@@ -37,7 +37,7 @@ impl StabilityArm {
             arm_dynamic_stability: None,
         }
     }
-    /// Угол начального статического крена судна  
+   /* /// Угол начального статического крена судна  
     /// соответствующий плечу кренящего момента $L_0$ (12)
     /// * mean_draught: среднаяя осадка
     /// * roll_moment: плече кренящего момента
@@ -45,13 +45,13 @@ impl StabilityArm {
         if self.diagram.is_none() {
             self.calculate();
         }
-        Curve::new(
+        Curve::new_linear(
             self.diagram
                 .as_ref()
                 .expect("StabilityArm angle error: no diagram!"),
         )
         .value(roll_moment)
-    }
+    }*/
     /// Диаграмма статической остойчивости
     pub fn diagram(&mut self) -> Vec<(f64, f64)> {
         if self.diagram.is_none() {
@@ -85,7 +85,7 @@ impl StabilityArm {
             .collect::<Vec<(f64, f64)>>();
 
         let l_0 = self.metacentric_height.l_0().abs();
-        let curve = Curve::new(&diagram);
+        let curve = Curve::new_linear(&diagram);
         let mut angle = 30.;
         let mut delta_angle = angle*0.5;
         for _ in 0..20 {
