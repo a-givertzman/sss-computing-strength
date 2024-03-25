@@ -1,3 +1,6 @@
+-- Давление ветра p_v и добавка на порывистость m 
+-- в зависимости от района плавания судна,
+-- Табл. 2.1.4.1
 TRUNCATE TABLE navigation_area;
 
 INSERT INTO navigation_area
