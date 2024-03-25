@@ -108,7 +108,7 @@ pub struct ParsedShipData {
     /// Параметры района плавания судна  
     pub navigation_area: NavigationAreaArray,
     /// разбиение на шпации - количество
-    pub n_parts: f64,
+    pub n_parts: usize,
     /// плотность воды
     pub water_density: f64,
     /// отстояние центра тяжести постоянной массы судна по x  
@@ -196,42 +196,42 @@ impl ParsedShipData {
         let mut load_spaces = Vec::new();
         for (space_id, map) in load_spaces_src.data() {
             load_spaces.push(ParsedLoadSpaceData {
-                mass: *map.get("mass").ok_or(format!(
+                mass: map.get("mass").ok_or(format!(
                     "ParsedShipData parse error: no mass for load_space id:{}",
                     space_id
-                ))?,
+                ))?.0.parse::<f64>()?,
                 bound: (
-                    *map.get("bound_x1").ok_or(format!(
+                    map.get("bound_x1").ok_or(format!(
                         "ParsedShipData parse error: no bound_x1 for load_space id:{}",
                         space_id
-                    ))?,
-                    *map.get("bound_x2").ok_or(format!(
+                    ))?.0.parse::<f64>()?,
+                    map.get("bound_x2").ok_or(format!(
                         "ParsedShipData parse error: no bound_x2 for load_space id:{}",
                         space_id
-                    ))?,
+                    ))?.0.parse::<f64>()?,
                 ),
                 center: (
-                    *map.get("center_x").ok_or(format!(
+                    map.get("center_x").ok_or(format!(
                         "ParsedShipData parse error: no center_x for load_space id:{}",
                         space_id
-                    ))?,
-                    *map.get("center_y").ok_or(format!(
+                    ))?.0.parse::<f64>()?,
+                    map.get("center_y").ok_or(format!(
                         "ParsedShipData parse error: no center_y for load_space id:{}",
                         space_id
-                    ))?,
-                    *map.get("center_z").ok_or(format!(
+                    ))?.0.parse::<f64>()?,
+                    map.get("center_z").ok_or(format!(
                         "ParsedShipData parse error: no center_z for load_space id:{}",
                         space_id
-                    ))?,
+                    ))?.0.parse::<f64>()?,
                 ),
-                m_f_s_y: *map.get("m_f_s_y").ok_or(format!(
+                m_f_s_y: map.get("m_f_s_y").ok_or(format!(
                     "ParsedShipData parse error: no m_f_s_y for load_space id:{}",
                     space_id
-                ))?,
-                m_f_s_x: *map.get("m_f_s_x").ok_or(format!(
+                ))?.0.parse::<f64>()?,
+                m_f_s_x: map.get("m_f_s_x").ok_or(format!(
                     "ParsedShipData parse error: no m_f_s_x for load_space id:{}",
                     space_id
-                ))?,
+                ))?.0.parse::<f64>()?,
             });
         }
 
@@ -282,38 +282,38 @@ impl ParsedShipData {
         log::info!("result check begin");
         Self {
             navigation_area,
-            n_parts: *ship_data.get("n_parts").ok_or(format!(
+            n_parts: ship_data.get("n_parts").ok_or(format!(
                 "ParsedShipData parse error: no n_parts for ship id:{}",
                 ship_id
-            ))?,
-            water_density: *ship_data.get("water_density").ok_or(format!(
+            ))?.0.parse::<usize>()?,
+            water_density: ship_data.get("water_density").ok_or(format!(
                 "ParsedShipData parse error: no water_density for ship id:{}",
                 ship_id
-            ))?,
-            const_mass_shift_x: *ship_data.get("const_mass_shift_x").ok_or(format!(
+            ))?.0.parse::<f64>()?,
+            const_mass_shift_x: ship_data.get("const_mass_shift_x").ok_or(format!(
                 "ParsedShipData parse error: no const_mass_shift_x for ship id:{}",
                 ship_id
-            ))?,
-            const_mass_shift_y: *ship_data.get("const_mass_shift_y").ok_or(format!(
+            ))?.0.parse::<f64>()?,
+            const_mass_shift_y: ship_data.get("const_mass_shift_y").ok_or(format!(
                 "ParsedShipData parse error: no const_mass_shift_y for ship id:{}",
                 ship_id
-            ))?,
-            const_mass_shift_z: *ship_data.get("const_mass_shift_z").ok_or(format!(
+            ))?.0.parse::<f64>()?,
+            const_mass_shift_z: ship_data.get("const_mass_shift_z").ok_or(format!(
                 "ParsedShipData parse error: no const_mass_shift_z for ship id:{}",
                 ship_id
-            ))?,
-            windage: *ship_data.get("windage").ok_or(format!(
+            ))?.0.parse::<f64>()?,
+            windage: ship_data.get("windage").ok_or(format!(
                 "ParsedShipData parse error: no windage for ship id:{}",
                 ship_id
-            ))?,
-            windage_shift_x: *ship_data.get("windage_shift_x").ok_or(format!(
+            ))?.0.parse::<f64>()?,
+            windage_shift_x: ship_data.get("windage_shift_x").ok_or(format!(
                 "ParsedShipData parse error: no windage_shift_x for ship id:{}",
                 ship_id
-            ))?,
-            windage_shift_z: *ship_data.get("windage_shift_z").ok_or(format!(
+            ))?.0.parse::<f64>()?,
+            windage_shift_z: ship_data.get("windage_shift_z").ok_or(format!(
                 "ParsedShipData parse error: no windage_shift_z for ship id:{}",
                 ship_id
-            ))?,
+            ))?.0.parse::<f64>()?,
             center_waterline: center_waterline.data(),
             rad_long: rad_long.data(),
             rad_cross: rad_cross.data(),
@@ -331,7 +331,7 @@ impl ParsedShipData {
     }
     /// Проверка данных на корректность
     fn check(self) -> Result<Self, Error> {
-        if self.n_parts <= 0. {
+        if self.n_parts <= 0 {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: number of frames must be positive {}",
                 self.n_parts

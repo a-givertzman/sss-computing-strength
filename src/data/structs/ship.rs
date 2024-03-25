@@ -10,16 +10,19 @@ pub struct ShipData {
     /// Параметр в виде текста
     pub key: String,
     /// Величина параметра
-    pub value: f64,
+    pub value: String,
+    /// Тип параметра
+    pub value_type: String,
 }
 ///
 impl std::fmt::Display for ShipData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "ShipData(key:{}, value:{})",
+            "ShipData(key:{}, value:{} value_type:{})",
             self.key,
             self.value,
+            self.value_type,
         )
     }
 }
@@ -28,7 +31,7 @@ pub type ShipArray = DataArray<ShipData>;
 ///
 impl ShipArray {
     /// Преобразование и возвращает данные в виде мапы ключ/значение
-    pub fn data(self) -> HashMap<String, f64> {
-        self.data.into_iter().map(|v| (v.key, v.value)).collect()
+    pub fn data(self) -> HashMap<String, (String, String)> {
+        self.data.into_iter().map(|v| (v.key, (v.value, v.value_type))).collect()
     }
 }

@@ -51,16 +51,16 @@ fn main() -> Result<(), Error> {
     // data::input_db::create_test_db("test");
 
     let mut elapsed = HashMap::new();
- /*
+ 
     let time = Instant::now();
-    let data = get_data("test_ship", 1)?;
+    let data = get_data("sss-computing", 1)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
-*/
-    let time = Instant::now();
+
+ /*   let time = Instant::now();
     let data = async_get_data("test_ship", 1);
     let data = block_on(data)?;
     elapsed.insert("ParsedShipData async", time.elapsed());
-
+*/
   //  dbg!(&data.pantocaren);
 
     let time = Instant::now();
