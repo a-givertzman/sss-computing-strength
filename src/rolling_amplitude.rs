@@ -1,7 +1,7 @@
 //! Амплитуда качки судна
 
 /// Амплитуда качки судна с круглой скулой
-struct Rolling {
+struct RollingAmplitude {
     k: f64,
     x_1: f64,
     x_2: f64,
@@ -9,6 +9,6 @@ struct Rolling {
     s: f64,
 }
 ///
-impl Rolling {
+impl RollingAmplitude {
 
 } 

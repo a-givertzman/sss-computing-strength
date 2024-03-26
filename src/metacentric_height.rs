@@ -63,8 +63,8 @@ impl MetacentricHeight {
         let h_cross = h_cross_0 - delta_m_h.cross();
         // Исправленное отстояние центра масс судна по высоте (10)
         let z_g_fix: f64 = self.mass.shift().z() + delta_m_h.cross();
-        // Плечо кренящего момента (12) 
-        let l_0: f64 = self.mass.shift().y() - self.center_draught_shift.y();        
+        // Плечо кренящего момента (12)
+        let l_0: f64 = self.mass.shift().y() - self.center_draught_shift.y();
         log::info!("\t MetacentricHeight mass:{} center_draught:{} rad_cross:{} rad_long:{} Z_m:{Z_m} H_0:{h_long_0} H:{h_long} z_m:{z_m} h_0:{h_cross_0} h:{h_cross} z_g_fix:{z_g_fix} l_0:{l_0}", 
         self.mass.sum(), self.center_draught_shift, self.rad_cross, self.rad_long );
         *self.h_long.borrow_mut() = Some(h_long);
@@ -81,28 +81,40 @@ impl IMetacentricHeight for MetacentricHeight {
         if self.h_long.borrow().is_none() {
             self.calculate();
         }
-        self.h_long.borrow().clone().expect("MetacentricHeight h_long error")
+        self.h_long
+            .borrow()
+            .clone()
+            .expect("MetacentricHeight h_long error")
     }
     /// Поперечная исправленная метацентрическая высота
     fn h_cross(&self) -> f64 {
         if self.h_cross.borrow().is_none() {
             self.calculate();
         }
-        self.h_cross.borrow().clone().expect("MetacentricHeight h_cross error")
+        self.h_cross
+            .borrow()
+            .clone()
+            .expect("MetacentricHeight h_cross error")
     }
     /// Исправленное отстояние центра масс судна по высоте
     fn z_g_fix(&self) -> f64 {
         if self.z_g_fix.borrow().is_none() {
             self.calculate();
         }
-        self.z_g_fix.borrow().clone().expect("MetacentricHeight z_g_fix error")
+        self.z_g_fix
+            .borrow()
+            .clone()
+            .expect("MetacentricHeight z_g_fix error")
     }
     /// Плечо кренящего момента
     fn l_0(&self) -> f64 {
         if self.l_0.borrow().is_none() {
             self.calculate();
         }
-        self.l_0.borrow().clone().expect("MetacentricHeight z_g_fix error")
+        self.l_0
+            .borrow()
+            .clone()
+            .expect("MetacentricHeight z_g_fix error")
     }
 }
 ///
@@ -134,12 +146,7 @@ pub struct FakeMetacentricHeight {
 #[allow(dead_code)]
 impl FakeMetacentricHeight {
     /// Основной конструктор
-    pub fn new(
-        h_long: f64,
-        h_cross: f64,
-        z_g_fix: f64,
-        l_0: f64,
-    ) -> Self {
+    pub fn new(h_long: f64, h_cross: f64, z_g_fix: f64, l_0: f64) -> Self {
         Self {
             h_long,
             h_cross,
@@ -165,8 +172,7 @@ impl IMetacentricHeight for FakeMetacentricHeight {
         self.z_g_fix
     }
     /// Плечо кренящего момента
-    fn l_0(&self) -> f64  {
+    fn l_0(&self) -> f64 {
         self.l_0
     }
 }
-
