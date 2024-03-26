@@ -1,3 +1,4 @@
+-- Теоретические шпангоуты
 TRUNCATE TABLE frame;
 
 INSERT INTO frame
@@ -45,4 +46,28 @@ VALUES
     (NULL, 1, 19, 'delta_x', 5.83),
     (NULL, 1, 20, 'x', 116.6),
     (NULL, 1, 20, 'delta_x', 5.83);
+
+TRUNCATE TABLE frame_area;
+
+\i 'src/data/sql/test_data/frames/0.sql'
+\i 1.sql
+\i 2.sql
+\i 3.sql
+\i 4.sql
+\i 5.sql
+\i 6.sql
+\i 7.sql
+\i 8.sql
+\i 9.sql
+\i 10.sql
+\i 11.sql
+\i 12.sql
+\i 13.sql
+\i 14.sql
+\i 15.sql
+\i 16.sql
+\i 17.sql
+\i 18.sql
+\i 19.sql
+\i 20.sql
     
