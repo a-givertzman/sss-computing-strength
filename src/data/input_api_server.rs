@@ -144,9 +144,12 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     let ship = ShipArray::parse(&fetch_query(
         &mut request,
         db_name,
-        format!("SELECT key, value, value_type FROM ship WHERE ship_id={};", ship_id),
+        format!(
+            "SELECT key, value, value_type FROM ship WHERE ship_id={};",
+            ship_id
+        ),
     )?)?;
- //   dbg!(&ship);
+    //   dbg!(&ship);
     log::info!("input_api_server ship read ok");
     let load_space = LoadSpaceArray::parse(&fetch_query(
         &mut request,
@@ -158,13 +161,41 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //    dbg!(&load_space);
     log::info!("input_api_server load_space read ok");
-    let navigation_area = NavigationAreaArray::parse(&fetch_query(
+    let navigation_area_param = NavigationAreaArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!("SELECT area, p_v, m FROM navigation_area;"),
     )?)?;
-    //dbg!(&navigation_area);
+    //dbg!(&navigation_area_param);
     log::info!("input_api_server navigation_area read ok");
+    let multipler_x1 = MultiplerX1Array::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!("SELECT b_div_d, x1 FROM multipler_x1;"),
+    )?)?;
+    //    dbg!(&multipler_x1);
+    log::info!("input_api_server multipler_x1 read ok");
+    let multipler_x2 = MultiplerX2Array::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!("SELECT c_b, x2 FROM multipler_x2;"),
+    )?)?;
+    //    dbg!(&multipler_x2);
+    log::info!("input_api_server multipler_x2 read ok");
+    let multipler_s = MultiplerSArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!("SELECT area, t, s FROM multipler_s;"),
+    )?)?;
+    //    dbg!(&multipler_s);
+    log::info!("input_api_server multipler_s read ok");
+    let coefficient_k = CoefficientKArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!("SELECT a_div_l, k FROM coefficient_k;"),
+    )?)?;
+    //    dbg!(&coefficient_k);
+    log::info!("input_api_server coefficient_k read ok");
     let center_waterline = CenterWaterlineArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -205,7 +236,10 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     let rad_cross = RadLongDataArray::parse(&fetch_query(
         &mut request,
         db_name,
-        format!("SELECT key, value FROM rad_cross WHERE ship_id={};", ship_id),
+        format!(
+            "SELECT key, value FROM rad_cross WHERE ship_id={};",
+            ship_id
+        ),
     )?)?;
     //    dbg!(&rad_cross);
     log::info!("input_api_server rad_cross read ok");
@@ -290,7 +324,11 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     log::info!("input_api_server tank_inertia read ok");
     log::info!("input_api_server read ok");
     ParsedShipData::parse(
-        navigation_area,
+        navigation_area_param,
+        multipler_x1,
+        multipler_x2,
+        multipler_s,
+        coefficient_k,
         ship_id,
         ship,
         center_waterline,
@@ -317,7 +355,6 @@ fn fetch_query(
     let query = ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(database, sql)), false);
     Ok(request.fetch(&query, true)?)
 }
-
 
 /*
 /// Чтение данных из БД. Функция читает данные за несколько запросов,

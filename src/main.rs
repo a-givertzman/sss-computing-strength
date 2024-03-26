@@ -97,7 +97,7 @@ fn main() -> Result<(), Error> {
 
     // Предполагаемое давление ветра +
     // Добавка на порывистость ветра
-    let (p_v, m) = data.navigation_area.get_area("R2".to_owned()).expect("main error no area data!");  
+    let (p_v, m) = data.navigation_area_param.get_area(&data.navigation_area_name).expect("main error no area data!");  
     // ускорение свободного падения
     let gravity_g = 9.81;
     // плотность окружающей воды

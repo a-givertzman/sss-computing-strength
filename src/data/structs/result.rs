@@ -106,7 +106,18 @@ impl std::fmt::Display for ParsedTankData {
 #[derive(Debug)]
 pub struct ParsedShipData {
     /// Параметры района плавания судна  
-    pub navigation_area: NavigationAreaArray,
+    pub navigation_area_name: String,
+    /// Параметры района плавания судна  
+    pub navigation_area_param: NavigationAreaArray,
+    /// Безразмерный множитель Х_1 для расчета качки, Табл. 2.1.5.1-1
+    pub multipler_x1: MultiplerX1Array,
+    /// Безразмерный множитель Х_2 для расчета качки, Табл. 2.1.5.1-2
+    pub multipler_x2: MultiplerX2Array,
+    /// Безразмерный множитель S для расчета качки, Табл. 2.1.5.1-3
+    pub multipler_s: MultiplerSArray,
+    /// Коэффициент k для судов, имеющих скуловые кили или 
+    /// брусковый киль для расчета качки, Табл. 2.1.5.2
+    pub coefficient_k: CoefficientKArray,
     /// разбиение на шпации - количество
     pub n_parts: usize,
     /// плотность воды
@@ -153,7 +164,11 @@ impl ParsedShipData {
     /// Парсинг данных в общую структуру. Включает в себя  
     /// проверку данных на корректность.
     pub fn parse(
-        navigation_area: NavigationAreaArray,
+        navigation_area_param: NavigationAreaArray,
+        multipler_x1: MultiplerX1Array,
+        multipler_x2: MultiplerX2Array,
+        multipler_s: MultiplerSArray,
+        coefficient_k: CoefficientKArray,
         ship_id: usize,
         ship_data: ShipArray,
         center_waterline: CenterWaterlineArray,
@@ -281,7 +296,15 @@ impl ParsedShipData {
         log::info!("result parse ok");
         log::info!("result check begin");
         Self {
-            navigation_area,
+            navigation_area_name: ship_data.get("navigation_area").ok_or(format!(
+                "ParsedShipData parse error: no navigation_area for ship id:{}",
+                ship_id
+            ))?.0.clone(),
+            navigation_area_param,
+            multipler_x1,
+            multipler_x2,
+            multipler_s,
+            coefficient_k,
             n_parts: ship_data.get("n_parts").ok_or(format!(
                 "ParsedShipData parse error: no n_parts for ship id:{}",
                 ship_id
@@ -331,6 +354,31 @@ impl ParsedShipData {
     }
     /// Проверка данных на корректность
     fn check(self) -> Result<Self, Error> {
+        if self.navigation_area_param.data.is_empty() {
+            return Err(Error::Parameter(format!(
+                "Error check NavigationAreaArray: no data"
+            )));
+        }
+        if self.multipler_x1.data.is_empty() {
+            return Err(Error::Parameter(format!(
+                "Error check MultiplerX1Array: no data"
+            )));
+        }
+        if self.multipler_x2.data.is_empty() {
+            return Err(Error::Parameter(format!(
+                "Error check MultiplerX2Array: no data"
+            )));
+        }
+        if self.multipler_s.data.is_empty() {
+            return Err(Error::Parameter(format!(
+                "Error check MultiplerSArray: no data"
+            )));
+        }
+        if self.coefficient_k.data.is_empty() {
+            return Err(Error::Parameter(format!(
+                "Error check CoefficientKArray: no data"
+            )));
+        }
         if self.n_parts <= 0 {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: number of frames must be positive {}",
