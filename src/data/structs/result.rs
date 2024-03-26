@@ -118,6 +118,13 @@ pub struct ParsedShipData {
     /// Коэффициент k для судов, имеющих скуловые кили или 
     /// брусковый киль для расчета качки, Табл. 2.1.5.2
     pub coefficient_k: CoefficientKArray,
+    /// Длинна корпуса судна
+    pub length: f64,
+    /// Ширина корпуса судна
+    pub breadth: f64,
+    /// Cуммарная габаритная площадь скуловых килей,
+    /// либо площадь боковой проекции брускового киля
+    pub keel_area: Option<f64>,
     /// разбиение на шпации - количество
     pub n_parts: usize,
     /// плотность воды
@@ -305,6 +312,18 @@ impl ParsedShipData {
             multipler_x2,
             multipler_s,
             coefficient_k,
+            length: ship_data.get("length").ok_or(format!(
+                "ParsedShipData parse error: no length for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            breadth: ship_data.get("breadth").ok_or(format!(
+                "ParsedShipData parse error: no breadth for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            keel_area: ship_data.get("keel_area").ok_or(format!(
+                "ParsedShipData parse error: no keel_area for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>().ok(),
             n_parts: ship_data.get("n_parts").ok_or(format!(
                 "ParsedShipData parse error: no n_parts for ship id:{}",
                 ship_id
@@ -378,6 +397,25 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check CoefficientKArray: no data"
             )));
+        }
+        if self.length <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: length must be positive {}",
+                self.length
+            )));
+        }
+        if self.breadth <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: breadth must be positive {}",
+                self.breadth
+            )));
+        }
+        if let Some(keel_area) = self.keel_area {
+            if keel_area < 0. {
+                return Err(Error::Parameter(format!(
+                    "Error check ParsedShipData: keel_area must be non-negative {keel_area}",
+                )));
+            }
         }
         if self.n_parts <= 0 {
             return Err(Error::Parameter(format!(

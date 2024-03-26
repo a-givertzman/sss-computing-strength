@@ -39,7 +39,7 @@ impl ITotalForce for TotalForce {
         draught_values.mul_single(self.water_density);
         result.sub_vec(&draught_values);
         result.mul_single(self.gravity_g);
-        log::info!("\t TotalForce mass:{:?} draught:{:?} result:{:?}, mass_sum:{}, draught_mass_sum:{}", mass_values, draught_values, result, mass_values.iter().sum::<f64>(), draught_values.iter().sum::<f64>());
+  //      log::info!("\t TotalForce mass:{:?} draught:{:?} result:{:?}, mass_sum:{}, draught_mass_sum:{}", mass_values, draught_values, result, mass_values.iter().sum::<f64>(), draught_values.iter().sum::<f64>());
         result
     }
 }
