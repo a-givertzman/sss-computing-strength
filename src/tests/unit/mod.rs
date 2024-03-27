@@ -18,7 +18,7 @@ mod bounds;
 mod metacentric_height;
 mod curve2d;
 mod computer;
-//mod complex;
+mod stability_arm;
 mod wind;
 mod rolling_period;
 mod rolling_amplitude;
