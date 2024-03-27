@@ -244,7 +244,6 @@ fn main() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
     );
     dbg!(stability_arm.angle_static_roll());
-
 /*    stability_arm
         .diagram()
         .iter()
@@ -266,14 +265,14 @@ fn main() -> Result<(), Error> {
         Rc::clone(&mass),
     );
 
-    /// Коэффициент полноты судна
+    // Коэффициент полноты судна
     let c_b = 0.9; //TODO: нужна формула расчета, должен дать регистр
 
     let roll_amplitude = RollingAmplitude::new(
         c_b, // Коэффициент полноты судна
         data.keel_area,
         Rc::clone(&mass),
-        data.length,
+        data.length,  //TODO нужна длинна по ватерлинии при текущей осадке
         data.breadth,
         mean_draught,
         Curve::new_linear(&data.coefficient_k.data()),
@@ -283,7 +282,7 @@ fn main() -> Result<(), Error> {
         RollingPeriod::new(
             data.breadth,
             mean_draught,
-            data.length,
+            data.length,  //TODO нужна длинна по ватерлинии при текущей осадке
             Rc::clone(&metacentric_height),
         ),
     );
