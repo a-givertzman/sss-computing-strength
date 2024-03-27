@@ -1,7 +1,7 @@
 //! Амплитуда качки судна
 use std::rc::Rc;
 
-use crate::{mass::IMass, math::Curve, rolling_period::RollingPeriod, ICurve};
+use crate::{mass::IMass, math::Curve, rolling_period::{IRollingPeriod, RollingPeriod}, ICurve};
 
 /// Амплитуда качки судна с круглой скулой (2.1.5)
 pub struct RollingAmplitude {
@@ -27,7 +27,7 @@ pub struct RollingAmplitude {
     /// Безразмерный множитель S Табл. 2.1.5.1-3
     s: Curve,
     /// Период качки судна
-    t: RollingPeriod,
+    t: Box<dyn IRollingPeriod>,
 }
 ///
 impl RollingAmplitude {
@@ -55,7 +55,7 @@ impl RollingAmplitude {
         // Безразмерный множитель S Табл. 2.1.5.1-3
         s: Curve,
         // Период качки судна
-        t: RollingPeriod,
+        t: impl IRollingPeriod + 'static,
     ) -> Self {
         assert!(d > 0., "RollingAmplitude draught {d} > 0.");
         Self {
@@ -69,7 +69,7 @@ impl RollingAmplitude {
             x_1,
             x_2,
             s,
-            t,
+            t: Box::new(t),
         }
     }
     /// Амплитуда качки судна с круглой скулой (2.1.5)

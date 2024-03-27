@@ -192,10 +192,8 @@ fn main() -> Result<(), Error> {
         loads_cargo,
         Rc::clone(&bounds),
     ));
-    // Суммарная масса судна и грузов
-    let mass_sum = mass.sum();
     // Объемное водоизмещение (1)
-    let volume = mass_sum / data.water_density;
+    let volume = mass.sum() / data.water_density;
     // Отстояние центра величины погруженной части судна
     let center_draught_shift = PosShift::new(
         Curve::new_linear(&data.center_draught_shift_x),
