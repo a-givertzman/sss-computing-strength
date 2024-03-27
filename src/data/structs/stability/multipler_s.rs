@@ -3,7 +3,7 @@ use crate::data::structs::DataArray;
 use serde::{Deserialize, Serialize};
 
 /// Промежуточные структуры для serde_json для парсинга
-/// Безразмерный множитель S Табл. 2.1.5.1-3
+/// Безразмерный множитель S. Табл. 2.1.5.1-3
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct MultiplerSData {
     /// Район плавания суджна

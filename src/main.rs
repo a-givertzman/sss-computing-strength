@@ -13,8 +13,11 @@ use crate::{
     metacentric_height::{IMetacentricHeight, MetacentricHeight},
     pos_shift::PosShift,
     position::Position,
+    rolling_amplitude::RollingAmplitude,
+    rolling_period::RollingPeriod,
     stability_arm::StabilityArm,
-    tank::Tank, wind::Wind,
+    tank::Tank,
+    wind::Wind,
 };
 use data::input_api_server::*;
 use error::Error;
@@ -33,6 +36,8 @@ mod load;
 mod mass;
 mod math;
 mod metacentric_height;
+mod rolling_amplitude;
+mod rolling_period;
 mod shear_force;
 mod stability_arm;
 mod tank;
@@ -40,7 +45,6 @@ mod tests;
 mod total_force;
 mod trim;
 mod wind;
-mod rolling;
 
 fn main() -> Result<(), Error> {
     //    std::env::set_var("RUST_LOG", "info");
@@ -51,17 +55,17 @@ fn main() -> Result<(), Error> {
     // data::input_db::create_test_db("test");
 
     let mut elapsed = HashMap::new();
- 
+
     let time = Instant::now();
     let data = get_data("sss-computing", 1)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
 
- /*   let time = Instant::now();
-    let data = async_get_data("test_ship", 1);
-    let data = block_on(data)?;
-    elapsed.insert("ParsedShipData async", time.elapsed());
-*/
-  //  dbg!(&data.pantocaren);
+    /*   let time = Instant::now();
+        let data = async_get_data("test_ship", 1);
+        let data = block_on(data)?;
+        elapsed.insert("ParsedShipData async", time.elapsed());
+    */
+    //  dbg!(&data.pantocaren);
 
     let time = Instant::now();
     //   dbg!(&data);
@@ -95,9 +99,6 @@ fn main() -> Result<(), Error> {
     })
     .collect::<Vec<_>>();*/
 
-    // Предполагаемое давление ветра +
-    // Добавка на порывистость ветра
-    let (p_v, m) = data.navigation_area_param.get_area(&data.navigation_area_name).expect("main error no area data!");  
     // ускорение свободного падения
     let gravity_g = 9.81;
     // плотность окружающей воды
@@ -130,7 +131,7 @@ fn main() -> Result<(), Error> {
     let ship_length = frames.last().unwrap().shift_x() - frames.first().unwrap().shift_x();
     //let ship_length = 120.0<<<<<<< MetacentricHeight
     let n_parts = 20; //data.n_parts as usize;
-    // вектор разбиения судна на отрезки
+                      // вектор разбиения судна на отрезки
     let bounds = Rc::new(Bounds::from_n(ship_length, n_parts));
 
     // Постоянная масса судна
@@ -223,29 +224,70 @@ fn main() -> Result<(), Error> {
         Rc::clone(&bounds),
     );
     computer.shear_force().len();
-/*    println!("shear_force:");
-    computer.shear_force().iter().for_each(|v| { println!("{v};") });
-    println!("bending_moment:");
-    computer.bending_moment().iter().for_each(|v| { println!("{v};") });
-*/
+    /*    println!("shear_force:");
+        computer.shear_force().iter().for_each(|v| { println!("{v};") });
+        println!("bending_moment:");
+        computer.bending_moment().iter().for_each(|v| { println!("{v};") });
+    */
+
+
     let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
-        center_draught_shift, // отстояние центра величины погруженной части судна
-        rad_long,             // продольный метацентрические радиус
-        rad_cross,            // поперечный метацентрические радиус
-        Rc::clone(&mass),     // все грузы судна
+        center_draught_shift.clone(), // отстояние центра величины погруженной части судна
+        rad_long,                     // продольный метацентрические радиус
+        rad_cross,                    // поперечный метацентрические радиус
+        Rc::clone(&mass),             // все грузы судна
     ));
 
-    let mut stability_arm = StabilityArm::new(Curve2D::from_values_catmull_rom(data.pantocaren), mean_draught, metacentric_height);
+    let mut stability_arm = StabilityArm::new(
+        Curve2D::from_values_catmull_rom(data.pantocaren),
+        mean_draught,
+        Rc::clone(&metacentric_height),
+    );
     dbg!(stability_arm.angle_static_roll());
-    stability_arm.diagram().iter().for_each(|(k, v)| { println!("{k} {v};") });
+/*    stability_arm
+        .diagram()
+        .iter()
+        .for_each(|(k, v)| println!("{k} {v};"));
+*/
+    // Предполагаемое давление ветра +
+    // Добавка на порывистость ветра
+    let (p_v, m) = data
+        .navigation_area_param
+        .get_area(&data.navigation_area_name)
+        .expect("main error no area data!");
 
-    let wind = Wind::new(
+    let mut wind = Wind::new(
         p_v,
         m,
         data.windage,
         data.windage_shift_z,
         gravity_g,
-        Rc::clone(&mass));
+        Rc::clone(&mass),
+    );
+
+    // Коэффициент полноты судна
+    let c_b = 0.9; //TODO: нужна формула расчета, должен дать регистр
+
+    let roll_amplitude = RollingAmplitude::new(
+        c_b, // Коэффициент полноты судна
+        data.keel_area,
+        Rc::clone(&mass),
+        data.length,  //TODO нужна длинна по ватерлинии при текущей осадке
+        data.breadth,
+        mean_draught,
+        Curve::new_linear(&data.coefficient_k.data()),
+        Curve::new_linear(&data.multipler_x1.data()),
+        Curve::new_linear(&data.multipler_x2.data()),
+        Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area_name)),
+        RollingPeriod::new(
+            data.breadth,
+            mean_draught,
+            data.length,  //TODO нужна длинна по ватерлинии при текущей осадке
+            Rc::clone(&metacentric_height),
+        ),
+    );
+
+    dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
 
     elapsed.insert("Completed", time.elapsed());
     for (key, e) in elapsed {
