@@ -5,7 +5,7 @@ mod tests {
         math::{
             bound::Bound, curve::Curve, inertia::inertia_shift::InertiaShift,
             pos_shift::PosShift, position::Position,
-        }, metacentric_height::{FakeMetacentricHeight, IMetacentricHeight}, stability_arm::StabilityArm, tank::Tank, Bounds, Curve2D
+        }, metacentric_height::{FakeMetacentricHeight, IMetacentricHeight}, stability_arm::{IStabilityArm, StabilityArm}, tank::Tank, Bounds, Curve2D
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};

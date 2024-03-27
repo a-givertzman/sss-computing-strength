@@ -30,3 +30,6 @@ pub type RadCrossDataArray = DataArray<Pair>;
 pub type MeanDraughtDataArray = DataArray<Pair>;
 pub type CenterWaterlineArray = DataArray<Pair>;
 pub type CenterDraughtShiftDataArray = DataArray<Quadruple>;
+pub type FloodingAngleDataArray = DataArray<Pair>;
+pub type EntryAngleDataArray = DataArray<Pair>;
+

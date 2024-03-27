@@ -2,7 +2,7 @@
 
 mod tests {
     use crate::{
-        mass::FakeMass, math::Position, wind::Wind, DeltaMH, SurfaceMoment
+        mass::FakeMass, math::Position, wind::{IWind, Wind}, DeltaMH, SurfaceMoment
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, time::Duration};

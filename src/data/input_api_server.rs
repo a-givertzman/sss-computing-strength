@@ -171,14 +171,14 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     let multipler_x1 = MultiplerX1Array::parse(&fetch_query(
         &mut request,
         db_name,
-        format!("SELECT b_div_d, x1 FROM multipler_x1;"),
+        format!("SELECT key, value FROM multipler_x1;"),
     )?)?;
     //    dbg!(&multipler_x1);
     log::info!("input_api_server multipler_x1 read ok");
     let multipler_x2 = MultiplerX2Array::parse(&fetch_query(
         &mut request,
         db_name,
-        format!("SELECT c_b, x2 FROM multipler_x2;"),
+        format!("SELECT key, value FROM multipler_x2;"),
     )?)?;
     //    dbg!(&multipler_x2);
     log::info!("input_api_server multipler_x2 read ok");
@@ -192,7 +192,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     let coefficient_k = CoefficientKArray::parse(&fetch_query(
         &mut request,
         db_name,
-        format!("SELECT a_div_l, k FROM coefficient_k;"),
+        format!("SELECT key, value FROM coefficient_k;"),
     )?)?;
     //    dbg!(&coefficient_k);
     log::info!("input_api_server coefficient_k read ok");
@@ -253,6 +253,26 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //  dbg!(&pantocaren);
     log::info!("input_api_server pantocaren read ok");
+    let flooding_angle = FloodingAngleDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM flooding_angle WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&flooding_angle);
+    log::info!("input_api_server flooding_angle read ok");
+    let entry_angle = EntryAngleDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM entry_angle WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&entry_angle);
+    log::info!("input_api_server entry_angle read ok");
     let frame = FrameDataArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -337,6 +357,8 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         mean_draught,
         center_draught_shift,
         pantocaren,
+        flooding_angle,
+        entry_angle,
         frame,
         frame_area,
         load_constant,

@@ -46,8 +46,6 @@ impl IRollingPeriod for RollingPeriod {
         res
     }
 }
-
-
 #[doc(hidden)]
 pub trait IRollingPeriod {
     /// Период качки судна

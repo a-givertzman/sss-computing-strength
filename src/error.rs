@@ -18,6 +18,8 @@ pub enum Error {
     Parameter(String),
     #[error("ApiRequest error")]
     ApiRequest(String),
+    #[error("Calculate error")]
+    Calculate(String),
     #[error(transparent)]
     Other(#[from] std::io::Error),
 }

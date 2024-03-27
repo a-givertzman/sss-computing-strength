@@ -1,23 +1,7 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
 use crate::{
-    bound::Bound,
-    computer::Computer,
-    curve::Curve,
-    displacement::Displacement,
-    frame::Frame,
-    inertia::InertiaShift,
-    load::{ILoad, LoadSpace},
-    mass::{IMass, Mass},
-    math::*,
-    metacentric_height::{IMetacentricHeight, MetacentricHeight},
-    pos_shift::PosShift,
-    position::Position,
-    rolling_amplitude::RollingAmplitude,
-    rolling_period::RollingPeriod,
-    stability_arm::StabilityArm,
-    tank::Tank,
-    wind::Wind,
+    bound::Bound, computer::Computer, curve::Curve, displacement::Displacement, frame::Frame, inertia::InertiaShift, load::{ILoad, LoadSpace}, mass::{IMass, Mass}, math::*, metacentric_height::{IMetacentricHeight, MetacentricHeight}, pos_shift::PosShift, position::Position, rolling_amplitude::{IRollingAmplitude, RollingAmplitude}, rolling_period::RollingPeriod, stability::Stability, stability_arm::{IStabilityArm, StabilityArm}, tank::Tank, wind::{IWind, Wind}
 };
 use data::input_api_server::*;
 use error::Error;
@@ -45,6 +29,7 @@ mod tests;
 mod total_force;
 mod trim;
 mod wind;
+mod stability;
 
 fn main() -> Result<(), Error> {
     //    std::env::set_var("RUST_LOG", "info");
@@ -57,7 +42,7 @@ fn main() -> Result<(), Error> {
     let mut elapsed = HashMap::new();
 
     let time = Instant::now();
-    let data = get_data("sss-computing", 1)?;
+    let mut data = get_data("sss-computing", 1)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
 
     /*   let time = Instant::now();
@@ -229,12 +214,27 @@ fn main() -> Result<(), Error> {
     */
 
 
+    let flooding_angle = Curve::new_linear(&data.flooding_angle).value(mean_draught);
+
     let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
         center_draught_shift.clone(), // отстояние центра величины погруженной части судна
         rad_long,                     // продольный метацентрические радиус
         rad_cross,                    // поперечный метацентрические радиус
         Rc::clone(&mass),             // все грузы судна
     ));
+
+    // Проверяем есть ли пантокарены в отрицательной области углов
+    // Если нет то считаем что судно симметорично и зеркально
+    // копируем данные в отрицательную область углов крена
+    let mut tmp = data.pantocaren.first().expect("Main pantocaren error: no data!").1.clone();
+    tmp.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    if tmp.first().expect("Main pantocaren error: no data!").0 <= 0. {
+        data.pantocaren.iter_mut().for_each(|(_, vector)| {     
+            let mut negative = vector.iter().filter(|(angle, _)| *angle > 0.).map(|(angle, moment)| (-angle, -moment) ).collect();
+            vector.append(&mut negative);
+            vector.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        });
+    }
 
     let mut stability_arm = StabilityArm::new(
         Curve2D::from_values_catmull_rom(data.pantocaren),
@@ -286,6 +286,18 @@ fn main() -> Result<(), Error> {
     );
 
     dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
+
+    let mut stability = Stability::new(
+            // Угол заливания отверстий
+            flooding_angle,
+            // Диаграмма плеч статической остойчивости
+            Box::new(stability_arm),
+            // Амплитуда качки судна с круглой скулой (2.1.5)
+            Box::new(roll_amplitude),
+            // Расчет плеча кренящего момента от давления ветра
+            Box::new(wind),
+        );
+    dbg!(stability.k()?);
 
     elapsed.insert("Completed", time.elapsed());
     for (key, e) in elapsed {

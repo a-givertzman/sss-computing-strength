@@ -157,6 +157,10 @@ pub struct ParsedShipData {
     pub center_draught_shift_z: Vec<(f64, f64)>,
     /// Кривые плечей остойчивости формы
     pub pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
+    /// Угол заливания отверстий
+    pub flooding_angle: Vec<(f64, f64)>,
+    /// Угол входа верхней палубы в воду
+    pub entry_angle: Vec<(f64, f64)>,
     /// Шпангоуты судна
     pub frames: Vec<ParsedFrameData>,
     /// Постоянный груз, приходящийся на шпацию
@@ -184,6 +188,8 @@ impl ParsedShipData {
         mean_draught: MeanDraughtDataArray,
         center_draught_shift: CenterDraughtShiftDataArray,
         pantocaren: PantocarenDataArray,
+        flooding_angle: FloodingAngleDataArray,
+        entry_angle: EntryAngleDataArray,
         frame_src: FrameDataArray,
         frame_area: FrameAreaData,
         load_constant: LoadConstantArray,
@@ -364,6 +370,8 @@ impl ParsedShipData {
             center_draught_shift_y: center_draught_shift.y(),
             center_draught_shift_z: center_draught_shift.z(),
             pantocaren: pantocaren.data(),
+            flooding_angle: flooding_angle.data(),
+            entry_angle: entry_angle.data(),
             frames,
             load_constant,
             load_spaces,
@@ -458,6 +466,29 @@ impl ParsedShipData {
         }
         if self.center_draught_shift_z.len() <= 1 {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_draught_shift_z's points greater or equal to 2 {}", self.center_draught_shift_z.len())));
+        }
+        if self.pantocaren.len() <= 1 {
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of pantocaren's points greater or equal to 2 {}", self.pantocaren.len())));
+        }
+        if let Some((draught, _)) = self.pantocaren.iter().find(|(draught, _)| *draught < 0. ) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: draught in pantocaren is negative!, {}",
+                draught
+            )));
+        }
+        if self.flooding_angle.len() <= 1 {
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of flooding_angle's points greater or equal to 2 {}", self.flooding_angle.len())));
+        }
+        if let Some((key, value)) = self.flooding_angle.iter().find(|(key, value)| *key < 0. || *value < 0. ) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: draught or angle in flooding_angle is negative!, draught{key}, angle:{value}")));
+        }
+        if self.entry_angle.len() <= 1 {
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of entry_angle's points greater or equal to 2 {}", self.flooding_angle.len())));
+        }
+        if let Some((key, value)) = self.entry_angle.iter().find(|(key, value)| *key < 0. || *value < 0. ) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: draught or angle in entry_angle is negative!, draught{key}, angle:{value}")));
         }
         if self.frames.len() <= 1 {
             return Err(Error::Parameter(format!(

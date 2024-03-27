@@ -1,7 +1,7 @@
 //! Амплитуда качки судна
 use std::rc::Rc;
 
-use crate::{mass::IMass, math::Curve, rolling_period::{IRollingPeriod, RollingPeriod}, ICurve};
+use crate::{mass::IMass, math::Curve, rolling_period::IRollingPeriod, ICurve};
 
 /// Амплитуда качки судна с круглой скулой (2.1.5)
 pub struct RollingAmplitude {
@@ -72,8 +72,11 @@ impl RollingAmplitude {
             t: Box::new(t),
         }
     }
+}
+///
+impl IRollingAmplitude for RollingAmplitude {
     /// Амплитуда качки судна с круглой скулой (2.1.5)
-    pub fn calculate(&self) -> f64 {
+    fn calculate(&self) -> f64 {
         let k = self.a_k.map(|a_k| self.k.value(a_k/(self.l_wl*self.b))).unwrap_or(1.);
         let x_1 = self.x_1.value(self.b / self.d);
         let x_2 = self.x_2.value(self.c_b);
@@ -86,3 +89,31 @@ impl RollingAmplitude {
         res
     }
 }
+#[doc(hidden)]
+pub trait IRollingAmplitude {
+    /// Амплитуда качки судна с круглой скулой (2.1.5)
+    fn calculate(&self) -> f64;
+}
+// заглушка для тестирования
+#[doc(hidden)]
+pub struct FakeRollingAmplitude {
+    value: f64,
+}
+#[doc(hidden)]
+#[allow(dead_code)]
+impl FakeRollingAmplitude {
+    pub fn new(
+        value: f64,
+    ) -> Self {
+        Self {
+            value,
+        }
+    }
+}
+#[doc(hidden)]
+impl IRollingAmplitude for FakeRollingAmplitude {
+    fn calculate(&self) -> f64 {
+        self.value
+    }
+}
+

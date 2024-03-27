@@ -5,7 +5,7 @@ mod tests {
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{mass::FakeMass, math::{Curve, Position}, rolling_amplitude::RollingAmplitude, rolling_period::FakeRollingPeriod, DeltaMH, SurfaceMoment};
+    use crate::{mass::FakeMass, math::{Curve, Position}, rolling_amplitude::{IRollingAmplitude, RollingAmplitude}, rolling_period::FakeRollingPeriod, DeltaMH, SurfaceMoment};
     
     #[test]
     fn rolling_amplitude() {

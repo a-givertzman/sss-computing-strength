@@ -51,20 +51,6 @@ impl Wind {
             l_w_2: None,
         }
     }
-    /// Плечо кренящего момента постоянного ветра
-    pub fn arm_wind_static(&mut self) -> f64 {
-        if self.l_w_1.is_none() {
-            self.calculate();
-        }
-        self.l_w_1.expect("Wind arm_wind_static error: no l_w_2!")
-    }
-    /// Плечо кренящего момента порыва ветра
-    pub fn arm_wind_dynamic(&mut self) -> f64 {
-        if self.l_w_2.is_none() {
-            self.calculate();
-        }
-        self.l_w_2.expect("Wind arm_wind_dynamic error: no l_w_2!")
-    }
     /// Расчет плечей моментов от ветра
     fn calculate(&mut self) {
         // (2.1.4.1-1)
@@ -76,3 +62,59 @@ impl Wind {
         self.l_w_2 = Some(l_w_2);
     }
 }
+///
+impl IWind for Wind {
+    /// Плечо кренящего момента постоянного ветра
+    fn arm_wind_static(&mut self) -> f64 {
+        if self.l_w_1.is_none() {
+            self.calculate();
+        }
+        self.l_w_1.expect("Wind arm_wind_static error: no l_w_2!")
+    }
+    /// Плечо кренящего момента порыва ветра
+    fn arm_wind_dynamic(&mut self) -> f64 {
+        if self.l_w_2.is_none() {
+            self.calculate();
+        }
+        self.l_w_2.expect("Wind arm_wind_dynamic error: no l_w_2!")
+    }
+}
+#[doc(hidden)]
+pub trait IWind {
+    /// Плечо кренящего момента постоянного ветра
+    fn arm_wind_static(&mut self) -> f64;
+    /// Плечо кренящего момента порыва ветра
+    fn arm_wind_dynamic(&mut self) -> f64;
+}
+// заглушка для тестирования
+#[doc(hidden)]
+pub struct FakeWind {
+    arm_wind_static: f64,
+    /// Плечо кренящего момента порыва ветра
+    arm_wind_dynamic: f64,
+}
+#[doc(hidden)]
+#[allow(dead_code)]
+impl FakeWind {
+    pub fn new(
+        arm_wind_static: f64,
+        arm_wind_dynamic: f64,
+    ) -> Self {
+        Self {
+            arm_wind_static,
+            arm_wind_dynamic,
+        }
+    }
+}
+#[doc(hidden)]
+impl IWind for FakeWind {
+    /// Плечо кренящего момента постоянного ветра
+    fn arm_wind_static(&mut self) -> f64 {
+        self.arm_wind_static
+    }
+    /// Плечо кренящего момента порыва ветра
+    fn arm_wind_dynamic(&mut self) -> f64 {
+        self.arm_wind_dynamic
+    }
+}
+

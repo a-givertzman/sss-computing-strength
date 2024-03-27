@@ -22,7 +22,7 @@ impl Integral for Vec<(f64, f64)>  {
         let mut sum = 0.;
         for i in 0..self.len()-1 {
             assert!(self[i+1].0 > self[i].0, "Integral self[i+1].0 > self[i].0");
-            sum += (self[i].1 + self[i+1].1)/(2.*(self[i+1].0 - self[i].0));
+            sum += (self[i].1 + self[i+1].1)*(self[i+1].0 - self[i].0)/2.;
         }
         sum
     }    

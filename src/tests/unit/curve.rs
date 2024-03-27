@@ -31,7 +31,7 @@ mod tests {
     }
 
     #[test]
-    fn curve() {
+    fn value() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
         let self_id = "test Curve value";
@@ -51,6 +51,23 @@ mod tests {
         for (result, target) in test_data {
             assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         }
+        test_duration.exit();
+    }
+    #[test]
+    fn integral() {
+        DebugSession::init(LogLevel::Debug, Backtrace::Short);
+        println!("");
+        let self_id = "test Curve integral";
+        println!("{}", self_id);
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        test_duration.run().unwrap();
+
+        let result = Curve::new_linear(&vec![
+            (0., 0.), 
+            (4., 4.)
+        ]).integral(1., 2.,);
+        let target = 1.5;
+        assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         test_duration.exit();
     }
 }
