@@ -37,21 +37,6 @@ impl StabilityArm {
             arm_dynamic_stability: None,
         }
     }
-   /* /// Угол начального статического крена судна  
-    /// соответствующий плечу кренящего момента $L_0$ (12)
-    /// * mean_draught: среднаяя осадка
-    /// * roll_moment: плече кренящего момента
-    pub fn angle(&mut self, roll_moment: f64) -> f64 {
-        if self.diagram.is_none() {
-            self.calculate();
-        }
-        Curve::new_linear(
-            self.diagram
-                .as_ref()
-                .expect("StabilityArm angle error: no diagram!"),
-        )
-        .value(roll_moment)
-    }*/
     /// Диаграмма статической остойчивости
     pub fn diagram(&mut self) -> Vec<(f64, f64)> {
         if self.diagram.is_none() {
@@ -102,7 +87,8 @@ impl StabilityArm {
         let mut tmp: Vec<(f64, f64)> = diagram.clone().into_iter().filter(|(angle, _)| *angle < angle_static_roll ).collect();
         tmp.push((angle_static_roll, l_0));
         let arm_dynamic_stability = tmp.integral();
-        log::info!("\t StabilityArm diagram:{:?}  angle_static_roll:{angle_static_roll} arm_dynamic_stability:{arm_dynamic_stability}", diagram);
+//        log::info!("\t StabilityArm diagram:{:?}  angle_static_roll:{angle_static_roll} arm_dynamic_stability:{arm_dynamic_stability}", diagram);
+        log::info!("\t StabilityArm  angle_static_roll:{angle_static_roll} arm_dynamic_stability:{arm_dynamic_stability}");
         self.diagram = Some(diagram);
         self.angle_static_roll = Some(angle_static_roll);
         self.arm_dynamic_stability = Some(arm_dynamic_stability);

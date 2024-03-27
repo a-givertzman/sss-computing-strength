@@ -3,7 +3,7 @@ use crate::{
     bending_moment::BendingMoment,
     displacement::Displacement,
     draught::Draught,
-    mass::{IMass, Mass},
+    mass::IMass,
     shear_force::{IShearForce, ShearForce},
     total_force::TotalForce,
     Bounds,
@@ -78,9 +78,9 @@ impl Computer {
     fn calculate(&mut self) {
         let mut trim = 0.; // Дифферент
         let mut delta = 1.; // Изменение дифферента
-        let mut shear_force_values;
-        let mut bending_moment_values;
-        for i in 0..20 {
+        let mut shear_force_values = None;
+        let mut bending_moment_values = None;
+        for i in 0..30 {
             let mut shear_force = ShearForce::new(TotalForce::new(
                 Rc::clone(&self.mass),
                 self.water_density,
@@ -93,22 +93,20 @@ impl Computer {
                 ),
                 self.gravity_g,
             ));
-            shear_force_values = shear_force.values();
-            bending_moment_values =
-                BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values();
+            shear_force_values = Some(shear_force.values());
+            let tmp = BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values();
             // Последнее значение изгибающего момента в векторе.
-            // Если корабль сбалансирован, должно равняться нулю
-            let last_value = bending_moment_values
-                .last()
-                .expect("BendingMoment values error: no last value");
-            log::info!("Computing Trim: BendingMoment last value:{last_value} trim:{trim} i:{i} delta:{delta} ");
+            // Если корабль сбалансирован, должно равняться нулю            
+            let last_value = tmp.last().expect("BendingMoment values error: no last value").clone();
+            bending_moment_values = Some(tmp);
+   //         log::info!("Computing Trim: BendingMoment last value:{last_value} trim:{trim} i:{i} delta:{delta} ");
             if last_value.abs() < 0.1 {
-                self.shear_force = Some(shear_force_values);
-                self.bending_moment = Some(bending_moment_values);
                 break;
             }
             trim -= last_value.signum() * delta;
             delta *= 0.5;
         }
+        self.shear_force = shear_force_values;
+        self.bending_moment = bending_moment_values;
     }
 }

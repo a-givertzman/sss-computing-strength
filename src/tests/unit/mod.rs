@@ -20,3 +20,5 @@ mod curve2d;
 mod computer;
 //mod complex;
 mod wind;
+mod rolling_period;
+mod rolling_amplitude;

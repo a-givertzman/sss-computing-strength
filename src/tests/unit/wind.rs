@@ -9,7 +9,6 @@ mod tests {
     use testing::stuff::max_test_duration::TestDuration;
 
     #[test]
-    #[ignore = "TODO"]
     fn wind() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
@@ -19,22 +18,22 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = Wind::new(
-            252.,
-            0.52,
-            1089.79,
-            6.51,
+            200.,
+            0.50,
+            1000.0,
+            5.0,
             9.81,
             Rc::new(FakeMass::new(
-                2044.10,
+                1000./9.81,
                 vec![0.],
-                Position::new(1.05, 0., 5.32),
+                Position::new(0., 0., 0.),
                 DeltaMH::new(0., 0.),
                 Position::new(0., 0., 0.,), 
                 SurfaceMoment::new(0., 0.,),
             )),
         )
         .arm_wind_dynamic();
-        let target = 0.2115;
+        let target = 1.5;
 
         assert!(
             (result - target).abs() < result.abs() * 0.01, //TODO

@@ -18,7 +18,7 @@ impl BendingMoment {
     pub fn values(&mut self) -> Vec<f64>  {
         let mut result = self.shear_force.values().integral_sum();
         result.mul_single(self.delta/2.);
-        log::info!("\t BendingMoment result:{:?}", result); 
+  //      log::info!("\t BendingMoment result:{:?}", result); 
 /*        let last_value = result.last().expect("BendingMoment error: no result values!");
         let delta = *last_value/((result.len()-1) as f64);
         result.iter_mut().enumerate().for_each(|(i, v)| *v -= delta*(i as f64) );

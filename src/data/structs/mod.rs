@@ -8,7 +8,7 @@ pub mod ship;
 mod data_array;
 pub mod load_constant;
 mod pantocaren;
-mod navigation_area;
+mod stability;
 
 pub use ship::*;
 pub use frame::*;
@@ -19,7 +19,11 @@ pub use serde_parser::*;
 use data_array::*;
 pub use load_constant::*;
 pub use pantocaren::*;
-pub use navigation_area::*;
+pub use stability::navigation_area::NavigationAreaArray as NavigationAreaArray;
+pub use stability::multipler_s::MultiplerSArray as MultiplerSArray;
+pub use stability::MultiplerX1Array as MultiplerX1Array;
+pub use stability::MultiplerX2Array as MultiplerX2Array;
+pub use stability::CoefficientKArray as CoefficientKArray;
 
 pub type RadLongDataArray = DataArray<Pair>;
 pub type RadCrossDataArray = DataArray<Pair>;
