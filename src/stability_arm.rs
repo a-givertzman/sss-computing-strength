@@ -159,7 +159,9 @@ impl StabilityArm {
             .collect();
         tmp.push((angle_static_roll, self.metacentric_height.l_0().abs()));
         let arm_dynamic_stability = tmp.integral();
-        log::info!("\t StabilityArm diagram:{:?}  angle_static_roll:{angle_static_roll} arm_dynamic_stability:{arm_dynamic_stability}", diagram);
+//        log::info!("\t StabilityArm diagram:{:?}  angle_static_roll:{angle_static_roll} arm_dynamic_stability:{arm_dynamic_stability}", diagram);
+        log::info!("\t StabilityArm  angle_static_roll:{angle_static_roll} arm_dynamic_stability:{arm_dynamic_stability}");
+        self.diagram = Some(diagram);
         self.angle_static_roll = Some(angle_static_roll);
         self.arm_dynamic_stability = Some(arm_dynamic_stability);
     }

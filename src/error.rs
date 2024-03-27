@@ -6,6 +6,10 @@ use thiserror::Error as ThisError;
 pub enum Error {
     #[error("FromUtf8Error")]
     FromUtf8Error(#[from] std::string::FromUtf8Error),
+    #[error("ParseIntError")]
+    ParseIntError(#[from] std::num::ParseIntError),
+    #[error("ParseFloatError")]
+    ParseFloatError(#[from] std::num::ParseFloatError),
     #[error("Error")]
     FromString(String),
     #[error("Serde error")]

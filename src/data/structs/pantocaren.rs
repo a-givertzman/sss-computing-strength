@@ -1,9 +1,5 @@
 //! Промежуточные структуры для serde_json для парсинга пантокаренов  
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-
-use crate::Curve2D;
-
 use super::DataArray;
 
 /// Промежуточные структуры для serde_json для парсинга данных  
