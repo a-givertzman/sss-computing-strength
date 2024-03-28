@@ -19,14 +19,15 @@ mod tests {
     fn init_once() {
         INIT.call_once(|| {
             let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(FakeMetacentricHeight::new(
-                100.,
-                10.,
-                5.,
-                1.,
+                0.,
+                0.,
+                0.,
+                0.,
             ));
 
-            let pantocaren = vec![(1., vec![(0., 0.), (30., 2.), (45., 3.), (60., 2.), (90., 0.),]),];
-            let mut stability_arm = StabilityArm::new(Curve2D::from_values_linear(pantocaren), 1., metacentric_height);
+            let pantocaren = vec![(1., vec![(0., 0.), (15., 1.), (30., 2.), (45., 3.), (60., 2.), (75., 1.), (90., 0.),]),
+                                                                (10., vec![(0., 0.), (15., 1.), (30., 2.), (45., 3.), (60., 2.), (75., 1.), (90., 0.),]),];
+            let mut stability_arm = StabilityArm::new(Curve2D::from_values_linear(pantocaren), 5., metacentric_height);
             stability_arm.diagram();
             unsafe {
                 STABILITY_ARM.replace(stability_arm);
@@ -35,7 +36,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "TODO"]
     fn angle() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
@@ -45,14 +45,14 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { STABILITY_ARM.clone().unwrap().angle(45.) };
-        let target = 50.;
-        assert!(
-            result[0] == target,
+        let result = unsafe { STABILITY_ARM.clone().unwrap().angle(1.) };
+        let target = vec![15., 75.];
+        result.iter().zip(target.iter()).for_each(|(r, t)| assert!(
+            (r - t).abs() < 0.001,
             "\nresult: {:?}\ntarget: {:?}",
-            result,
-            target
-        );
+            r,
+            t
+        ) );
 
         test_duration.exit();
     }
