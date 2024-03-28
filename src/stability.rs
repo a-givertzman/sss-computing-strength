@@ -57,15 +57,21 @@ impl Stability {
         let a_angle_first = theta_w1 - self.rolling_amplitude.calculate();
         let a_angle_second = l_w2_angle_first;
         let a_delta_angle = a_angle_second - a_angle_first;
-        let a = -curve.integral(a_angle_first, a_angle_second) + a_delta_angle*l_w2;        
+        let a_s1 = curve.integral(a_angle_first, a_angle_second);
+        let a_s2 = a_delta_angle*l_w2;
+        let a = a_s2 - a_s1;        
         // расчет b
         let b_angle_first = l_w2_angle_first;
         let b_angle_second = theta_w2.min(theta_f).min(theta_c);
         let b_delta_angle = b_angle_second - b_angle_first;
-        let b = curve.integral(b_angle_first, b_angle_second) - b_delta_angle*l_w2;
+        let b_s1 = curve.integral(b_angle_first, b_angle_second);
+        let b_s2 = b_delta_angle*l_w2;
+        let b = b_s1 - b_s2;
         let res = b / a;
-        log::info!("\t Stability k l_w1:{l_w1} l_w2:{l_w2} theta_w1:{theta_w1} l_w2_angle1:{l_w2_angle_first}
-            theta_c:{theta_c} a:{a} b:{b} k:{res}");
+        log::info!("\t Stability k l_w1:{l_w1} l_w2:{l_w2} theta_w1:{theta_w1}  theta_w2:{theta_w2} theta_c:{theta_c} theta_f:{theta_f}
+            a_angle1:{a_angle_first} a_angle2:{l_w2_angle_first} a_s1:{a_s1} a_s2:{a_s2} a:{a} 
+            b_angle1:{l_w2_angle_first} b_angle2:{b_angle_second} b_s1:{b_s1} b_s2:{b_s2} b:{b} 
+            k:{res}");
         Ok(res)
     }
 }
