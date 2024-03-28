@@ -1,9 +1,104 @@
-sequenceDiagram
-    Alice ->> Bob: Hello Bob, how are you?
-    Bob-->>John: How about you John?
-    Bob--x Alice: I am good thanks!
-    Bob-x John: I am good thanks!
-    Note right of John: Bob thinks a long<br/>long time, so long<br/>that the text does<br/>not fit on a row.
+---
+title: Strength
+---
+classDiagram
 
-    Bob-->Alice: Checking with John...
-    Alice->John: Yes... John, how are you?
+    class Computer{   
+        gravity_g: f64
+        water_density: f64
+        center_waterline_shift: f64
+        mean_draught: f64
+        mass: Rc~dyn IMass~
+        displacement: Rc~Displacement~
+        bounds: Rc~Bounds~ 
+    }
+
+    class BendingMoment{
+        shear_force: Box~dyn IShearForce~
+        delta: f64
+    }
+
+    class ShearForce{
+        total_force: Box~dyn ITotalForce~
+    }
+
+    class TotalForce{
+        mass: Rc~dyn IMass~
+        water_density: f64
+        draught: Box~dyn IDraught~
+        gravity_g: f64
+    }
+
+    class Mass{
+        loads_const: Vec~Rc~Box~dyn ILoad~~~
+        shift_const: Position
+        loads_cargo: Vec~Rc~Box~dyn ILoad~~~
+        bounds: Rc~Bounds~
+        moment_mass: Rc~RefCell~Option~MassMoment~~~
+        moment_surface: Rc~RefCell~Option~SurfaceMoment~~~
+        sum: Rc~RefCell~Option~f64~~~
+        values: Rc~RefCell~Option~Vec~f64~~~~
+        shift: Rc~RefCell~Option~Position~~~
+        delta_m_h: Rc~RefCell~Option~DeltaMH~~~
+    }
+
+    class LoadSpace{
+        mass: f64
+        bound: Bound
+        center: Position
+        m_f_s_y: f64
+        m_f_s_x: f64
+    }
+
+    class Tank{
+        density: f64 
+        volume: f64
+        bound: Bound
+        center: PosShift,
+        free_surf_inertia: InertiaShift
+    }
+
+    class Draught{
+        bounds: Rc~Bounds~
+        center_waterline_shift: f64
+        mean_draught: f64,
+        displacement: Rc~Displacement~
+        trim: f64,
+    }
+
+    class Bounds{   
+        values: Vec~Bound~
+        delta: f64
+    }
+
+    class Bound{
+        start: f64
+        end: f64
+    }
+
+    class Displacement{        
+        frames: Vec~Frame~
+    }
+
+    class Frame{  
+        shift_x: f64
+        area: Curve     
+    }
+
+    class Curve{
+        spline: Spline~f64, f64~
+    }
+
+    Computer <|-- BendingMoment    
+    Computer <|-- ShearForce   
+    BendingMoment <|-- ShearForce
+    ShearForce <|-- TotalForce
+    TotalForce <|-- Mass
+    TotalForce <|-- Draught
+    Mass <|-- LoadSpace
+    Mass <|-- Tank
+    Draught <|-- Bounds
+    Draught <|-- Displacement
+    Displacement <|-- Frame
+    Bounds <|-- Bound
+    Frame <|-- Curve
