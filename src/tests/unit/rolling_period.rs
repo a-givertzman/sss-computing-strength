@@ -17,9 +17,9 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = RollingPeriod::new(
+            10., 
             4.,
-            1.,
-            10.,  
+            1.,            
             Rc::new(FakeMetacentricHeight::new(
                 100.,
                 1.,

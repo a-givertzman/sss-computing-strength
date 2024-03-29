@@ -1,9 +1,8 @@
 //! Результирующая нагрузка на шпацию
 use std::rc::Rc;
 
-use crate::math::{MultipleSingle, SubVec};
-
-use super::{draught::IDraught, mass::IMass};
+use crate::{mass::*, math::*};
+use super::volume::IDraught;
 
 /// Результирующая нагрузка на шпацию, сумма сил
 /// действующая на каждую шпацию судна

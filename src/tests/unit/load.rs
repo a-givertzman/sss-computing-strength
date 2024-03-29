@@ -3,7 +3,7 @@
 mod tests {
     use crate::{
         math::{bound::Bound, moment::Moment, position::Position},
-        strength::load::{ILoad, LoadSpace},
+        load::*,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::time::Duration;

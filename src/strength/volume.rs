@@ -1,15 +1,11 @@
 //! Распределение объема вытесненной воды по шпациям
 use std::rc::Rc;
-
 use crate::math::Bounds;
-
 use super::displacement::Displacement;
-
-
 
 ///
 /// Распределение объема вытесненной воды по шпациям
-pub struct Draught {
+pub struct Volume {
     /// вектор разбиения на отрезки для эпюров
     bounds: Rc<Bounds>,
     /// отстояние центра тяжести ватерлинии по длине от миделя
@@ -22,7 +18,7 @@ pub struct Draught {
     trim: f64,//Trim,
 }
 ///
-impl Draught {
+impl Volume {
     /// Основной конструктор. Аргументы:  
     /// - bounds: вектор разбиения на отрезки для эпюров
     /// - center_waterline_shift: кривая отстояния центра тяжести ватерлинии по длине от миделя
@@ -46,7 +42,7 @@ impl Draught {
     }
 }
 ///
-impl IDraught for Draught {
+impl IDraught for Volume {
     /// Распределение объема вытесненной воды по шпациям
     fn values(&mut self) -> Vec<f64> {
         // длинна судна

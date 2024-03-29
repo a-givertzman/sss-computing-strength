@@ -1,19 +1,22 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
 use data::input_api_server::*;
-pub use error::Error as Error;
+pub use error::Error;
 use futures::executor::block_on;
 use log::info;
 use std::{collections::HashMap, rc::Rc, time::Instant};
 
-use crate::{math::*, strength::*, stability::*};
+use crate::{load::*, mass::*, math::*, stability::*, strength::*, tank::*};
 
 mod data;
 mod error;
+mod load;
+mod mass;
 mod math;
-mod tests;
 mod stability;
 mod strength;
+mod tank;
+mod tests;
 
 fn main() -> Result<(), Error> {
     //    std::env::set_var("RUST_LOG", "info");
@@ -201,7 +204,6 @@ fn main() -> Result<(), Error> {
         computer.bending_moment().iter().for_each(|v| { println!("{v};") });
     */
 
-
     let flooding_angle = Curve::new_linear(&data.flooding_angle).value(mean_draught);
 
     let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
@@ -211,14 +213,30 @@ fn main() -> Result<(), Error> {
         Rc::clone(&mass),             // все грузы судна
     ));
 
+    // Длинна по ватерлинии при текущей осадке
+    let length = Curve::new_linear(&data.waterline_length).value(volume); 
+    // Ширина по ватерлинии при текущей осадке
+    let breadth = Curve::new_linear(&data.waterline_breadth).value(volume); 
+    // Отстояние по вертикали центра площади проекции подводной части корпуса
+    let volume_shift = Curve::new_linear(&data.volume_shift).value(volume);  
+
     // Проверяем есть ли пантокарены в отрицательной области углов
     // Если нет то считаем что судно симметорично и зеркально
     // копируем данные в отрицательную область углов крена
-    let mut tmp = data.pantocaren.first().expect("Main pantocaren error: no data!").1.clone();
+    let mut tmp = data
+        .pantocaren
+        .first()
+        .expect("Main pantocaren error: no data!")
+        .1
+        .clone();
     tmp.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
     if tmp.first().expect("Main pantocaren error: no data!").0 <= 0. {
-        data.pantocaren.iter_mut().for_each(|(_, vector)| {     
-            let mut negative = vector.iter().filter(|(angle, _)| *angle > 0.).map(|(angle, moment)| (-angle, -moment) ).collect();
+        data.pantocaren.iter_mut().for_each(|(_, vector)| {
+            let mut negative = vector
+                .iter()
+                .filter(|(angle, _)| *angle > 0.)
+                .map(|(angle, moment)| (-angle, -moment))
+                .collect();
             vector.append(&mut negative);
             vector.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
         });
@@ -226,16 +244,16 @@ fn main() -> Result<(), Error> {
 
     let mut stability_arm = StabilityArm::new(
         Curve2D::from_values_catmull_rom(data.pantocaren),
-   // Curve2D::from_values_linear(data.pantocaren),
+        // Curve2D::from_values_linear(data.pantocaren),
         mean_draught,
         Rc::clone(&metacentric_height),
     );
     dbg!(stability_arm.angle_static_roll());
-/*    stability_arm
-        .diagram()
-        .iter()
-        .for_each(|(k, v)| println!("{k} {v};"));
-*/
+    /*    stability_arm
+            .diagram()
+            .iter()
+            .for_each(|(k, v)| println!("{k} {v};"));
+    */
     // Предполагаемое давление ветра +
     // Добавка на порывистость ветра
     let (p_v, m) = data
@@ -252,24 +270,21 @@ fn main() -> Result<(), Error> {
         Rc::clone(&mass),
     );
 
-    // Коэффициент полноты судна
-    let c_b = 0.9; //TODO: нужна формула расчета, должен дать регистр
-
     let roll_amplitude = RollingAmplitude::new(
-        c_b, // Коэффициент полноты судна
         data.keel_area,
         Rc::clone(&mass),
-        data.length,  //TODO нужна длинна по ватерлинии при текущей осадке
-        data.breadth,
+        volume,      // Объемное водоизмещение (1)
+        length, // длинна по ватерлинии при текущей осадке
+        breadth,
         mean_draught,
         Curve::new_linear(&data.coefficient_k.data()),
         Curve::new_linear(&data.multipler_x1.data()),
         Curve::new_linear(&data.multipler_x2.data()),
         Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area_name)),
         RollingPeriod::new(
-            data.breadth,
-            mean_draught,
-            data.length,  //TODO нужна длинна по ватерлинии при текущей осадке
+            length,
+            breadth,
+            mean_draught,            
             Rc::clone(&metacentric_height),
         ),
     );
@@ -277,15 +292,15 @@ fn main() -> Result<(), Error> {
     dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
 
     let mut stability = Stability::new(
-            // Угол заливания отверстий
-            flooding_angle,
-            // Диаграмма плеч статической остойчивости
-            Box::new(stability_arm),
-            // Амплитуда качки судна с круглой скулой (2.1.5)
-            Box::new(roll_amplitude),
-            // Расчет плеча кренящего момента от давления ветра
-            Box::new(wind),
-        );
+        // Угол заливания отверстий
+        flooding_angle,
+        // Диаграмма плеч статической остойчивости
+        Box::new(stability_arm),
+        // Амплитуда качки судна с круглой скулой (2.1.5)
+        Box::new(roll_amplitude),
+        // Расчет плеча кренящего момента от давления ветра
+        Box::new(wind),
+    );
     dbg!(stability.k()?);
 
     elapsed.insert("Completed", time.elapsed());

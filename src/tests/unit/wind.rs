@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, stability::wind::*, strength::mass::*};
+    use crate::{math::*, stability::wind::*, mass::*};
 
     #[test]
     fn wind() {

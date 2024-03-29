@@ -150,6 +150,12 @@ pub struct ParsedShipData {
     pub windage_shift_z: f64,
     /// кривая отстояния центра тяжести ватерлинии по длине от миделя  
     pub center_waterline: Vec<(f64, f64)>,
+    /// Длинна корпуса судна по ватерлинии
+    pub waterline_length: Vec<(f64, f64)>,
+    /// Ширина корпуса судна по ватерлинии
+    pub waterline_breadth: Vec<(f64, f64)>,
+    /// Отстояние по вертикали центра площади проекции подводной части корпуса
+    pub volume_shift: Vec<(f64, f64)>,
     /// кривая продольного метацентрического радиуса
     pub rad_long: Vec<(f64, f64)>,
     /// кривая поперечного метацентрического радиуса 
@@ -190,6 +196,9 @@ impl ParsedShipData {
         ship_id: usize,
         ship_data: ShipArray,
         center_waterline: CenterWaterlineArray,
+        waterline_length: WaterlineLengthArray,
+        waterline_breadth: WaterlineBreadthArray,
+        volume_shift: VolumeShiftArray,
         rad_long: RadLongDataArray,
         rad_cross: RadCrossDataArray,
         mean_draught: MeanDraughtDataArray,
@@ -384,6 +393,9 @@ impl ParsedShipData {
                 ship_id
             ))?.0.parse::<f64>()?,
             center_waterline: center_waterline.data(),
+            waterline_length: waterline_length.data(),
+            waterline_breadth: waterline_breadth.data(),
+            volume_shift: volume_shift.data(),
             rad_long: rad_long.data(),
             rad_cross: rad_cross.data(),
             mean_draught: mean_draught.data(),

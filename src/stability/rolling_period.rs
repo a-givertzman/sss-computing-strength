@@ -19,16 +19,16 @@ pub struct RollingPeriod {
 impl RollingPeriod {
     /// Основной конструктор
     pub fn new(
+        // Длина судна по ватерлинии
+        l_wl: f64,
         //  Ширина судна B
         b: f64,
         // Осадка судна d
         d: f64,
-        // Длина судна по ватерлинии
-        l_wl: f64,
         // Исправленная метацентрическая высота
         metacentric_height: Rc<dyn IMetacentricHeight>,
     ) -> Self {
-        Self { b, d, l_wl, metacentric_height }
+        Self { l_wl, b, d, metacentric_height }
     }
     /// Коэффициент для расчета периода
     fn c(&self) -> f64 {

@@ -5,7 +5,7 @@ mod tests {
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, stability::{rolling_amplitude::*, rolling_period::*}, strength::mass::*};
+    use crate::{math::*, stability::{rolling_amplitude::*, rolling_period::*}, mass::*};
 
     #[test]
     fn rolling_amplitude() {
@@ -17,7 +17,6 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = RollingAmplitude::new(
-            0.8, // Коэффициент полноты судна
             Some(1.),
             Rc::new(FakeMass::new(
                 0.0,
@@ -27,6 +26,7 @@ mod tests {
                 Position::new(0., 0., 0.,), 
                 SurfaceMoment::new(0., 0.,),
             )),
+            18.,
             10.,  
             2.,
             1.,

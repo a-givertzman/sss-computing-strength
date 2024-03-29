@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use crate::math::*;
 
-use super::mass::IMass;
+use crate::mass::IMass;
 
 /// Дифферент судна. Вычисляется с учетом влияния свободных  
 /// поверхностей жидкости.

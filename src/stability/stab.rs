@@ -58,7 +58,7 @@ impl Stability {
         ))?;
         let curve = Curve::new_catmull_rom(&self.stability_arm.diagram());
         // расчет а
-        let a_angle_first = theta_w1 - 21.0;//self.rolling_amplitude.calculate().round();
+        let a_angle_first = theta_w1 - self.rolling_amplitude.calculate().round();
         let a_angle_second = l_w2_angle_first;
         let a_delta_angle = a_angle_second - a_angle_first;
         let a_s1 = curve.integral(a_angle_first, a_angle_second);

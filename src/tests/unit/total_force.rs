@@ -6,7 +6,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, strength::{draught::*, mass::*, total_force::*}};
+    use crate::{math::*, mass::*, strength::{volume::*, total_force::*}};
 
     #[test]
     fn total_force() {

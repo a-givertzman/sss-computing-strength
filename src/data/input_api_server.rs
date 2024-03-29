@@ -206,6 +206,36 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //    dbg!(&center_waterline);
     log::info!("input_api_server center_waterline read ok");
+    let waterline_length = WaterlineLengthArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM waterline_length WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&waterline_length);
+    log::info!("input_api_server waterline_length read ok");
+    let waterline_breadth = WaterlineBreadthArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM waterline_breadth WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&waterline_breadth);
+    log::info!("input_api_server waterline_breadth read ok");
+    let volume_shift = VolumeShiftArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM volume_shift WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&volume_shift);
+    log::info!("input_api_server volume_shift read ok");
     let center_draught_shift = CenterDraughtShiftDataArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -352,6 +382,9 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         ship_id,
         ship,
         center_waterline,
+        waterline_length,
+        waterline_breadth,
+        volume_shift,
         rad_long,
         rad_cross,
         mean_draught,

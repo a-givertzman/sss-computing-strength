@@ -6,10 +6,10 @@ mod tests {
         bound::Bound, curve::Curve, inertia::inertia_shift::InertiaShift, pos_shift::PosShift,
         position::Position,
     };
-    use crate::strength::{
-        load::{ILoad, LoadSpace},
-        mass::{IMass, Mass},
-        tank::Tank,
+    use crate::{
+        load::*,
+        mass::*,
+        tank::*,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};

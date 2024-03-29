@@ -1,12 +1,11 @@
 //! Класс для расчета прочности
 
-use crate::math::Bounds;
+use crate::{math::Bounds, mass::IMass,};
 
-use super::{
-    bending_moment::BendingMoment,
+use super::{    bending_moment::BendingMoment,
     displacement::Displacement,
-    draught::Draught,
-    mass::IMass,
+    volume::Volume,
+    
     shear_force::{IShearForce, ShearForce},
     total_force::TotalForce,
 };
@@ -86,7 +85,7 @@ impl Computer {
             let mut shear_force = ShearForce::new(TotalForce::new(
                 Rc::clone(&self.mass),
                 self.water_density,
-                Draught::new(
+                Volume::new(
                     self.center_waterline_shift,
                     self.mean_draught,
                     Rc::clone(&self.displacement),
