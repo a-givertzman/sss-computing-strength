@@ -1,5 +1,5 @@
 //! Груз - цистерна с жидкостью
-use crate::{load::ILoad, math::*};
+use crate::math::*;
 
 /// Груз - цистерна с жидкостью, реализует интерфейс ILoad.  
 /// Помимо массы имеет свойства свободной поверхности жидкости.
@@ -26,7 +26,7 @@ impl Tank {
     }
 }
 ///
-impl ILoad for Tank {
+impl super::load::ILoad for Tank {
     fn mass(&self, bound: Option<Bound>) -> f64 {
         self.volume*self.density*if let Some(bound) = bound {
             self.bound.part_ratio(&bound)
@@ -35,7 +35,7 @@ impl ILoad for Tank {
         }
     }
 
-    fn center(&self) -> Position {
+    fn mass_shift(&self) -> Position {
         self.center.value(self.volume)
     }
 

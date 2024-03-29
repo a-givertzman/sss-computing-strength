@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use crate::metacentric_height::IMetacentricHeight;
+use super::metacentric_height::IMetacentricHeight;
 
 /// Период качки судна  (2.1.5)
 pub struct RollingPeriod {

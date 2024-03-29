@@ -1,7 +1,7 @@
 //! Исправленная метацентрическая высота
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{mass::IMass, math::*};
+use crate::{math::*, strength::IMass};
 /// Продольная и поперечная исправленная метацентрическая высота.
 pub struct MetacentricHeight {
     /// отстояние центра величины погруженной части судна       

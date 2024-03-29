@@ -1,5 +1,9 @@
 //! Изгибающий момент
-use crate::{math::IntegralSum, shear_force::IShearForce, MultipleSingle};
+
+use crate::math::vec::*;
+
+use super::shear_force::IShearForce;
+
 
 /// Изгибающий момент, действующий на корпус судна
 pub struct BendingMoment {

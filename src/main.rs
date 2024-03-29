@@ -1,35 +1,19 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
-use crate::{
-    bound::Bound, computer::Computer, curve::Curve, displacement::Displacement, frame::Frame, inertia::InertiaShift, load::{ILoad, LoadSpace}, mass::{IMass, Mass}, math::*, metacentric_height::{IMetacentricHeight, MetacentricHeight}, pos_shift::PosShift, position::Position, rolling_amplitude::{IRollingAmplitude, RollingAmplitude}, rolling_period::RollingPeriod, stability::Stability, stability_arm::{IStabilityArm, StabilityArm}, tank::Tank, wind::{IWind, Wind}
-};
 use data::input_api_server::*;
-use error::Error;
+pub use error::Error as Error;
 use futures::executor::block_on;
 use log::info;
 use std::{collections::HashMap, rc::Rc, time::Instant};
 
-mod bending_moment;
-mod computer;
+use crate::{math::*, strength::*, stability::*};
+
 mod data;
-mod displacement;
-mod draught;
 mod error;
-mod frame;
-mod load;
-mod mass;
 mod math;
-mod metacentric_height;
-mod rolling_amplitude;
-mod rolling_period;
-mod shear_force;
-mod stability_arm;
-mod tank;
 mod tests;
-mod total_force;
-mod trim;
-mod wind;
 mod stability;
+mod strength;
 
 fn main() -> Result<(), Error> {
     //    std::env::set_var("RUST_LOG", "info");
@@ -135,6 +119,8 @@ fn main() -> Result<(), Error> {
                 Position::new(bound.center(), const_shift.y(), const_shift.z()),
                 0.,
                 0.,
+                0.,
+                Position::new(0., 0., 0.),
             ))));
         }
     }
@@ -145,9 +131,11 @@ fn main() -> Result<(), Error> {
             loads_cargo.push(Rc::new(Box::new(LoadSpace::new(
                 v.mass,
                 Bound::new(v.bound.0, v.bound.1),
-                Position::new(v.center.0, v.center.1, v.center.2),
+                Position::new(v.mass_shift.0, v.mass_shift.1, v.mass_shift.2),
                 v.m_f_s_y,
                 v.m_f_s_x,
+                v.windage_area,
+                Position::new(v.windage_shift.0, 0., v.windage_shift.1),
             ))));
         }
     });
@@ -238,6 +226,7 @@ fn main() -> Result<(), Error> {
 
     let mut stability_arm = StabilityArm::new(
         Curve2D::from_values_catmull_rom(data.pantocaren),
+   // Curve2D::from_values_linear(data.pantocaren),
         mean_draught,
         Rc::clone(&metacentric_height),
     );

@@ -1,12 +1,11 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{
-        mass::FakeMass, math::Position, wind::{IWind, Wind}, DeltaMH, SurfaceMoment
-    };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
+
+    use crate::{math::*, stability::wind::*, strength::mass::*};
 
     #[test]
     fn wind() {

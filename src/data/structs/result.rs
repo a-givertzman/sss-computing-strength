@@ -39,27 +39,34 @@ pub struct ParsedLoadSpaceData {
     pub mass: f64,
     /// Границы груза
     pub bound: (f64, f64),
-    /// Центер масс
-    pub center: (f64, f64, f64),
+    /// Центр масс
+    pub mass_shift: (f64, f64, f64),
     /// Продольный момент свободной поверхности жидкости
     pub m_f_s_y: f64,
     /// Поперечный момент инерции свободной поверхности жидкости в цистерне
-    pub m_f_s_x: f64,
+    pub m_f_s_x: f64,    
+    /// Площадь парусности
+    pub windage_area: f64,
+    /// Центр парусности
+    pub windage_shift: (f64, f64),
 }
 ///
 impl std::fmt::Display for ParsedLoadSpaceData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadSpaceData(mass:{}, bound:(x1:{}, x2:{}), center:(x:{}, y:{}, z:{}), m_f_s_y:{}, m_f_s_x:{} )",
+            "LoadSpaceData(mass:{} bound:(x1:{}, x2:{}) mass_shift:({} {} {}) m_f_s_y:{}, m_f_s_x:{} windage_area:{} windage_shift:(x:{}, z:{}))",
             self.mass,
             self.bound.0,
             self.bound.1,
-            self.center.0,
-            self.center.1,
-            self.center.2,
+            self.mass_shift.0,
+            self.mass_shift.1,
+            self.mass_shift.2,
             self.m_f_s_y,
             self.m_f_s_x,
+            self.windage_area,
+            self.windage_shift.0,
+            self.windage_shift.1,
         )
     }
 }
@@ -238,17 +245,17 @@ impl ParsedShipData {
                         space_id
                     ))?.0.parse::<f64>()?,
                 ),
-                center: (
-                    map.get("center_x").ok_or(format!(
-                        "ParsedShipData parse error: no center_x for load_space id:{}",
+                mass_shift: (
+                    map.get("mass_shift_x").ok_or(format!(
+                        "ParsedShipData parse error: no mass_shift_x for load_space id:{}",
                         space_id
                     ))?.0.parse::<f64>()?,
-                    map.get("center_y").ok_or(format!(
-                        "ParsedShipData parse error: no center_y for load_space id:{}",
+                    map.get("mass_shift_y").ok_or(format!(
+                        "ParsedShipData parse error: no mass_shift_y for load_space id:{}",
                         space_id
                     ))?.0.parse::<f64>()?,
-                    map.get("center_z").ok_or(format!(
-                        "ParsedShipData parse error: no center_z for load_space id:{}",
+                    map.get("mass_shift_z").ok_or(format!(
+                        "ParsedShipData parse error: no mass_shift_z for load_space id:{}",
                         space_id
                     ))?.0.parse::<f64>()?,
                 ),
@@ -260,6 +267,20 @@ impl ParsedShipData {
                     "ParsedShipData parse error: no m_f_s_x for load_space id:{}",
                     space_id
                 ))?.0.parse::<f64>()?,
+                windage_area: map.get("windage_area").ok_or(format!(
+                    "ParsedShipData parse error: no windage_area for load_space id:{}",
+                    space_id
+                ))?.0.parse::<f64>()?,
+                windage_shift: (
+                    map.get("windage_shift_x").ok_or(format!(
+                        "ParsedShipData parse error: no windage_shift_x for load_space id:{}",
+                        space_id
+                    ))?.0.parse::<f64>()?,
+                    map.get("windage_shift_z").ok_or(format!(
+                        "ParsedShipData parse error: no windage_shift_z for load_space id:{}",
+                        space_id
+                    ))?.0.parse::<f64>()?,
+                ),
             });
         }
 
@@ -587,7 +608,7 @@ impl ParsedShipData {
         if let Some(s) = self
         .load_spaces
         .iter()
-        .find(|s| s.bound.0 >= s.center.0 || s.center.0 >= s.bound.1)
+        .find(|s| s.bound.0 >= s.mass_shift.0 || s.mass_shift.0 >= s.bound.1)
         {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: load_space center out of bound error! {}", s )));

@@ -1,12 +1,14 @@
 //! Класс для расчета прочности
-use crate::{
+
+use crate::math::Bounds;
+
+use super::{
     bending_moment::BendingMoment,
     displacement::Displacement,
     draught::Draught,
     mass::IMass,
     shear_force::{IShearForce, ShearForce},
     total_force::TotalForce,
-    Bounds,
 };
 use std::rc::Rc;
 

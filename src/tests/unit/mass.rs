@@ -1,15 +1,15 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{
+    use crate::math::Bounds;
+    use crate::math::{
+        bound::Bound, curve::Curve, inertia::inertia_shift::InertiaShift, pos_shift::PosShift,
+        position::Position,
+    };
+    use crate::strength::{
         load::{ILoad, LoadSpace},
         mass::{IMass, Mass},
-        math::{
-            bound::Bound, curve::Curve, inertia::inertia_shift::InertiaShift,
-            pos_shift::PosShift, position::Position,
-        },
         tank::Tank,
-        Bounds,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
@@ -38,15 +38,19 @@ mod tests {
                     10.,
                     Bound::new(-10., 0.),
                     Position::new(-5., 0., 0.),
-                    0., 
                     0.,
+                    0.,
+                    0.,
+                    Position::new(0., 0., 0.), 
                 ))),
                 Rc::new(Box::new(LoadSpace::new(
                     20.,
                     Bound::new(0., 10.),
                     Position::new(5., 0., 0.),
-                    0., 
                     0.,
+                    0.,
+                    0.,
+                    Position::new(0., 0., 0.), 
                 ))),
             ];
 
@@ -60,9 +64,9 @@ mod tests {
 
             unsafe {
                 MASS.replace(Mass::new(
-                    loads_const, 
-                    Position::new(0., 0., 0.,),
-                    loads_cargo, 
+                    loads_const,
+                    Position::new(0., 0., 0.),
+                    loads_cargo,
                     Rc::new(Bounds::from_n(20., 4)),
                 ));
             }

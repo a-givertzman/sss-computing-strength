@@ -5,8 +5,8 @@ mod tests {
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{metacentric_height::FakeMetacentricHeight, rolling_period::{IRollingPeriod, RollingPeriod}};
-    
+    use crate::stability::{metacentric_height::*, rolling_period::*};
+
     #[test]
     fn rolling_period() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);

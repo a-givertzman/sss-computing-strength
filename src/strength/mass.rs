@@ -1,7 +1,9 @@
 //! Нагрузка на корпус судна
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{load::ILoad, math::*};
+use crate::math::*;
+
+use super::load::ILoad;
 
 /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
 #[derive(Clone)]
@@ -15,7 +17,7 @@ pub struct Mass {
     /// Вектор разбиения на отрезки для эпюров
     bounds: Rc<Bounds>,
     /// Суммарный статический момент
-    moment_mass: Rc<RefCell<Option<MassMoment>>>,
+    moment_mass: Rc<RefCell<Option<Moment>>>,
     /// Суммарный момент свободной поверхности
     moment_surface: Rc<RefCell<Option<SurfaceMoment>>>,
     /// Суммарная масса
@@ -123,11 +125,11 @@ impl IMass for Mass {
     }
     /// Суммарный статический момент. Для постоянной массы и для запасов считается по
     /// заданным значениям смещения центра масс
-    fn moment_mass(&self) -> MassMoment {
+    fn moment_mass(&self) -> Moment {
         if self.moment_mass.borrow().is_none() {
-            let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| MassMoment::from_pos(self.shift_const.clone(), c.mass(None)) ).sum::<MassMoment>() +
+            let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| Moment::from_pos(self.shift_const.clone(), c.mass(None)) ).sum::<Moment>() +
         //    let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| c.moment_mass() ).sum::<MassMoment>() +
-            self.loads_cargo.iter().map(|c| c.moment_mass() ).sum::<MassMoment>();
+            self.loads_cargo.iter().map(|c| c.moment_mass() ).sum::<Moment>();
             log::info!("\t Mass moment_mass:{res} ");
             *self.moment_mass.borrow_mut() = Some(res);
         }
@@ -167,7 +169,7 @@ pub trait IMass {
     fn delta_m_h(&self) -> DeltaMH;
     /// Суммарный статический момент. Для постоянной массы и для запасов считается по
     /// заданным значениям смещения центра масс
-    fn moment_mass(&self) -> MassMoment;
+    fn moment_mass(&self) -> Moment;
     /// Суммарный момент свободной поверхности
     fn moment_surface(&self) -> SurfaceMoment;
 }
@@ -178,7 +180,7 @@ pub struct FakeMass {
     values: Vec<f64>,
     shift: Position,
     delta_m_h: DeltaMH,
-    moment_mass: MassMoment,
+    moment_mass: Moment,
     moment_surface: SurfaceMoment,
 }
 #[doc(hidden)]
@@ -189,7 +191,7 @@ impl FakeMass {
         values: Vec<f64>,
         shift: Position,
         delta_m_h: DeltaMH,
-        moment_mass: MassMoment,
+        moment_mass: Moment,
         moment_surface: SurfaceMoment,
     ) -> Self {
         Self {
@@ -216,7 +218,7 @@ impl IMass for FakeMass {
     fn delta_m_h(&self) -> DeltaMH {
         self.delta_m_h.clone()
     }
-    fn moment_mass(&self) -> MassMoment {
+    fn moment_mass(&self) -> Moment {
         self.moment_mass.clone()
     }
     fn moment_surface(&self) -> SurfaceMoment {

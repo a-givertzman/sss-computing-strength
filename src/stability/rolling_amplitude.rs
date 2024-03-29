@@ -1,7 +1,9 @@
 //! Амплитуда качки судна
 use std::rc::Rc;
 
-use crate::{mass::IMass, math::Curve, rolling_period::IRollingPeriod, ICurve};
+use crate::{math::{Curve, ICurve}, strength::IMass};
+
+use super::rolling_period::IRollingPeriod;
 
 /// Амплитуда качки судна с круглой скулой (2.1.5)
 pub struct RollingAmplitude {

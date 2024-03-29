@@ -1,7 +1,10 @@
 //! Дифферент. Угол наклона корпуса судна в продольной плоскости.
+use crate::stability::metacentric_height::IMetacentricHeight;
 use std::rc::Rc;
-use crate::metacentric_height::IMetacentricHeight;
-use crate::{mass::IMass, math::*};
+
+use crate::math::*;
+
+use super::mass::IMass;
 
 /// Дифферент судна. Вычисляется с учетом влияния свободных  
 /// поверхностей жидкости.

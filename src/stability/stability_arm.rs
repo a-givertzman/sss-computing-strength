@@ -1,7 +1,7 @@
 //! Диаграмма плеч статической остойчивости.
-use crate::metacentric_height::IMetacentricHeight;
-use crate::Integral;
-use crate::{math::Curve, Curve2D, ICurve, ICurve2D};
+use crate::math::{Curve, Curve2D, ICurve, ICurve2D};
+
+use super::metacentric_height::IMetacentricHeight;
 use std::rc::Rc;
 
 /// Диаграмма плеч статической остойчивости – зависимость  
@@ -49,7 +49,6 @@ impl StabilityArm {
         let mut diagram = (-90..=90)
             .map(|angle_deg| {
                 let angle_deg = angle_deg as f64;
-                //         let value = self.data.value(self.data.get(MEAN_DRAUGHT).to_f64(), angle_deg)
                 let value = self.data.value(self.mean_draught, angle_deg)
                     - self.metacentric_height.z_g_fix()
                         * (angle_deg * std::f64::consts::PI / 180.).sin();

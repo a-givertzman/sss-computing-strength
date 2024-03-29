@@ -1,7 +1,11 @@
 //! Распределение объема вытесненной воды по шпациям
 use std::rc::Rc;
 
-use crate::{displacement::Displacement, math::*, trim::Trim};
+use crate::math::Bounds;
+
+use super::displacement::Displacement;
+
+
 
 ///
 /// Распределение объема вытесненной воды по шпациям

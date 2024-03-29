@@ -1,5 +1,7 @@
 //! Срезающая сила
-use crate::{math::SumAbove, total_force::ITotalForce};
+
+use super::total_force::ITotalForce;
+use crate::math::vec::*;
 
 /// Срезающая сила, действующая на корпус судна
 pub struct ShearForce {

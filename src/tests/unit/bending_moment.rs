@@ -1,7 +1,7 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{bending_moment::BendingMoment, shear_force::FakeShearForce};
+    use crate::strength::{bending_moment::BendingMoment, shear_force::FakeShearForce};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::time::Duration;
     use testing::stuff::max_test_duration::TestDuration;
