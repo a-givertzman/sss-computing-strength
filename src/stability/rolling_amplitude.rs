@@ -85,11 +85,12 @@ impl IRollingAmplitude for RollingAmplitude {
         let x_1 = self.x_1.value(self.b / self.d);
         let x_2 = self.x_2.value(c_b);
         let r = (0.73 + 0.6 * (self.mass.shift().z() - self.d) / self.d).min(1.);
-        let s = self.s.value(self.t.calculate());
+        let t = self.t.calculate();
+        let s = self.s.value(t);
         // (2.1.5.1)
         let res = 109. * k * x_1 * x_2 * (r * s).sqrt();
-        log::info!("\t RollingAmplitude b:{} d:{} z_g:{} c_b:{} k:{k} x_1:{x_1} x_2:{x_2} r:{r} s:{s} angle:{res}",
-        self.b, self.d, self.mass.shift().z(), c_b);
+        log::info!("\t RollingAmplitude l:{} b:{} d:{} z_g:{} c_b:{} k:{k} x_1:{x_1} x_2:{x_2} r:{r} t:{t} s:{s} angle:{res}",
+        self.l_wl, self.b, self.d, self.mass.shift().z(), c_b);
         res
     }
 }

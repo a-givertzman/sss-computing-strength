@@ -4,7 +4,7 @@ pub(crate) mod rolling_period;
 pub(crate) mod stability_arm;
 pub(crate) mod wind;
 pub(crate) mod stab;
-//mod windage;
+pub(crate) mod windage;
 
 pub use metacentric_height::*;
 pub use rolling_amplitude::*;

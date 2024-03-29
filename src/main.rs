@@ -214,11 +214,11 @@ fn main() -> Result<(), Error> {
     ));
 
     // Длинна по ватерлинии при текущей осадке
-    let length = Curve::new_linear(&data.waterline_length).value(volume); 
+    let length = Curve::new_linear(&data.waterline_length).value(mean_draught); 
     // Ширина по ватерлинии при текущей осадке
-    let breadth = Curve::new_linear(&data.waterline_breadth).value(volume); 
+    let breadth = Curve::new_linear(&data.waterline_breadth).value(mean_draught); 
     // Отстояние по вертикали центра площади проекции подводной части корпуса
-    let volume_shift = Curve::new_linear(&data.volume_shift).value(volume);  
+    let volume_shift = Curve::new_linear(&data.volume_shift).value(mean_draught);  
 
     // Проверяем есть ли пантокарены в отрицательной области углов
     // Если нет то считаем что судно симметорично и зеркально
