@@ -6,7 +6,7 @@ use futures::executor::block_on;
 use log::info;
 use std::{collections::HashMap, rc::Rc, time::Instant};
 
-use crate::{load::*, mass::*, math::*, stability::*, strength::*, tank::*};
+use crate::{load::*, mass::*, math::*, stability::*, strength::*, tank::*, windage::{IWindage, Windage}};
 
 mod data;
 mod error;
@@ -165,7 +165,7 @@ fn main() -> Result<(), Error> {
     let mass: Rc<dyn IMass> = Rc::new(Mass::new(
         loads_const,
         const_shift,
-        loads_cargo,
+        loads_cargo.clone(),
         Rc::clone(&bounds),
     ));
     // Объемное водоизмещение (1)
@@ -264,8 +264,22 @@ fn main() -> Result<(), Error> {
     let mut wind = Wind::new(
         p_v,
         m,
-        data.windage,
-        data.windage_shift_z,
+        Box::new(Windage::new(
+            loads_cargo,
+            data.icing_stab,
+            data.windage_area,
+             Position::new(
+                data.windage_shift_x,
+                0.,
+                data.windage_shift_z,
+            ),
+            data.delta_windage_area,
+            Moment::new(data.delta_windage_moment_x, 0., data.delta_windage_moment_z),
+            mean_draught,
+            data.draught_min,    
+            data.draught_slw,   
+            volume_shift,     
+        )),
         gravity_g,
         Rc::clone(&mass),
     );

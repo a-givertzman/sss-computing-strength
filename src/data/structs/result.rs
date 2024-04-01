@@ -116,6 +116,8 @@ pub struct ParsedShipData {
     pub navigation_area_name: String,
     /// Параметры района плавания судна  
     pub navigation_area_param: NavigationAreaArray,
+    /// Тип обледенения для расчета парусности
+    pub icing_stab: String,
     /// Безразмерный множитель Х_1 для расчета качки, Табл. 2.1.5.1-1
     pub multipler_x1: MultiplerX1Array,
     /// Безразмерный множитель Х_2 для расчета качки, Табл. 2.1.5.1-2
@@ -143,11 +145,21 @@ pub struct ParsedShipData {
     /// отстояние центра тяжести постоянной массы судна по z
     pub const_mass_shift_z: f64,
     /// Суммарная площадь парусности
-    pub windage: f64,
+    pub windage_area: f64,
     /// Отстояние центра парусности по x 
     pub windage_shift_x: f64,
     /// Отстояние центра парусности по z 
     pub windage_shift_z: f64,
+    /// Минимальная осадка, м
+    pub draught_min: f64,
+    /// Разница в площадях парусности для осадки по ЛГВЛ и осадки, м²
+    pub delta_windage_area: f64,
+    /// Разница в статических моментах относительно миделя и ОП по x, м
+    pub delta_windage_moment_x: f64,
+    /// Разница в статических моментах относительно миделя и ОП по z, м
+    pub delta_windage_moment_z: f64,
+    /// Осадка по ЛГВЛ
+    pub draught_slw: f64,
     /// кривая отстояния центра тяжести ватерлинии по длине от миделя  
     pub center_waterline: Vec<(f64, f64)>,
     /// Длинна корпуса судна по ватерлинии
@@ -380,8 +392,8 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no const_mass_shift_z for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
-            windage: ship_data.get("windage").ok_or(format!(
-                "ParsedShipData parse error: no windage for ship id:{}",
+            windage_area: ship_data.get("windage_area").ok_or(format!(
+                "ParsedShipData parse error: no windage_area for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
             windage_shift_x: ship_data.get("windage_shift_x").ok_or(format!(
@@ -392,6 +404,30 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no windage_shift_z for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
+            draught_min: ship_data.get("draught_min").ok_or(format!(
+                "ParsedShipData parse error: no draught_min for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            delta_windage_area: ship_data.get("delta_windage_area").ok_or(format!(
+                "ParsedShipData parse error: no delta_windage_area for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            delta_windage_moment_x: ship_data.get("delta_windage_moment_x").ok_or(format!(
+                "ParsedShipData parse error: no delta_windage_moment_x for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            delta_windage_moment_z: ship_data.get("delta_windage_moment_z").ok_or(format!(
+                "ParsedShipData parse error: no delta_windage_moment_z for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            draught_slw: ship_data.get("draught_slw").ok_or(format!(
+                "ParsedShipData parse error: no draught_slw for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_stab: ship_data.get("icing_stab").ok_or(format!(
+                "ParsedShipData parse error: no icing_stab for ship id:{}",
+                ship_id
+            ))?.0.clone(),
             center_waterline: center_waterline.data(),
             waterline_length: waterline_length.data(),
             waterline_breadth: waterline_breadth.data(),

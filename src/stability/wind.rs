@@ -1,6 +1,6 @@
 //! Расчет плеча кренящего момента от давления ветра
 use std::rc::Rc;
-use crate::mass::IMass;
+use crate::{mass::IMass, windage::IWindage};
 
 /// Расчет плеча кренящего момента от давления ветра
 pub struct Wind {
@@ -8,10 +8,8 @@ pub struct Wind {
     p_v: f64,
     /// Добавка на порывистость ветра
     m: f64,
-    /// Площадь парусности
-    a_v: f64,
-    /// Плечо парусности
-    z_v: f64,
+    /// Парусность судна
+    windage: Box<dyn IWindage>,
     /// Ускорение свободного падения
     g: f64,
     /// Все грузы судна
@@ -33,16 +31,14 @@ impl Wind {
     pub fn new(
         p_v: f64,   
         m: f64,          
-        a_v: f64,        
-        z_v: f64, 
+        windage: Box<dyn IWindage>,
         g: f64,             
         mass: Rc<dyn IMass>, 
     ) -> Self {
         Self {
             p_v,
             m,
-            a_v,
-            z_v,
+            windage,
             g,
             mass,
             l_w_1: None,
@@ -52,7 +48,7 @@ impl Wind {
     /// Расчет плечей моментов от ветра
     fn calculate(&mut self) {
         // (2.1.4.1-1)
-        let l_w_1 = (self.p_v * self.a_v * self.z_v) / (1000. * self.g * self.mass.sum());
+        let l_w_1 = (self.p_v * self.windage.a_v() * self.windage.z_v()) / (1000. * self.g * self.mass.sum());
         // (2.1.4.1-2)
         let l_w_2 = (1. + self.m) * l_w_1;
         log::info!("Wind l_w_1:{l_w_1} l_w_2:{l_w_2}");
