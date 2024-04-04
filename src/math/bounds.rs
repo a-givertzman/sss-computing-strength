@@ -6,15 +6,13 @@ use super::Bound;
 pub struct Bounds {
     // Непрерывный вектор диапазонов
     values: Vec<Bound>, 
-    /// Длинна элемента разбиения  
-    delta: f64,
 }
 ///
 impl Bounds {
     /// Основной конструктор 
-    pub fn new(values: Vec<Bound>, delta: f64) -> Self {
+    pub fn new(values: Vec<Bound>) -> Self {
         assert!(!values.is_empty(), "data.is_empty()");
-        Self { values, delta }
+        Self { values }
     }
     /// Вспомогательный конструктор 
     pub fn from_n(ship_length: f64, n: usize) -> Self {
@@ -30,9 +28,29 @@ impl Bounds {
                     start + delta * (v as f64 + 1.),
                 )
             })
-            .collect::<Vec<_>>(), delta);
- //       log::info!("\t Bounds from_n: ship_length:{ship_length} n:{n} values:{:?} ", res.values);
+            .collect::<Vec<_>>());
+//        log::info!("\t Bounds from_n: ship_length:{ship_length} n:{n} values:{:?} ", res.values);
         res
+    }
+    // Вспомогательный конструктор 
+    pub fn from_frames(frames: &Vec<(usize, f64)>) -> Self {
+        assert!(frames.len() > 1, "frames.len() {:?} > 1", frames);
+        let mut res = Vec::new();
+        let shift = if frames[0].1 >= 0. {
+            -frames.last().expect("Bounds from_frames error: no frames!").1/2.
+        } else {
+            0.
+        };
+        for i in 0..frames.len()-1 {
+            res.push(
+                Bound::new(
+                    frames[i].1 + shift,
+                    frames[i+1].1 + shift,
+                )
+            );
+        }
+  //      log::info!("\t Bounds from_frames: frames:{:?} values:{:?} ", frames, res);
+        Self::new(res)
     }
     /// Итератор по коллекции
     pub fn iter(&self) -> std::slice::Iter<'_, Bound> {
@@ -40,10 +58,10 @@ impl Bounds {
     }
     /// Длинна диапазона
     pub fn length(&self) -> f64 {
-        self.values.last().expect("No values!").end() - self.values.first().expect("No values!").start()
+        self.values.last().expect("Bounds length error: no values!").end() - self.values.first().expect("No values!").start()
     }
     /// Длинна элемента разбиения
     pub fn delta(&self) -> f64 {
-        self.delta
+        self.values.first().expect("Bounds delta error: no values!").length()
     }
 }

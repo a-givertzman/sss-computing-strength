@@ -1,7 +1,7 @@
 //! Функции для работы с АПИ-сервером
 use api_tools::client::{api_query::*, api_request::ApiRequest};
 
-use crate::{data::structs::*, error::Error};
+use crate::{data::structs::*, error::{self, Error}};
 /*
 /// Создание тестовой БД
 #[allow(dead_code)]
@@ -196,6 +196,16 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //    dbg!(&coefficient_k);
     log::info!("input_api_server coefficient_k read ok");
+    let bounds = ComputedFrameDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT index, key, value FROM computed_frame WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //    dbg!(&bounds);
+    log::info!("input_api_server computed_frame read ok");
     let center_waterline = CenterWaterlineArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -381,6 +391,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         coefficient_k,
         ship_id,
         ship,
+        bounds,
         center_waterline,
         waterline_length,
         waterline_breadth,
@@ -411,6 +422,37 @@ fn fetch_query(
     Ok(request.fetch(&query, true)?)
 }
 
+/// Запись данных из БД
+pub fn send_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>, bending_moment: &Vec<f64>) -> Result<(), error::Error> {
+    
+    let mut string = 
+        "INSERT INTO computed_strength (ship_id, left_frame, right_frame, key, value) VALUES".to_owned() + 
+        &shear_force.iter().enumerate().map(|(i, v)| format!("({ship_id}, {}, {}, 'shear_force', {v}),\n", i, i+1) ).collect::<String>() +
+        &bending_moment.iter().enumerate().map(|(i, v)| format!("({ship_id}, {}, {}, 'bending_moment', {v}),\n", i, i+1) ).collect::<String>();
+    string.pop();
+    string.pop();
+    string.push(';');
+
+    dbg!(&string);
+
+    let mut request = ApiRequest::new(
+        "parent",
+        "0.0.0.0:8080",
+        "auth_token",
+        ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(db_name, "")), false),
+        false,
+        false,
+    );
+    log::info!("input_api_server read begin");   
+
+    fetch_query(
+        &mut request,
+        db_name,
+        string,
+    )?;
+
+    Ok(())
+}
 /*
 /// Чтение данных из БД. Функция читает данные за несколько запросов,
 /// парсит их и проверяет данные на корректность.
