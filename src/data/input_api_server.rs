@@ -200,7 +200,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         &mut request,
         db_name,
         format!(
-            "SELECT index, key, value FROM computed_frame WHERE ship_id={};",
+            "SELECT index, value FROM computed_frame WHERE ship_id={} AND key='shift_x';",
             ship_id
         ),
     )?)?;
@@ -433,7 +433,7 @@ pub fn send_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>, bending_
     string.pop();
     string.push(';');
 
-    dbg!(&string);
+ //   dbg!(&string);
 
     let mut request = ApiRequest::new(
         "parent",
