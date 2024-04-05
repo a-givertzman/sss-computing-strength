@@ -131,11 +131,15 @@ pub struct ParsedShipData {
     pub length: f64,
     /// Ширина корпуса судна
     pub breadth: f64,
+    /// Суммарная масса судна
+    pub mass: f64,
+    /// Объемное водоизмещение
+    pub volume: f64,
     /// Cуммарная габаритная площадь скуловых килей,
     /// либо площадь боковой проекции брускового киля
     pub keel_area: Option<f64>,
-    /// разбиение на шпации - количество
-    pub n_parts: usize,
+    /// разбиение на шпации - фреймы
+    pub bounds: Vec<(usize, f64)>,
     /// плотность воды
     pub water_density: f64,
     /// отстояние центра тяжести постоянной массы судна по x  
@@ -207,6 +211,7 @@ impl ParsedShipData {
         coefficient_k: CoefficientKArray,
         ship_id: usize,
         ship_data: ShipArray,
+        bounds: ComputedFrameDataArray,
         center_waterline: CenterWaterlineArray,
         waterline_length: WaterlineLengthArray,
         waterline_breadth: WaterlineBreadthArray,
@@ -368,14 +373,18 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no breadth for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
+            mass: ship_data.get("mass").ok_or(format!(
+                "ParsedShipData parse error: no mass for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            volume: ship_data.get("volume").ok_or(format!(
+                "ParsedShipData parse error: no volume for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
             keel_area: ship_data.get("keel_area").ok_or(format!(
                 "ParsedShipData parse error: no keel_area for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>().ok(),
-            n_parts: ship_data.get("n_parts").ok_or(format!(
-                "ParsedShipData parse error: no n_parts for ship id:{}",
-                ship_id
-            ))?.0.parse::<usize>()?,
             water_density: ship_data.get("water_density").ok_or(format!(
                 "ParsedShipData parse error: no water_density for ship id:{}",
                 ship_id
@@ -428,6 +437,7 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no icing_stab for ship id:{}",
                 ship_id
             ))?.0.clone(),
+            bounds: bounds.data(),
             center_waterline: center_waterline.data(),
             waterline_length: waterline_length.data(),
             waterline_breadth: waterline_breadth.data(),
@@ -494,16 +504,28 @@ impl ParsedShipData {
                 )));
             }
         }
-        if self.n_parts <= 0 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: number of frames must be positive {}",
-                self.n_parts
-            )));
-        }
         if self.water_density <= 0. {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: value of water density must be positive {}",
                 self.water_density
+            )));
+        }
+        if self.mass <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of mass must be positive {}",
+                self.mass
+            )));
+        }
+        if self.volume <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of volume must be positive {}",
+                self.volume
+            )));
+        }
+        if self.bounds.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of bounds's points greater or equal to 2 {}",
+                self.bounds.len()
             )));
         }
         if self.center_waterline.len() <= 1 {

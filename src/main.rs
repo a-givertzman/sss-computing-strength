@@ -73,20 +73,7 @@ fn main() -> Result<(), Error> {
 
     // ускорение свободного падения
     let gravity_g = 9.81;
-    // плотность окружающей воды
-    //    let water_density = data.water_density;
-    // отстояние центра тяжести ватерлинии по длине от миделя
-    //    let center_waterline_shift = Curve::new(&data.center_waterline);
-    // продольный метацентрический радиус
-    //    let rad_long = Curve::new(&data.rad_long);
-    // средняя осадка
-    //    let mean_draught = Curve::new(&data.mean_draught);
-    // отстояние центра величины погруженной части судна
-    /*    let center_draught_shift = PosShift::new(
-        Curve::new(&data.center_shift_x),
-        Curve::new(&data.center_shift_y),
-        Curve::new(&data.center_shift_z),
-    );*/
+
     // шпангоуты
     let frames: Vec<Frame> = data
         .frames
@@ -100,11 +87,12 @@ fn main() -> Result<(), Error> {
         .collect();
 
     // длинна судна99
-    let ship_length = frames.last().unwrap().shift_x() - frames.first().unwrap().shift_x();
+    //let ship_length = frames.last().unwrap().shift_x() - frames.first().unwrap().shift_x();
     //let ship_length = 120.0<<<<<<< MetacentricHeight
-    let n_parts = 20; //data.n_parts as usize;
-                      // вектор разбиения судна на отрезки
-    let bounds = Rc::new(Bounds::from_n(ship_length, n_parts));
+    //let n_parts = 20; //data.n_parts as usize;
+    // вектор разбиения судна на отрезки
+    //let bounds = Rc::new(Bounds::from_n(ship_length, n_parts));
+    let bounds = Rc::new(Bounds::from_frames(&data.bounds));
 
     // Постоянная масса судна
     let mut loads_const: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
@@ -169,22 +157,22 @@ fn main() -> Result<(), Error> {
         Rc::clone(&bounds),
     ));
     // Объемное водоизмещение (1)
-    let volume = mass.sum() / data.water_density;
+ //   let volume = mass.sum() / data.water_density;
     // Отстояние центра величины погруженной части судна
     let center_draught_shift = PosShift::new(
         Curve::new_linear(&data.center_draught_shift_x),
         Curve::new_linear(&data.center_draught_shift_y),
         Curve::new_linear(&data.center_draught_shift_z),
     )
-    .value(volume);
+    .value(data.volume);
     // Продольный метацентрические радиус
-    let rad_long = Curve::new_linear(&data.rad_long).value(volume);
+    let rad_long = Curve::new_linear(&data.rad_long).value(data.volume);
     // Поперечный метацентрические радиус
-    let rad_cross = Curve::new_linear(&data.rad_cross).value(volume);
+    let rad_cross = Curve::new_linear(&data.rad_cross).value(data.volume);
     // Отстояние центра тяжести ватерлинии по длине от миделя
-    let center_waterline_shift = Curve::new_linear(&data.center_waterline).value(volume);
+    let center_waterline_shift = Curve::new_linear(&data.center_waterline).value(data.volume);
     // Средняя осадка
-    let mean_draught = Curve::new_linear(&data.mean_draught).value(volume);
+    let mean_draught = Curve::new_linear(&data.mean_draught).value(data.volume);
 
     // Для расчета прочности дифферент находится подбором
     // как условие для схождения изгибающего момента в 0
@@ -197,12 +185,14 @@ fn main() -> Result<(), Error> {
         Rc::new(Displacement::new(frames)),
         Rc::clone(&bounds),
     );
-    computer.shear_force().len();
-    /*    println!("shear_force:");
+    assert!(computer.shear_force().len() == data.bounds.len(), "shear_force.len {} == frame.len {}", computer.shear_force().len(), data.bounds.len()); 
+    assert!(computer.bending_moment().len() == data.bounds.len(), "bending_moment.len {} == frame.len {}", computer.bending_moment().len(), data.bounds.len()); 
+        println!("shear_force:");
         computer.shear_force().iter().for_each(|v| { println!("{v};") });
         println!("bending_moment:");
         computer.bending_moment().iter().for_each(|v| { println!("{v};") });
-    */
+    
+    send_data("sss-computing", 1, &computer.shear_force(), &computer.bending_moment())?;
 
     let flooding_angle = Curve::new_linear(&data.flooding_angle).value(mean_draught);
 
@@ -287,7 +277,7 @@ fn main() -> Result<(), Error> {
     let roll_amplitude = RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&mass),
-        volume,      // Объемное водоизмещение (1)
+        data.volume,      // Объемное водоизмещение (1)
         length, // длинна по ватерлинии при текущей осадке
         breadth,
         mean_draught,
