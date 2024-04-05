@@ -5,7 +5,9 @@ pub mod integral;
 
 #[allow(unused)]
 pub use integral_sum::IntegralSum as IntegralSum;
+#[allow(unused)]
 pub use integral_cotes::IntegralCotes as IntegralCotes;
+#[allow(unused)]
 pub use integral::Integral as Integral;
 
 /// Сумма сверху: $res_i = res_{i-1} + src_i, res_0 = 0$

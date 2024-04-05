@@ -1,15 +1,11 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{
-        mass::FakeMass,
-        math::position::Position,
-        metacentric_height::MetacentricHeight,
-        DeltaMH, SurfaceMoment,
-    };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
+
+    use crate::{math::{DeltaMH, Position, SurfaceMoment}, stability::metacentric_height::MetacentricHeight, mass::FakeMass};
 
     static INIT: Once = Once::new();
 

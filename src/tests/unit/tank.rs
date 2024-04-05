@@ -1,17 +1,12 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{
-        load::ILoad,
-        math::{
-            bound::Bound, curve::Curve, inertia::inertia_shift::InertiaShift,
-            pos_shift::PosShift, position::Position, surface_moment::SurfaceMoment,
-        },
-        tank::Tank,
-    };
+
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
+
+    use crate::{math::*, load::*, tank::*};
 
     static INIT: Once = Once::new();
 
@@ -73,7 +68,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { TANK.clone().unwrap().center() };
+        let result = unsafe { TANK.clone().unwrap().mass_shift() };
         let target = Position::new(2., 0., 0.);
         assert!(
             result == target,

@@ -1,12 +1,12 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{
-        mass::FakeMass, math::position::Position, metacentric_height::FakeMetacentricHeight, trim::Trim, DeltaMH, SurfaceMoment
-    };
+
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-    use std::{cell::RefCell, rc::Rc, time::Duration};
+    use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
+
+    use crate::{math::*, stability::metacentric_height::*, mass::*, strength::trim::*};
 
     #[test]
     fn trim() {
@@ -22,7 +22,6 @@ mod tests {
             Position::new(-0.194609657, 0., 0.735524704),
             Rc::new(FakeMetacentricHeight::new(
                 696.702572991,
-                    100.,
                     100.,
                     100.,
             )),

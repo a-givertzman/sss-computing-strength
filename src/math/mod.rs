@@ -1,7 +1,7 @@
 //! Коллекция примитивов для математических операций
 pub mod vec;
 pub mod position;
-pub mod mass_moment;
+pub mod moment;
 pub mod surface_moment;
 pub mod curve;
 pub mod bound;
@@ -11,9 +11,15 @@ pub mod bounds;
 pub mod delta_m_h;
 pub mod curve2d;
 
+#[allow(unused)]
+pub use vec::integral_sum::IntegralSum as IntegralSum;
+#[allow(unused)]
+pub use vec::integral_cotes::IntegralCotes as IntegralCotes;
+#[allow(unused)]
+pub use vec::integral::Integral as Integral;
 pub use vec::*;
 pub use position::*;
-pub use mass_moment::*;
+pub use moment::*;
 pub use surface_moment::*;
 pub use curve::*;
 pub use curve2d::*;

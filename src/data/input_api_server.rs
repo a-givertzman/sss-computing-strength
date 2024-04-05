@@ -1,7 +1,7 @@
 //! Функции для работы с АПИ-сервером
 use api_tools::client::{api_query::*, api_request::ApiRequest};
 
-use crate::{data::structs::*, error::Error};
+use crate::{data::structs::*, error::{self, Error}};
 /*
 /// Создание тестовой БД
 #[allow(dead_code)]
@@ -141,7 +141,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     );
     log::info!("input_api_server read begin");
 
-    let ship = ShipArray::parse(&fetch_query(
+    let ship_data = ShipArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!(
@@ -196,6 +196,16 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //    dbg!(&coefficient_k);
     log::info!("input_api_server coefficient_k read ok");
+    let bounds = ComputedFrameDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT index, value FROM computed_frame WHERE ship_id={} AND key='shift_x';",
+            ship_id
+        ),
+    )?)?;
+    //    dbg!(&bounds);
+    log::info!("input_api_server computed_frame read ok");
     let center_waterline = CenterWaterlineArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -206,6 +216,36 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //    dbg!(&center_waterline);
     log::info!("input_api_server center_waterline read ok");
+    let waterline_length = WaterlineLengthArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM waterline_length WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&waterline_length);
+    log::info!("input_api_server waterline_length read ok");
+    let waterline_breadth = WaterlineBreadthArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM waterline_breadth WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&waterline_breadth);
+    log::info!("input_api_server waterline_breadth read ok");
+    let volume_shift = VolumeShiftArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM volume_shift WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&volume_shift);
+    log::info!("input_api_server volume_shift read ok");
     let center_draught_shift = CenterDraughtShiftDataArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -273,6 +313,26 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //  dbg!(&entry_angle);
     log::info!("input_api_server entry_angle read ok");
+    let delta_windage_area = DeltaWindageAreaDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM delta_windage_area WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&delta_windage_area);
+    log::info!("input_api_server delta_windage_area read ok");
+    let delta_windage_moment = DeltaWindageMomentDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT draught, value_x, value_z FROM delta_windage_moment WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&delta_windage_moment);
+    log::info!("input_api_server delta_windage_moment read ok");    
     let frame = FrameDataArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -350,8 +410,12 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         multipler_s,
         coefficient_k,
         ship_id,
-        ship,
+        ship_data,
+        bounds,
         center_waterline,
+        waterline_length,
+        waterline_breadth,
+        volume_shift,
         rad_long,
         rad_cross,
         mean_draught,
@@ -359,6 +423,8 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         pantocaren,
         flooding_angle,
         entry_angle,
+        delta_windage_area,
+        delta_windage_moment,
         frame,
         frame_area,
         load_constant,
@@ -378,6 +444,37 @@ fn fetch_query(
     Ok(request.fetch(&query, true)?)
 }
 
+/// Запись данных из БД
+pub fn send_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>, bending_moment: &Vec<f64>) -> Result<(), error::Error> {
+    
+    let mut string = 
+        "INSERT INTO computed_strength (ship_id, left_frame, right_frame, key, value) VALUES".to_owned() + 
+        &shear_force.iter().enumerate().map(|(i, v)| format!("({ship_id}, {}, {}, 'shear_force', {v}),\n", i, i+1) ).collect::<String>() +
+        &bending_moment.iter().enumerate().map(|(i, v)| format!("({ship_id}, {}, {}, 'bending_moment', {v}),\n", i, i+1) ).collect::<String>();
+    string.pop();
+    string.pop();
+    string.push(';');
+
+ //   dbg!(&string);
+
+    let mut request = ApiRequest::new(
+        "parent",
+        "0.0.0.0:8080",
+        "auth_token",
+        ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(db_name, "")), false),
+        false,
+        false,
+    );
+    log::info!("input_api_server read begin");   
+
+    fetch_query(
+        &mut request,
+        db_name,
+        string,
+    )?;
+
+    Ok(())
+}
 /*
 /// Чтение данных из БД. Функция читает данные за несколько запросов,
 /// парсит их и проверяет данные на корректность.

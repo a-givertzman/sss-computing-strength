@@ -113,7 +113,10 @@ impl ICurve for Curve {
     }
     /// Численное интегрирование методом трапеций
     fn integral(&self, start: f64, end: f64) -> f64 {
-        assert!(start < end, "Integral start {start} < end {end}");
+        assert!(start <= end, "Integral start {start} <= end {end}");
+        if start == end {
+            return 0.;
+        }
         let mut sum = 0.;
         let n = 100;
         let delta = (end - start)/n as f64;
