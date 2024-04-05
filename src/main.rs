@@ -233,17 +233,23 @@ fn main() -> Result<(), Error> {
     }
 
     let mut stability_arm = StabilityArm::new(
+        Rc::clone(&mass),
+        center_draught_shift.clone(),
         Curve2D::from_values_catmull_rom(data.pantocaren),
         // Curve2D::from_values_linear(data.pantocaren),
         mean_draught,
         Rc::clone(&metacentric_height),
     );
-    dbg!(stability_arm.angle_static_roll());
-    /*    stability_arm
-            .diagram()
-            .iter()
-            .for_each(|(k, v)| println!("{k} {v};"));
-    */
+    dbg!(stability_arm.dso().len());
+/*    stability_arm
+        .dso()
+        .iter()
+        .for_each(|(k, v)| println!("{k} {v};"));
+    stability_arm
+        .ddo()
+        .iter()
+        .for_each(|(k, v)| println!("{k} {v};"));
+*/
     // Предполагаемое давление ветра +
     // Добавка на порывистость ветра
     let (p_v, m) = data

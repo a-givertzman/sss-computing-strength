@@ -24,7 +24,6 @@ mod tests {
                 100.,
                 1.,
                 0.,
-                1.,
             )),
         ).calculate();        
         let target = 3.686;

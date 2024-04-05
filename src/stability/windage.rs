@@ -105,17 +105,6 @@ impl Windage {
         let delta_m_vx_summer = self.delta_moment.x();
         let delta_m_vz_summer = self.delta_moment.z();
 
-  /*      // Вторая точка для интерполяции: максимальная осадка
-        // Площадь парусности судна для осадки по ЛГВЛ
-        let a_v_summer = a_v_dmin - delta_a_v_summer;
-        // статические моменты площади парусности для осадки по ЛГВЛ
-        let m_vx_summer = m_vx_dmin - delta_m_vx_summer;
-        let m_vz_summer = m_vz_dmin - delta_m_vz_summer;
-
-        let a_v = Curve::new_linear(&vec![(self.draught_min, a_v_dmin), (self.draught_slw, a_v_summer)]).value(self.drought_current);
-        let m_vx = Curve::new_linear(&vec![(self.draught_min, m_vx_dmin), (self.draught_slw, m_vx_summer)]).value(self.drought_current);
-        let m_vz = Curve::new_linear(&vec![(self.draught_min, m_vz_dmin), (self.draught_slw, m_vz_summer)]).value(self.drought_current);
-*/
         let a_v = a_v_dmin - self.delta_area;
         let m_vx = m_vx_dmin - self.delta_moment.x();
         let m_vz = m_vz_dmin - self.delta_moment.z();

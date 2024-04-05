@@ -56,7 +56,7 @@ impl Stability {
         let theta_c = *l_w2_angles.get(1).ok_or(Error::Calculate(
             "Stability calculate error: no second angle for l_w2".to_owned(), 
         ))?;
-        let curve = Curve::new_catmull_rom(&self.stability_arm.diagram());
+        let curve = Curve::new_catmull_rom(&self.stability_arm.dso());
         // расчет а
         let a_angle_first = theta_w1 - 21.0;//self.rolling_amplitude.calculate().round();
         let a_angle_second = l_w2_angle_first;
