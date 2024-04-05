@@ -141,7 +141,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     );
     log::info!("input_api_server read begin");
 
-    let ship = ShipArray::parse(&fetch_query(
+    let ship_data = ShipArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!(
@@ -313,6 +313,26 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //  dbg!(&entry_angle);
     log::info!("input_api_server entry_angle read ok");
+    let delta_windage_area = DeltaWindageAreaDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM delta_windage_area WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&delta_windage_area);
+    log::info!("input_api_server delta_windage_area read ok");
+    let delta_windage_moment = DeltaWindageMomentDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT draught, value_x, value_z FROM delta_windage_moment WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&delta_windage_moment);
+    log::info!("input_api_server delta_windage_moment read ok");    
     let frame = FrameDataArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -390,7 +410,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         multipler_s,
         coefficient_k,
         ship_id,
-        ship,
+        ship_data,
         bounds,
         center_waterline,
         waterline_length,
@@ -403,6 +423,8 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         pantocaren,
         flooding_angle,
         entry_angle,
+        delta_windage_area,
+        delta_windage_moment,
         frame,
         frame_area,
         load_constant,

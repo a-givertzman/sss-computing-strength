@@ -156,15 +156,13 @@ pub struct ParsedShipData {
     pub windage_shift_z: f64,
     /// Минимальная осадка, м
     pub draught_min: f64,
-    /// Разница в площадях парусности для осадки по ЛГВЛ и осадки, м²
-    pub delta_windage_area: f64,
-    /// Разница в статических моментах относительно миделя и ОП по x, м
-    pub delta_windage_moment_x: f64,
-    /// Разница в статических моментах относительно миделя и ОП по z, м
-    pub delta_windage_moment_z: f64,
-    /// Осадка по ЛГВЛ
-    pub draught_slw: f64,
-    /// кривая отстояния центра тяжести ватерлинии по длине от миделя  
+    /// Кривая разницы в площадях парусности для минимальной осадки, м²
+    pub delta_windage_area: Vec<(f64, f64)>,
+    /// Кривая разницы в статических моментах относительно миделя, м
+    pub delta_windage_moment_x: Vec<(f64, f64)>,
+    /// Кривая разницы в статических моментах относительно ОП, м
+    pub delta_windage_moment_z: Vec<(f64, f64)>,
+    /// Кривая отстояния центра тяжести ватерлинии по длине от миделя  
     pub center_waterline: Vec<(f64, f64)>,
     /// Длинна корпуса судна по ватерлинии
     pub waterline_length: Vec<(f64, f64)>,
@@ -223,6 +221,8 @@ impl ParsedShipData {
         pantocaren: PantocarenDataArray,
         flooding_angle: FloodingAngleDataArray,
         entry_angle: EntryAngleDataArray,
+        delta_windage_area: DeltaWindageAreaDataArray,
+        delta_windage_moment: DeltaWindageMomentDataArray,
         frame_src: FrameDataArray,
         frame_area: FrameAreaData,
         load_constant: LoadConstantArray,
@@ -417,22 +417,6 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no draught_min for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
-            delta_windage_area: ship_data.get("delta_windage_area").ok_or(format!(
-                "ParsedShipData parse error: no delta_windage_area for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            delta_windage_moment_x: ship_data.get("delta_windage_moment_x").ok_or(format!(
-                "ParsedShipData parse error: no delta_windage_moment_x for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            delta_windage_moment_z: ship_data.get("delta_windage_moment_z").ok_or(format!(
-                "ParsedShipData parse error: no delta_windage_moment_z for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            draught_slw: ship_data.get("draught_slw").ok_or(format!(
-                "ParsedShipData parse error: no draught_slw for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
             icing_stab: ship_data.get("icing_stab").ok_or(format!(
                 "ParsedShipData parse error: no icing_stab for ship id:{}",
                 ship_id
@@ -451,6 +435,9 @@ impl ParsedShipData {
             pantocaren: pantocaren.data(),
             flooding_angle: flooding_angle.data(),
             entry_angle: entry_angle.data(),
+            delta_windage_area: delta_windage_area.data(),
+            delta_windage_moment_x: delta_windage_moment.x(),
+            delta_windage_moment_z: delta_windage_moment.z(),
             frames,
             load_constant,
             load_spaces,
@@ -524,42 +511,42 @@ impl ParsedShipData {
         }
         if self.bounds.len() <= 1 {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: number of bounds's points greater or equal to 2 {}",
+                "Error check ParsedShipData: number of bounds's points {}",
                 self.bounds.len()
             )));
         }
         if self.center_waterline.len() <= 1 {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: number of waterline's points greater or equal to 2 {}",
+                "Error check ParsedShipData: number of waterline's points {}",
                 self.center_waterline.len()
             )));
         }
         if self.rad_long.len() <= 1 {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: number of rad_long's points greater or equal to 2 {}",
+                "Error check ParsedShipData: number of rad_long's points {}",
                 self.rad_long.len()
             )));
         }
         if self.rad_cross.len() <= 1 {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: number of rad_cross's points greater or equal to 2 {}",
+                "Error check ParsedShipData: number of rad_cross's points {}",
                 self.rad_cross.len()
             )));
         }
         if self.mean_draught.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of mean_draught's points greater or equal to 2 {}", self.mean_draught.len())));
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of mean_draught's points {}", self.mean_draught.len())));
         }
         if self.center_draught_shift_x.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_draught_shift_x's points greater or equal to 2 {}", self.center_draught_shift_x.len())));
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_draught_shift_x's points {}", self.center_draught_shift_x.len())));
         }
         if self.center_draught_shift_y.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_draught_shift_y's points greater or equal to 2 {}", self.center_draught_shift_y.len())));
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_draught_shift_y's points {}", self.center_draught_shift_y.len())));
         }
         if self.center_draught_shift_z.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_draught_shift_z's points greater or equal to 2 {}", self.center_draught_shift_z.len())));
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center_draught_shift_z's points {}", self.center_draught_shift_z.len())));
         }
         if self.pantocaren.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of pantocaren's points greater or equal to 2 {}", self.pantocaren.len())));
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of pantocaren's points {}", self.pantocaren.len())));
         }
         if let Some((draught, _)) = self.pantocaren.iter().find(|(draught, _)| *draught < 0. ) {
             return Err(Error::Parameter(format!(
@@ -568,14 +555,23 @@ impl ParsedShipData {
             )));
         }
         if self.flooding_angle.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of flooding_angle's points greater or equal to 2 {}", self.flooding_angle.len())));
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of points {}", self.flooding_angle.len())));
         }
         if let Some((key, value)) = self.flooding_angle.iter().find(|(key, value)| *key < 0. || *value < 0. ) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: draught or angle in flooding_angle is negative!, draught{key}, angle:{value}")));
         }
         if self.entry_angle.len() <= 1 {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of entry_angle's points greater or equal to 2 {}", self.flooding_angle.len())));
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of points {}", self.flooding_angle.len())));
+        }
+        if self.delta_windage_area.len() <= 1 {
+            return Err(Error::Parameter(format!("Error check delta_windage_area: number of points {}", self.flooding_angle.len())));
+        }
+        if self.delta_windage_moment_x.len() <= 1 {
+            return Err(Error::Parameter(format!("Error check delta_windage_moment_x: number of points{}", self.flooding_angle.len())));
+        }
+        if self.delta_windage_moment_z.len() <= 1 {
+            return Err(Error::Parameter(format!("Error check delta_windage_moment_z: number of points{}", self.flooding_angle.len())));
         }
         if let Some((key, value)) = self.entry_angle.iter().find(|(key, value)| *key < 0. || *value < 0. ) {
             return Err(Error::Parameter(format!(
@@ -583,7 +579,7 @@ impl ParsedShipData {
         }
         if self.frames.len() <= 1 {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: number of frames must be greater or equal to 2 {}",
+                "Error check ParsedShipData: number of frames must be {}",
                 self.frames.len()
             )));
         }
@@ -700,14 +696,14 @@ impl ParsedShipData {
             .iter()
             .find(|t| t.center_x.len() <= 1 || t.center_y.len() <= 1 || t.center_z.len() <= 1)
         {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center's points must be greater or equal to 2 {}", tank)));
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of center's points must be {}", tank)));
         }
         if let Some(tank) = self
             .tanks
             .iter()
             .find(|t| t.free_surf_inertia_x.len() <= 1 || t.free_surf_inertia_y.len() <= 1)
         {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: number of free_surf_inertia's points must be greater or equal to 2 {}", tank)));
+            return Err(Error::Parameter(format!("Error check ParsedShipData: number of free_surf_inertia's points must be {}", tank)));
         }
         log::info!("result parse ok");
         Ok(self)

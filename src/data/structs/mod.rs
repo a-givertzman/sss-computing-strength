@@ -10,6 +10,7 @@ pub mod load_constant;
 mod pantocaren;
 mod stability;
 pub mod computed_frame;
+pub mod delta_windage_moment;
 
 use data_array::*;
 pub use ship::*;
@@ -21,6 +22,7 @@ pub use serde_parser::*;
 pub use load_constant::*;
 pub use pantocaren::*;
 pub use computed_frame::*;
+pub use delta_windage_moment::*;
 pub use stability::navigation_area::NavigationAreaArray as NavigationAreaArray;
 pub use stability::multipler_s::MultiplerSArray as MultiplerSArray;
 pub use stability::MultiplerX1Array as MultiplerX1Array;
@@ -37,4 +39,5 @@ pub type EntryAngleDataArray = DataArray<Pair>;
 pub type WaterlineLengthArray = DataArray<Pair>;
 pub type WaterlineBreadthArray = DataArray<Pair>;
 pub type VolumeShiftArray = DataArray<Pair>;
+pub type DeltaWindageAreaDataArray = DataArray<Pair>;
 
