@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use crate::{Curve, ICurve, ILoad, Moment, Position};
+use crate::{ILoad, Moment, Position};
 
 /// Парусность судна, площадь и положение 
 /// центра относительно миделя и ОП
