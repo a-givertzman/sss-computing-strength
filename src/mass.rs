@@ -172,6 +172,8 @@ pub trait IMass {
     fn moment_mass(&self) -> Moment;
     /// Суммарный момент свободной поверхности
     fn moment_surface(&self) -> SurfaceMoment;
+    /// Суммарный момент массы льда на верхней горизонтальной проекции палубного груза 
+    fn moment_ice(&self) -> SurfaceMoment;
 }
 // заглушка для тестирования
 #[doc(hidden)]
