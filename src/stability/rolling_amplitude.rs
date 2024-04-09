@@ -81,7 +81,7 @@ impl IRollingAmplitude for RollingAmplitude {
     fn calculate(&self) -> f64 {
         // Коэффициент полноты судна
         let c_b = self.volume / (self.l_wl * self.b * self.d);
-        let k = self.a_k.map(|a_k| self.k.value(a_k/(self.l_wl*self.b))).unwrap_or(1.);
+        let k = self.a_k.map(|a_k| self.k.value(a_k*100./(self.l_wl*self.b))).unwrap_or(1.);
         let x_1 = self.x_1.value(self.b / self.d);
         let x_2 = self.x_2.value(c_b);
         let r = (0.73 + 0.6 * (self.mass.shift().z() - self.d) / self.d).min(1.);

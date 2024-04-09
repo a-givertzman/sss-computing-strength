@@ -20,12 +20,14 @@ mod tests {
 
         let result = LoadSpace::new(
             20., 
+            Some(Position::new(1., 0., 0.)), 
             Bound::new(-1., 3.), 
-            Position::new(1., 0., 0.), 
+            Bound::new(0., 0.),
+            Bound::new(0., 0.),
+            None,
+            None, 
             0.,
             0.,
-            0.,
-            Position::new(0., 0., 0.), 
         ).mass(Some(Bound::new(1., 3.)));
         let target = 10.;
         assert!(
@@ -49,13 +51,15 @@ mod tests {
 
         let result = LoadSpace::new(
             20.,
+            Some(Position::new(1., 0., 0.)), 
             Bound::new(-1., 3.), 
-            Position::new(1., 0., 0.), 
-            0., 
+            Bound::new(0., 0.),
+            Bound::new(0., 0.),
+            None,
+            None, 
             0.,
             0.,
-            Position::new(0., 0., 0.), 
-        ).moment_mass();
+        ).mass_moment();
         let target = Moment::new(20., 0., 0.);
         assert!(
             result == target,

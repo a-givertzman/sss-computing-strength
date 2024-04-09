@@ -6,7 +6,7 @@ use futures::executor::block_on;
 use log::info;
 use std::{collections::HashMap, rc::Rc, time::Instant};
 
-use crate::{load::*, mass::*, math::*, stability::*, strength::*, tank::*, windage::{IWindage, Windage}};
+use crate::{load::*, mass::*, math::*, stability::*, strength::*, windage::Windage};
 
 mod data;
 mod error;
@@ -15,7 +15,6 @@ mod mass;
 mod math;
 mod stability;
 mod strength;
-mod tank;
 mod tests;
 
 fn main() -> Result<(), Error> {
@@ -106,12 +105,14 @@ fn main() -> Result<(), Error> {
         if let Some(mass) = data.load_constant.data().get(&index) {
             loads_const.push(Rc::new(Box::new(LoadSpace::new(
                 *mass,
+                Some(Position::new(bound.center(), const_shift.y(), const_shift.z())),
                 bound,
-                Position::new(bound.center(), const_shift.y(), const_shift.z()),
+                Bound::new(0., 0.),
+                Bound::new(0., 0.),
+                None,
+                None,
                 0.,
                 0.,
-                0.,
-                Position::new(0., 0., 0.),
             ))));
         }
     }
@@ -121,12 +122,26 @@ fn main() -> Result<(), Error> {
         if v.mass != 0. {
             loads_cargo.push(Rc::new(Box::new(LoadSpace::new(
                 v.mass,
-                Bound::new(v.bound.0, v.bound.1),
-                Position::new(v.mass_shift.0, v.mass_shift.1, v.mass_shift.2),
+                if let Some(mass_shift) = v.mass_shift {
+                    Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
+                } else { 
+                    None
+                },          
+                Bound::new(v.bound_x.0, v.bound_x.1),
+                Bound::new(v.bound_y.0, v.bound_y.1),
+                Bound::new(v.bound_z.0, v.bound_z.1),
+                if let Some(windage_area) = v.windage_area {
+                    Some(windage_area)
+                } else { 
+                    None
+                },
+                if let Some(windage_shift) = v.windage_shift {
+                    Some(Position::new(windage_shift.0, 0., windage_shift.1))
+                } else { 
+                    None
+                },
                 v.m_f_s_y,
                 v.m_f_s_x,
-                v.windage_area,
-                Position::new(v.windage_shift.0, 0., v.windage_shift.1),
             ))));
         }
     });

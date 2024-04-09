@@ -26,7 +26,7 @@ impl Tank {
     }
 }
 ///
-impl super::load::ILoad for Tank {
+impl super::ILoad for Tank {
     fn mass(&self, bound: Option<Bound>) -> f64 {
         self.volume*self.density*if let Some(bound) = bound {
             self.bound.part_ratio(&bound)

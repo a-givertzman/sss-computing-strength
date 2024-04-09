@@ -1,5 +1,9 @@
 //! Учет обледенения
 
+use std::rc::Rc;
+
+use crate::ILoad;
+
 /// Учет обледенения судна. Может быть без обледенения, частичным и полным.  
 /// При расчете обледенения необходимо учитывать изменения водоизмещения и  
 /// возвышения центра тяжести. При учете обледенения к массе судна добавляются  
@@ -8,26 +12,35 @@
 pub struct Icing {
     /// Тип обледенения
     icing_stab: String,
+    /// Все грузы судна
+    loads_cargo: Vec<Rc<Box<dyn ILoad>>>,
+    desc_area: f64,
+    desc_moment: f64,
     /// Масса льда на квадратный метр общей горизонтальной проекции открытых палуб, т
     w_deck: f64,
     /// Масса льда на квадратный метр площади парусности должна, т
     w_v: f64,
-
 }
 ///
 impl Icing {
     /// Основной конструктор
-    pub fn new(icing_stab: String) -> Self {
+    /// * icing_stab - Тип обледенения
+    /// * loads_cargo - Грузы судна
+    pub fn new(
+        icing_stab: String, 
+        loads_cargo: Vec<Rc<Box<dyn ILoad>>>,
+    ) -> Self {
         Self{
             icing_stab, 
-            w_deck: 0.03, 
+            loads_cargo,
+            w_deck: 0.03,
             w_v: 0.015,
         }
     }
     /// Расчет обледенения
     fn calculate(&mut self) {
         // Масса льда на общей горизонтальной проекции открытых палуб и палубного груза, т
-        let p_h = ;
+        let p_h = self.desc_area;
         // Момент массы льда на общей горизонтальной проекции открытых палуб и палубного груза
         let m_x_h = ;
         let m_y_h = ;
@@ -46,11 +59,9 @@ impl Icing {
 }
 ///
 impl IIcing for Icing {
-    ///
 }
 #[doc(hidden)]
 pub trait IIcing {
-    ///
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -70,8 +81,6 @@ impl FakeIcing {
 }
 #[doc(hidden)]
 impl IIcing for FakeIcing {
-    /// 
-
 }
 
 

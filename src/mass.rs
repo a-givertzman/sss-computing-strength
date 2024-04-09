@@ -129,7 +129,7 @@ impl IMass for Mass {
         if self.moment_mass.borrow().is_none() {
             let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| Moment::from_pos(self.shift_const.clone(), c.mass(None)) ).sum::<Moment>() +
         //    let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| c.moment_mass() ).sum::<MassMoment>() +
-            self.loads_cargo.iter().map(|c| c.moment_mass() ).sum::<Moment>();
+            self.loads_cargo.iter().map(|c| c.mass_moment() ).sum::<Moment>();
             log::info!("\t Mass moment_mass:{res} ");
             *self.moment_mass.borrow_mut() = Some(res);
         }
@@ -172,8 +172,6 @@ pub trait IMass {
     fn moment_mass(&self) -> Moment;
     /// Суммарный момент свободной поверхности
     fn moment_surface(&self) -> SurfaceMoment;
-    /// Суммарный момент массы льда на верхней горизонтальной проекции палубного груза 
-    fn moment_ice(&self) -> SurfaceMoment;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -225,5 +223,5 @@ impl IMass for FakeMass {
     }
     fn moment_surface(&self) -> SurfaceMoment {
         self.moment_surface.clone()
-    }
+    }    
 }

@@ -38,35 +38,41 @@ pub struct ParsedLoadSpaceData {
     /// Общая масса
     pub mass: f64,
     /// Границы груза
-    pub bound: (f64, f64),
+    pub bound_x: (f64, f64),
+    pub bound_y: (f64, f64),
+    pub bound_z: (f64, f64),
     /// Центр масс
-    pub mass_shift: (f64, f64, f64),
+    pub mass_shift: Option<(f64, f64, f64)>,
     /// Продольный момент свободной поверхности жидкости
     pub m_f_s_y: f64,
     /// Поперечный момент инерции свободной поверхности жидкости в цистерне
     pub m_f_s_x: f64,    
     /// Площадь парусности
-    pub windage_area: f64,
+    pub windage_area: Option<f64>,
     /// Центр парусности
-    pub windage_shift: (f64, f64),
+    pub windage_shift: Option<(f64, f64)>,
 }
 ///
 impl std::fmt::Display for ParsedLoadSpaceData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadSpaceData(mass:{} bound:(x1:{}, x2:{}) mass_shift:({} {} {}) m_f_s_y:{}, m_f_s_x:{} windage_area:{} windage_shift:(x:{}, z:{}))",
+            "LoadSpaceData(mass:{} bound_x:({}, {}) bound_y:({}, {}) bound_z:({}, {}) mass_shift:({} {} {}) m_f_s_y:{}, m_f_s_x:{} windage_area:{} windage_shift:(x:{}, z:{}))",
             self.mass,
-            self.bound.0,
-            self.bound.1,
-            self.mass_shift.0,
-            self.mass_shift.1,
-            self.mass_shift.2,
+            self.bound_x.0,
+            self.bound_x.1,
+            self.bound_y.0,
+            self.bound_y.1,
+            self.bound_z.0,
+            self.bound_z.1,
+            self.mass_shift.unwrap_or((0.,0.,0.)).0,
+            self.mass_shift.unwrap_or((0.,0.,0.)).1,
+            self.mass_shift.unwrap_or((0.,0.,0.)).2,
             self.m_f_s_y,
             self.m_f_s_x,
-            self.windage_area,
-            self.windage_shift.0,
-            self.windage_shift.1,
+            self.windage_area.unwrap_or(0.),
+            self.windage_shift.unwrap_or((0.,0.)).0,
+            self.windage_shift.unwrap_or((0.,0.)).1,
         )
     }
 }
@@ -261,7 +267,7 @@ impl ParsedShipData {
                     "ParsedShipData parse error: no mass for load_space id:{}",
                     space_id
                 ))?.0.parse::<f64>()?,
-                bound: (
+                bound_x: (
                     map.get("bound_x1").ok_or(format!(
                         "ParsedShipData parse error: no bound_x1 for load_space id:{}",
                         space_id
@@ -271,20 +277,49 @@ impl ParsedShipData {
                         space_id
                     ))?.0.parse::<f64>()?,
                 ),
-                mass_shift: (
-                    map.get("mass_shift_x").ok_or(format!(
-                        "ParsedShipData parse error: no mass_shift_x for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
-                    map.get("mass_shift_y").ok_or(format!(
-                        "ParsedShipData parse error: no mass_shift_y for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
-                    map.get("mass_shift_z").ok_or(format!(
-                        "ParsedShipData parse error: no mass_shift_z for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
+                bound_y: (
+                    if let Some(v) = map.get("bound_y1") {
+                        v.0.parse::<f64>()?
+                    } else {
+                        0.
+                    },
+                    if let Some(v) = map.get("bound_y2") {
+                        v.0.parse::<f64>()?
+                    } else {
+                        0.
+                    },
                 ),
+                bound_z: (
+                    if let Some(v) = map.get("bound_z1") {
+                        v.0.parse::<f64>()?
+                    } else {
+                        0.
+                    },
+                    if let Some(v) = map.get("bound_z2") {
+                        v.0.parse::<f64>()?
+                    } else {
+                        0.
+                    },
+                ),
+                mass_shift: if map.contains_key("mass_shift_x") && 
+                                map.contains_key("mass_shift_y") &&
+                                map.contains_key("mass_shift_z") {
+                                    Some((map.get("mass_shift_x").ok_or(format!(
+                                        "ParsedShipData parse error: no mass_shift_x for load_space id:{}",
+                                        space_id
+                                    ))?.0.parse::<f64>()?,
+                                    map.get("mass_shift_y").ok_or(format!(
+                                        "ParsedShipData parse error: no mass_shift_y for load_space id:{}",
+                                        space_id
+                                    ))?.0.parse::<f64>()?,
+                                    map.get("mass_shift_z").ok_or(format!(
+                                        "ParsedShipData parse error: no mass_shift_z for load_space id:{}",
+                                        space_id
+                                    ))?.0.parse::<f64>()?,
+                                    ))
+                } else {
+                    None
+                },
                 m_f_s_y: map.get("m_f_s_y").ok_or(format!(
                     "ParsedShipData parse error: no m_f_s_y for load_space id:{}",
                     space_id
@@ -293,12 +328,18 @@ impl ParsedShipData {
                     "ParsedShipData parse error: no m_f_s_x for load_space id:{}",
                     space_id
                 ))?.0.parse::<f64>()?,
-                windage_area: map.get("windage_area").ok_or(format!(
-                    "ParsedShipData parse error: no windage_area for load_space id:{}",
-                    space_id
-                ))?.0.parse::<f64>()?,
-                windage_shift: (
-                    map.get("windage_shift_x").ok_or(format!(
+                windage_area:  if map.contains_key("windage_area") {
+                    Some( map.get("windage_area").ok_or(format!(
+                            "ParsedShipData parse error: no windage_area for load_space id:{}",
+                            space_id
+                    ))?.0.parse::<f64>()?, )
+                } else {
+                    None
+                },
+                windage_shift: if map.contains_key("mass_shift_x") && 
+                                    map.contains_key("mass_shift_y") &&
+                                    map.contains_key("mass_shift_z") {
+                    Some(( map.get("windage_shift_x").ok_or(format!(
                         "ParsedShipData parse error: no windage_shift_x for load_space id:{}",
                         space_id
                     ))?.0.parse::<f64>()?,
@@ -306,7 +347,10 @@ impl ParsedShipData {
                         "ParsedShipData parse error: no windage_shift_z for load_space id:{}",
                         space_id
                     ))?.0.parse::<f64>()?,
-                ),
+                    ))
+                } else {
+                    None
+                },
             });
         }
 
@@ -666,16 +710,27 @@ impl ParsedShipData {
         if let Some(s) = self
             .load_spaces
             .iter()
-            .find(|s| s.bound.0 >= s.bound.1)
-        {
+            .find(|s| {
+                s.bound_x.0 >= s.bound_x.1 || 
+                s.bound_y.0 >= s.bound_y.1 || 
+                s.bound_z.0 >= s.bound_z.1
+            }) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: load_space bound error! {}", s )));
         }
         if let Some(s) = self
         .load_spaces
         .iter()
-        .find(|s| s.bound.0 >= s.mass_shift.0 || s.mass_shift.0 >= s.bound.1)
-        {
+        .find(|s| { 
+            s.mass_shift.is_some() && (
+                s.bound_x.0 >= s.mass_shift.unwrap().0 ||
+                s.mass_shift.unwrap().0 >= s.bound_x.1 ||
+                s.bound_y.0 >= s.mass_shift.unwrap().1 ||
+                s.mass_shift.unwrap().1 >= s.bound_y.1 ||
+                s.bound_z.0 >= s.mass_shift.unwrap().2 ||
+                s.mass_shift.unwrap().2 >= s.bound_z.1 
+            )
+        }) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: load_space center out of bound error! {}", s )));
         }

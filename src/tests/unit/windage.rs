@@ -16,12 +16,14 @@ mod tests {
         INIT.call_once(|| {
             let loads_cargo: Vec<Rc<Box<dyn ILoad>>> = vec![Rc::new(Box::new(LoadSpace::new(
                 100.,
+                None,
                 Bound::new(-10., 10.),
-                Position::new(0., 0., 0.),
+                Bound::new(0., 0.),
+                Bound::new(0., 0.),
+                Some(100.),
+                Some(Position::new(0., 0., 2.)), 
                 0.,
                 0.,
-                100.,
-                Position::new(0., 0., 2.),
             )))];
 
             unsafe {

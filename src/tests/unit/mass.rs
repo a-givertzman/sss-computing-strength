@@ -9,7 +9,6 @@ mod tests {
     use crate::{
         load::*,
         mass::*,
-        tank::*,
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
@@ -36,21 +35,25 @@ mod tests {
             let loads_const: Vec<Rc<Box<dyn ILoad>>> = vec![
                 Rc::new(Box::new(LoadSpace::new(
                     10.,
+                    Some(Position::new(-5., 0., 0.)),
                     Bound::new(-10., 0.),
-                    Position::new(-5., 0., 0.),
+                    Bound::new(0., 0.),
+                    Bound::new(0., 0.),
+                    None,
+                    None, 
                     0.,
-                    0.,
-                    0.,
-                    Position::new(0., 0., 0.), 
+                    0.,                    
                 ))),
                 Rc::new(Box::new(LoadSpace::new(
                     20.,
-                    Bound::new(0., 10.),
-                    Position::new(5., 0., 0.),
+                    Some(Position::new(5., 0., 0.)),
+                    Bound::new(0., 10.),                    
+                    Bound::new(0., 0.),
+                    Bound::new(0., 0.),
+                    None,
+                    None, 
                     0.,
-                    0.,
-                    0.,
-                    Position::new(0., 0., 0.), 
+                    0., 
                 ))),
             ];
 
