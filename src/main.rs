@@ -75,11 +75,11 @@ fn main() -> Result<(), Error> {
 
     // шпангоуты
     let frames: Vec<Frame> = data
-        .frames
+        .theoretical_frame
         .iter()
         .map(|v| {
             Frame::new(
-                v.x - data.frames.last().expect("frames last error: no frame").x / 2.,
+                v.x - data.theoretical_frame.last().expect("frames last error: no frame").x / 2.,
                 Curve::new_linear(&v.immersion_area),
             )
         })

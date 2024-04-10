@@ -332,17 +332,27 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         ),
     )?)?;
     //  dbg!(&delta_windage_moment);
-    log::info!("input_api_server delta_windage_moment read ok");    
-    let frame = FrameDataArray::parse(&fetch_query(
+    log::info!("input_api_server delta_windage_moment read ok"); 
+    let physical_frame = FrameDataArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!(
-            "SELECT index, key, value FROM frame WHERE ship_id={};",
+            "SELECT index, key, value FROM physical_frame WHERE ship_id={};",
             ship_id
         ),
     )?)?;
-    //    dbg!(&frame);
-    log::info!("input_api_server frame read ok");
+    //    dbg!(&physical_frame);
+    log::info!("input_api_server physical_frame read ok");   
+    let theoretical_frame = FrameDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT index, key, value FROM theoretical_frame WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //    dbg!(&theoretical_frame);
+    log::info!("input_api_server theoretical_frame read ok");
     let frame_area = FrameAreaData::new(
         FrameAreaArray::parse(&fetch_query(
             &mut request,
@@ -425,7 +435,8 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         entry_angle,
         delta_windage_area,
         delta_windage_moment,
-        frame,
+        physical_frame,
+        theoretical_frame,
         frame_area,
         load_constant,
         load_space,

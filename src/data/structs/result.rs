@@ -1,7 +1,7 @@
 //! Структуры для преобразования данных из формата данных DB
 //! в формат пригодный для создания объектов.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::error::Error;
 
@@ -11,7 +11,7 @@ use super::*;
 #[derive(Debug)]
 pub struct ParsedFrameData {
     /// Порядковый номер шпангоута от кормы
-    pub index: usize,
+    pub index: i32,
     /// Координата по х относительно кормы
     pub x: f64,
     /// Смещение относительно предыдущего шпангоута
@@ -145,7 +145,7 @@ pub struct ParsedShipData {
     /// либо площадь боковой проекции брускового киля
     pub keel_area: Option<f64>,
     /// разбиение на шпации - фреймы
-    pub bounds: Vec<(usize, f64)>,
+    pub bounds: Vec<(i32, f64)>,
     /// плотность воды
     pub water_density: f64,
     /// отстояние центра тяжести постоянной массы судна по x  
@@ -194,8 +194,10 @@ pub struct ParsedShipData {
     pub flooding_angle: Vec<(f64, f64)>,
     /// Угол входа верхней палубы в воду
     pub entry_angle: Vec<(f64, f64)>,
-    /// Шпангоуты судна
-    pub frames: Vec<ParsedFrameData>,
+    /// Практические шпангоуты судна
+    pub physical_frame: HashMap<i32, f64>,
+    /// Теоретические шпангоуты судна
+    pub theoretical_frame: Vec<ParsedFrameData>,
     /// Постоянный груз, приходящийся на шпацию
     pub load_constant: LoadConstantArray,
     /// Нагрузка судна без жидких грузов    
@@ -229,7 +231,8 @@ impl ParsedShipData {
         entry_angle: EntryAngleDataArray,
         delta_windage_area: DeltaWindageAreaDataArray,
         delta_windage_moment: DeltaWindageMomentDataArray,
-        frame_src: FrameDataArray,
+        physical_frame_src: FrameDataArray,    
+        theoretical_frame_src: FrameDataArray,
         frame_area: FrameAreaData,
         load_constant: LoadConstantArray,
         load_spaces_src: LoadSpaceArray,
@@ -239,11 +242,26 @@ impl ParsedShipData {
     ) -> Result<Self, Error> {
         log::info!("result parse begin");
         let ship_data = ship_data.data();
+        let ship_length = ship_data.get("length").ok_or(format!(
+            "ParsedShipData parse error: no length for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        if ship_length <= 0. {
+            panic!("Ship length parse error: ship_length <= 0.",);
+        }
 
-        let mut frames = Vec::new();
-        
-        for (index, map) in frame_src.data() {
-            frames.push(ParsedFrameData {
+        let mut physical_frame = HashMap::new();        
+        for (index, map) in physical_frame_src.data() {
+            let value = map.get("delta_x").ok_or(format!(
+                "physical_frame parse error: no delta_x for frame index:{}",
+                index
+            ))?;
+            physical_frame.insert(index, *value);
+        }
+
+        let mut theoretical_frame = Vec::new();        
+        for (index, map) in theoretical_frame_src.data() {
+            theoretical_frame.push(ParsedFrameData {
                 index,
                 x: *map.get("x").ok_or(format!(
                     "ParsedShipData parse error: no x for frame index:{}",
@@ -259,23 +277,40 @@ impl ParsedShipData {
                 ))?.to_vec(),
             });
         }
-        frames.sort_by(|a, b| a.index.cmp(&b.index));
+        theoretical_frame.sort_by(|a, b| a.index.cmp(&b.index));
+        
         let mut load_spaces = Vec::new();
         for (space_id, map) in load_spaces_src.data() {
+            // Два варианта задания распределения по х - координата или физический шпангоут.
+            // Если тип шпангоут, то находим и подставляем его координату
+            // Координата шпангоута задана относительно кормы, считаем ее относительно центра
+            let bound_x = |value: &str, value_type: &str| -> Result<f64, Error> { 
+                Ok(if value_type == "real" {
+                    *physical_frame.get(&value.parse::<i32>()?)
+                        .ok_or(format!(
+                            "load_spaces parse error: no physical_frame for load_space id:{}",
+                            space_id
+                        ))?
+                } else {
+                    value.parse::<f64>()?
+                } - ship_length/2.) 
+            };
+            let (bound_x1_value, bound_x1_type) = map.get("bound_x1").ok_or(format!(
+                "ParsedShipData parse error: no bound_x1 for load_space id:{}",
+                space_id
+            ))?;
+            let (bound_x2_value, bound_x2_type) = map.get("bound_x2").ok_or(format!(
+                "ParsedShipData parse error: no bound_x2 for load_space id:{}",
+                space_id
+            ))?;
             load_spaces.push(ParsedLoadSpaceData {
                 mass: map.get("mass").ok_or(format!(
                     "ParsedShipData parse error: no mass for load_space id:{}",
                     space_id
                 ))?.0.parse::<f64>()?,
-                bound_x: (
-                    map.get("bound_x1").ok_or(format!(
-                        "ParsedShipData parse error: no bound_x1 for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
-                    map.get("bound_x2").ok_or(format!(
-                        "ParsedShipData parse error: no bound_x2 for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
+                bound_x: ( 
+                    bound_x(bound_x1_value, bound_x2_type)? - ship_length/2., 
+                    bound_x(bound_x2_value, bound_x2_type)?
                 ),
                 bound_y: (
                     if let Some(v) = map.get("bound_y1") {
@@ -409,10 +444,7 @@ impl ParsedShipData {
             multipler_x2,
             multipler_s,
             coefficient_k,
-            length: ship_data.get("length").ok_or(format!(
-                "ParsedShipData parse error: no length for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
+            length: ship_length,
             breadth: ship_data.get("breadth").ok_or(format!(
                 "ParsedShipData parse error: no breadth for ship id:{}",
                 ship_id
@@ -482,7 +514,8 @@ impl ParsedShipData {
             delta_windage_area: delta_windage_area.data(),
             delta_windage_moment_x: delta_windage_moment.x(),
             delta_windage_moment_z: delta_windage_moment.z(),
-            frames,
+            physical_frame,
+            theoretical_frame,
             load_constant,
             load_spaces,
             tanks,
@@ -621,29 +654,35 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: draught or angle in entry_angle is negative!, draught{key}, angle:{value}")));
         }
-        if self.frames.len() <= 1 {
+        if self.theoretical_frame.len() <= 1 {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: number of frames must be {}",
-                self.frames.len()
+                self.theoretical_frame.len()
             )));
         }
-        if let Some(frame) = self.frames.iter().find(|f| f.index >= self.frames.len()) {
+        if let Some(frame) = self.theoretical_frame.iter().find(|f| f.index >= self.theoretical_frame.len() as i32) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: index of frame bigger or equal then frames.len(), {}",
                 frame
             )));
         }
+        if let Some(frame) = self.theoretical_frame.iter().find(|f| f.index < 0) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: index of frame is negative, {}",
+                frame
+            )));
+        }
         let qnt_unique_index = self
-            .frames
+            .theoretical_frame
             .iter()
             .map(|f| f.index)
             .collect::<HashSet<_>>()
             .len();
-        if self.frames.len() != qnt_unique_index {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: index of frame must be unique frames:{}, unique index:{}", self.frames.len(), qnt_unique_index )));
+        if self.theoretical_frame.len() != qnt_unique_index {
+            return Err(Error::Parameter(format!("Error check ParsedShipData: index of frame must be unique frames:{}, unique index:{}", self.theoretical_frame.len(), qnt_unique_index )));
         }
         if self
-            .frames
+            .theoretical_frame
             .iter()
             .find(|f| f.index == 0)
             .ok_or(format!(
@@ -670,19 +709,19 @@ impl ParsedShipData {
                 "Error check ParsedShipData: x of frame with last index must be equal to ship_length"
             )));
         }*/
-        if let Some(frame) = self.frames.iter().find(|f| f.x < 0.) {
+        if let Some(frame) = self.theoretical_frame.iter().find(|f| f.x < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: x of frame must be greater or equal to 0, {}",
                 frame
             )));
         }
-        if let Some(frame) = self.frames.iter().find(|f| f.delta_x < 0.) {
+        if let Some(frame) = self.theoretical_frame.iter().find(|f| f.delta_x < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: delta_x of frame must be greater or equal to 0, {}",
                 frame
             )));
         }
-        if let Some(frame) = self.frames.iter().find(|f| {
+        if let Some(frame) = self.theoretical_frame.iter().find(|f| {
             f.immersion_area
                 .iter()
                 .find(|v| v.0 < 0. || v.1 < 0.)
@@ -697,7 +736,7 @@ impl ParsedShipData {
                 index, value, 
             )));
         } 
-        if let Some((index, _)) = load_constant_data.iter().find(|(index, _)| self.frames.iter().find(|frame| &&frame.index == index ).is_none()) {
+        if let Some((index, _)) = load_constant_data.iter().find(|(index, _)| self.theoretical_frame.iter().find(|frame| frame.index == **index as i32 ).is_none()) {
             return Err(Error::Parameter(format!(
                 "Error check LoadConstantArray: index of load_constant must be contained in frames, index:{}", index)));
         }

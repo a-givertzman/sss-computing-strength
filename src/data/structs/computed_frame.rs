@@ -8,7 +8,7 @@ use super::DataArray;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ComputedFrameData {
     /// Индекс шпангоута
-    pub index: usize,
+    pub index: i32,
     /// Величина параметра
     pub value: f64,
 }
@@ -26,7 +26,7 @@ pub type ComputedFrameDataArray = DataArray<ComputedFrameData>;
 ///
 impl ComputedFrameDataArray {
     /// Преобразование и возвращает данные в виде вектора индекс/данные шпангоута
-    pub fn data(self) -> Vec<(usize, f64)> {
+    pub fn data(self) -> Vec<(i32, f64)> {
         self.data.into_iter().map(|v| {(v.index, v.value)}).collect()
     }
 }
