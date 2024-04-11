@@ -71,7 +71,7 @@ impl Windage {
         let m_vz_cs_dmin1 = moment.z();
 
         // Площадь и статический момент площади парусности палубного груза
-        let a_v_pg = self.loads_cargo.iter().map(|l| l.windage_area()).sum();
+        let a_v_pg = self.loads_cargo.iter().map(|l| l.windage_area(None)).sum();
         let shift_pg: Position = self.loads_cargo.iter().map(|l| l.windage_shift()).sum();
         let m_pg = Moment::from_pos(shift_pg.clone(), a_v_pg);
 

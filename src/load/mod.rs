@@ -11,7 +11,7 @@ pub use tank::Tank as Tank;
 /// Имеет массу и может вернуть какая его часть попадает в указанные границы
 pub trait ILoad {
     /// масса груза
-    fn mass(&self, bound: Option<Bound>) -> f64 {
+    fn mass(&self, _bound: Option<Bound>) -> f64 {
         0.
     }   
     /// Смещение центра масс груза относительно начала координат судна
@@ -27,7 +27,7 @@ pub trait ILoad {
         SurfaceMoment::new(0., 0.)
     }
     /// Площадь парусности
-    fn windage_area(&self) -> f64 {
+    fn windage_area(&self, _bound: Option<Bound>) -> f64 {
         0.
     }
     /// Смещение центра парусности
@@ -36,7 +36,7 @@ pub trait ILoad {
     }
     /// Статический момент площади парусности палубного груза, м^3
     fn windage_moment(&self) -> Moment {
-        Moment::from_pos(self.windage_shift(), self.windage_area())
+        Moment::from_pos(self.windage_shift(), self.windage_area(None))
     }
     /// Площадь горизонтальной поверхности, м^2
     fn horizontal_area(&self) -> f64 {

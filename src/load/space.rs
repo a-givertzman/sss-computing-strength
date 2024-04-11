@@ -59,8 +59,9 @@ impl LoadSpace {
         }
     }
 }
-
+///
 impl ILoad for LoadSpace {
+    ///
     fn mass(&self, bound: Option<Bound>) -> f64 {
         if let Some(bound) = bound {
             self.bound_x.part_ratio(&bound) * self.mass
@@ -70,26 +71,23 @@ impl ILoad for LoadSpace {
     }
     ///
     fn mass_shift(&self) -> Position {
-        if let Some(mass_shift) = self.mass_shift {
+        if let Some(mass_shift) = self.mass_shift.clone() {
             mass_shift
         } else {
             Position::new(self.bound_x.center(), self.bound_y.center(),self.bound_y.center(),)
         }
     }
-    /// Парусность
-    fn windage_area(&self) -> f64 {
-        if let Some(windage_area) = self.windage_area {
-            windage_area
-        } else {
-            self.bound_x.length()*self.bound_z.length()
-        }
+    /// Парусность попадающая в Bound или вся если Bound отсутствует
+    fn windage_area(&self, bound: Option<Bound>) -> f64 {
+        self.bound_x.part_ratio(&bound.unwrap_or(self.bound_x)) * 
+        self.windage_area.unwrap_or(self.bound_x.length()*self.bound_z.length())
     }
     /// Смещение центра парусности
     fn windage_shift(&self) -> Position {
-        if let Some(windage_shift) = self.windage_shift {
+        if let Some(windage_shift) = self.windage_shift.clone() {
             windage_shift
         } else {
-            Position::new(self.bound_x.center(), self.bound_y.center(),self.bound_y.center(),)
+            Position::new(self.bound_x.center(), self.bound_y.center(), self.bound_y.center(),)
         }
     }
     /// Площадь горизонтальной поверхности, м^2

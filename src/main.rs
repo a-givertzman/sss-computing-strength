@@ -16,7 +16,6 @@ mod stability;
 mod strength;
 mod tests;
 mod icing;
-mod icing_stab;
 
 fn main() -> Result<(), Error> {
     //    std::env::set_var("RUST_LOG", "info");
