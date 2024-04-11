@@ -5,7 +5,6 @@ pub use error::Error;
 use futures::executor::block_on;
 use log::info;
 use std::{collections::HashMap, rc::Rc, time::Instant};
-
 use crate::{load::*, mass::*, math::*, stability::*, strength::*, windage::Windage};
 
 mod data;
@@ -16,6 +15,8 @@ mod math;
 mod stability;
 mod strength;
 mod tests;
+mod icing;
+mod icing_stab;
 
 fn main() -> Result<(), Error> {
     //    std::env::set_var("RUST_LOG", "info");

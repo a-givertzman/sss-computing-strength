@@ -412,6 +412,16 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     );
     //  dbg!(&tank_inertia);
     log::info!("input_api_server tank_inertia read ok");
+    let icing_area = IcingAreaDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT name, area_type, bound_x1, bound_x2, bound_type FROM icing_area WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&icing_area);
+    log::info!("input_api_server icing_area read ok");
     log::info!("input_api_server read ok");
     ParsedShipData::parse(
         navigation_area_param,
@@ -443,6 +453,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         tank,
         tank_center,
         tank_inertia,
+        icing_area,
     )
 }
 /// Вспомогательная функция для выполнения запроса к апи-серверу

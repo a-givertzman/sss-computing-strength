@@ -45,3 +45,48 @@ impl LoadSpaceArray {
         map
     }
 }
+
+/// Груз
+#[derive(Debug)]
+pub struct ParsedLoadSpaceData {
+    /// Общая масса
+    pub mass: f64,
+    /// Границы груза
+    pub bound_x: (f64, f64),
+    pub bound_y: (f64, f64),
+    pub bound_z: (f64, f64),
+    /// Центр масс
+    pub mass_shift: Option<(f64, f64, f64)>,
+    /// Продольный момент свободной поверхности жидкости
+    pub m_f_s_y: f64,
+    /// Поперечный момент инерции свободной поверхности жидкости в цистерне
+    pub m_f_s_x: f64,    
+    /// Площадь парусности
+    pub windage_area: Option<f64>,
+    /// Центр парусности
+    pub windage_shift: Option<(f64, f64)>,
+}
+///
+impl std::fmt::Display for ParsedLoadSpaceData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "LoadSpaceData(mass:{} bound_x:({}, {}) bound_y:({}, {}) bound_z:({}, {}) mass_shift:({} {} {}) m_f_s_y:{}, m_f_s_x:{} windage_area:{} windage_shift:(x:{}, z:{}))",
+            self.mass,
+            self.bound_x.0,
+            self.bound_x.1,
+            self.bound_y.0,
+            self.bound_y.1,
+            self.bound_z.0,
+            self.bound_z.1,
+            self.mass_shift.unwrap_or((0.,0.,0.)).0,
+            self.mass_shift.unwrap_or((0.,0.,0.)).1,
+            self.mass_shift.unwrap_or((0.,0.,0.)).2,
+            self.m_f_s_y,
+            self.m_f_s_x,
+            self.windage_area.unwrap_or(0.),
+            self.windage_shift.unwrap_or((0.,0.)).0,
+            self.windage_shift.unwrap_or((0.,0.)).1,
+        )
+    }
+}
