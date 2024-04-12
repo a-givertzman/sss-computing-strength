@@ -51,7 +51,7 @@ impl LoadMass {
         bound_z: Option<(f64, f64)>,
     ) -> Self {
         assert!(mass_shift.is_some() || (bound_y.is_some() && bound_z.is_some()),
-        "LoadMass from mass_shift.is_some() || (bound_y.is_some() && bound_z.is_some()" );
+        "LoadMass from mass_shift.is_some() || (bound_y.is_some() && bound_z.is_some())" );
         Self::new (
             mass,
             mass_shift,

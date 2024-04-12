@@ -1,28 +1,30 @@
 #[cfg(test)]
 
 mod tests {
+    use crate::icing::{FakeIcingStab, IcingMass};
     use crate::math::Bounds;
     use crate::math::{
         bound::Bound, curve::Curve, inertia::inertia_shift::InertiaShift, pos_shift::PosShift,
         position::Position,
     };
-    use crate::{
-        load::*,
-        mass::*,
-    };
+
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
     static INIT: Once = Once::new();
 
-    unsafe impl Sync for Icing {} //for static
-    static mut ICING: Option<Icing> = None;
+    unsafe impl Sync for IcingMass {} //for static
+    static mut ICING: Option<IcingMass> = None;
 
     fn init_once() {
         INIT.call_once(|| {          
             unsafe {
-                ICING.replace(Icing::new(
+                ICING.replace(IcingMass::new(
+                    FakeIcingStab::new(0.3, 0.15),
+                    area_h,
+                    area_v: Vec<Area>,    
+                    loads_cargo,
                 ));
             }
         })

@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 use crate::{Area, Bound, ILoad};
-use super::{IcingStab};
+use super::IIcingStab;
 
 /// Учет обледенения судна, расчет массы льда. 
 /// Может быть без обледенения, частичным и полным.  
@@ -12,7 +12,7 @@ use super::{IcingStab};
 /// рассчитываются для осадки 𝑑𝑚𝑖𝑛 и распространяются на все случаи загрузки. 
 pub struct IcingMass {
     /// Тип обледенения
-    icing_stab: IcingStab,
+    icing_stab: Box<dyn IIcingStab>,
     /// Площадь горизонтальных поверхностей
     area_h: Vec<Area>,
     /// Площадь поверхности парусности
@@ -28,7 +28,7 @@ impl IcingMass {
     /// * icing_area_v - Площадь поверхности парусности    
     /// * loads_cargo - Грузы судна
     pub fn new(
-        icing_stab: IcingStab,
+        icing_stab: Box<dyn IIcingStab>,
         area_h: Vec<Area>,
         area_v: Vec<Area>,        
         loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
@@ -40,33 +40,41 @@ impl IcingMass {
             loads_cargo,
         }
     }
+}
+///
+impl IIcingMass for IcingMass {
     /// Суммарная масса льда попадающая в Bound или вся если Bound отсутствует
-    pub fn mass(&self, bound: Option<Bound>) -> f64 {
+    fn mass(&self, bound: Option<Bound>) -> f64 {
         self.area_h.iter().map(|v| v.value(bound) ).sum::<f64>() * self.icing_stab.mass_h() + 
         self.area_v.iter().map(|v| v.value(bound) ).sum::<f64>() * self.icing_stab.mass_v() +
         self.loads_cargo.iter().map(|v| v.windage_area(bound) ).sum::<f64>() * self.icing_stab.mass_h()
     }
 }
-///
-impl IIcingMass for IcingMass {
-}
 #[doc(hidden)]
 pub trait IIcingMass {
+    /// Суммарная масса льда попадающая в Bound или вся если Bound отсутствует
+    fn mass(&self, bound: Option<Bound>) -> f64;
 }
 // заглушка для тестирования
 #[doc(hidden)]
 pub struct FakeIcingMass {
-
+    mass: f64,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeIcingMass {
     pub fn new(
-
+        mass: f64,
     ) -> Self {
         Self {
-
+            mass
         }
+    }
+}
+#[doc(hidden)]
+impl IIcingMass for FakeIcingMass {
+    fn mass(&self, bound: Option<Bound>) -> f64 {
+        self.mass
     }
 }
 

@@ -190,19 +190,19 @@ fn main() -> Result<(), Error> {
     let mass: Rc<dyn IMass> = Rc::new(Mass::new(
         loads_const,
         const_shift,
-        IcingMass::new(
-            IcingStab::new(
+        Rc::new(IcingMass::new(
+            Box::new(IcingStab::new(
                 data.icing_stab.clone(),
                 data.icing_m_timber,
                 data.icing_m_v_full,
                 data.icing_m_v_half,
                 data.icing_m_h_full,
                 data.icing_m_h_half,
-            ),
+            )),
             icing_area_h,
             icing_area_v,
             Rc::clone(&loads_cargo),
-        ),
+        )),
         Rc::clone(&loads_cargo),
         Rc::clone(&bounds),
     ));

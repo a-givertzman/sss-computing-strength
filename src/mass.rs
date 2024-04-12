@@ -1,18 +1,19 @@
 //! Нагрузка на корпус судна
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{icing::IcingMass, math::*};
+use crate::{icing::IIcingMass, math::*};
 
 use super::load::ILoad;
 
 /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+#[derive(Clone)]
 pub struct Mass {
     /// Постоянная масса судна распределенная по шпациям
     loads_const: Vec<Rc<Box<dyn ILoad>>>,
     /// Смещение постоянный массы судна
     shift_const: Position,
     /// Учет обледенения судна
-    icing_mass: IcingMass,
+    icing_mass: Rc<dyn IIcingMass>,
     /// Все грузы судна
     loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
     /// Вектор разбиения на отрезки для эпюров
@@ -44,7 +45,7 @@ impl Mass {
     pub fn new(
         loads_const: Vec<Rc<Box<dyn ILoad>>>,
         shift_const: Position,
-        icing_mass: IcingMass,
+        icing_mass: Rc<dyn IIcingMass>,
         loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
         bounds: Rc<Bounds>,
     ) -> Self {
