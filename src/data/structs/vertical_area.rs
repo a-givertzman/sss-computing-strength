@@ -7,11 +7,9 @@ use super::DataArray;
 
 /// Площадь обледенения
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct AreaData {
+pub struct VerticalAreaData {
     /// Название 
     pub name: String, 
-    /// Тип площади: 'v'-вертикальная, 'h'-горизонтальная 
-    pub area_type: String,
     /// Значение площади, м^2
     pub area_value: f64,
     /// Смещение центра по оси Х
@@ -24,27 +22,27 @@ pub struct AreaData {
     pub bound_type: String,
 }
 ///
-impl std::fmt::Display for AreaData {
+impl std::fmt::Display for VerticalAreaData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "IcingAreaData(area_type:{}, area_value:{}, shift_x:{:?} bound_x1:{}, bound_x2:{}, bound_type:{})",
-            self.area_type, self.area_value, self.shift_x, self.bound_x1, self.bound_x2, self.bound_type,
+            "IcingAreaData(area_value:{}, shift_x:{:?} bound_x1:{}, bound_x2:{}, bound_type:{})",
+            self.area_value, self.shift_x, self.bound_x1, self.bound_x2, self.bound_type,
         )
     }
 }
 ///
-pub type AreaDataArray = DataArray<AreaData>;
+pub type VerticalAreaDataArray = DataArray<VerticalAreaData>;
 ///
-impl AreaDataArray {
+impl VerticalAreaDataArray {
     /// Преобразование данных в массив
-    pub fn data(self) -> Vec<AreaData> {
+    pub fn data(self) -> Vec<VerticalAreaData> {
         self.data
     }  
 }
 /// Площадь обледенения
 #[derive(Debug)]
-pub struct ParsedArea {
+pub struct ParsedVerticalArea {
     /// Значение площади, м^2
     pub value: f64,
     /// Смещение центра по оси Х

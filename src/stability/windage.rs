@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use crate::{ILoad, Moment, Position};
+use crate::{icing::IIcingStab, ILoad, Moment, Position};
 
 /// Парусность судна, площадь и положение 
 /// центра относительно миделя и ОП
@@ -11,7 +11,7 @@ pub struct Windage {
     /// Все грузы судна
     loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
     /// Тип обледенения для расчета парусности
-    icing_stab: String,
+    icing_stab: Rc<dyn IIcingStab>,
     /// Площадь парусности судна для минимальной осадки
     area: f64,
     /// Смещение центра парусности судна для минимальной осадки
@@ -39,7 +39,7 @@ impl Windage {
     /// * volume_shift - Отстояние по вертикали центра площади проекции подводной части корпуса
     pub fn new(
         loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
-        icing_stab: String,
+        icing_stab: Rc<dyn IIcingStab>,
         area: f64,
         shift: Position,
         delta_area: f64,
@@ -80,15 +80,11 @@ impl Windage {
         let m_vx_cs_dmin = m_vx_cs_dmin1 + m_pg.x();
         let m_vz_cs_dmin = m_vz_cs_dmin1 + m_pg.z();    
 
-        // частичное/полное обледенение
-        let (a_v_ds_ice, m_vx_ds_ice, m_vz_ds_ice) = if self.icing_stab == "full" {
-            (0.1*a_v_cs_dmin, 0., 0.2*m_vz_cs_dmin)
-        } else if self.icing_stab == "half" {
-            (0.075*a_v_cs_dmin, 0., 0.15*m_vz_cs_dmin)
-        } else { // "none"
-            (0., 0., 0.)
-        };
-
+        // учет обледенения
+        let a_v_ds_ice = self.icing_stab.coef_v_area() * a_v_cs_dmin;
+        let m_vx_ds_ice = 0.;
+        let m_vz_ds_ice = self.icing_stab.coef_v_moment() * m_vz_cs_dmin;
+    
         // Парусность несплошных поверхностей
         let a_v_ds = 0.05*a_v_cs_dmin;
         let m_vx_ds = 0.;

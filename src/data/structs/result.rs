@@ -70,6 +70,20 @@ pub struct ParsedShipData {
     pub windage_shift_z: f64,
     /// Минимальная осадка, м
     pub draught_min: f64,
+    /// Коэффициент увеличения площади парусности несплощной
+    /// поверхности при учете полного обледенения
+    pub icing_coef_v_area_full: f64,
+    /// Коэффициент увеличения площади парусности несплощной
+    /// поверхности при учете частичного обледенения
+    pub icing_coef_v_area_half: f64,
+    /// Коэффициент увеличения статического момента
+    /// площади парусности несплощной поверхности
+    /// при учете полного обледенения
+    pub icing_coef_v_moment_full: f64,
+    /// Коэффициент увеличения статического момента
+    /// площади парусности несплощной поверхности
+    /// при учете частичного обледенения
+    pub icing_coef_v_moment_half: f64,
     /// Кривая разницы в площадях парусности для минимальной осадки, м²
     pub delta_windage_area: Vec<(f64, f64)>,
     /// Кривая разницы в статических моментах относительно миделя, м
@@ -113,9 +127,9 @@ pub struct ParsedShipData {
     /// Нагрузка судна, жидкие грузы
     pub tanks: Vec<ParsedTankData>,
     /// Площадь горизонтальных поверхностей
-    pub area_h: Vec<ParsedArea>,
+    pub area_h: Vec<ParsedHorizontalArea>,
     /// Площадь поверхности парусности
-    pub area_v: Vec<ParsedArea>,
+    pub area_v: Vec<ParsedVerticalArea>,
 }
 ///
 impl ParsedShipData {
@@ -151,7 +165,8 @@ impl ParsedShipData {
         tank_data: TankDataArray,
         tank_centetr_volume: CenterVolumeData,
         tanks_free_moment_inertia: FreeMomentInertiaData,
-        area_src: AreaDataArray,
+        area_h_src: HorizontalAreaDataArray,
+        area_v_src: VerticalAreaDataArray,
     ) -> Result<Self, Error> {
         log::info!("result parse begin");
         let ship_data = ship_data.data();
@@ -331,9 +346,7 @@ impl ParsedShipData {
             });
         }
 
-        let mut area_h = Vec::new();
-        let mut area_v = Vec::new();
-        for src_data in area_src.data() {
+        let area_h = area_h_src.data().iter().map(|src_data| {
             // Два варианта задания распределения по х - координата или физический шпангоут.
             // Если тип шпангоут, то находим и подставляем его координату
             // Координата шпангоута задана относительно кормы, считаем ее относительно центра
@@ -349,21 +362,40 @@ impl ParsedShipData {
                 }) 
             };
 
-            let parsed = ParsedArea {
+            Ok(ParsedHorizontalArea {
+                value: src_data.area_value,
+                bound_x: ( 
+                    bound_x(&src_data.bound_x1, &src_data.bound_type)?, 
+                    bound_x(&src_data.bound_x2, &src_data.bound_type)?, 
+                ),
+            }) 
+        }).collect::<Result<Vec<ParsedHorizontalArea>, Error>>()?;
+
+        let area_v = area_v_src.data().iter().map(|src_data| {
+            // Два варианта задания распределения по х - координата или физический шпангоут.
+            // Если тип шпангоут, то находим и подставляем его координату
+            // Координата шпангоута задана относительно кормы, считаем ее относительно центра
+            let bound_x = |value: &f64, value_type: &str| -> Result<f64, Error> { 
+                Ok(if value_type == "frame" {
+                    *physical_frame.get(&(*value as i32))
+                        .ok_or(format!(
+                            "load_spaces parse error: no physical_frame for area:{}",
+                            src_data
+                        ))? - ship_length/2.
+                } else {
+                    *value 
+                }) 
+            };
+
+            Ok(ParsedVerticalArea {
                 value: src_data.area_value,
                 shift_x: src_data.shift_x,
                 bound_x: ( 
                     bound_x(&src_data.bound_x1, &src_data.bound_type)?, 
                     bound_x(&src_data.bound_x2, &src_data.bound_type)?, 
                 ),
-            };
-
-            if src_data.area_type == "h" {
-                area_h.push(parsed);
-            } else {
-                area_v.push(parsed);
-            }       
-        }
+            }) 
+        }).collect::<Result<Vec<ParsedVerticalArea>, Error>>()?;
 
         log::info!("result parse ok");
         log::info!("result check begin");
@@ -448,6 +480,22 @@ impl ParsedShipData {
             ))?.0.parse::<f64>()?,
             icing_m_h_half: ship_data.get("icing_m_h_half").ok_or(format!(
                 "ParsedShipData parse error: no icing_m_h_half for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_coef_v_area_full: ship_data.get("icing_coef_v_area_full").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_area_full for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_coef_v_area_half: ship_data.get("icing_coef_v_area_half").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_area_half for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_coef_v_moment_full: ship_data.get("icing_coef_v_moment_full").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_moment_full for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_coef_v_moment_half: ship_data.get("icing_coef_v_moment_half").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_moment_half for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
             bounds: bounds.data(),
@@ -587,6 +635,30 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: icing_m_h_full {} <= icing_m_h_half {}",
                 self.icing_m_h_full, self.icing_m_h_half
+            )));
+        }
+        if self.icing_coef_v_area_full <= 0. || self.icing_coef_v_area_full > 1. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: 0 <= icing_coef_v_area_full < 1 {}",
+                self.icing_coef_v_area_full
+            )));
+        }
+        if self.icing_coef_v_area_half <= 0. || self.icing_coef_v_area_half > 1. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: 0 <= icing_coef_v_area_half < 1 {}",
+                self.icing_coef_v_area_half
+            )));
+        }
+        if self.icing_coef_v_moment_full <= 0. || self.icing_coef_v_moment_full > 1. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: 0 <= icing_coef_v_moment_full < 1 {}",
+                self.icing_coef_v_moment_full
+            )));
+        }
+        if self.icing_coef_v_moment_half <= 0. || self.icing_coef_v_moment_half > 1. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: 0 <= icing_coef_v_moment_half < 1 {}",
+                self.icing_coef_v_moment_half
             )));
         }
         if self.bounds.len() <= 1 {

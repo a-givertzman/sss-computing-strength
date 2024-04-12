@@ -1,7 +1,7 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
 use crate::{
-    icing::{IcingMass, IcingStab},
+    icing::{IIcingStab, IcingMass, IcingStab},
     load::*,
     mass::*,
     math::*,
@@ -179,26 +179,32 @@ fn main() -> Result<(), Error> {
     let icing_area_h = data
         .area_h
         .iter()
-        .map(|v| Area::new(v.value, v.shift_x, Bound::from(v.bound_x)))
+        .map(|v| Area::new(v.value, None, Bound::from(v.bound_x)))
         .collect();
     let icing_area_v = data
         .area_v
         .iter()
         .map(|v| Area::new(v.value, v.shift_x, Bound::from(v.bound_x)))
         .collect();
+
+    let icing_stab: Rc<dyn IIcingStab> = Rc::new(IcingStab::new(
+        data.icing_stab.clone(),
+        data.icing_m_timber,
+        data.icing_m_v_full,
+        data.icing_m_v_half,
+        data.icing_m_h_full,
+        data.icing_m_h_half,
+        data.icing_coef_v_area_full,
+        data.icing_coef_v_area_half,
+        data.icing_coef_v_moment_full,
+        data.icing_coef_v_moment_half,
+    ));
     // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     let mass: Rc<dyn IMass> = Rc::new(Mass::new(
         loads_const,
         const_shift,
         Rc::new(IcingMass::new(
-            Box::new(IcingStab::new(
-                data.icing_stab.clone(),
-                data.icing_m_timber,
-                data.icing_m_v_full,
-                data.icing_m_v_half,
-                data.icing_m_h_full,
-                data.icing_m_h_half,
-            )),
+            Rc::clone(&icing_stab),
             icing_area_h,
             icing_area_v,
             Rc::clone(&loads_cargo),
@@ -330,7 +336,7 @@ fn main() -> Result<(), Error> {
         m,
         Box::new(Windage::new(
             Rc::clone(&loads_cargo),
-            data.icing_stab,
+            Rc::clone(&icing_stab),
             data.windage_area,
             Position::new(data.windage_shift_x, 0., data.windage_shift_z),
             Curve::new_linear(&data.delta_windage_area).value(mean_draught),

@@ -12,7 +12,7 @@ use super::IIcingStab;
 /// рассчитываются для осадки 𝑑𝑚𝑖𝑛 и распространяются на все случаи загрузки. 
 pub struct IcingMass {
     /// Тип обледенения
-    icing_stab: Box<dyn IIcingStab>,
+    icing_stab: Rc<dyn IIcingStab>,
     /// Площадь горизонтальных поверхностей
     area_h: Vec<Area>,
     /// Площадь поверхности парусности
@@ -28,7 +28,7 @@ impl IcingMass {
     /// * icing_area_v - Площадь поверхности парусности    
     /// * loads_cargo - Грузы судна
     pub fn new(
-        icing_stab: Box<dyn IIcingStab>,
+        icing_stab: Rc<dyn IIcingStab>,
         area_h: Vec<Area>,
         area_v: Vec<Area>,        
         loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
@@ -73,7 +73,7 @@ impl FakeIcingMass {
 }
 #[doc(hidden)]
 impl IIcingMass for FakeIcingMass {
-    fn mass(&self, bound: Option<Bound>) -> f64 {
+    fn mass(&self, _: Option<Bound>) -> f64 {
         self.mass
     }
 }
