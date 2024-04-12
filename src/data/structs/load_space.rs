@@ -49,18 +49,20 @@ impl LoadSpaceArray {
 /// Груз
 #[derive(Debug)]
 pub struct ParsedLoadSpaceData {
+    /// Название 
+    pub name: String, 
     /// Общая масса
     pub mass: f64,
     /// Границы груза
     pub bound_x: (f64, f64),
-    pub bound_y: (f64, f64),
-    pub bound_z: (f64, f64),
+    pub bound_y: Option<(f64, f64)>,
+    pub bound_z: Option<(f64, f64)>,
     /// Центр масс
     pub mass_shift: Option<(f64, f64, f64)>,
     /// Продольный момент свободной поверхности жидкости
-    pub m_f_s_y: f64,
+    pub m_f_s_y: Option<f64>,
     /// Поперечный момент инерции свободной поверхности жидкости в цистерне
-    pub m_f_s_x: f64,    
+    pub m_f_s_x: Option<f64>,    
     /// Площадь парусности
     pub windage_area: Option<f64>,
     /// Центр парусности
@@ -71,14 +73,12 @@ impl std::fmt::Display for ParsedLoadSpaceData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadSpaceData(mass:{} bound_x:({}, {}) bound_y:({}, {}) bound_z:({}, {}) mass_shift:({} {} {}) m_f_s_y:{}, m_f_s_x:{} windage_area:{} windage_shift:(x:{}, z:{}))",
+            "LoadSpaceData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} mass_shift:({} {} {}) m_f_s_y:{:?}, m_f_s_x:{:?} windage_area:{} windage_shift:(x:{}, z:{}))",
+            self.name,
             self.mass,
-            self.bound_x.0,
-            self.bound_x.1,
-            self.bound_y.0,
-            self.bound_y.1,
-            self.bound_z.0,
-            self.bound_z.1,
+            self.bound_x,
+            self.bound_y,
+            self.bound_z,
             self.mass_shift.unwrap_or((0.,0.,0.)).0,
             self.mass_shift.unwrap_or((0.,0.,0.)).1,
             self.mass_shift.unwrap_or((0.,0.,0.)).2,

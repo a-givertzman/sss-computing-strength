@@ -13,33 +13,29 @@ pub struct IcingMoment {
     icing_stab: IcingStab,
     /// Все грузы судна
     loads_cargo: Vec<Rc<Box<dyn ILoad>>>,
-    /// Площадь обледенения горизонтальных поверхностей
-    icing_area_h: Vec<ParsedIcingArea>,
-    /// Площадь обледенения поверхности парусности
-    icing_area_v: Vec<ParsedIcingArea>,
+    /// Площадь горизонтальных поверхностей
+    area_h: Vec<ParsedIcingArea>,
+    /// Площадь поверхности парусности
+    area_v: Vec<ParsedIcingArea>,
 }
 ///
 impl IcingMoment {
     /// Основной конструктор
     /// * icing_stab - Тип обледенения
     /// * loads_cargo - Грузы судна
-    /// * icing_area_h - Площадь обледенения горизонтальных поверхностей
-    /// * icing_area_v - Площадь обледенения поверхности парусности
+    /// * area_h - Площадь горизонтальных поверхностей
+    /// * area_v - Площадь поверхности парусности
     pub fn new(
-        /// Тип обледенения
         icing_stab: IcingStab,
-        /// Все грузы судна
         loads_cargo: Vec<Rc<Box<dyn ILoad>>>,
-        /// Площадь обледенения горизонтальных поверхностей
-        icing_area_h: Vec<ParsedIcingArea>,
-        /// Площадь обледенения поверхности парусности
-        icing_area_v: Vec<ParsedIcingArea>,
+        area_h: Vec<ParsedIcingArea>,
+        area_v: Vec<ParsedIcingArea>,
     ) -> Self {
         Self{
             icing_stab, 
             loads_cargo,
-            icing_area_h,
-            icing_area_v,
+            area_h,
+            area_v,
         }
     }
     /// Суммарная масса льда

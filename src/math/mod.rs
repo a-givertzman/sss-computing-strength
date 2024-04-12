@@ -10,6 +10,7 @@ pub mod inertia;
 pub mod bounds;
 pub mod delta_m_h;
 pub mod curve2d;
+pub mod area;
 
 #[allow(unused)]
 pub use vec::integral_sum::IntegralSum as IntegralSum;
@@ -28,3 +29,4 @@ pub use pos_shift::*;
 pub use inertia::*;
 pub use bounds::*;
 pub use delta_m_h::*;
+pub use area::*;

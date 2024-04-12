@@ -412,11 +412,11 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     );
     //  dbg!(&tank_inertia);
     log::info!("input_api_server tank_inertia read ok");
-    let icing_area = IcingAreaDataArray::parse(&fetch_query(
+    let icing_area = AreaDataArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!(
-            "SELECT name, area_type, bound_x1, bound_x2, bound_type FROM icing_area WHERE ship_id={};",
+            "SELECT name, area_type, area_value, bound_x1, bound_x2, bound_type FROM icing_area WHERE ship_id={};",
             ship_id
         ),
     )?)?;

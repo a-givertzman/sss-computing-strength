@@ -1,11 +1,17 @@
 //! Нагрузка на судно: постоянный и переменный груз
 mod tank;
 mod space;
+mod desk;
+mod mass;
 
 use crate::math::*;
 
+pub use tank::*;
+pub use desk::*;
+pub use mass::*;
+
 pub use space::LoadSpace as LoadSpace;
-pub use tank::Tank as Tank;
+
 
 /// Абстрактный груз: контейнер, трюм или бак.
 /// Имеет массу и может вернуть какая его часть попадает в указанные границы
