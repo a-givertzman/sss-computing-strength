@@ -1,15 +1,22 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
+use crate::{
+    icing::{IcingMass, IcingStab},
+    load::*,
+    mass::*,
+    math::*,
+    stability::*,
+    strength::*,
+    windage::Windage,
+};
 use data::input_api_server::*;
 pub use error::Error;
-use futures::executor::block_on;
 use log::info;
 use std::{collections::HashMap, rc::Rc, time::Instant};
 
-use crate::{load::*, mass::*, math::*, stability::*, strength::*, windage::Windage};
-
 mod data;
 mod error;
+mod icing;
 mod load;
 mod mass;
 mod math;
@@ -79,7 +86,12 @@ fn main() -> Result<(), Error> {
         .iter()
         .map(|v| {
             Frame::new(
-                v.x - data.theoretical_frame.last().expect("frames last error: no frame").x / 2.,
+                v.x - data
+                    .theoretical_frame
+                    .last()
+                    .expect("frames last error: no frame")
+                    .x
+                    / 2.,
                 Curve::new_linear(&v.immersion_area),
             )
         })
@@ -104,15 +116,19 @@ fn main() -> Result<(), Error> {
         let bound = Bound::new(frames[index].shift_x(), frames[index + 1].shift_x());
         if let Some(mass) = data.load_constant.data().get(&index) {
             loads_const.push(Rc::new(Box::new(LoadSpace::new(
-                *mass,
-                Some(Position::new(bound.center(), const_shift.y(), const_shift.z())),
-                bound,
-                Bound::new(0., 0.),
-                Bound::new(0., 0.),
+                Some(LoadMass::new(
+                    *mass,
+                    Some(Position::new(
+                        bound.center(),
+                        const_shift.y(),
+                        const_shift.z(),
+                    )),
+                    bound,
+                    None,
+                    None,
+                )),
                 None,
                 None,
-                0.,
-                0.,
             ))));
         }
     }
@@ -120,24 +136,20 @@ fn main() -> Result<(), Error> {
     let mut loads_cargo: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
     data.load_spaces.iter().for_each(|v| {
         if v.mass != 0. {
-            loads_cargo.push(Rc::new(Box::new(LoadSpace::new(
+            loads_cargo.push(Rc::new(Box::new(LoadSpace::from(
                 v.mass,
                 if let Some(mass_shift) = v.mass_shift {
                     Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
-                } else { 
-                    None
-                },          
-                Bound::new(v.bound_x.0, v.bound_x.1),
-                Bound::new(v.bound_y.0, v.bound_y.1),
-                Bound::new(v.bound_z.0, v.bound_z.1),
-                if let Some(windage_area) = v.windage_area {
-                    Some(windage_area)
-                } else { 
+                } else {
                     None
                 },
+                v.bound_x,
+                v.bound_y,
+                v.bound_z,
+                v.windage_area,
                 if let Some(windage_shift) = v.windage_shift {
                     Some(Position::new(windage_shift.0, 0., windage_shift.1))
-                } else { 
+                } else {
                     None
                 },
                 v.m_f_s_y,
@@ -145,49 +157,72 @@ fn main() -> Result<(), Error> {
             ))));
         }
     });
-
-    // Цистерны
-    data.tanks.iter().for_each(|v| {
-        loads_cargo.push(Rc::new(Box::new(Tank::new(
-            v.density,
-            v.volume,
-            Bound::new(v.bound.0, v.bound.1),
-            PosShift::new(
-                Curve::new_linear(&v.center_x),
-                Curve::new_linear(&v.center_y),
-                Curve::new_linear(&v.center_z),
-            ),
-            InertiaShift::new(
-                Curve::new_linear(&v.free_surf_inertia_x),
-                Curve::new_linear(&v.free_surf_inertia_y),
-            ),
-        ))));
-    });
-
+    let loads_cargo = Rc::new(loads_cargo);
+    /*  // Цистерны
+        data.tanks.iter().for_each(|v| {
+            loads_cargo.push(Rc::new(Box::new(Tank::new(
+                v.density,
+                v.volume,
+                Bound::new(v.bound.0, v.bound.1),
+                PosShift::new(
+                    Curve::new_linear(&v.center_x),
+                    Curve::new_linear(&v.center_y),
+                    Curve::new_linear(&v.center_z),
+                ),
+                InertiaShift::new(
+                    Curve::new_linear(&v.free_surf_inertia_x),
+                    Curve::new_linear(&v.free_surf_inertia_y),
+                ),
+            ))));
+        });
+    */
+    let icing_area_h = data
+        .area_h
+        .iter()
+        .map(|v| Area::new(v.value, v.shift_x, Bound::from(v.bound_x)))
+        .collect();
+    let icing_area_v = data
+        .area_v
+        .iter()
+        .map(|v| Area::new(v.value, v.shift_x, Bound::from(v.bound_x)))
+        .collect();
     // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     let mass: Rc<dyn IMass> = Rc::new(Mass::new(
         loads_const,
         const_shift,
-        loads_cargo.clone(),
+        Rc::new(IcingMass::new(
+            Box::new(IcingStab::new(
+                data.icing_stab.clone(),
+                data.icing_m_timber,
+                data.icing_m_v_full,
+                data.icing_m_v_half,
+                data.icing_m_h_full,
+                data.icing_m_h_half,
+            )),
+            icing_area_h,
+            icing_area_v,
+            Rc::clone(&loads_cargo),
+        )),
+        Rc::clone(&loads_cargo),
         Rc::clone(&bounds),
     ));
     // Объемное водоизмещение (1)
- //   let volume = mass.sum() / data.water_density;
+    let volume = mass.sum() / data.water_density;
     // Отстояние центра величины погруженной части судна
     let center_draught_shift = PosShift::new(
         Curve::new_linear(&data.center_draught_shift_x),
         Curve::new_linear(&data.center_draught_shift_y),
         Curve::new_linear(&data.center_draught_shift_z),
     )
-    .value(data.volume);
+    .value(volume);
     // Продольный метацентрические радиус
-    let rad_long = Curve::new_linear(&data.rad_long).value(data.volume);
+    let rad_long = Curve::new_linear(&data.rad_long).value(volume);
     // Поперечный метацентрические радиус
-    let rad_cross = Curve::new_linear(&data.rad_cross).value(data.volume);
+    let rad_cross = Curve::new_linear(&data.rad_cross).value(volume);
     // Отстояние центра тяжести ватерлинии по длине от миделя
-    let center_waterline_shift = Curve::new_linear(&data.center_waterline).value(data.volume);
+    let center_waterline_shift = Curve::new_linear(&data.center_waterline).value(volume);
     // Средняя осадка
-    let mean_draught = Curve::new_linear(&data.mean_draught).value(data.volume);
+    let mean_draught = Curve::new_linear(&data.mean_draught).value(volume);
 
     // Для расчета прочности дифферент находится подбором
     // как условие для схождения изгибающего момента в 0
@@ -200,14 +235,32 @@ fn main() -> Result<(), Error> {
         Rc::new(Displacement::new(frames)),
         Rc::clone(&bounds),
     );
-    assert!(computer.shear_force().len() == data.bounds.len(), "shear_force.len {} == frame.len {}", computer.shear_force().len(), data.bounds.len()); 
-    assert!(computer.bending_moment().len() == data.bounds.len(), "bending_moment.len {} == frame.len {}", computer.bending_moment().len(), data.bounds.len()); 
-        println!("shear_force:");
-        computer.shear_force().iter().for_each(|v| { println!("{v};") });
-        println!("bending_moment:");
-        computer.bending_moment().iter().for_each(|v| { println!("{v};") });
-    
-    send_data("sss-computing", 1, &computer.shear_force(), &computer.bending_moment())?;
+    assert!(
+        computer.shear_force().len() == data.bounds.len(),
+        "shear_force.len {} == frame.len {}",
+        computer.shear_force().len(),
+        data.bounds.len()
+    );
+    assert!(
+        computer.bending_moment().len() == data.bounds.len(),
+        "bending_moment.len {} == frame.len {}",
+        computer.bending_moment().len(),
+        data.bounds.len()
+    );
+    println!("shear_force:");
+    computer.shear_force().iter().for_each(|v| println!("{v};"));
+    println!("bending_moment:");
+    computer
+        .bending_moment()
+        .iter()
+        .for_each(|v| println!("{v};"));
+
+    send_data(
+        "sss-computing",
+        1,
+        &computer.shear_force(),
+        &computer.bending_moment(),
+    )?;
 
     let flooding_angle = Curve::new_linear(&data.flooding_angle).value(mean_draught);
 
@@ -219,11 +272,11 @@ fn main() -> Result<(), Error> {
     ));
 
     // Длинна по ватерлинии при текущей осадке
-    let length = Curve::new_linear(&data.waterline_length).value(mean_draught); 
+    let length = Curve::new_linear(&data.waterline_length).value(mean_draught);
     // Ширина по ватерлинии при текущей осадке
-    let breadth = Curve::new_linear(&data.waterline_breadth).value(mean_draught); 
+    let breadth = Curve::new_linear(&data.waterline_breadth).value(mean_draught);
     // Отстояние по вертикали центра площади проекции подводной части корпуса
-    let volume_shift = Curve::new_linear(&data.volume_shift).value(mean_draught);  
+    let volume_shift = Curve::new_linear(&data.volume_shift).value(mean_draught);
 
     // Проверяем есть ли пантокарены в отрицательной области углов
     // Если нет то считаем что судно симметорично и зеркально
@@ -256,15 +309,15 @@ fn main() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
     );
     dbg!(stability_arm.dso().len());
-/*    stability_arm
-        .dso()
-        .iter()
-        .for_each(|(k, v)| println!("{k} {v};"));
-    stability_arm
-        .ddo()
-        .iter()
-        .for_each(|(k, v)| println!("{k} {v};"));
-*/
+    /*    stability_arm
+            .dso()
+            .iter()
+            .for_each(|(k, v)| println!("{k} {v};"));
+        stability_arm
+            .ddo()
+            .iter()
+            .for_each(|(k, v)| println!("{k} {v};"));
+    */
     // Предполагаемое давление ветра +
     // Добавка на порывистость ветра
     let (p_v, m) = data
@@ -276,21 +329,17 @@ fn main() -> Result<(), Error> {
         p_v,
         m,
         Box::new(Windage::new(
-            loads_cargo,
+            Rc::clone(&loads_cargo),
             data.icing_stab,
             data.windage_area,
-             Position::new(
-                data.windage_shift_x,
-                0.,
-                data.windage_shift_z,
-            ),
+            Position::new(data.windage_shift_x, 0., data.windage_shift_z),
             Curve::new_linear(&data.delta_windage_area).value(mean_draught),
             Moment::new(
-                Curve::new_linear(&data.delta_windage_moment_x).value(mean_draught), 
+                Curve::new_linear(&data.delta_windage_moment_x).value(mean_draught),
                 0.,
                 Curve::new_linear(&data.delta_windage_moment_z).value(mean_draught),
             ),
-            volume_shift,     
+            volume_shift,
         )),
         gravity_g,
         Rc::clone(&mass),
@@ -299,8 +348,8 @@ fn main() -> Result<(), Error> {
     let roll_amplitude = RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&mass),
-        data.volume,      // Объемное водоизмещение (1)
-        length, // длинна по ватерлинии при текущей осадке
+        volume, // Объемное водоизмещение (1)
+        length,      // длинна по ватерлинии при текущей осадке
         breadth,
         mean_draught,
         Curve::new_linear(&data.coefficient_k.data()),
@@ -310,7 +359,7 @@ fn main() -> Result<(), Error> {
         RollingPeriod::new(
             length,
             breadth,
-            mean_draught,            
+            mean_draught,
             Rc::clone(&metacentric_height),
         ),
     );

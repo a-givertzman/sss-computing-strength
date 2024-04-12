@@ -9,7 +9,7 @@ use crate::{ILoad, Moment, Position};
 #[derive(Clone)]
 pub struct Windage {
     /// Все грузы судна
-    loads_cargo: Vec<Rc<Box<dyn ILoad>>>,
+    loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
     /// Тип обледенения для расчета парусности
     icing_stab: String,
     /// Площадь парусности судна для минимальной осадки
@@ -38,7 +38,7 @@ impl Windage {
     /// * delta_moment - Разница в статических моментах относительно миделя (x) и ОП (z) 
     /// * volume_shift - Отстояние по вертикали центра площади проекции подводной части корпуса
     pub fn new(
-        loads_cargo: Vec<Rc<Box<dyn ILoad>>>,
+        loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
         icing_stab: String,
         area: f64,
         shift: Position,
@@ -71,7 +71,7 @@ impl Windage {
         let m_vz_cs_dmin1 = moment.z();
 
         // Площадь и статический момент площади парусности палубного груза
-        let a_v_pg = self.loads_cargo.iter().map(|l| l.windage_area()).sum();
+        let a_v_pg = self.loads_cargo.iter().map(|l| l.windage_area(None)).sum();
         let shift_pg: Position = self.loads_cargo.iter().map(|l| l.windage_shift()).sum();
         let m_pg = Moment::from_pos(shift_pg.clone(), a_v_pg);
 

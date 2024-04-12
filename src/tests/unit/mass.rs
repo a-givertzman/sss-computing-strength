@@ -1,15 +1,13 @@
 #[cfg(test)]
 
 mod tests {
+    use crate::icing::FakeIcingMass;
     use crate::math::Bounds;
     use crate::math::{
         bound::Bound, curve::Curve, inertia::inertia_shift::InertiaShift, pos_shift::PosShift,
         position::Position,
     };
-    use crate::{
-        load::*,
-        mass::*,
-    };
+    use crate::{load::*, mass::*};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
@@ -33,43 +31,48 @@ mod tests {
             );
 
             let loads_const: Vec<Rc<Box<dyn ILoad>>> = vec![
-                Rc::new(Box::new(LoadSpace::new(
+                Rc::new(Box::new(LoadSpace::from(
                     10.,
                     Some(Position::new(-5., 0., 0.)),
-                    Bound::new(-10., 0.),
-                    Bound::new(0., 0.),
-                    Bound::new(0., 0.),
+                    (-10., 0.),
                     None,
-                    None, 
-                    0.,
-                    0.,                    
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
                 ))),
-                Rc::new(Box::new(LoadSpace::new(
+                Rc::new(Box::new(LoadSpace::from(
                     20.,
                     Some(Position::new(5., 0., 0.)),
-                    Bound::new(0., 10.),                    
-                    Bound::new(0., 0.),
-                    Bound::new(0., 0.),
+                    (0., 10.),
                     None,
-                    None, 
-                    0.,
-                    0., 
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
                 ))),
             ];
 
-            let loads_cargo: Vec<Rc<Box<dyn ILoad>>> = vec![Rc::new(Box::new(Tank::new(
-                2.,
-                10.,
-                Bound::new(-5., 5.),
-                center,
-                free_surf_inertia,
+            let loads_cargo: Vec<Rc<Box<dyn ILoad>>> = vec![Rc::new(Box::new(LoadSpace::from(
+                20.,
+                Some(Position::new(0., 0., 0.)),
+                (-5., 5.),
+                None,
+                None,
+                None,
+                None,
+                Some(1.0),
+                Some(2.0),
             )))];
 
             unsafe {
                 MASS.replace(Mass::new(
                     loads_const,
                     Position::new(0., 0., 0.),
-                    loads_cargo,
+                    Rc::new(FakeIcingMass::new(0.)),
+                    Rc::new(loads_cargo),
                     Rc::new(Bounds::from_n(20., 4)),
                 ));
             }

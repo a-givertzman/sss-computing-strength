@@ -95,3 +95,28 @@ impl DataArray<FrameAreaUnit> {
     }
 }
 
+/// Шпангоут
+#[derive(Debug)]
+pub struct ParsedFrameData {
+    /// Порядковый номер шпангоута от кормы
+    pub index: i32,
+    /// Координата по х относительно кормы
+    pub x: f64,
+    /// Смещение относительно предыдущего шпангоута
+    pub delta_x: f64,
+    /// кривая погружаемой площади
+    pub immersion_area: Vec<(f64, f64)>,
+}
+///
+impl std::fmt::Display for ParsedFrameData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "ParsedFrameData(index:{}, x:{}, delta_x:{}, immersion_area.len:{} )",
+            self.index,
+            self.x,
+            self.delta_x,
+            self.immersion_area.len(),
+        )
+    }
+}

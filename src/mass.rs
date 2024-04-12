@@ -1,7 +1,7 @@
 //! Нагрузка на корпус судна
 use std::{cell::RefCell, rc::Rc};
 
-use crate::math::*;
+use crate::{icing::IIcingMass, math::*};
 
 use super::load::ILoad;
 
@@ -12,8 +12,10 @@ pub struct Mass {
     loads_const: Vec<Rc<Box<dyn ILoad>>>,
     /// Смещение постоянный массы судна
     shift_const: Position,
+    /// Учет обледенения судна
+    icing_mass: Rc<dyn IIcingMass>,
     /// Все грузы судна
-    loads_cargo: Vec<Rc<Box<dyn ILoad>>>,
+    loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
     /// Вектор разбиения на отрезки для эпюров
     bounds: Rc<Bounds>,
     /// Суммарный статический момент
@@ -35,6 +37,7 @@ impl Mass {
     /// Аргументы конструктора:  
     /// * loads_const - постоянная масса судна распределенная по шпациям
     /// * shift_const - смещение постоянный массы судна
+    /// * icing_mass - Учет обледенения судна
     /// * loads_stock - масса запасов судна распределенная по шпациям
     /// * shift_stock - смещение массы запасов судна
     /// * loads_cargo - грузы судна
@@ -42,12 +45,14 @@ impl Mass {
     pub fn new(
         loads_const: Vec<Rc<Box<dyn ILoad>>>,
         shift_const: Position,
-        loads_cargo: Vec<Rc<Box<dyn ILoad>>>,
+        icing_mass: Rc<dyn IIcingMass>,
+        loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
         bounds: Rc<Bounds>,
     ) -> Self {
         Self {
             loads_const,
             shift_const,
+            icing_mass,
             loads_cargo,
             bounds,
             moment_mass: Rc::new(RefCell::new(None)),
@@ -65,7 +70,8 @@ impl IMass for Mass {
     fn sum(&self) -> f64 {
         if self.sum.borrow().is_none() {
             let res = self.loads_const.iter().map(|v| v.mass(None)).sum::<f64>()
-                + self.loads_cargo.iter().map(|v| v.mass(None)).sum::<f64>();
+                + self.loads_cargo.iter().map(|v| v.mass(None)).sum::<f64>()
+                + self.icing_mass.mass(None);
             log::info!("\t Mass sum:{res} ");
             *self.sum.borrow_mut() = Some(res);
         }
@@ -87,6 +93,7 @@ impl IMass for Mass {
                             .iter()
                             .map(|v| v.mass(Some(*b)))
                             .sum::<f64>()
+                        + self.icing_mass.mass(Some(*b))
                 })
                 .collect();
             log::info!("\t Mass values:{:?} ", res);
@@ -127,9 +134,19 @@ impl IMass for Mass {
     /// заданным значениям смещения центра масс
     fn moment_mass(&self) -> Moment {
         if self.moment_mass.borrow().is_none() {
-            let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| Moment::from_pos(self.shift_const.clone(), c.mass(None)) ).sum::<Moment>() +
-        //    let res = self.loads_const.iter().map(|c: &Rc<Box<dyn ILoad>>| c.moment_mass() ).sum::<MassMoment>() +
-            self.loads_cargo.iter().map(|c| c.mass_moment() ).sum::<Moment>();
+            let res = self
+                .loads_const
+                .iter()
+                .map(|c: &Rc<Box<dyn ILoad>>| {
+                    Moment::from_pos(self.shift_const.clone(), c.mass(None))
+                })
+                .sum::<Moment>()
+                + self
+                    .loads_cargo
+                    .iter()
+                    .map(|c| c.mass_moment())
+                    .sum::<Moment>();
+            // TODO    + self.icing_mass. ;
             log::info!("\t Mass moment_mass:{res} ");
             *self.moment_mass.borrow_mut() = Some(res);
         }
@@ -223,5 +240,5 @@ impl IMass for FakeMass {
     }
     fn moment_surface(&self) -> SurfaceMoment {
         self.moment_surface.clone()
-    }    
+    }
 }

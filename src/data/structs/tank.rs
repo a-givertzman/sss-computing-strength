@@ -190,3 +190,42 @@ impl FreeMomentInertiaArray {
         map
     }
 }
+
+/// Цистерна
+#[derive(Debug)]
+pub struct ParsedTankData {
+    /// плотность жидкости в цистерне
+    pub density: f64,
+    /// объем жидкости в цистерне
+    pub volume: f64,
+    /// границы цистерны, (x1, x2)
+    pub bound: (f64, f64),
+    /// кривая координат центра объема жидкости в цистерне в системе координат судна по x
+    pub center_x: Vec<(f64, f64)>,
+    /// кривая координат центра объема жидкости в цистерне в системе координат судна по y
+    pub center_y: Vec<(f64, f64)>,
+    /// кривая координат центра объема жидкости в цистерне в системе координат судна по z
+    pub center_z: Vec<(f64, f64)>,
+    /// кривая момента инерции площади свободной поверхности жидкости volume, x - поперечный
+    pub free_surf_inertia_x: Vec<(f64, f64)>,
+    /// кривая момента инерции площади свободной поверхности жидкостиvolume, y - продольный
+    pub free_surf_inertia_y: Vec<(f64, f64)>,
+}
+///
+impl std::fmt::Display for ParsedTankData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "LoadSpaceData(density:{}, volume:{}, bound:(x1:{}, x2:{}), center_x.len:{}, center_y.len:{}, center_z.len:{}, inertia_x.len:{}, inertia_y.len:{}) )",
+            self.density,
+            self.volume,
+            self.bound.0,
+            self.bound.1,
+            self.center_x.len(),
+            self.center_y.len(),
+            self.center_z.len(),
+            self.free_surf_inertia_x.len(),
+            self.free_surf_inertia_y.len(),
+        )
+    }
+}
