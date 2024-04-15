@@ -1,10 +1,10 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::icing::FakeIcingMass;
+    use crate::icing::FakeIcing;
     use crate::math::Bounds;
     use crate::math::{
-        bound::Bound, curve::Curve, inertia::inertia_shift::InertiaShift, pos_shift::PosShift,
+        curve::Curve, inertia::inertia_shift::InertiaShift, pos_shift::PosShift,
         position::Position,
     };
     use crate::{load::*, mass::*};
@@ -71,7 +71,7 @@ mod tests {
                 MASS.replace(Mass::new(
                     loads_const,
                     Position::new(0., 0., 0.),
-                    Rc::new(FakeIcingMass::new(0.)),
+                    Rc::new(FakeIcing::new(0., 0., Position::new(0., 0., 0.),)),
                     Rc::new(loads_cargo),
                     Rc::new(Bounds::from_n(20., 4)),
                 ));

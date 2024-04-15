@@ -59,7 +59,7 @@ mod tests {
             None,
             None,
             None,
-        ).mass_moment();
+        ).moment_mass();
         let target = Moment::new(20., 0., 0.);
         assert!(
             result == target,

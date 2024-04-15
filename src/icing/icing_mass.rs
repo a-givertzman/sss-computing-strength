@@ -1,7 +1,7 @@
 //! Учет обледенения
 
 use std::rc::Rc;
-use crate::{Area, Bound, ILoad};
+use crate::{Area, Bound, ILoad, Position};
 use super::IIcingStab;
 
 /// Учет обледенения судна, расчет массы льда. 
@@ -10,7 +10,7 @@ use super::IIcingStab;
 /// возвышения центра тяжести. При учете обледенения к массе судна добавляются  
 /// масса льда на бортах, палубах, палубном грузе. Масса льда и его моменты,  
 /// рассчитываются для осадки 𝑑𝑚𝑖𝑛 и распространяются на все случаи загрузки. 
-pub struct IcingMass {
+pub struct Icing {
     /// Тип обледенения
     icing_stab: Rc<dyn IIcingStab>,
     /// Площадь горизонтальных поверхностей
@@ -21,7 +21,7 @@ pub struct IcingMass {
     loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
 }
 ///
-impl IcingMass {
+impl Icing {
     /// Основной конструктор
     /// * icing_stab - Тип обледенения
     /// * icing_area_h - Площадь горизонтальных поверхностей
@@ -42,39 +42,71 @@ impl IcingMass {
     }
 }
 ///
-impl IIcingMass for IcingMass {
+impl IIcing for Icing {
     /// Суммарная масса льда попадающая в Bound или вся если Bound отсутствует
     fn mass(&self, bound: Option<Bound>) -> f64 {
         self.area_h.iter().map(|v| v.value(bound) ).sum::<f64>() * self.icing_stab.mass_h() + 
         self.area_v.iter().map(|v| v.value(bound) ).sum::<f64>() * self.icing_stab.mass_v() +
         self.loads_cargo.iter().map(|v| v.windage_area(bound) ).sum::<f64>() * self.icing_stab.mass_h()
     }
+    /// Суммарный статический момент
+    fn moment_mass(&self) -> Moment {
+        self
+                    .loads_cargo
+                    .iter()
+                    .map(|c| c.moment_mass())
+                    .sum::<Moment>()
+                    
+        self.area_h.iter().map(|v| v.value(bound) ).sum::<f64>() * self.icing_stab.mass_h() + 
+        self.area_v.iter().map(|v| v.value(bound) ).sum::<f64>() * self.icing_stab.mass_v() +
+        self.loads_cargo.iter().map(|v| v.windage_area(bound) ).sum::<f64>() * self.icing_stab.mass_h()
+    }
+    /// Отстояние центра масс
+    fn shift(&self) -> Position {
+        self.moment_mass().to_pos(self.mass(None))
+    }
 }
 #[doc(hidden)]
-pub trait IIcingMass {
+pub trait IIcing {
     /// Суммарная масса льда попадающая в Bound или вся если Bound отсутствует
     fn mass(&self, bound: Option<Bound>) -> f64;
+    /// Суммарный статический момент
+    fn moment_mass(&self) -> Moment;
+    /// Отстояние центра масс
+    fn shift(&self) -> Position;
 }
 // заглушка для тестирования
 #[doc(hidden)]
-pub struct FakeIcingMass {
+pub struct FakeIcing {
     mass: f64,
+    moment_mass: Moment,
+    shift: Position,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
-impl FakeIcingMass {
+impl FakeIcing {
     pub fn new(
         mass: f64,
+        moment_mass: Moment,
+        shift: Position,
     ) -> Self {
         Self {
-            mass
+            mass,
+            moment_mass,
+            shift,
         }
     }
 }
 #[doc(hidden)]
-impl IIcingMass for FakeIcingMass {
+impl IIcing for FakeIcing {
     fn mass(&self, _: Option<Bound>) -> f64 {
         self.mass
+    }
+    fn moment_mass(&self) -> Moment {
+        self.moment_mass
+    }
+    fn shift(&self) -> Position {
+        self.shift
     }
 }
 

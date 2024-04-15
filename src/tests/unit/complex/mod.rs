@@ -83,7 +83,11 @@ mod tests {
 
 
         frames.frames.sort_by(|a, b| a.index.partial_cmp(&b.index).expect("sort error"));
-        let frames = frames.frames.into_iter().map(|f| Frame::new(Curve::new(f.immersion_area))).collect();
+        let mut delta_x = 0.;
+        let frames = frames.frames.into_iter().map(|f|  {
+            delta_x += f.delta_x;
+            Frame::new(delta_x, Curve::new(f.immersion_area))            
+        }).collect();
 
         let shear_force = ShearForce::new(TotalForce::new(
             Rc::clone(&mass),
@@ -94,7 +98,7 @@ mod tests {
                 Rc::clone(&mass),
                 center_waterline_shift,
                 mean_draught,
-                Displacement::new(frames, ship_length),
+                Displacement::from_frames(frames),
                 Trim::new(
                     water_density,
                     ship_length,
@@ -111,7 +115,7 @@ mod tests {
 
 
 
-        let result = Frame::new(Curve::new(vec![(0., 0.), (2., 2.)])).area(1.);
+        let result = Frame::new(0., Curve::new(vec![(0., 0.), (2., 2.)])).area(1.);
         let target = 1.;
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 

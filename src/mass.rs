@@ -1,7 +1,7 @@
 //! Нагрузка на корпус судна
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{icing::IIcingMass, math::*};
+use crate::{icing::IIcing, math::*};
 
 use super::load::ILoad;
 
@@ -13,7 +13,7 @@ pub struct Mass {
     /// Смещение постоянный массы судна
     shift_const: Position,
     /// Учет обледенения судна
-    icing_mass: Rc<dyn IIcingMass>,
+    icing_mass: Rc<dyn IIcing>,
     /// Все грузы судна
     loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
     /// Вектор разбиения на отрезки для эпюров
@@ -45,7 +45,7 @@ impl Mass {
     pub fn new(
         loads_const: Vec<Rc<Box<dyn ILoad>>>,
         shift_const: Position,
-        icing_mass: Rc<dyn IIcingMass>,
+        icing_mass: Rc<dyn IIcing>,
         loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
         bounds: Rc<Bounds>,
     ) -> Self {
@@ -144,9 +144,9 @@ impl IMass for Mass {
                 + self
                     .loads_cargo
                     .iter()
-                    .map(|c| c.mass_moment())
-                    .sum::<Moment>();
-            // TODO    + self.icing_mass. ;
+                    .map(|c| c.moment_mass())
+                    .sum::<Moment>()
+                + self.icing_mass.moment_mass();
             log::info!("\t Mass moment_mass:{res} ");
             *self.moment_mass.borrow_mut() = Some(res);
         }

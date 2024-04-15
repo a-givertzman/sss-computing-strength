@@ -90,17 +90,12 @@ impl Windage {
         let m_vx_ds = 0.;
         let m_vz_ds = 0.1*m_vz_cs_dmin;        
 
-        // Площадь парусности судна для минимальной осадки 
+        // Площадь парусности и моменты судна для минимальной осадки 
         let a_v_dmin = a_v_cs_dmin + a_v_ds + a_v_ds_ice ;
         let m_vx_dmin = m_vx_cs_dmin + m_vx_ds + m_vx_ds_ice;
         let m_vz_dmin = m_vz_cs_dmin + m_vz_ds + m_vz_ds_ice;
 
-        // Разница в площадях парусности для осадки по ЛГВЛ и минимальной осадки 
-        let delta_a_v_summer = self.delta_area;
-        // Разница в статических моментах относительно миделя и ОП соответствеено
-        let delta_m_vx_summer = self.delta_moment.x();
-        let delta_m_vz_summer = self.delta_moment.z();
-
+        // Площадь парусности и моменты судна с учетом поправки
         let a_v = a_v_dmin - self.delta_area;
         let m_vx = m_vx_dmin - self.delta_moment.x();
         let m_vz = m_vz_dmin - self.delta_moment.z();

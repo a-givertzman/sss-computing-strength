@@ -25,7 +25,7 @@ pub trait ILoad {
         Position::new(0., 0., 0.)
     }
     /// момент массы
-    fn mass_moment(&self) -> Moment {
+    fn moment_mass(&self) -> Moment {
         Moment::from_pos(self.mass_shift(), self.mass(None))
     }
     /// момент свободной поверхности
