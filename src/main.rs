@@ -1,7 +1,7 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
 use crate::{
-    icing::{IIcingStab, Icing, IcingStab},
+    icing::{IIcingStab, IcingMass, IcingStab},
     load::*,
     mass::*,
     math::*,
@@ -203,7 +203,13 @@ fn main() -> Result<(), Error> {
     let mass: Rc<dyn IMass> = Rc::new(Mass::new(
         loads_const,
         const_shift,
-        Rc::new(Icing::new(
+        Rc::new(IcingMass::new(
+            Rc::clone(&icing_stab),
+            icing_area_h,
+            icing_area_v,
+            Rc::clone(&loads_cargo),
+        )),
+        Rc::new(IcingMoment::new(
             Rc::clone(&icing_stab),
             icing_area_h,
             icing_area_v,

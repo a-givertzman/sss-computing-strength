@@ -5,6 +5,7 @@ pub(crate) mod stability_arm;
 pub(crate) mod wind;
 pub(crate) mod stab;
 pub(crate) mod windage;
+pub(crate) mod area_dmin;
 
 pub use metacentric_height::*;
 pub use rolling_amplitude::*;
@@ -12,3 +13,4 @@ pub use rolling_period::*;
 pub use stability_arm::*;
 pub use wind::*;
 pub use stab::*;
+pub use area_dmin::*;
