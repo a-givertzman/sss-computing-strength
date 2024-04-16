@@ -364,6 +364,7 @@ impl ParsedShipData {
 
             Ok(ParsedHorizontalArea {
                 value: src_data.area_value,
+                shift_z: src_data.shift_z,
                 bound_x: ( 
                     bound_x(&src_data.bound_x1, &src_data.bound_type)?, 
                     bound_x(&src_data.bound_x2, &src_data.bound_type)?, 
@@ -389,7 +390,7 @@ impl ParsedShipData {
 
             Ok(ParsedVerticalArea {
                 value: src_data.area_value,
-                shift_x: src_data.shift_x,
+                shift_z: src_data.shift_z,
                 bound_x: ( 
                     bound_x(&src_data.bound_x1, &src_data.bound_type)?, 
                     bound_x(&src_data.bound_x2, &src_data.bound_type)?, 
@@ -875,6 +876,31 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of free_surf_inertia's points must be {}", tank)));
         }
         log::info!("result parse ok");
+
+        if self.area_h.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of area_h's points {}",
+                self.area_h.len()
+            )));
+        }
+        if let Some(area) = self.area_h.iter().find(|f| f.value < 0.) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of area_h must be greater or equal to 0, {}",
+                area
+            )));
+        }          
+        if self.area_v.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of area_v's points {}",
+                self.area_v.len()
+            )));
+        }
+        if let Some(area) = self.area_v.iter().find(|f| f.value < 0.) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of area_v must be greater or equal to 0, {}",
+                area
+            )));
+        } 
         Ok(self)
     }
 }

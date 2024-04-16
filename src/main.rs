@@ -205,12 +205,8 @@ fn main() -> Result<(), Error> {
         const_shift,
         Rc::new(IcingMass::new(
             Rc::clone(&icing_stab),
-            icing_area_h,
-            icing_area_v,
-            Rc::clone(&loads_cargo),
-        )),
-        Rc::new(IcingMoment::new(
-            Rc::clone(&icing_stab),
+            crate::strength::Area::new(area_const_v, area_const_h, Rc::clone(&loads_cargo)),
+            crate::stability::Area::new(area_const_v, area_const_h, Rc::clone(&loads_cargo)),
             icing_area_h,
             icing_area_v,
             Rc::clone(&loads_cargo),

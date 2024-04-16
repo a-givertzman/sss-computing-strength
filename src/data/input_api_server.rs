@@ -416,7 +416,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         &mut request,
         db_name,
         format!(
-            "SELECT name, area_value, bound_x1, bound_x2, bound_type FROM horizontal_area WHERE ship_id={};",
+            "SELECT name, area_value, shift_z, bound_x1, bound_x2, bound_type FROM horizontal_area WHERE ship_id={};",
             ship_id
         ),
     )?)?;
@@ -426,7 +426,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         &mut request,
         db_name,
         format!(
-            "SELECT name, area_value, shift_x, bound_x1, bound_x2, bound_type FROM vertical_area WHERE ship_id={};",
+            "SELECT name, area_value, shift_z, bound_x1, bound_x2, bound_type FROM vertical_area WHERE ship_id={};",
             ship_id
         ),
     )?)?;

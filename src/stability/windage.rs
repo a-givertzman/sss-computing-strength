@@ -107,7 +107,6 @@ impl Windage {
         self.z_v = Some(z_v);
 
         log::info!("Windage a_v_cs_dmin1:{a_v_cs_dmin1} m_vx_cs_dmin1:{m_vx_cs_dmin1} m_vz_cs_dmin1:{m_vz_cs_dmin1} 
-        delta_a_v_summer:{delta_a_v_summer} delta_m_vx_summer:{delta_m_vx_summer} delta_m_vz_summer:{delta_m_vz_summer}
         a_v_pg:{a_v_pg} shift_pg.z:{} m_pg:{m_pg}  
         a_v_cs_dmin:{a_v_cs_dmin} m_vx_cs_dmin:{m_vx_cs_dmin} m_vz_cs_dmin:{m_vz_cs_dmin}   
         a_v_ds:{a_v_ds} m_vx_ds:{m_vx_ds} m_vz_ds:{m_vz_ds}   

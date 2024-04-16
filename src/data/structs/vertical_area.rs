@@ -12,8 +12,8 @@ pub struct VerticalAreaData {
     pub name: String, 
     /// Значение площади, м^2
     pub area_value: f64,
-    /// Смещение центра по оси Х
-    pub shift_x: Option<f64>,  
+    /// Смещение центра по оси Z
+    pub shift_z: f64,  
     /// Ограничение по оси Х
     pub bound_x1: f64,
     pub bound_x2: f64, 
@@ -45,8 +45,8 @@ impl VerticalAreaDataArray {
 pub struct ParsedVerticalArea {
     /// Значение площади, м^2
     pub value: f64,
-    /// Смещение центра по оси Х
-    pub shift_x: Option<f64>,    
+    /// Смещение центра по оси Z
+    pub shift_z: f64,    
     /// Ограничение по оси Х
     pub bound_x: (f64, f64),
 }

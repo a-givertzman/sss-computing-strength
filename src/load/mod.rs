@@ -45,7 +45,7 @@ pub trait ILoad {
         Moment::from_pos(self.windage_shift(), self.windage_area(None))
     }
     /// Площадь горизонтальной поверхности, м^2
-    fn horizontal_area(&self) -> f64 {
+    fn horizontal_area(&self, _: Option<Bound>) -> f64 {
         0.
     }
     /// Высота груза, м
@@ -54,6 +54,6 @@ pub trait ILoad {
     }
     /// Момент массы льда горизонтальной поверхности палубного груза относительно основания, т*м
     fn moment_ice_delta(&self, ice_mass_per_m_square: f64) -> Moment {
-        Moment::new( 0., 0., self.height()*self.horizontal_area()*ice_mass_per_m_square)
+        Moment::new( 0., 0., self.height()*self.horizontal_area(None)*ice_mass_per_m_square)
     }
 }

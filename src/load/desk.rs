@@ -52,8 +52,9 @@ impl DeskLoad {
         }
     }
     /// Площадь горизонтальной поверхности, м^2
-    pub fn horizontal_area(&self) -> f64 {
-        self.bound_x.length()*self.bound_y.length()
+    pub fn horizontal_area(&self, bound: Option<Bound>) -> f64 {
+        self.bound_x.part_ratio(&bound.unwrap_or(self.bound_x)) *
+        self.bound_y.length()
     }
     /// Высота груза, м
     pub fn height(&self) -> f64 {

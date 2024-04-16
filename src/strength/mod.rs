@@ -6,7 +6,7 @@ pub(crate) mod frame;
 pub(crate) mod shear_force;
 pub(crate) mod total_force;
 pub(crate) mod trim;
-
+pub(crate) mod area;
 
 pub use bending_moment::*;
 pub use computer::*;
@@ -16,6 +16,7 @@ pub use frame::*;
 pub use shear_force::*;
 pub use total_force::*;
 pub use trim::*;
+pub use area::*;
 
 
 

@@ -125,8 +125,8 @@ impl ILoad for LoadSpace {
         self.desk.as_ref().map(|desk| desk.shift()).unwrap_or(Position::new(0., 0., 0.,))
     }
     /// Площадь горизонтальной поверхности, м^2
-    fn horizontal_area(&self) -> f64 {
-        self.desk.as_ref().map(|desk| desk.horizontal_area()).unwrap_or(0.)
+    fn horizontal_area(&self, bound: Option<Bound>) -> f64 {
+        self.desk.as_ref().map(|desk| desk.horizontal_area(bound)).unwrap_or(0.)
     }
     /// Высота груза, м
     fn height(&self) -> f64 {
