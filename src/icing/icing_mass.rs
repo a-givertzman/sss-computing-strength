@@ -15,24 +15,24 @@ pub struct IcingMass {
     icing_stab: Rc<dyn IIcingStab>,
     /// Распределение площади поверхностей
     area_strength: Rc<dyn crate::strength::IArea>,
-    /// Момент площади поверхностей
-    area_moment: Rc<dyn crate::stability::IArea>,
+    /// Площади поверхности для расчета остойсивости
+    area_stability: Rc<dyn crate::stability::IArea>,
 }
 ///
 impl IcingMass {
     /// Основной конструктор
     /// * icing_stab - Тип обледенения
     /// * area_strength - Распределение площади поверхностей
-    /// * area_moment - Момент площади поверхностей  
+    /// * area_stability - Площади поверхности для расчета остойсивости
     pub fn new(
         icing_stab: Rc<dyn IIcingStab>,
         area_strength: Rc<dyn crate::strength::IArea>,   
-        area_moment: Rc<dyn crate::stability::IArea>,
+        area_stability: Rc<dyn crate::stability::IArea>,
     ) -> Self {
         Self{
             icing_stab, 
             area_strength,   
-            area_moment,      
+            area_stability,      
         }
     }
 }
@@ -45,8 +45,8 @@ impl IIcingMass for IcingMass {
     }
     /// Суммарный статический момент массы льда.
     fn moment(&self) -> Moment {
-        self.area_moment.moment_h().scale( self.icing_stab.mass_h() ) + 
-        self.area_moment.moment_v().scale( self.icing_stab.mass_v() )
+        self.area_stability.moment_h().scale( self.icing_stab.mass_h() ) + 
+        self.area_stability.moment_v().scale( self.icing_stab.mass_v() )
     }
 }
 #[doc(hidden)]

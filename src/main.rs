@@ -188,7 +188,7 @@ fn main() -> Result<(), Error> {
         .collect::<Vec<_>>();
 
     let area_strength: Rc<dyn crate::strength::IArea> = Rc::new(crate::strength::Area::new(icing_area_v.clone(), icing_area_h_str, Rc::clone(&loads_cargo)));
-    let area_moment: Rc<dyn crate::stability::IArea> = Rc::new(crate::stability::Area::new(icing_area_v, icing_area_h_stab, Rc::clone(&loads_cargo)));
+    let area_stability: Rc<dyn crate::stability::IArea> = Rc::new(crate::stability::Area::new(icing_area_v, icing_area_h_stab, Rc::clone(&loads_cargo)));
    
     let icing_stab: Rc<dyn IIcingStab> = Rc::new(IcingStab::new(
         data.icing_stab.clone(),
@@ -210,7 +210,7 @@ fn main() -> Result<(), Error> {
         Rc::new(IcingMass::new(
             Rc::clone(&icing_stab),
             Rc::clone(&area_strength),
-            Rc::clone(&area_moment),
+            Rc::clone(&area_stability),
         )),
         Rc::clone(&loads_cargo),
         Rc::clone(&bounds),
@@ -338,10 +338,8 @@ fn main() -> Result<(), Error> {
         p_v,
         m,
         Box::new(Windage::new(
-            Rc::clone(&loads_cargo),
             Rc::clone(&icing_stab),
-            data.windage_area,
-            Position::new(data.windage_shift_x, 0., data.windage_shift_z),
+            Rc::clone(&area_stability),
             Curve::new_linear(&data.delta_windage_area).value(mean_draught),
             Moment::new(
                 Curve::new_linear(&data.delta_windage_moment_x).value(mean_draught),

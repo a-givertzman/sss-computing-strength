@@ -8,14 +8,10 @@ use crate::{icing::IIcingStab, ILoad, Moment, Position};
 /// центра относительно миделя и ОП
 #[derive(Clone)]
 pub struct Windage {
-    /// Все грузы судна
-    loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
-    /// Тип обледенения для расчета парусности
+    /// Тип обледенения
     icing_stab: Rc<dyn IIcingStab>,
-    /// Площадь парусности судна для минимальной осадки
-    area: f64,
-    /// Смещение центра парусности судна для минимальной осадки
-    shift: Position, 
+    /// Площади поверхности для расчета остойсивости
+    area_stability: Rc<dyn crate::stability::IArea>,
     /// Разница в площадях парусности
     delta_area: f64,
     /// Разница в статических моментах относительно миделя (x) и ОП (z) 
@@ -29,29 +25,22 @@ pub struct Windage {
 }
 ///
 impl Windage {
-    /// Аргументы конструктора:  
-    /// * loads_cargo - грузы судна
-    /// * icing_stab - Тип обледенения для расчета парусности
-    /// * area - Площадь парусности судна
-    /// * shift - Смещение центра парусности судна
+    /// Аргументы конструктора: 
+    /// * icing_stab - Тип обледенения
+    /// * area_stability - Площади поверхности для расчета остойсивости
     /// * delta_area - Разница в площадях парусности
     /// * delta_moment - Разница в статических моментах относительно миделя (x) и ОП (z) 
     /// * volume_shift - Отстояние по вертикали центра площади проекции подводной части корпуса
     pub fn new(
-        loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
         icing_stab: Rc<dyn IIcingStab>,
-        area: f64,
-        shift: Position,
+        area_stability: Rc<dyn crate::stability::IArea>,
         delta_area: f64,
         delta_moment: Moment,
         volume_shift: f64,  
     ) -> Self {
-        assert!(area >= 0., "area {area} >= 0");
         Self {
-            loads_cargo,
             icing_stab,
-            area,
-            shift,
+            area_stability,
             delta_area,
             delta_moment, 
             volume_shift,
@@ -61,7 +50,7 @@ impl Windage {
     }
     ///
     fn calculate(&mut self) {
-        // Площадь и статический момент парусности сплошных поверхностей 
+/*         // Площадь и статический момент парусности сплошных поверхностей 
         // для минимальной осадки без палубного груза
         let a_v_cs_dmin1 = self.area;
         // Cтатический момент относительно миделя (x) и ОП (z) 
@@ -93,18 +82,13 @@ impl Windage {
         // Площадь парусности и моменты судна для минимальной осадки 
         let a_v_dmin = a_v_cs_dmin + a_v_ds + a_v_ds_ice ;
         let m_vx_dmin = m_vx_cs_dmin + m_vx_ds + m_vx_ds_ice;
-        let m_vz_dmin = m_vz_cs_dmin + m_vz_ds + m_vz_ds_ice;
+        let m_vz_dmin = m_vz_cs_dmin + m_vz_ds + m_vz_ds_ice; 
 
         // Площадь парусности и моменты судна с учетом поправки
         let a_v = a_v_dmin - self.delta_area;
         let m_vx = m_vx_dmin - self.delta_moment.x();
         let m_vz = m_vz_dmin - self.delta_moment.z();
 
-        let x_v = m_vx/a_v;
-        let z_v_bp = m_vz/a_v;
-        let z_v = z_v_bp - self.volume_shift;
-        self.a_v = Some(a_v);
-        self.z_v = Some(z_v);
 
         log::info!("Windage a_v_cs_dmin1:{a_v_cs_dmin1} m_vx_cs_dmin1:{m_vx_cs_dmin1} m_vz_cs_dmin1:{m_vz_cs_dmin1} 
         a_v_pg:{a_v_pg} shift_pg.z:{} m_pg:{m_pg}  
@@ -112,6 +96,21 @@ impl Windage {
         a_v_ds:{a_v_ds} m_vx_ds:{m_vx_ds} m_vz_ds:{m_vz_ds}   
         a_v_dmin:{a_v_dmin} m_vx_dmin:{m_vx_dmin} m_vz_dmin:{m_vz_dmin}
         a_v:{a_v} m_vx:{m_vx} m_vz:{m_vz} x_v:{x_v} z_v:{z_v}", shift_pg.z());
+        */
+
+        // Площадь парусности и моменты судна с учетом поправки
+        let a_v = self.area_stability.area_v()*self.icing_stab.coef_v_area() - self.delta_area;
+        let moment = self.area_stability.moment_v().scale(self.icing_stab.coef_v_moment());
+        let m_vx = moment.x() - self.delta_moment.x();
+        let m_vz = moment.z() - self.delta_moment.z();
+
+        let x_v = m_vx/a_v;
+        let z_v_bp = m_vz/a_v;
+        let z_v = z_v_bp - self.volume_shift;
+        self.a_v = Some(a_v);
+        self.z_v = Some(z_v);
+
+        log::info!("Windage a_v:{a_v} m_vx:{m_vx} m_vz:{m_vz} x_v:{x_v} z_v:{z_v}");
     }
 }
 ///

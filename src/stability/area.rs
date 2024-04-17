@@ -36,6 +36,15 @@ impl Area {
 }
 ///
 impl IArea for Area {
+    /// Площадь парусности
+    fn area_v(&self) -> f64 {
+        (self.area_const_v.iter().map(|v| v.value(None)).sum::<f64>()
+            + self
+                .loads_cargo
+                .iter()
+                .map(|v| v.windage_area(None))
+                .sum::<f64>()) * 1.05        
+    }
     /// Момент площади парусности
     fn moment_v(&self) -> Moment {
         (self.area_const_v.iter().map(|v| v.moment()).sum::<Moment>()
@@ -44,7 +53,7 @@ impl IArea for Area {
                 .iter()
                 .map(|v| v.windage_moment())
                 .sum::<Moment>())
-        .scale(1.05)
+        .scale(1.1)
     }
     /// Момент площади горизонтальных поверхностей
     fn moment_h(&self) -> Moment {
@@ -58,6 +67,8 @@ impl IArea for Area {
 }
 #[doc(hidden)]
 pub trait IArea {
+    /// Площадь парусности
+    fn area_v(&self) -> f64;
     /// Момент площади парусности
     fn moment_v(&self) -> Moment;
     /// Момент площади горизонтальных поверхностей
@@ -66,18 +77,23 @@ pub trait IArea {
 // заглушка для тестирования
 #[doc(hidden)]
 pub struct FakeArea {
+    area_v: f64,
     moment_v: Moment,
     moment_h: Moment,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeArea {
-    pub fn new(moment_v: Moment, moment_h: Moment) -> Self {
-        Self { moment_v, moment_h }
+    pub fn new(area_v: f64, moment_v: Moment, moment_h: Moment) -> Self {
+        Self { area_v, moment_v, moment_h }
     }
 }
 #[doc(hidden)]
 impl IArea for FakeArea {
+    /// Площадь парусности
+    fn area_v(&self) -> f64 {
+        self.area_v.clone()
+    }
     /// Момент площади парусности
     fn moment_v(&self) -> Moment {
         self.moment_v.clone()
