@@ -412,21 +412,31 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     );
     //  dbg!(&tank_inertia);
     log::info!("input_api_server tank_inertia read ok");
-    let area_h = HorizontalAreaDataArray::parse(&fetch_query(
+    let area_h_str = HStrAreaDataArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!(
-            "SELECT name, area_value, shift_z, bound_x1, bound_x2, bound_type FROM horizontal_area WHERE ship_id={};",
+            "SELECT name, value, bound_x1, bound_x2, bound_type FROM horizontal_area_strength WHERE ship_id={};",
             ship_id
         ),
     )?)?;
-    //  dbg!(&area_h);
-    log::info!("input_api_server horizontal_area read ok");
+    //  dbg!(&area_h_str);
+    log::info!("input_api_server area_h_str read ok");
+    let area_h_stab = HStabAreaDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT name, value, shift_x, shift_y, shift_z FROM horizontal_area_stability WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&area_h_stab);
+    log::info!("input_api_server area_h_stab read ok");
     let area_v = VerticalAreaDataArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!(
-            "SELECT name, area_value, shift_z, bound_x1, bound_x2, bound_type FROM vertical_area WHERE ship_id={};",
+            "SELECT name, value, shift_z, bound_x1, bound_x2, bound_type FROM vertical_area WHERE ship_id={};",
             ship_id
         ),
     )?)?;
@@ -463,7 +473,8 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         tank,
         tank_center,
         tank_inertia,
-        area_h,
+        area_h_stab,
+        area_h_str,
         area_v,
     )
 }

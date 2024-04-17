@@ -1,5 +1,5 @@
 //! Палубный груз
-use crate::{math::*, ILoad};
+use crate::math::*;
 
 /// Палубный груз, имеет площадь и парусность
 pub struct DeskLoad {

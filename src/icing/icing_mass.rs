@@ -1,7 +1,7 @@
 //! Учет обледенения
 
 use std::rc::Rc;
-use crate::{Bound, ILoad, Moment};
+use crate::{Bound, Moment};
 use super::IIcingStab;
 
 /// Учет обледенения судна, расчет массы льда. 
@@ -81,7 +81,7 @@ impl IIcingMass for FakeIcing {
         self.mass
     }
     fn moment(&self) -> Moment{
-        self.moment
+        self.moment.clone()
     }
 }
 

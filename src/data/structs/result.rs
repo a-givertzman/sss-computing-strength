@@ -126,8 +126,10 @@ pub struct ParsedShipData {
     pub load_spaces: Vec<ParsedLoadSpaceData>,
     /// Нагрузка судна, жидкие грузы
     pub tanks: Vec<ParsedTankData>,
-    /// Площадь горизонтальных поверхностей
-    pub area_h: Vec<ParsedHorizontalArea>,
+    /// Площадь горизонтальных поверхностей для остойчивости
+    pub area_h_stab: Vec<HStabAreaData>,
+    /// Площадь горизонтальных поверхностей для прочности
+    pub area_h_str: Vec<ParsedHStrArea>,
     /// Площадь поверхности парусности
     pub area_v: Vec<ParsedVerticalArea>,
 }
@@ -165,7 +167,8 @@ impl ParsedShipData {
         tank_data: TankDataArray,
         tank_centetr_volume: CenterVolumeData,
         tanks_free_moment_inertia: FreeMomentInertiaData,
-        area_h_src: HorizontalAreaDataArray,
+        area_h_stab: HStabAreaDataArray,
+        area_h_str: HStrAreaDataArray,
         area_v_src: VerticalAreaDataArray,
     ) -> Result<Self, Error> {
         log::info!("result parse begin");
@@ -186,6 +189,20 @@ impl ParsedShipData {
             ))?;
             physical_frame.insert(index, *value);
         }
+        // Два варианта задания распределения по х - координата или физический шпангоут.
+        // Если тип шпангоут, то находим и подставляем его координату
+        // Координата шпангоута задана относительно кормы, считаем ее относительно центра
+        let bound_x = |value: &f64, value_type: &str| -> Result<f64, Error> { 
+            Ok(if value_type == "frame" {
+                *physical_frame.get(&(*value as i32))
+                    .ok_or(format!(
+                        "load_spaces parse error: no physical_frame for value:{}",
+                        value
+                    ))? - ship_length/2.
+            } else {
+                *value 
+            }) 
+        };
 
         let mut theoretical_frame = Vec::new();        
         for (index, map) in theoretical_frame_src.data() {
@@ -209,20 +226,6 @@ impl ParsedShipData {
         
         let mut load_spaces = Vec::new();
         for (space_id, map) in load_spaces_src.data() {
-            // Два варианта задания распределения по х - координата или физический шпангоут.
-            // Если тип шпангоут, то находим и подставляем его координату
-            // Координата шпангоута задана относительно кормы, считаем ее относительно центра
-            let bound_x = |value: &str, value_type: &str| -> Result<f64, Error> { 
-                Ok(if value_type == "frame" {
-                    *physical_frame.get(&value.parse::<i32>()?)
-                        .ok_or(format!(
-                            "load_spaces parse error: no physical_frame for load_space id:{}",
-                            space_id
-                        ))? - ship_length/2.
-                } else {
-                    value.parse::<f64>()?
-                }) 
-            };
             let (bound_x1_value, bound_x1_type) = map.get("bound_x1").ok_or(format!(
                 "ParsedShipData parse error: no bound_x1 for load_space id:{}",
                 space_id
@@ -241,8 +244,8 @@ impl ParsedShipData {
                     space_id
                 ))?.0.parse::<f64>()?,
                 bound_x: ( 
-                    bound_x(bound_x1_value, bound_x1_type)?, 
-                    bound_x(bound_x2_value, bound_x2_type)?, 
+                    bound_x(&bound_x1_value.parse::<f64>()?, bound_x1_type)?, 
+                    bound_x(&bound_x2_value.parse::<f64>()?, bound_x2_type)?, 
                 ),
                 bound_y: if map.contains_key("bound_y1") && map.contains_key("bound_y2") {
                     Some((map.get("bound_y1").unwrap().0.parse::<f64>()?,
@@ -346,31 +349,15 @@ impl ParsedShipData {
             });
         }
 
-        let area_h = area_h_src.data().iter().map(|src_data| {
-            // Два варианта задания распределения по х - координата или физический шпангоут.
-            // Если тип шпангоут, то находим и подставляем его координату
-            // Координата шпангоута задана относительно кормы, считаем ее относительно центра
-            let bound_x = |value: &f64, value_type: &str| -> Result<f64, Error> { 
-                Ok(if value_type == "frame" {
-                    *physical_frame.get(&(*value as i32))
-                        .ok_or(format!(
-                            "load_spaces parse error: no physical_frame for area:{}",
-                            src_data
-                        ))? - ship_length/2.
-                } else {
-                    *value 
-                }) 
-            };
-
-            Ok(ParsedHorizontalArea {
-                value: src_data.area_value,
-                shift_z: src_data.shift_z,
+        let area_h_str = area_h_str.data().iter().map(|src_data| {
+            Ok(ParsedHStrArea {
+                value: src_data.value,
                 bound_x: ( 
                     bound_x(&src_data.bound_x1, &src_data.bound_type)?, 
                     bound_x(&src_data.bound_x2, &src_data.bound_type)?, 
                 ),
             }) 
-        }).collect::<Result<Vec<ParsedHorizontalArea>, Error>>()?;
+        }).collect::<Result<Vec<ParsedHStrArea>, Error>>()?;
 
         let area_v = area_v_src.data().iter().map(|src_data| {
             // Два варианта задания распределения по х - координата или физический шпангоут.
@@ -389,7 +376,7 @@ impl ParsedShipData {
             };
 
             Ok(ParsedVerticalArea {
-                value: src_data.area_value,
+                value: src_data.value,
                 shift_z: src_data.shift_z,
                 bound_x: ( 
                     bound_x(&src_data.bound_x1, &src_data.bound_type)?, 
@@ -521,7 +508,8 @@ impl ParsedShipData {
             load_constant,
             load_spaces,
             tanks,
-            area_h,
+            area_h_stab: area_h_stab.data(),
+            area_h_str,
             area_v,
         }
         .check()
@@ -876,19 +864,36 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of free_surf_inertia's points must be {}", tank)));
         }
         log::info!("result parse ok");
-
-        if self.area_h.len() <= 1 {
+        if self.area_h_stab.len() <= 1 {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: number of area_h's points {}",
-                self.area_h.len()
+                "Error check ParsedShipData: number of area_h_stab's points {}",
+                self.area_h_stab.len()
             )));
         }
-        if let Some(area) = self.area_h.iter().find(|f| f.value < 0.) {
+        if let Some(area) = self.area_h_stab.iter().find(|f| f.value < 0.) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of area_h_stab must be greater or equal to 0, {}",
+                area
+            )));
+        }    
+        if self.area_h_str.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of area_h's points {}",
+                self.area_h_str.len()
+            )));
+        }
+        if let Some(area) = self.area_h_str.iter().find(|f| f.value < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: value of area_h must be greater or equal to 0, {}",
                 area
             )));
         }          
+        if let Some(area) = self.area_h_str.iter().find(|f| f.bound_x.1 < f.bound_x.0) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of area_h must be greater or equal to 0, {}",
+                area
+            )));
+        }      
         if self.area_v.len() <= 1 {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: number of area_v's points {}",

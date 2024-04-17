@@ -7,7 +7,7 @@ mod tests {
         curve::Curve, inertia::inertia_shift::InertiaShift, pos_shift::PosShift,
         position::Position,
     };
-    use crate::{load::*, mass::*};
+    use crate::{load::*, mass::*, Moment};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
@@ -71,7 +71,7 @@ mod tests {
                 MASS.replace(Mass::new(
                     loads_const,
                     Position::new(0., 0., 0.),
-                    Rc::new(FakeIcing::new(0., 0., Position::new(0., 0., 0.),)),
+                    Rc::new(FakeIcing::new(0., Moment::new(0., 0., 0.,),)),
                     Rc::new(loads_cargo),
                     Rc::new(Bounds::from_n(20., 4)),
                 ));

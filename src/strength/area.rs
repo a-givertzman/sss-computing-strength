@@ -3,16 +3,16 @@
 
 use std::rc::Rc;
 
-use crate::{Bound, ILoad};
+use crate::{area::{HAreaStrength, VerticalArea}, Bound, ILoad};
 
 /// Распределение площади горизонтальных поверхностей и
 /// площадь парусности судна для осадки dmin
 #[derive(Clone)]
 pub struct Area {
     /// Площадь парусности корпуса судна
-    area_const_v: Vec<crate::math::Area>,
+    area_const_v: Vec<VerticalArea>,
     /// Площадь горизонтальных поверхностей корпуса судна
-    area_const_h: Vec<crate::math::Area>,
+    area_const_h: Vec<HAreaStrength>,
     /// Все грузы судна
     loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
 }
@@ -23,8 +23,8 @@ impl Area {
     /// * area_const_h - Площадь горизонтальных поверхностей корпуса судна
     /// * loads_cargo - Все грузы судна
     pub fn new(
-        area_const_v: Vec<crate::math::Area>,    
-        area_const_h: Vec<crate::math::Area>,       
+        area_const_v: Vec<VerticalArea>,    
+        area_const_h: Vec<HAreaStrength>,       
         loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
     ) -> Self {
         Self {
@@ -77,11 +77,11 @@ impl FakeArea {
 #[doc(hidden)]
 impl IArea for FakeArea {
     /// Площадь парусности для заданного диапазона, м^2
-    fn area_v(&self, bound: Option<Bound>) -> f64 {
+    fn area_v(&self, _: Option<Bound>) -> f64 {
         self.area_v
     }    
     /// Площадь горизонтальных поверхностей для заданного диапазона, м^2
-    fn area_h(&self, bound: Option<Bound>) -> f64 {
+    fn area_h(&self, _: Option<Bound>) -> f64 {
         self.area_h
     }       
 }

@@ -1,3 +1,5 @@
+//! Расчет прочности судна
+
 pub(crate) mod bending_moment;
 pub(crate) mod computer;
 pub(crate) mod displacement;

@@ -1,30 +1,30 @@
-//! Площадь
+//! Площадь парусности
 use crate::{Bound, Moment, Position};
 
-/// Площадь
+/// Площадь парусности
 #[derive(Debug, Clone)]
-pub struct Area {
+pub struct VerticalArea {
     /// Значение площади, м^2
     value: f64,
     /// Смещение центра
-    shift: Option<Position>,    
+    shift_z: f64,    
     /// Ограничение по оси Х
     bound_x: Bound,
 }
 ///
-impl Area {
+impl VerticalArea {
     /// Основной конструктор
     /// * value - Значение площади, м^2
     /// * shift_z - Смещение центра по оси Z 
     /// * bound_x - Ограничение по оси Х
     pub fn new(    
         value: f64,
-        shift: Option<Position>,    
+        shift_z: f64,    
         bound_x: Bound,
     ) -> Self {
         Self {
             value,
-            shift,
+            shift_z,
             bound_x,
         }
     }
@@ -38,6 +38,6 @@ impl Area {
     }     
     /// Момент площади 
     pub fn moment(&self) -> Moment {
-        Moment::from_pos(self.shift.unwrap_or(Position::new(self.bound_x.center(), 0., 0.)), self.value)
+        Moment::from_pos(Position::new(self.bound_x.center(), 0., self.shift_z), self.value)
     }
 }

@@ -3,16 +3,16 @@
 
 use std::rc::Rc;
 
-use crate::{ILoad, Moment};
+use crate::{area::{HAreaStability, VerticalArea}, ILoad, Moment};
 
 /// Момент площади горизонтальных поверхностей и
 /// площади парусности судна
 #[derive(Clone)]
 pub struct Area {
     /// Площадь парусности корпуса судна
-    area_const_v: Vec<crate::math::Area>,
+    area_const_v: Vec<VerticalArea>,
     /// Площадь горизонтальных поверхностей корпуса судна
-    area_const_h: Vec<crate::math::Area>,
+    area_const_h: Vec<HAreaStability>,
     /// Все грузы судна
     loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
 }
@@ -23,8 +23,8 @@ impl Area {
     /// * area_const_h - Площадь горизонтальных поверхностей корпуса судна
     /// * loads_cargo - Все грузы судна
     pub fn new(
-        area_const_v: Vec<crate::math::Area>,
-        area_const_h: Vec<crate::math::Area>,
+        area_const_v: Vec<VerticalArea>,
+        area_const_h: Vec<HAreaStability>,
         loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
     ) -> Self {
         Self {
@@ -80,10 +80,10 @@ impl FakeArea {
 impl IArea for FakeArea {
     /// Момент площади парусности
     fn moment_v(&self) -> Moment {
-        self.moment_v
+        self.moment_v.clone()
     }
     /// Момент площади горизонтальных поверхностей
     fn moment_h(&self) -> Moment {
-        self.moment_h
+        self.moment_h.clone()
     }
 }

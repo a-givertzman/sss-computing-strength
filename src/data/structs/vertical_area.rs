@@ -11,7 +11,7 @@ pub struct VerticalAreaData {
     /// Название 
     pub name: String, 
     /// Значение площади, м^2
-    pub area_value: f64,
+    pub value: f64,
     /// Смещение центра по оси Z
     pub shift_z: f64,  
     /// Ограничение по оси Х
@@ -26,8 +26,8 @@ impl std::fmt::Display for VerticalAreaData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "IcingAreaData(area_value:{}, shift_x:{:?} bound_x1:{}, bound_x2:{}, bound_type:{})",
-            self.area_value, self.shift_x, self.bound_x1, self.bound_x2, self.bound_type,
+            "VerticalAreaData(avalue:{}, shift_z:{:?} bound:({}, {}), bound_type:{})",
+            self.value, self.shift_z, self.bound_x1, self.bound_x2, self.bound_type,
         )
     }
 }
@@ -49,4 +49,14 @@ pub struct ParsedVerticalArea {
     pub shift_z: f64,    
     /// Ограничение по оси Х
     pub bound_x: (f64, f64),
+}
+///
+impl std::fmt::Display for ParsedVerticalArea {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "ParsedVerticalArea(area_value:{}, shift_z:{} bound:({}, {}))",
+            self.value, self.shift_z, self.bound_x.0, self.bound_x.1,
+        )
+    }
 }

@@ -1,19 +1,14 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
 use crate::{
-    icing::{IIcingStab, IcingMass, IcingStab},
-    load::*,
-    mass::*,
-    math::*,
-    stability::*,
-    strength::*,
-    windage::Windage,
+    area::{HAreaStability, HAreaStrength, VerticalArea}, icing::{IIcingStab, IcingMass, IcingStab}, load::*, mass::*, math::*, stability::*, strength::*, windage::Windage
 };
 use data::input_api_server::*;
 pub use error::Error;
 use log::info;
 use std::{collections::HashMap, rc::Rc, time::Instant};
 
+mod area;
 mod data;
 mod error;
 mod icing;
@@ -176,17 +171,25 @@ fn main() -> Result<(), Error> {
             ))));
         });
     */
-    let icing_area_h = data
-        .area_h
+    let icing_area_h_str = data
+        .area_h_str
         .iter()
-        .map(|v| Area::new(v.value, None, Bound::from(v.bound_x)))
+        .map(|v| HAreaStrength::new(v.value, Bound::from(v.bound_x)))
+        .collect();
+    let icing_area_h_stab = data
+        .area_h_stab
+        .iter()
+        .map(|v| HAreaStability::new(v.value, Position::new(v.shift_x, v.shift_y, v.shift_z)))
         .collect();
     let icing_area_v = data
         .area_v
         .iter()
-        .map(|v| Area::new(v.value, v.shift_x, Bound::from(v.bound_x)))
-        .collect();
+        .map(|v| VerticalArea::new(v.value, v.shift_z, Bound::from(v.bound_x)))
+        .collect::<Vec<_>>();
 
+    let area_strength: Rc<dyn crate::strength::IArea> = Rc::new(crate::strength::Area::new(icing_area_v.clone(), icing_area_h_str, Rc::clone(&loads_cargo)));
+    let area_moment: Rc<dyn crate::stability::IArea> = Rc::new(crate::stability::Area::new(icing_area_v, icing_area_h_stab, Rc::clone(&loads_cargo)));
+   
     let icing_stab: Rc<dyn IIcingStab> = Rc::new(IcingStab::new(
         data.icing_stab.clone(),
         data.icing_m_timber,
@@ -199,17 +202,15 @@ fn main() -> Result<(), Error> {
         data.icing_coef_v_moment_full,
         data.icing_coef_v_moment_half,
     ));
+
     // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     let mass: Rc<dyn IMass> = Rc::new(Mass::new(
         loads_const,
         const_shift,
         Rc::new(IcingMass::new(
             Rc::clone(&icing_stab),
-            crate::strength::Area::new(area_const_v, area_const_h, Rc::clone(&loads_cargo)),
-            crate::stability::Area::new(area_const_v, area_const_h, Rc::clone(&loads_cargo)),
-            icing_area_h,
-            icing_area_v,
-            Rc::clone(&loads_cargo),
+            Rc::clone(&area_strength),
+            Rc::clone(&area_moment),
         )),
         Rc::clone(&loads_cargo),
         Rc::clone(&bounds),
@@ -317,7 +318,7 @@ fn main() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
     );
     dbg!(stability_arm.dso().len());
-    /*    stability_arm
+    stability_arm
             .dso()
             .iter()
             .for_each(|(k, v)| println!("{k} {v};"));
@@ -325,7 +326,7 @@ fn main() -> Result<(), Error> {
             .ddo()
             .iter()
             .for_each(|(k, v)| println!("{k} {v};"));
-    */
+    
     // Предполагаемое давление ветра +
     // Добавка на порывистость ветра
     let (p_v, m) = data
@@ -357,7 +358,7 @@ fn main() -> Result<(), Error> {
         data.keel_area,
         Rc::clone(&mass),
         volume, // Объемное водоизмещение (1)
-        length,      // длинна по ватерлинии при текущей осадке
+        length, // длинна по ватерлинии при текущей осадке
         breadth,
         mean_draught,
         Curve::new_linear(&data.coefficient_k.data()),

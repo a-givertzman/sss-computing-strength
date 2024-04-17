@@ -1,3 +1,5 @@
+//! Расчет остойчивости судна. 
+
 pub(crate) mod metacentric_height;
 pub(crate) mod rolling_amplitude;
 pub(crate) mod rolling_period;
