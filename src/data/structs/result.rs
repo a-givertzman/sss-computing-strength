@@ -1,113 +1,12 @@
 //! Структуры для преобразования данных из формата данных DB
 //! в формат пригодный для создания объектов.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::error::Error;
 
 use super::*;
 
-/// Шпангоут
-#[derive(Debug)]
-pub struct ParsedFrameData {
-    /// Порядковый номер шпангоута от кормы
-    pub index: usize,
-    /// Координата по х относительно кормы
-    pub x: f64,
-    /// Смещение относительно предыдущего шпангоута
-    pub delta_x: f64,
-    /// кривая погружаемой площади
-    pub immersion_area: Vec<(f64, f64)>,
-}
-///
-impl std::fmt::Display for ParsedFrameData {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "ParsedFrameData(index:{}, x:{}, delta_x:{}, immersion_area.len:{} )",
-            self.index,
-            self.x,
-            self.delta_x,
-            self.immersion_area.len(),
-        )
-    }
-}
-/// Груз
-#[derive(Debug)]
-pub struct ParsedLoadSpaceData {
-    /// Общая масса
-    pub mass: f64,
-    /// Границы груза
-    pub bound: (f64, f64),
-    /// Центр масс
-    pub mass_shift: (f64, f64, f64),
-    /// Продольный момент свободной поверхности жидкости
-    pub m_f_s_y: f64,
-    /// Поперечный момент инерции свободной поверхности жидкости в цистерне
-    pub m_f_s_x: f64,    
-    /// Площадь парусности
-    pub windage_area: f64,
-    /// Центр парусности
-    pub windage_shift: (f64, f64),
-}
-///
-impl std::fmt::Display for ParsedLoadSpaceData {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "LoadSpaceData(mass:{} bound:(x1:{}, x2:{}) mass_shift:({} {} {}) m_f_s_y:{}, m_f_s_x:{} windage_area:{} windage_shift:(x:{}, z:{}))",
-            self.mass,
-            self.bound.0,
-            self.bound.1,
-            self.mass_shift.0,
-            self.mass_shift.1,
-            self.mass_shift.2,
-            self.m_f_s_y,
-            self.m_f_s_x,
-            self.windage_area,
-            self.windage_shift.0,
-            self.windage_shift.1,
-        )
-    }
-}
-/// Цистерна
-#[derive(Debug)]
-pub struct ParsedTankData {
-    /// плотность жидкости в цистерне
-    pub density: f64,
-    /// объем жидкости в цистерне
-    pub volume: f64,
-    /// границы цистерны, (x1, x2)
-    pub bound: (f64, f64),
-    /// кривая координат центра объема жидкости в цистерне в системе координат судна по x
-    pub center_x: Vec<(f64, f64)>,
-    /// кривая координат центра объема жидкости в цистерне в системе координат судна по y
-    pub center_y: Vec<(f64, f64)>,
-    /// кривая координат центра объема жидкости в цистерне в системе координат судна по z
-    pub center_z: Vec<(f64, f64)>,
-    /// кривая момента инерции площади свободной поверхности жидкости volume, x - поперечный
-    pub free_surf_inertia_x: Vec<(f64, f64)>,
-    /// кривая момента инерции площади свободной поверхности жидкостиvolume, y - продольный
-    pub free_surf_inertia_y: Vec<(f64, f64)>,
-}
-///
-impl std::fmt::Display for ParsedTankData {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "LoadSpaceData(density:{}, volume:{}, bound:(x1:{}, x2:{}), center_x.len:{}, center_y.len:{}, center_z.len:{}, inertia_x.len:{}, inertia_y.len:{}) )",
-            self.density,
-            self.volume,
-            self.bound.0,
-            self.bound.1,
-            self.center_x.len(),
-            self.center_y.len(),
-            self.center_z.len(),
-            self.free_surf_inertia_x.len(),
-            self.free_surf_inertia_y.len(),
-        )
-    }
-}
 /// Общая структура для ввода данных. Содержит все данные
 /// для расчетов.
 #[derive(Debug)]
@@ -116,8 +15,23 @@ pub struct ParsedShipData {
     pub navigation_area_name: String,
     /// Параметры района плавания судна  
     pub navigation_area_param: NavigationAreaArray,
-    /// Тип обледенения для расчета парусности
+    /// Тип обледенения
     pub icing_stab: String,
+    /// Масса льда на квадратный метр площади горизонтальной поверхности
+    /// палубного лесного груза
+    pub icing_m_timber: f64,
+    /// Масса льда на квадратный метр площади парусности
+    /// при учете полного обледенения 
+    pub icing_m_v_full: f64,
+    /// Масса льда на квадратный метр площади парусности  
+    /// при учете частичного обледенения
+    pub icing_m_v_half: f64,
+    /// Масса льда на квадратный метр площади горизонтальной
+    /// поверхности при учете полного обледенения 
+    pub icing_m_h_full: f64,
+    /// Масса льда на квадратный метр площади горизонтальной  
+    /// поверхности при учете частичного обледенения
+    pub icing_m_h_half: f64,
     /// Безразмерный множитель Х_1 для расчета качки, Табл. 2.1.5.1-1
     pub multipler_x1: MultiplerX1Array,
     /// Безразмерный множитель Х_2 для расчета качки, Табл. 2.1.5.1-2
@@ -132,14 +46,14 @@ pub struct ParsedShipData {
     /// Ширина корпуса судна
     pub breadth: f64,
     /// Суммарная масса судна
-    pub mass: f64,
+    //pub mass: f64,
     /// Объемное водоизмещение
-    pub volume: f64,
+    //pub volume: f64,
     /// Cуммарная габаритная площадь скуловых килей,
     /// либо площадь боковой проекции брускового киля
     pub keel_area: Option<f64>,
     /// разбиение на шпации - фреймы
-    pub bounds: Vec<(usize, f64)>,
+    pub bounds: Vec<(i32, f64)>,
     /// плотность воды
     pub water_density: f64,
     /// отстояние центра тяжести постоянной массы судна по x  
@@ -156,6 +70,17 @@ pub struct ParsedShipData {
     pub windage_shift_z: f64,
     /// Минимальная осадка, м
     pub draught_min: f64,
+    /// Коэффициент увеличения площади парусности несплощной
+    /// поверхности при учете обледенения
+    pub icing_coef_v_area_full: f64,
+    pub icing_coef_v_area_half: f64,
+    pub icing_coef_v_area_zero: f64,
+    /// Коэффициент увеличения статического момента
+    /// площади парусности несплощной поверхности
+    /// при учете обледенения
+    pub icing_coef_v_moment_full: f64,
+    pub icing_coef_v_moment_half: f64,
+    pub icing_coef_v_moment_zero: f64,
     /// Кривая разницы в площадях парусности для минимальной осадки, м²
     pub delta_windage_area: Vec<(f64, f64)>,
     /// Кривая разницы в статических моментах относительно миделя, м
@@ -188,14 +113,22 @@ pub struct ParsedShipData {
     pub flooding_angle: Vec<(f64, f64)>,
     /// Угол входа верхней палубы в воду
     pub entry_angle: Vec<(f64, f64)>,
-    /// Шпангоуты судна
-    pub frames: Vec<ParsedFrameData>,
+    /// Практические шпангоуты судна
+    pub physical_frame: HashMap<i32, f64>,
+    /// Теоретические шпангоуты судна
+    pub theoretical_frame: Vec<ParsedFrameData>,
     /// Постоянный груз, приходящийся на шпацию
     pub load_constant: LoadConstantArray,
     /// Нагрузка судна без жидких грузов    
     pub load_spaces: Vec<ParsedLoadSpaceData>,
     /// Нагрузка судна, жидкие грузы
     pub tanks: Vec<ParsedTankData>,
+    /// Площадь горизонтальных поверхностей для остойчивости
+    pub area_h_stab: Vec<HStabAreaData>,
+    /// Площадь горизонтальных поверхностей для прочности
+    pub area_h_str: Vec<ParsedHStrArea>,
+    /// Площадь поверхности парусности
+    pub area_v: Vec<ParsedVerticalArea>,
 }
 ///
 impl ParsedShipData {
@@ -223,21 +156,54 @@ impl ParsedShipData {
         entry_angle: EntryAngleDataArray,
         delta_windage_area: DeltaWindageAreaDataArray,
         delta_windage_moment: DeltaWindageMomentDataArray,
-        frame_src: FrameDataArray,
+        physical_frame_src: FrameDataArray,    
+        theoretical_frame_src: FrameDataArray,
         frame_area: FrameAreaData,
         load_constant: LoadConstantArray,
         load_spaces_src: LoadSpaceArray,
         tank_data: TankDataArray,
         tank_centetr_volume: CenterVolumeData,
         tanks_free_moment_inertia: FreeMomentInertiaData,
+        area_h_stab: HStabAreaDataArray,
+        area_h_str: HStrAreaDataArray,
+        area_v_src: VerticalAreaDataArray,
     ) -> Result<Self, Error> {
         log::info!("result parse begin");
         let ship_data = ship_data.data();
+        let ship_length = ship_data.get("length").ok_or(format!(
+            "ParsedShipData parse error: no length for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        if ship_length <= 0. {
+            panic!("Ship length parse error: ship_length <= 0.",);
+        }
 
-        let mut frames = Vec::new();
-        
-        for (index, map) in frame_src.data() {
-            frames.push(ParsedFrameData {
+        let mut physical_frame = HashMap::new();        
+        for (index, map) in physical_frame_src.data() {
+            let value = map.get("x").ok_or(format!(
+                "physical_frame parse error: no x for frame index:{}",
+                index
+            ))?;
+            physical_frame.insert(index, *value);
+        }
+        // Два варианта задания распределения по х - координата или физический шпангоут.
+        // Если тип шпангоут, то находим и подставляем его координату
+        // Координата шпангоута задана относительно кормы, считаем ее относительно центра
+        let bound_x = |value: &f64, value_type: &str| -> Result<f64, Error> { 
+            Ok(if value_type == "frame" {
+                *physical_frame.get(&(*value as i32))
+                    .ok_or(format!(
+                        "load_spaces parse error: no physical_frame for value:{}",
+                        value
+                    ))? - ship_length/2.
+            } else {
+                *value 
+            }) 
+        };
+
+        let mut theoretical_frame = Vec::new();        
+        for (index, map) in theoretical_frame_src.data() {
+            theoretical_frame.push(ParsedFrameData {
                 index,
                 x: *map.get("x").ok_or(format!(
                     "ParsedShipData parse error: no x for frame index:{}",
@@ -253,52 +219,75 @@ impl ParsedShipData {
                 ))?.to_vec(),
             });
         }
-        frames.sort_by(|a, b| a.index.cmp(&b.index));
+        theoretical_frame.sort_by(|a, b| a.index.cmp(&b.index));
+        
         let mut load_spaces = Vec::new();
         for (space_id, map) in load_spaces_src.data() {
+            let (bound_x1_value, bound_x1_type) = map.get("bound_x1").ok_or(format!(
+                "ParsedShipData parse error: no bound_x1 for load_space id:{}",
+                space_id
+            ))?;
+            let (bound_x2_value, bound_x2_type) = map.get("bound_x2").ok_or(format!(
+                "ParsedShipData parse error: no bound_x2 for load_space id:{}",
+                space_id
+            ))?;
             load_spaces.push(ParsedLoadSpaceData {
+                name: map.get("name").ok_or(format!(
+                    "ParsedShipData parse error: no name for load_space id:{}",
+                    space_id
+                ))?.0.to_owned(),
                 mass: map.get("mass").ok_or(format!(
                     "ParsedShipData parse error: no mass for load_space id:{}",
                     space_id
                 ))?.0.parse::<f64>()?,
-                bound: (
-                    map.get("bound_x1").ok_or(format!(
-                        "ParsedShipData parse error: no bound_x1 for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
-                    map.get("bound_x2").ok_or(format!(
-                        "ParsedShipData parse error: no bound_x2 for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
+                bound_x: ( 
+                    bound_x(&bound_x1_value.parse::<f64>()?, bound_x1_type)?, 
+                    bound_x(&bound_x2_value.parse::<f64>()?, bound_x2_type)?, 
                 ),
-                mass_shift: (
-                    map.get("mass_shift_x").ok_or(format!(
-                        "ParsedShipData parse error: no mass_shift_x for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
-                    map.get("mass_shift_y").ok_or(format!(
-                        "ParsedShipData parse error: no mass_shift_y for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
-                    map.get("mass_shift_z").ok_or(format!(
-                        "ParsedShipData parse error: no mass_shift_z for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
-                ),
-                m_f_s_y: map.get("m_f_s_y").ok_or(format!(
-                    "ParsedShipData parse error: no m_f_s_y for load_space id:{}",
-                    space_id
-                ))?.0.parse::<f64>()?,
-                m_f_s_x: map.get("m_f_s_x").ok_or(format!(
-                    "ParsedShipData parse error: no m_f_s_x for load_space id:{}",
-                    space_id
-                ))?.0.parse::<f64>()?,
-                windage_area: map.get("windage_area").ok_or(format!(
-                    "ParsedShipData parse error: no windage_area for load_space id:{}",
-                    space_id
-                ))?.0.parse::<f64>()?,
-                windage_shift: (
-                    map.get("windage_shift_x").ok_or(format!(
+                bound_y: if map.contains_key("bound_y1") && map.contains_key("bound_y2") {
+                    Some((map.get("bound_y1").unwrap().0.parse::<f64>()?,
+                        map.get("bound_y2").unwrap().0.parse::<f64>()?))
+                } else {
+                    None
+                },
+                bound_z: if map.contains_key("bound_z1") && map.contains_key("bound_z2") {
+                    Some((map.get("bound_z1").unwrap().0.parse::<f64>()?,
+                        map.get("bound_z2").unwrap().0.parse::<f64>()?))
+                } else {
+                    None
+                },
+                mass_shift: if map.contains_key("mass_shift_x") && 
+                                map.contains_key("mass_shift_y") &&
+                                map.contains_key("mass_shift_z") {
+                                    Some((map.get("mass_shift_x").ok_or(format!(
+                                        "ParsedShipData parse error: no mass_shift_x for load_space id:{}",
+                                        space_id
+                                    ))?.0.parse::<f64>()?,
+                                    map.get("mass_shift_y").ok_or(format!(
+                                        "ParsedShipData parse error: no mass_shift_y for load_space id:{}",
+                                        space_id
+                                    ))?.0.parse::<f64>()?,
+                                    map.get("mass_shift_z").ok_or(format!(
+                                        "ParsedShipData parse error: no mass_shift_z for load_space id:{}",
+                                        space_id
+                                    ))?.0.parse::<f64>()?,
+                                    ))
+                } else {
+                    None
+                },
+                m_f_s_y: map.get("m_f_s_y").map(|v| v.0.clone() ).map(|v| v.parse::<f64>().ok()).flatten(),
+                m_f_s_x: map.get("m_f_s_x").map(|v| v.0.clone() ).map(|v| v.parse::<f64>().ok()).flatten(),
+                windage_area:  if map.contains_key("windage_area") {
+                    Some( map.get("windage_area").ok_or(format!(
+                            "ParsedShipData parse error: no windage_area for load_space id:{}",
+                            space_id
+                    ))?.0.parse::<f64>()?, )
+                } else {
+                    None
+                },
+                windage_shift: if map.contains_key("windage_shift_x") && 
+                                    map.contains_key("windage_shift_z") {
+                    Some(( map.get("windage_shift_x").ok_or(format!(
                         "ParsedShipData parse error: no windage_shift_x for load_space id:{}",
                         space_id
                     ))?.0.parse::<f64>()?,
@@ -306,7 +295,10 @@ impl ParsedShipData {
                         "ParsedShipData parse error: no windage_shift_z for load_space id:{}",
                         space_id
                     ))?.0.parse::<f64>()?,
-                ),
+                    ))
+                } else {
+                    None
+                },
             });
         }
 
@@ -353,6 +345,43 @@ impl ParsedShipData {
                 ))?,
             });
         }
+
+        let area_h_str = area_h_str.data().iter().map(|src_data| {
+            Ok(ParsedHStrArea {
+                value: src_data.value,
+                bound_x: ( 
+                    bound_x(&src_data.bound_x1, &src_data.bound_type)?, 
+                    bound_x(&src_data.bound_x2, &src_data.bound_type)?, 
+                ),
+            }) 
+        }).collect::<Result<Vec<ParsedHStrArea>, Error>>()?;
+
+        let area_v = area_v_src.data().iter().map(|src_data| {
+            // Два варианта задания распределения по х - координата или физический шпангоут.
+            // Если тип шпангоут, то находим и подставляем его координату
+            // Координата шпангоута задана относительно кормы, считаем ее относительно центра
+            let bound_x = |value: &f64, value_type: &str| -> Result<f64, Error> { 
+                Ok(if value_type == "frame" {
+                    *physical_frame.get(&(*value as i32))
+                        .ok_or(format!(
+                            "load_spaces parse error: no physical_frame for area:{}",
+                            src_data
+                        ))? - ship_length/2.
+                } else {
+                    *value 
+                }) 
+            };
+
+            Ok(ParsedVerticalArea {
+                value: src_data.value,
+                shift_z: src_data.shift_z,
+                bound_x: ( 
+                    bound_x(&src_data.bound_x1, &src_data.bound_type)?, 
+                    bound_x(&src_data.bound_x2, &src_data.bound_type)?, 
+                ),
+            }) 
+        }).collect::<Result<Vec<ParsedVerticalArea>, Error>>()?;
+
         log::info!("result parse ok");
         log::info!("result check begin");
         Self {
@@ -365,22 +394,19 @@ impl ParsedShipData {
             multipler_x2,
             multipler_s,
             coefficient_k,
-            length: ship_data.get("length").ok_or(format!(
-                "ParsedShipData parse error: no length for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
+            length: ship_length,
             breadth: ship_data.get("breadth").ok_or(format!(
                 "ParsedShipData parse error: no breadth for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
-            mass: ship_data.get("mass").ok_or(format!(
+         /*   mass: ship_data.get("mass").ok_or(format!(
                 "ParsedShipData parse error: no mass for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
             volume: ship_data.get("volume").ok_or(format!(
                 "ParsedShipData parse error: no volume for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
+            ))?.0.parse::<f64>()?,*/
             keel_area: ship_data.get("keel_area").ok_or(format!(
                 "ParsedShipData parse error: no keel_area for ship id:{}",
                 ship_id
@@ -421,6 +447,50 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no icing_stab for ship id:{}",
                 ship_id
             ))?.0.clone(),
+            icing_m_timber: ship_data.get("icing_m_timber").ok_or(format!(
+                "ParsedShipData parse error: no icing_m_timber for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_m_v_full: ship_data.get("icing_m_v_full").ok_or(format!(
+                "ParsedShipData parse error: no icing_m_v_full for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_m_v_half: ship_data.get("icing_m_v_half").ok_or(format!(
+                "ParsedShipData parse error: no icing_m_v_half for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_m_h_full: ship_data.get("icing_m_h_full").ok_or(format!(
+                "ParsedShipData parse error: no icing_m_h_full for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_m_h_half: ship_data.get("icing_m_h_half").ok_or(format!(
+                "ParsedShipData parse error: no icing_m_h_half for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_coef_v_area_full: ship_data.get("icing_coef_v_area_full").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_area_full for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_coef_v_area_half: ship_data.get("icing_coef_v_area_half").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_area_half for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_coef_v_area_zero: ship_data.get("icing_coef_v_area_zero").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_area_zero for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_coef_v_moment_full: ship_data.get("icing_coef_v_moment_full").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_moment_full for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_coef_v_moment_half: ship_data.get("icing_coef_v_moment_half").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_moment_half for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_coef_v_moment_zero: ship_data.get("icing_coef_v_moment_zero").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_moment_zero for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
             bounds: bounds.data(),
             center_waterline: center_waterline.data(),
             waterline_length: waterline_length.data(),
@@ -438,10 +508,14 @@ impl ParsedShipData {
             delta_windage_area: delta_windage_area.data(),
             delta_windage_moment_x: delta_windage_moment.x(),
             delta_windage_moment_z: delta_windage_moment.z(),
-            frames,
+            physical_frame,
+            theoretical_frame,
             load_constant,
             load_spaces,
             tanks,
+            area_h_stab: area_h_stab.data(),
+            area_h_str,
+            area_v,
         }
         .check()
     }
@@ -497,7 +571,7 @@ impl ParsedShipData {
                 self.water_density
             )));
         }
-        if self.mass <= 0. {
+     /*   if self.mass <= 0. {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: value of mass must be positive {}",
                 self.mass
@@ -507,6 +581,78 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: value of volume must be positive {}",
                 self.volume
+            )));
+        }*/
+        if self.draught_min <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of volume must be positive {}",
+                self.draught_min
+            )));
+        }
+        if self.icing_m_timber <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of icing_m_timber must be positive {}",
+                self.icing_m_timber
+            )));
+        }
+        if self.icing_m_v_full <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of icing_m_v_full must be positive {}",
+                self.icing_m_v_full
+            )));
+        }
+        if self.icing_m_v_half <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of icing_m_v_half must be positive {}",
+                self.icing_m_v_half
+            )));
+        }
+        if self.icing_m_h_full <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of icing_m_h_full must be positive {}",
+                self.icing_m_h_full
+            )));
+        }
+        if self.icing_m_h_half <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of icing_m_h_half must be positive {}",
+                self.icing_m_h_half
+            )));
+        }
+        if self.icing_m_v_full <= self.icing_m_v_half {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: icing_m_v_full {} <= icing_m_v_half {}",
+                self.icing_m_v_full, self.icing_m_v_half
+            )));
+        }
+        if self.icing_m_h_full <= self.icing_m_h_half {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: icing_m_h_full {} <= icing_m_h_half {}",
+                self.icing_m_h_full, self.icing_m_h_half
+            )));
+        }
+        if self.icing_coef_v_area_full <= 0. || self.icing_coef_v_area_full > 1. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: 0 <= icing_coef_v_area_full < 1 {}",
+                self.icing_coef_v_area_full
+            )));
+        }
+        if self.icing_coef_v_area_half <= 0. || self.icing_coef_v_area_half > 1. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: 0 <= icing_coef_v_area_half < 1 {}",
+                self.icing_coef_v_area_half
+            )));
+        }
+        if self.icing_coef_v_moment_full <= 0. || self.icing_coef_v_moment_full > 1. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: 0 <= icing_coef_v_moment_full < 1 {}",
+                self.icing_coef_v_moment_full
+            )));
+        }
+        if self.icing_coef_v_moment_half <= 0. || self.icing_coef_v_moment_half > 1. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: 0 <= icing_coef_v_moment_half < 1 {}",
+                self.icing_coef_v_moment_half
             )));
         }
         if self.bounds.len() <= 1 {
@@ -577,29 +723,35 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: draught or angle in entry_angle is negative!, draught{key}, angle:{value}")));
         }
-        if self.frames.len() <= 1 {
+        if self.theoretical_frame.len() <= 1 {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: number of frames must be {}",
-                self.frames.len()
+                self.theoretical_frame.len()
             )));
         }
-        if let Some(frame) = self.frames.iter().find(|f| f.index >= self.frames.len()) {
+        if let Some(frame) = self.theoretical_frame.iter().find(|f| f.index >= self.theoretical_frame.len() as i32) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: index of frame bigger or equal then frames.len(), {}",
                 frame
             )));
         }
+        if let Some(frame) = self.theoretical_frame.iter().find(|f| f.index < 0) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: index of frame is negative, {}",
+                frame
+            )));
+        }
         let qnt_unique_index = self
-            .frames
+            .theoretical_frame
             .iter()
             .map(|f| f.index)
             .collect::<HashSet<_>>()
             .len();
-        if self.frames.len() != qnt_unique_index {
-            return Err(Error::Parameter(format!("Error check ParsedShipData: index of frame must be unique frames:{}, unique index:{}", self.frames.len(), qnt_unique_index )));
+        if self.theoretical_frame.len() != qnt_unique_index {
+            return Err(Error::Parameter(format!("Error check ParsedShipData: index of frame must be unique frames:{}, unique index:{}", self.theoretical_frame.len(), qnt_unique_index )));
         }
         if self
-            .frames
+            .theoretical_frame
             .iter()
             .find(|f| f.index == 0)
             .ok_or(format!(
@@ -626,19 +778,19 @@ impl ParsedShipData {
                 "Error check ParsedShipData: x of frame with last index must be equal to ship_length"
             )));
         }*/
-        if let Some(frame) = self.frames.iter().find(|f| f.x < 0.) {
+        if let Some(frame) = self.theoretical_frame.iter().find(|f| f.x < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: x of frame must be greater or equal to 0, {}",
                 frame
             )));
         }
-        if let Some(frame) = self.frames.iter().find(|f| f.delta_x < 0.) {
+        if let Some(frame) = self.theoretical_frame.iter().find(|f| f.delta_x < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: delta_x of frame must be greater or equal to 0, {}",
                 frame
             )));
         }
-        if let Some(frame) = self.frames.iter().find(|f| {
+        if let Some(frame) = self.theoretical_frame.iter().find(|f| {
             f.immersion_area
                 .iter()
                 .find(|v| v.0 < 0. || v.1 < 0.)
@@ -653,7 +805,7 @@ impl ParsedShipData {
                 index, value, 
             )));
         } 
-        if let Some((index, _)) = load_constant_data.iter().find(|(index, _)| self.frames.iter().find(|frame| &&frame.index == index ).is_none()) {
+        if let Some((index, _)) = load_constant_data.iter().find(|(index, _)| self.theoretical_frame.iter().find(|frame| frame.index == **index as i32 ).is_none()) {
             return Err(Error::Parameter(format!(
                 "Error check LoadConstantArray: index of load_constant must be contained in frames, index:{}", index)));
         }
@@ -666,16 +818,27 @@ impl ParsedShipData {
         if let Some(s) = self
             .load_spaces
             .iter()
-            .find(|s| s.bound.0 >= s.bound.1)
-        {
+            .find(|s| {
+                s.bound_x.0 >= s.bound_x.1 || 
+                (s.bound_y.is_some() && s.bound_y.unwrap().0 >= s.bound_y.unwrap().1) || 
+                (s.bound_z.is_some() && s.bound_z.unwrap().0 >= s.bound_z.unwrap().1)
+            }) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: load_space bound error! {}", s )));
         }
         if let Some(s) = self
         .load_spaces
         .iter()
-        .find(|s| s.bound.0 >= s.mass_shift.0 || s.mass_shift.0 >= s.bound.1)
-        {
+        .find(|s| { 
+            s.mass_shift.is_some() && (
+                s.bound_x.0 >= s.mass_shift.unwrap().0 ||
+                s.mass_shift.unwrap().0 >= s.bound_x.1 ||
+                (s.bound_y.is_some() && s.bound_y.unwrap().0 >= s.mass_shift.unwrap().1 )||
+                (s.bound_y.is_some() && s.mass_shift.unwrap().1 >= s.bound_y.unwrap().1) ||
+                (s.bound_z.is_some() && s.bound_z.unwrap().0 >= s.mass_shift.unwrap().2) ||
+                (s.bound_z.is_some() && s.mass_shift.unwrap().2 >= s.bound_z.unwrap().1) 
+            )
+        }) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: load_space center out of bound error! {}", s )));
         }
@@ -706,6 +869,48 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of free_surf_inertia's points must be {}", tank)));
         }
         log::info!("result parse ok");
+        if self.area_h_stab.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of area_h_stab's points {}",
+                self.area_h_stab.len()
+            )));
+        }
+        if let Some(area) = self.area_h_stab.iter().find(|f| f.value < 0.) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of area_h_stab must be greater or equal to 0, {}",
+                area
+            )));
+        }    
+        if self.area_h_str.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of area_h's points {}",
+                self.area_h_str.len()
+            )));
+        }
+        if let Some(area) = self.area_h_str.iter().find(|f| f.value < 0.) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of area_h must be greater or equal to 0, {}",
+                area
+            )));
+        }          
+        if let Some(area) = self.area_h_str.iter().find(|f| f.bound_x.1 < f.bound_x.0) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of area_h must be greater or equal to 0, {}",
+                area
+            )));
+        }      
+        if self.area_v.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: number of area_v's points {}",
+                self.area_v.len()
+            )));
+        }
+        if let Some(area) = self.area_v.iter().find(|f| f.value < 0.) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of area_v must be greater or equal to 0, {}",
+                area
+            )));
+        } 
         Ok(self)
     }
 }

@@ -9,8 +9,11 @@ mod data_array;
 pub mod load_constant;
 mod pantocaren;
 mod stability;
+mod strength;
 pub mod computed_frame;
 pub mod delta_windage_moment;
+pub mod vertical_area;
+
 
 use data_array::*;
 pub use ship::*;
@@ -23,6 +26,9 @@ pub use load_constant::*;
 pub use pantocaren::*;
 pub use computed_frame::*;
 pub use delta_windage_moment::*;
+pub use vertical_area::*;
+pub use stability::horizontal_area::*;
+pub use strength::horizontal_area::*;
 pub use stability::navigation_area::NavigationAreaArray as NavigationAreaArray;
 pub use stability::multipler_s::MultiplerSArray as MultiplerSArray;
 pub use stability::MultiplerX1Array as MultiplerX1Array;

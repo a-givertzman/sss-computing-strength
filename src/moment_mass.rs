@@ -1,31 +1,27 @@
-//! Нагрузка на корпус судна
+//! Момент массы корпуса, конструкций, груза и обледенения
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{icing::IIcingMass, math::*};
 
 use super::load::ILoad;
 
-/// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+/// Момент массы корпуса, конструкций, груза и обледенения
 #[derive(Clone)]
-pub struct Mass {
+pub struct MomentMass {
     /// Постоянная масса судна распределенная по шпациям
     loads_const: Vec<Rc<Box<dyn ILoad>>>,
     /// Смещение постоянный массы судна
     shift_const: Position,
-    /// Учет распределения обледенения судна
-    icing_mass: Rc<dyn IIcingMass>,
+    /// Учет момента массы обледенения судна
+    icing_moment: Rc<dyn IIcingMoment>,
     /// Все грузы судна
     loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
-    /// Вектор разбиения на отрезки для эпюров
-    bounds: Rc<Bounds>,
     /// Суммарный статический момент
     moment_mass: Rc<RefCell<Option<Moment>>>,
     /// Суммарный момент свободной поверхности
     moment_surface: Rc<RefCell<Option<SurfaceMoment>>>,
     /// Суммарная масса
     sum: Rc<RefCell<Option<f64>>>,
-    /// Распределение массы по вектору разбиения
-    values: Rc<RefCell<Option<Vec<f64>>>>,
     /// Отстояние центра масс
     shift: Rc<RefCell<Option<Position>>>,
     /// Поправка к продольной метацентрической высоте на влияние  
@@ -33,7 +29,7 @@ pub struct Mass {
     delta_m_h: Rc<RefCell<Option<DeltaMH>>>,
 }
 ///
-impl Mass {
+impl MomentMass {
     /// Аргументы конструктора:  
     /// * loads_const - постоянная масса судна распределенная по шпациям
     /// * shift_const - смещение постоянный массы судна
@@ -47,6 +43,7 @@ impl Mass {
         loads_const: Vec<Rc<Box<dyn ILoad>>>,
         shift_const: Position,
         icing_mass: Rc<dyn IIcingMass>,
+        icing_moment: Rc<dyn IIcingMoment>,
         loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
         bounds: Rc<Bounds>,
     ) -> Self {
@@ -54,6 +51,7 @@ impl Mass {
             loads_const,
             shift_const,
             icing_mass,
+            icing_moment,
             loads_cargo,
             bounds,
             moment_mass: Rc::new(RefCell::new(None)),
@@ -66,7 +64,7 @@ impl Mass {
     }
 }
 ///
-impl IMass for Mass {
+impl IMomentMass for MomentMass {
     /// Суммарная масса
     fn sum(&self) -> f64 {
         if self.sum.borrow().is_none() {
@@ -147,7 +145,7 @@ impl IMass for Mass {
                     .iter()
                     .map(|c| c.moment_mass())
                     .sum::<Moment>()
-                + self.icing_mass.moment();
+                + self.icing_moment.moment();
             log::info!("\t Mass moment_mass:{res} ");
             *self.moment_mass.borrow_mut() = Some(res);
         }
@@ -175,7 +173,7 @@ impl IMass for Mass {
 }
 
 #[doc(hidden)]
-pub trait IMass {
+pub trait IMomentMass {
     /// Суммарная масса
     fn sum(&self) -> f64;
     /// Распределение массы по вектору разбиения
@@ -193,7 +191,7 @@ pub trait IMass {
 }
 // заглушка для тестирования
 #[doc(hidden)]
-pub struct FakeMass {
+pub struct FakeMomentMass {
     sum: f64,
     values: Vec<f64>,
     shift: Position,
@@ -203,7 +201,7 @@ pub struct FakeMass {
 }
 #[doc(hidden)]
 #[allow(dead_code)]
-impl FakeMass {
+impl FakeMomentMass {
     pub fn new(
         sum: f64,
         values: Vec<f64>,
@@ -223,7 +221,7 @@ impl FakeMass {
     }
 }
 #[doc(hidden)]
-impl IMass for FakeMass {
+impl IMomentMass for FakeMomentMass {
     fn sum(&self) -> f64 {
         self.sum
     }

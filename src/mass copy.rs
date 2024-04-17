@@ -14,6 +14,8 @@ pub struct Mass {
     shift_const: Position,
     /// Учет распределения обледенения судна
     icing_mass: Rc<dyn IIcingMass>,
+    /// Учет момента массы обледенения судна
+    icing_moment: Rc<dyn IIcingMoment>,
     /// Все грузы судна
     loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
     /// Вектор разбиения на отрезки для эпюров
@@ -47,6 +49,7 @@ impl Mass {
         loads_const: Vec<Rc<Box<dyn ILoad>>>,
         shift_const: Position,
         icing_mass: Rc<dyn IIcingMass>,
+        icing_moment: Rc<dyn IIcingMoment>,
         loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
         bounds: Rc<Bounds>,
     ) -> Self {
@@ -54,6 +57,7 @@ impl Mass {
             loads_const,
             shift_const,
             icing_mass,
+            icing_moment,
             loads_cargo,
             bounds,
             moment_mass: Rc::new(RefCell::new(None)),
@@ -147,7 +151,7 @@ impl IMass for Mass {
                     .iter()
                     .map(|c| c.moment_mass())
                     .sum::<Moment>()
-                + self.icing_mass.moment();
+                + self.icing_moment.moment();
             log::info!("\t Mass moment_mass:{res} ");
             *self.moment_mass.borrow_mut() = Some(res);
         }

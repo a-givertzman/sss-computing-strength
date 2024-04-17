@@ -1,5 +1,10 @@
+//! Промежуточные структуры для serde_json для парсинга данных
+//! для расчета остойчивости
 pub mod navigation_area;
 pub mod multipler_s;
+pub mod horizontal_area;
+
+
 ///
 use super::{DataArray, Pair};
 /// Безразмерный множитель Х_1 Табл. 2.1.5.1-1

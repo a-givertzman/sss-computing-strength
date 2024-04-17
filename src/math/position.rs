@@ -11,6 +11,15 @@ impl Position {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
+    /// Дополнительный конструктор  
+    /// * (f64, f64) - (начало диапазона, конец диапазона)
+    pub fn from(v: (f64, f64, f64)) -> Self {
+        Self::new(
+            v.0,
+            v.1,
+            v.2,
+        )
+    }
     ///
     pub fn x(&self) -> f64 {
         self.x

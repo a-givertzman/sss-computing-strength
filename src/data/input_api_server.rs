@@ -332,17 +332,27 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         ),
     )?)?;
     //  dbg!(&delta_windage_moment);
-    log::info!("input_api_server delta_windage_moment read ok");    
-    let frame = FrameDataArray::parse(&fetch_query(
+    log::info!("input_api_server delta_windage_moment read ok"); 
+    let physical_frame = FrameDataArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!(
-            "SELECT index, key, value FROM frame WHERE ship_id={};",
+            "SELECT index, key, value FROM physical_frame WHERE ship_id={};",
             ship_id
         ),
     )?)?;
-    //    dbg!(&frame);
-    log::info!("input_api_server frame read ok");
+    //    dbg!(&physical_frame);
+    log::info!("input_api_server physical_frame read ok");   
+    let theoretical_frame = FrameDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT index, key, value FROM theoretical_frame WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //    dbg!(&theoretical_frame);
+    log::info!("input_api_server theoretical_frame read ok");
     let frame_area = FrameAreaData::new(
         FrameAreaArray::parse(&fetch_query(
             &mut request,
@@ -402,6 +412,36 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     );
     //  dbg!(&tank_inertia);
     log::info!("input_api_server tank_inertia read ok");
+    let area_h_str = HStrAreaDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT name, value, bound_x1, bound_x2, bound_type FROM horizontal_area_strength WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&area_h_str);
+    log::info!("input_api_server area_h_str read ok");
+    let area_h_stab = HStabAreaDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT name, value, shift_x, shift_y, shift_z FROM horizontal_area_stability WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&area_h_stab);
+    log::info!("input_api_server area_h_stab read ok");
+    let area_v = VerticalAreaDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT name, value, shift_z, bound_x1, bound_x2, bound_type FROM vertical_area WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //  dbg!(&area_v);
+    log::info!("input_api_server vertical_area read ok");
     log::info!("input_api_server read ok");
     ParsedShipData::parse(
         navigation_area_param,
@@ -425,13 +465,17 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         entry_angle,
         delta_windage_area,
         delta_windage_moment,
-        frame,
+        physical_frame,
+        theoretical_frame,
         frame_area,
         load_constant,
         load_space,
         tank,
         tank_center,
         tank_inertia,
+        area_h_stab,
+        area_h_str,
+        area_v,
     )
 }
 /// Вспомогательная функция для выполнения запроса к апи-серверу

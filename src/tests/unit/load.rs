@@ -18,14 +18,16 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = LoadSpace::new(
+        let result = LoadSpace::from(
             20., 
-            Bound::new(-1., 3.), 
-            Position::new(1., 0., 0.), 
-            0.,
-            0.,
-            0.,
-            Position::new(0., 0., 0.), 
+            Some(Position::new(1., 0., 0.)), 
+            (-1., 3.), 
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         ).mass(Some(Bound::new(1., 3.)));
         let target = 10.;
         assert!(
@@ -47,14 +49,16 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = LoadSpace::new(
+        let result = LoadSpace::from(
             20.,
-            Bound::new(-1., 3.), 
-            Position::new(1., 0., 0.), 
-            0., 
-            0.,
-            0.,
-            Position::new(0., 0., 0.), 
+            Some(Position::new(1., 0., 0.)), 
+            (-1., 3.), 
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         ).moment_mass();
         let target = Moment::new(20., 0., 0.);
         assert!(

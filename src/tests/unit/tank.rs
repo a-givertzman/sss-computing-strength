@@ -6,7 +6,7 @@ mod tests {
     use std::{sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, load::*, tank::*};
+    use crate::{math::*, load::*};
 
     static INIT: Once = Once::new();
 

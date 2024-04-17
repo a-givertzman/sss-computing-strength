@@ -14,19 +14,21 @@ mod tests {
 
     fn init_once() {
         INIT.call_once(|| {
-            let loads_cargo: Vec<Rc<Box<dyn ILoad>>> = vec![Rc::new(Box::new(LoadSpace::new(
+            let loads_cargo: Vec<Rc<Box<dyn ILoad>>> = vec![Rc::new(Box::new(LoadSpace::from(
                 100.,
-                Bound::new(-10., 10.),
-                Position::new(0., 0., 0.),
-                0.,
-                0.,
-                100.,
-                Position::new(0., 0., 2.),
+                Some(Position::new(0., 0., 0.)),
+                (-10., 10.),
+                None,
+                None,
+                Some(100.),
+                Some(Position::new(0., 0., 2.)), 
+                None,
+                None,
             )))];
 
             unsafe {
                 WINDAGE.replace(Windage::new(
-                    loads_cargo,
+                    Rc::new(loads_cargo),
                     "none".to_owned(),
                     1000.,
                      Position::new(

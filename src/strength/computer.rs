@@ -81,7 +81,7 @@ impl Computer {
         let mut delta = 1.; // Изменение дифферента
         let mut shear_force_values = None;
         let mut bending_moment_values = None;
-        for i in 0..30 {
+        for _i in 0..30 {
             let mut shear_force = ShearForce::new(TotalForce::new(
                 Rc::clone(&self.mass),
                 self.water_density,
