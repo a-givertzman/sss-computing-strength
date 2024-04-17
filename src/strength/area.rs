@@ -38,39 +38,51 @@ impl Area {
 impl IArea for Area {
     /// Площадь парусности для заданного диапазона, м^2
     fn area_v(&self, bound: Option<Bound>) -> f64 {
-        (self.area_const_v.iter().map(|v| v.value(bound) ).sum::<f64>() + 
-        self.loads_cargo.iter().map(|v| v.windage_area(bound) ).sum::<f64>())
-        * 1.05
+        self.area_const_v.iter().map(|v| v.value(bound) ).sum::<f64>() + 
+        self.loads_cargo.iter().map(|v| v.windage_area(bound) ).sum::<f64>()
     }   
-    /// Площадь горизонтальных поверхностей для заданного диапазона, м^2
-    fn area_h(&self, bound: Option<Bound>) -> f64 {
+    /// Площадь горизонтальных поверхностей открытых палуб для  
+    /// заданного диапазона, м^2
+    fn area_desc_h(&self, bound: Option<Bound>) -> f64 {
         self.area_const_h.iter().map(|v| v.value(bound) ).sum::<f64>() + 
-        self.loads_cargo.iter().map(|v| v.horizontal_area(bound) ).sum::<f64>()
+        self.loads_cargo.iter().filter(|v| !v.is_timber()).map(|v| v.horizontal_area(bound) ).sum::<f64>()
     }   
+    /// Площадь горизонтальных поверхностей палубного лесного  
+    /// груза для заданного диапазона, м^2  
+    fn area_timber_h(&self, bound: Option<Bound>) -> f64 {
+        self.loads_cargo.iter().filter(|v| v.is_timber()).map(|v| v.horizontal_area(bound) ).sum::<f64>()
+    } 
 }
 #[doc(hidden)]
 pub trait IArea {
-    /// Площадь парусности для заданного диапазона, м^2
+    /// Площадь парусности для заданного диапазона, м^2  
     fn area_v(&self, bound: Option<Bound>) -> f64; 
-    /// Площадь горизонтальных поверхностей для заданного диапазона, м^2
-    fn area_h(&self, bound: Option<Bound>) -> f64;
+    /// Площадь горизонтальных поверхностей открытых палуб для  
+    /// заданного диапазона, м^2
+    fn area_desc_h(&self, bound: Option<Bound>) -> f64; 
+    /// Площадь горизонтальных поверхностей палубного лесного  
+    /// груза для заданного диапазона, м^2  
+    fn area_timber_h(&self, bound: Option<Bound>) -> f64; 
 }
 // заглушка для тестирования
 #[doc(hidden)]
 pub struct FakeArea {
     area_v: f64,
-    area_h: f64,
+    area_desc_h: f64,
+    area_timber_h: f64,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeArea {
     pub fn new(
         area_v: f64,
-        area_h: f64,
+        area_desc_h: f64,
+        area_timber_h: f64,
     ) -> Self {
         Self {
             area_v,
-            area_h,
+            area_desc_h,
+            area_timber_h,
         }
     }
 }
@@ -80,10 +92,16 @@ impl IArea for FakeArea {
     fn area_v(&self, _: Option<Bound>) -> f64 {
         self.area_v
     }    
-    /// Площадь горизонтальных поверхностей для заданного диапазона, м^2
-    fn area_h(&self, _: Option<Bound>) -> f64 {
-        self.area_h
-    }       
+    /// Площадь горизонтальных поверхностей открытых палуб для  
+    /// заданного диапазона, м^2
+    fn area_desc_h(&self, bound: Option<Bound>) -> f64 {
+        self.area_desc_h
+    }    
+    /// Площадь горизонтальных поверхностей палубного лесного  
+    /// груза для заданного диапазона, м^2  
+    fn area_timber_h(&self, bound: Option<Bound>) -> f64 {
+        self.area_timber_h
+    }        
 }
 
 

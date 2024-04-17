@@ -71,19 +71,16 @@ pub struct ParsedShipData {
     /// Минимальная осадка, м
     pub draught_min: f64,
     /// Коэффициент увеличения площади парусности несплощной
-    /// поверхности при учете полного обледенения
+    /// поверхности при учете обледенения
     pub icing_coef_v_area_full: f64,
-    /// Коэффициент увеличения площади парусности несплощной
-    /// поверхности при учете частичного обледенения
     pub icing_coef_v_area_half: f64,
+    pub icing_coef_v_area_zero: f64,
     /// Коэффициент увеличения статического момента
     /// площади парусности несплощной поверхности
-    /// при учете полного обледенения
+    /// при учете обледенения
     pub icing_coef_v_moment_full: f64,
-    /// Коэффициент увеличения статического момента
-    /// площади парусности несплощной поверхности
-    /// при учете частичного обледенения
     pub icing_coef_v_moment_half: f64,
+    pub icing_coef_v_moment_zero: f64,
     /// Кривая разницы в площадях парусности для минимальной осадки, м²
     pub delta_windage_area: Vec<(f64, f64)>,
     /// Кривая разницы в статических моментах относительно миделя, м
@@ -478,12 +475,20 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no icing_coef_v_area_half for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
+            icing_coef_v_area_zero: ship_data.get("icing_coef_v_area_zero").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_area_zero for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
             icing_coef_v_moment_full: ship_data.get("icing_coef_v_moment_full").ok_or(format!(
                 "ParsedShipData parse error: no icing_coef_v_moment_full for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
             icing_coef_v_moment_half: ship_data.get("icing_coef_v_moment_half").ok_or(format!(
                 "ParsedShipData parse error: no icing_coef_v_moment_half for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            icing_coef_v_moment_zero: ship_data.get("icing_coef_v_moment_zero").ok_or(format!(
+                "ParsedShipData parse error: no icing_coef_v_moment_zero for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
             bounds: bounds.data(),

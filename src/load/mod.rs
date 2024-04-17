@@ -57,4 +57,8 @@ pub trait ILoad {
     fn moment_ice_delta(&self, ice_mass_per_m_square: f64) -> Moment {
         Moment::new( 0., 0., self.height()*self.horizontal_area(None)*ice_mass_per_m_square)
     }
+    /// Палубный груз - лес
+    fn is_timber(&self) -> bool {
+        false
+    }
 }

@@ -199,8 +199,10 @@ fn main() -> Result<(), Error> {
         data.icing_m_h_half,
         data.icing_coef_v_area_full,
         data.icing_coef_v_area_half,
+        data.icing_coef_v_area_zero,
         data.icing_coef_v_moment_full,
         data.icing_coef_v_moment_half,
+        data.icing_coef_v_moment_zero,
     ));
 
     // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.

@@ -3,7 +3,10 @@
 
 use std::rc::Rc;
 
-use crate::{area::{HAreaStability, VerticalArea}, ILoad, Moment};
+use crate::{
+    area::{HAreaStability, VerticalArea},
+    ILoad, Moment, Position,
+};
 
 /// Момент площади горизонтальных поверхностей и
 /// площади парусности судна
@@ -38,22 +41,21 @@ impl Area {
 impl IArea for Area {
     /// Площадь парусности
     fn area_v(&self) -> f64 {
-        (self.area_const_v.iter().map(|v| v.value(None)).sum::<f64>()
+        self.area_const_v.iter().map(|v| v.value(None)).sum::<f64>()
             + self
                 .loads_cargo
                 .iter()
                 .map(|v| v.windage_area(None))
-                .sum::<f64>()) * 1.05        
+                .sum::<f64>()
     }
     /// Момент площади парусности
     fn moment_v(&self) -> Moment {
-        (self.area_const_v.iter().map(|v| v.moment()).sum::<Moment>()
+        self.area_const_v.iter().map(|v| v.moment()).sum::<Moment>()
             + self
                 .loads_cargo
                 .iter()
                 .map(|v| v.windage_moment())
-                .sum::<Moment>())
-        .scale(1.1)
+                .sum::<Moment>()
     }
     /// Момент площади горизонтальных поверхностей
     fn moment_h(&self) -> Moment {
@@ -62,6 +64,15 @@ impl IArea for Area {
                 .loads_cargo
                 .iter()
                 .map(|v| Moment::new(0., 0., v.horizontal_area(None) * v.height()))
+                .sum::<Moment>()
+    }
+    /// Момент площади горизонтальных поверхностей палубного груза - леса
+    fn moment_timber_h(&self) -> Moment {
+        self
+                .loads_cargo
+                .iter()
+                .filter(|v| v.is_timber())
+                .map(|v| Moment::from_pos(Position::new(v.mass_shift().x(), v.mass_shift().y(), v.mass_shift().z() + v.height()/2.), v.horizontal_area(None)))
                 .sum::<Moment>()
     }
 }
@@ -73,6 +84,8 @@ pub trait IArea {
     fn moment_v(&self) -> Moment;
     /// Момент площади горизонтальных поверхностей
     fn moment_h(&self) -> Moment;
+    /// Момент площади горизонтальных поверхностей палубного груза - леса
+    fn moment_timber_h(&self) -> Moment;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -80,12 +93,23 @@ pub struct FakeArea {
     area_v: f64,
     moment_v: Moment,
     moment_h: Moment,
+    moment_timber_h: Moment,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeArea {
-    pub fn new(area_v: f64, moment_v: Moment, moment_h: Moment) -> Self {
-        Self { area_v, moment_v, moment_h }
+    pub fn new(
+        area_v: f64,
+        moment_v: Moment,
+        moment_h: Moment,
+        moment_timber_h: Moment,
+    ) -> Self {
+        Self {
+            area_v,
+            moment_v,
+            moment_h,
+            moment_timber_h,
+        }
     }
 }
 #[doc(hidden)]
@@ -101,5 +125,9 @@ impl IArea for FakeArea {
     /// Момент площади горизонтальных поверхностей
     fn moment_h(&self) -> Moment {
         self.moment_h.clone()
+    }
+    /// Момент площади горизонтальных поверхностей палубного груза - леса
+    fn moment_timber_h(&self) -> Moment {
+        self.moment_timber_h.clone()
     }
 }
