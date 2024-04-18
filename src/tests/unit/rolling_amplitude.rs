@@ -5,7 +5,7 @@ mod tests {
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, stability::{rolling_amplitude::*, rolling_period::*}, mass::*};
+    use crate::{math::*, stability::{rolling_amplitude::*, rolling_period::*}, FakeMetacentricHeight,};
 
     #[test]
     fn rolling_amplitude() {
@@ -18,13 +18,10 @@ mod tests {
 
         let result = RollingAmplitude::new(
             Some(1.),
-            Rc::new(FakeMass::new(
-                0.0,
-                vec![0.],
-                Position::new(0., 0., 0.1),
-                DeltaMH::new(0., 0.),
-                Position::new(0., 0., 0.,), 
-                SurfaceMoment::new(0., 0.,),
+            Rc::new(FakeMetacentricHeight::new(
+                0., 
+                0., 
+                0.1,
             )),
             18.,
             10.,  
