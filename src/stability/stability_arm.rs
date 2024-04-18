@@ -1,10 +1,10 @@
-//! Диаграмма плеч статической остойчивости.
+//! Диаграмма плеч статической и динамической остойчивости.
 use crate::{math::{Curve, Curve2D, ICurve, ICurve2D}, IMass, Position};
 
 use super::metacentric_height::IMetacentricHeight;
 use std::rc::Rc;
 
-/// Диаграмма плеч статической остойчивости – зависимость  
+/// Диаграмма плеч статической и динамической остойчивости – зависимость  
 /// плеча восстанавливающего момента от угла крена судна.
 #[derive(Clone)]
 pub struct StabilityArm {
@@ -23,7 +23,7 @@ pub struct StabilityArm {
     /// Результат расчета  - диаграмма плеч динамической остойчивости
     ddo: Option<Vec<(f64, f64)>>,
     /// Угол максимума диаграмма плеч статической остойчивости
-    max_angle: Option<f64>,
+    theta_max: Option<f64>,
     /// Угол начального статического крена судна
     angle_static_roll: Option<f64>,
 }
@@ -50,7 +50,7 @@ impl StabilityArm {
             metacentric_height,
             dso: None,
             ddo: None,
-            max_angle: None,
+            theta_max: None,
             angle_static_roll: None,
         }
     }
@@ -101,7 +101,7 @@ impl StabilityArm {
             delta_angle *= 0.5;
             //    log::info!("StabilityArm calculate: value:{value} angle:{angle} max_value:{max_value} max_angle:{max_angle} delta_angle:{delta_angle} i:{i} ");
         }
-        self.max_angle = Some(max_angle);
+        self.theta_max = Some(max_angle);
         dso.push((max_angle, max_value));
         dso.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
         self.dso = Some(dso);
@@ -136,7 +136,7 @@ impl IStabilityArm for StabilityArm {
                 .expect("StabilityArm angle error: no diagram!"),
         );
         let max_angle = self
-            .max_angle
+            .theta_max
             .expect("StabilityArm angle error: no max_angle!");
         if curve.value(max_angle) < target {
             return Vec::new();
@@ -180,6 +180,15 @@ impl IStabilityArm for StabilityArm {
             .clone()
             .expect("StabilityArm diagram error: no diagram!")
     }
+    /// Угол, соответствующий максимуму диаграммы статической остойчивости
+    fn theta_max(&mut self) -> f64 {
+        if self.theta_max.is_none() {
+            self.calculate();
+        }
+        self.theta_max
+            .clone()
+            .expect("StabilityArm theta_max error: no theta_max!")
+    }
 }
 #[doc(hidden)]
 pub trait IStabilityArm {
@@ -189,6 +198,8 @@ pub trait IStabilityArm {
     fn dso(&mut self) -> Vec<(f64, f64)>;
     /// Диаграмма динамической остойчивости
     fn ddo(&mut self) -> Vec<(f64, f64)>;
+    /// Угол, соответствующий максимуму диаграммы статической остойчивости
+    fn theta_max(&mut self) -> f64;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -196,15 +207,17 @@ pub struct FakeStabilityArm {
     angle: Vec<f64>,
     dso: Vec<(f64, f64)>,
     ddo: Vec<(f64, f64)>,
+    theta_max: f64,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeStabilityArm {
-    pub fn new(angle: Vec<f64>, dso: Vec<(f64, f64)>, ddo: Vec<(f64, f64)>) -> Self {
+    pub fn new(angle: Vec<f64>, dso: Vec<(f64, f64)>, ddo: Vec<(f64, f64)>, theta_max: f64,) -> Self {
         Self {
             angle,
             dso,
             ddo,
+            theta_max,
         }
     }
 }
@@ -221,5 +234,9 @@ impl IStabilityArm for FakeStabilityArm {
     /// Диаграмма динамической остойчивости
     fn ddo(&mut self) -> Vec<(f64, f64)> {
         self.ddo.clone()
+    }
+    /// Угол, соответствующий максимуму диаграммы статической остойчивости
+    fn theta_max(&mut self) -> f64 {
+        self.theta_max
     }
 }
