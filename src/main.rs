@@ -279,7 +279,7 @@ fn main() -> Result<(), Error> {
         center_draught_shift.clone(), // отстояние центра величины погруженной части судна
         rad_long,                     // продольный метацентрические радиус
         rad_cross,                    // поперечный метацентрические радиус
-        Rc::clone(&mass),             // все грузы судна
+        Rc::clone(&mass),  // все грузы судна
     ));
 
     // Длинна по ватерлинии при текущей осадке
@@ -356,7 +356,7 @@ fn main() -> Result<(), Error> {
 
     let roll_amplitude = RollingAmplitude::new(
         data.keel_area,
-        Rc::clone(&mass),
+        Rc::clone(&metacentric_height),
         volume, // Объемное водоизмещение (1)
         length, // длинна по ватерлинии при текущей осадке
         breadth,
