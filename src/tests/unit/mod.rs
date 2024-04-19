@@ -24,3 +24,4 @@ mod rolling_period;
 mod rolling_amplitude;
 //mod windage;
 mod icing_mass;
+mod acceleration;

@@ -5,34 +5,29 @@ mod tests {
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, stability::{rolling_amplitude::*, rolling_period::*}, FakeMetacentricHeight,};
+    use crate::{math::*, stability::acceleration::*, FakeMetacentricHeight, FakeRollingAmplitude, FakeRollingPeriod};
 
     #[test]
-    fn rolling_amplitude() {
+    fn acceleration() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let self_id = "test RollingAmplitude";
+        let self_id = "test Acceleration";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = RollingAmplitude::new(
-            Some(1.),
-            Rc::new(FakeMetacentricHeight::new(
-                0., 
-                0.,
-                0., 
-                0.1,
-            )),
-            18.,
-            10.,  
+        let result = Acceleration::new(
             2.,
             1.,
-            Curve::new_linear(&vec![(0., 0.7), (1., 0.7)]),
-            Curve::new_linear(&vec![(0., 0.8), (1., 0.8)]),
             Curve::new_linear(&vec![(0., 1.), (1., 1.)]),
-            Curve::new_linear(&vec![(0., 0.1), (10., 0.1)]),
-            FakeRollingPeriod::new(5., 1.),
+            Rc::new(FakeRollingAmplitude::new(1.)),
+            Rc::new(FakeMetacentricHeight::new(
+                0., 
+                0.1,
+                0.,
+                0.,
+            )),
+            Rc::new(FakeRollingPeriod::new(0., 0.1,)),
         ).calculate();
 
         let target = 8.41378;

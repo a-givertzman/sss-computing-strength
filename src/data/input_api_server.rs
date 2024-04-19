@@ -196,6 +196,13 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //    dbg!(&coefficient_k);
     log::info!("input_api_server coefficient_k read ok");
+    let coefficient_k_theta = CoefficientKThetaArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!("SELECT key, value FROM coefficient_k_theta;"),
+    )?)?;
+    //    dbg!(&coefficient_k_theta);
+    log::info!("input_api_server coefficient_k_theta read ok");
     let bounds = ComputedFrameDataArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -449,6 +456,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         multipler_x2,
         multipler_s,
         coefficient_k,
+        coefficient_k_theta,
         ship_id,
         ship_data,
         bounds,

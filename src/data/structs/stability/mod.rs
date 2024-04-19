@@ -14,3 +14,5 @@ pub type MultiplerX2Array = DataArray<Pair>;
 /// Коэффициент k для судов, имеющих скуловые кили или 
 /// брусковый киль. Табл. 2.1.5.2
 pub type CoefficientKArray = DataArray<Pair>;
+/// Коэффициент k_theta учитывающий особенности качки судов смешанного типа
+pub type CoefficientKThetaArray = DataArray<Pair>;

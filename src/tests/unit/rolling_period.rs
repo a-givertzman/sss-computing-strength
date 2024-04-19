@@ -22,6 +22,7 @@ mod tests {
             1.,            
             Rc::new(FakeMetacentricHeight::new(
                 100.,
+                0.,
                 1.,
                 0.,
             )),
