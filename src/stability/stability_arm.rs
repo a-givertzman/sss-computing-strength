@@ -1,5 +1,8 @@
 //! Диаграмма плеч статической и динамической остойчивости.
-use crate::{math::{Curve, Curve2D, ICurve, ICurve2D}, IMass, Position};
+use crate::{
+    math::{Curve, Curve2D, ICurve, ICurve2D},
+    IMass, Position,
+};
 
 use super::metacentric_height::IMetacentricHeight;
 use std::rc::Rc;
@@ -9,9 +12,9 @@ use std::rc::Rc;
 #[derive(Clone)]
 pub struct StabilityArm {
     /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
-    mass: Rc<dyn IMass>, 
+    mass: Rc<dyn IMass>,
     /// Отстояние центра величины погруженной части судна
-    center_draught_shift: Position, 
+    center_draught_shift: Position,
     /// Кривая плечей остойчивости формы для разных осадок
     data: Curve2D,
     /// Средняя осадка
@@ -24,7 +27,9 @@ pub struct StabilityArm {
     ddo: Option<Vec<(f64, f64)>>,
     /// Угол максимума диаграммы плеч статической остойчивости
     theta_max: Option<f64>,
-    /// Уголы максимумов диаграммы плеч статической остойчивости
+    /// Угол пересечения с нулем диаграммы плеч статической остойчивости
+    theta_last: Option<f64>,
+    /// Углы максимумов диаграммы плеч статической остойчивости
     max_angles: Option<Vec<(f64, f64)>>,
     /// Угол начального статического крена судна
     angle_static_roll: Option<f64>,
@@ -38,7 +43,7 @@ impl StabilityArm {
     /// * mean_draught - Средняя осадка
     /// * metacentric_height - Продольная и поперечная исправленная метацентрическая высота.
     pub fn new(
-        mass: Rc<dyn IMass>, 
+        mass: Rc<dyn IMass>,
         center_draught_shift: Position,
         data: Curve2D,
         mean_draught: f64,
@@ -53,6 +58,7 @@ impl StabilityArm {
             dso: None,
             ddo: None,
             theta_max: None,
+            theta_last: None,
             max_angles: None,
             angle_static_roll: None,
         }
@@ -68,10 +74,8 @@ impl StabilityArm {
                 let angle_deg = angle_deg as f64;
                 let angle_rad = angle_deg * std::f64::consts::PI / 180.;
                 let value = self.data.value(self.mean_draught, angle_deg)
-                    - self.metacentric_height.z_g_fix()
-                        * angle_rad.sin()
-                    - delta_y
-                        * angle_rad.cos();
+                    - self.metacentric_height.z_g_fix() * angle_rad.sin()
+                    - delta_y * angle_rad.cos();
                 (angle_deg, value)
             })
             .collect::<Vec<(f64, f64)>>();
@@ -108,12 +112,11 @@ impl StabilityArm {
         dso.push((max_angle, max_value));
         dso.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
         self.dso = Some(dso);
-        // нахождение углов максимумов диаграммы
+        // нахождение углов максимумов и угла пересечения с 0
         let mut max_angles: Vec<(f64, f64)> = Vec::new();
         let mut last_value = curve.value(0.);
         let mut last_angle = 0.;
-        (0..=9000)
-        .for_each(|angle_deg| {
+        (0..=9000).for_each(|angle_deg| {
             let angle_deg = angle_deg as f64 * 0.01;
             let angle_rad = angle_deg * std::f64::consts::PI / 180.;
             let value = curve.value(angle_rad);
@@ -121,7 +124,10 @@ impl StabilityArm {
                 if max_angles.is_empty() || max_angles.last().unwrap().1 < last_value {
                     max_angles.push((last_angle, last_value));
                 }
-            } 
+            }
+            if value <= 0. && last_value > 0. {
+                self.theta_last = Some(angle_deg);
+            }
             last_value = value;
             last_angle = angle_deg
         });
@@ -134,12 +140,15 @@ impl StabilityArm {
 
         let mut ddo = vec![(angle_zero, 0.)];
         let start = angle_zero.ceil() as i32;
-        ddo.append(&mut (start..=90).map(|angle_deg| {
-            let angle_deg = angle_deg as f64;
-            let value = curve.integral(angle_zero, angle_deg) * std::f64::consts::PI / 180.;
-            (angle_deg, value)
-        })
-        .collect::<Vec<(f64, f64)>>());
+        ddo.append(
+            &mut (start..=90)
+                .map(|angle_deg| {
+                    let angle_deg = angle_deg as f64;
+                    let value = curve.integral(angle_zero, angle_deg) * std::f64::consts::PI / 180.;
+                    (angle_deg, value)
+                })
+                .collect::<Vec<(f64, f64)>>(),
+        );
         self.ddo = Some(ddo);
     }
 }
@@ -164,16 +173,16 @@ impl IStabilityArm for StabilityArm {
         }
 
         let mut delta_angle = 22.5;
-        let mut angles = vec![max_angle - delta_angle, max_angle + delta_angle];        
+        let mut angles = vec![max_angle - delta_angle, max_angle + delta_angle];
         for i in 0..20 {
             let last_delta_value = target - curve.value(angles[0]);
-  //          log::info!("StabilityArm calculate: target:{target} angle1:{} last_delta_value:{last_delta_value} i:{i} delta_angle:{delta_angle} ", angles[0]);
+            //          log::info!("StabilityArm calculate: target:{target} angle1:{} last_delta_value:{last_delta_value} i:{i} delta_angle:{delta_angle} ", angles[0]);
             if last_delta_value.abs() < 0.00001 {
                 break;
             }
             angles[0] += delta_angle * last_delta_value.signum();
             let last_delta_value = target - curve.value(angles[1]);
- //           log::info!("StabilityArm calculate: target:{target} angle2:{} last_delta_value:{last_delta_value} i:{i} delta_angle:{delta_angle} ", angles[1]);
+            //           log::info!("StabilityArm calculate: target:{target} angle2:{} last_delta_value:{last_delta_value} i:{i} delta_angle:{delta_angle} ", angles[1]);
             if last_delta_value.abs() < 0.00001 {
                 break;
             }
@@ -210,7 +219,16 @@ impl IStabilityArm for StabilityArm {
             .clone()
             .expect("StabilityArm theta_max error: no theta_max!")
     }
-    /// Уголы максимумов диаграммы плеч статической остойчивости
+    /// Угол пересечения с нулем диаграммы плеч статической остойчивости
+    fn theta_last(&mut self) -> f64 {
+        if self.theta_last.is_none() {
+            self.calculate();
+        }
+        self.theta_last
+            .clone()
+            .expect("StabilityArm theta_last error: no theta_last!")
+    }
+    /// Углы максимумов диаграммы плеч статической остойчивости
     fn max_angles(&mut self) -> Vec<(f64, f64)> {
         if self.theta_max.is_none() {
             self.calculate();
@@ -230,6 +248,8 @@ pub trait IStabilityArm {
     fn ddo(&mut self) -> Vec<(f64, f64)>;
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
     fn theta_max(&mut self) -> f64;
+    /// Угол пересечения с нулем диаграммы плеч статической остойчивости
+    fn theta_last(&mut self) -> f64;
     /// Уголы максимумов диаграммы плеч статической остойчивости
     fn max_angles(&mut self) -> Vec<(f64, f64)>;
 }
@@ -240,18 +260,27 @@ pub struct FakeStabilityArm {
     dso: Vec<(f64, f64)>,
     ddo: Vec<(f64, f64)>,
     theta_max: f64,
+    theta_last: f64,
     max_angles: Vec<(f64, f64)>,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeStabilityArm {
-    pub fn new(angle: Vec<f64>, dso: Vec<(f64, f64)>, ddo: Vec<(f64, f64)>, theta_max: f64, max_angles: Vec<(f64, f64)>,) -> Self {
+    pub fn new(
+        angle: Vec<f64>,
+        dso: Vec<(f64, f64)>,
+        ddo: Vec<(f64, f64)>,
+        theta_max: f64,
+        theta_last: f64,
+        max_angles: Vec<(f64, f64)>,
+    ) -> Self {
         Self {
             angle,
             dso,
             ddo,
             theta_max,
             max_angles,
+            theta_last,
         }
     }
 }
@@ -273,9 +302,12 @@ impl IStabilityArm for FakeStabilityArm {
     fn theta_max(&mut self) -> f64 {
         self.theta_max
     }
-
+    /// Угол пересечения с нулем диаграммы плеч статической остойчивости
+    fn theta_last(&mut self) -> f64 {
+        self.theta_last
+    }
     /// Уголы максимумов диаграммы плеч статической остойчивости
-    fn max_angles(&mut self) -> Vec<(f64, f64)>{
+    fn max_angles(&mut self) -> Vec<(f64, f64)> {
         self.max_angles.clone()
     }
 }
