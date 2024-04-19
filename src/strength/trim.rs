@@ -39,7 +39,7 @@ impl Trim {
     #[allow(non_snake_case)]
     pub fn value(&mut self) -> f64 {
         // Продольная исправленная метацентрическая высота (3)
-        let H = self.metacentric_height.h_long();
+        let H = self.metacentric_height.h_long_fix();
         // Момент дифферентующий на 1 см осадки (4)
         let trim_moment = (self.mass.sum() * H) / (100. * self.ship_length);
         // Дифферент судна (5)
