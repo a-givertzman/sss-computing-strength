@@ -4,12 +4,14 @@ mod tank;
 mod space;
 mod desk;
 mod mass;
+mod bulk;
 
 use crate::math::*;
 
 pub use tank::*;
 pub use desk::*;
 pub use mass::*;
+pub use bulk::*;
 
 pub use space::LoadSpace as LoadSpace;
 
