@@ -22,8 +22,8 @@ mod tests {
         let result = Circulation::new(
             10.,
             1000.,
-            50.,
-            2.,
+            40.,
+            4.,
             Rc::new(FakeMass::new(
                 1000.,
                 vec![1000.],

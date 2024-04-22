@@ -51,7 +51,7 @@ impl Circulation {
     /// Плечо кренящего момента на циркуляции при скорости v
     pub fn heel_lever(&self, v: f64) -> f64 {
         // Кренящий момент на циркуляции
-        let m_r = 0.2*(v*v*self.volume/self.l_wl)*(self.mass.shift().z() - self.d/2.);
+        let m_r = 0.2*(v*v*self.volume/self.l_wl)*(self.mass.shift().z() - self.d/2.).abs();
         // Плечо кренящего момента на циркуляции
         let l_r = m_r/self.volume;
         log::info!("Circulation angle v:{v} m_r:{m_r} l_r:{l_r}");
