@@ -1,5 +1,9 @@
 //! Расчет критерия ускорения
 
+use std::rc::Rc;
+
+use crate::{ICurve, IMetacentricHeight, IRollingAmplitude, IRollingPeriod};
+
 /// Расчет критерия ускорения
 pub struct Acceleration {
     ///  Ширина судна B
@@ -7,7 +11,7 @@ pub struct Acceleration {
     /// Осадка судна d
     d: f64,
     /// Коэффициент, учитывающий особенности качки судов смешанного типа
-    k_theta: Curve,
+    k_theta: Rc<dyn ICurve>,
     /// Амплитуда качки судна с круглой скулой (2.1.5)
     rolling_amplitude: Rc<dyn IRollingAmplitude>,    
     /// Продольная и поперечная исправленная метацентрическая высота.
@@ -27,7 +31,7 @@ impl Acceleration {
     pub fn new(
         b: f64,
         d: f64,
-        k_theta: Curve,
+        k_theta: Rc<dyn ICurve>,
         rolling_amplitude: Rc<dyn IRollingAmplitude>,    
         metacentric_height: Rc<dyn IMetacentricHeight>,   
         rolling_period: Rc<dyn IRollingPeriod>,  
@@ -43,7 +47,7 @@ impl Acceleration {
     }
 }
 ///
-impl IAcceleration for Accelleration {
+impl IAcceleration for Acceleration {
     /// Расчет критерия ускорения
     fn calculate(&self) -> f64 {
         let c = self.rolling_period.c();    

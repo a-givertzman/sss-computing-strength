@@ -31,7 +31,7 @@ mod tests {
             let center_draught_shift = Position::new(0., 0., 0.);
 
             let metacentric_height: Rc<dyn IMetacentricHeight> =
-                Rc::new(FakeMetacentricHeight::new(0., 0., 0.));
+                Rc::new(FakeMetacentricHeight::new(0., 0., 0., 0.));
 
             let pantocaren = vec![
                 (

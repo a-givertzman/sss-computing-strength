@@ -64,7 +64,7 @@ impl MetacentricHeight {
         let h_cross_fix = h_cross_0 - delta_m_h.cross();
         // Исправленное отстояние центра масс судна по высоте (10)
         let z_g_fix: f64 = self.mass.shift().z() + delta_m_h.cross();
-        log::info!("\t MetacentricHeight mass:{} center_draught:{} rad_cross:{} rad_long:{} Z_m:{Z_m} H_0:{h_long_0} H:{h_long} z_m:{z_m} h_0:{h_cross_0} h:{h_cross} z_g_fix:{z_g_fix}", 
+        log::info!("\t MetacentricHeight mass:{} center_draught:{} rad_cross:{} rad_long:{} Z_m:{Z_m} H_0:{h_long_0} H:{h_long_fix} z_m:{z_m} h_0:{h_cross_0} h:{h_cross_fix} z_g_fix:{z_g_fix}", 
         self.mass.sum(), self.center_draught_shift, self.rad_cross, self.rad_long );
         *self.h_long_fix.borrow_mut() = Some(h_long_fix);
         *self.h_cross_0.borrow_mut() = Some(h_cross_0);

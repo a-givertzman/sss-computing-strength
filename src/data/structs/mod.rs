@@ -34,6 +34,7 @@ pub use stability::multipler_s::MultiplerSArray as MultiplerSArray;
 pub use stability::MultiplerX1Array as MultiplerX1Array;
 pub use stability::MultiplerX2Array as MultiplerX2Array;
 pub use stability::CoefficientKArray as CoefficientKArray;
+pub use stability::CoefficientKThetaArray as CoefficientKThetaArray;
 
 pub type RadLongDataArray = DataArray<Pair>;
 pub type RadCrossDataArray = DataArray<Pair>;
@@ -46,4 +47,5 @@ pub type WaterlineLengthArray = DataArray<Pair>;
 pub type WaterlineBreadthArray = DataArray<Pair>;
 pub type VolumeShiftArray = DataArray<Pair>;
 pub type DeltaWindageAreaDataArray = DataArray<Pair>;
+
 
