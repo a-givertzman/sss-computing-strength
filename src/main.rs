@@ -6,7 +6,7 @@ use crate::{
 use data::input_api_server::*;
 pub use error::Error;
 use log::info;
-use std::{collections::HashMap, rc::Rc, time::Instant};
+use std::{borrow::BorrowMut, collections::HashMap, rc::Rc, time::Instant};
 
 mod area;
 mod data;
@@ -311,20 +311,20 @@ fn main() -> Result<(), Error> {
         });
     }
 
-    let mut stability_arm = StabilityArm::new(
+    let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
         Rc::clone(&mass),
         center_draught_shift.clone(),
         Curve2D::from_values_catmull_rom(data.pantocaren),
         // Curve2D::from_values_linear(data.pantocaren),
         mean_draught,
         Rc::clone(&metacentric_height),
-    );
-    dbg!(stability_arm.dso().len());
-    stability_arm
+    ));
+    dbg!(lever_diagram.dso().len());
+    lever_diagram
             .dso()
             .iter()
             .for_each(|(k, v)| println!("{k} {v};"));
-        stability_arm
+    lever_diagram
             .ddo()
             .iter()
             .for_each(|(k, v)| println!("{k} {v};"));
@@ -354,7 +354,7 @@ fn main() -> Result<(), Error> {
         Rc::clone(&mass),
     );
 
-    let roll_amplitude = RollingAmplitude::new(
+    let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&metacentric_height),
         volume, // Объемное водоизмещение (1)
@@ -371,7 +371,7 @@ fn main() -> Result<(), Error> {
             mean_draught,
             Rc::clone(&metacentric_height),
         ),
-    );
+    ));
 
     dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
 
@@ -379,9 +379,9 @@ fn main() -> Result<(), Error> {
         // Угол заливания отверстий
         flooding_angle,
         // Диаграмма плеч статической остойчивости
-        Box::new(stability_arm),
+        Rc::clone(&lever_diagram),
         // Амплитуда качки судна с круглой скулой (2.1.5)
-        Box::new(roll_amplitude),
+        Rc::clone(&roll_amplitude),
         // Расчет плеча кренящего момента от давления ветра
         Box::new(wind),
     );

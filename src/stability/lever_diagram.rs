@@ -5,12 +5,12 @@ use crate::{
 };
 
 use super::metacentric_height::IMetacentricHeight;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 /// Диаграмма плеч статической и динамической остойчивости – зависимость  
 /// плеча восстанавливающего момента от угла крена судна.
 #[derive(Clone)]
-pub struct StabilityArm {
+pub struct LeverDiagram {
     /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     mass: Rc<dyn IMass>,
     /// Отстояние центра величины погруженной части судна
@@ -21,21 +21,21 @@ pub struct StabilityArm {
     mean_draught: f64,
     /// Продольная и поперечная исправленная метацентрическая высота.
     metacentric_height: Rc<dyn IMetacentricHeight>,
-    /// Результат расчета  - диаграмма плеч статической остойчивости
-    dso: Option<Vec<(f64, f64)>>,
-    /// Результат расчета  - диаграмма плеч динамической остойчивости
-    ddo: Option<Vec<(f64, f64)>>,
+    /// Результат расчета - диаграмма плеч статической остойчивости
+    dso: Rc<RefCell<Option<Vec<(f64, f64)>>>>,
+    /// Результат расчета - диаграмма плеч динамической остойчивости
+    ddo: Rc<RefCell<Option<Vec<(f64, f64)>>>>,
     /// Угол максимума диаграммы плеч статической остойчивости
-    theta_max: Option<f64>,
+    theta_max: Rc<RefCell<Option<f64>>>,
     /// Угол пересечения с нулем диаграммы плеч статической остойчивости
-    theta_last: Option<f64>,
+    theta_last: Rc<RefCell<Option<f64>>>,
     /// Углы максимумов диаграммы плеч статической остойчивости
-    max_angles: Option<Vec<(f64, f64)>>,
+    max_angles: Rc<RefCell<Option<Vec<(f64, f64)>>>>,
     /// Угол начального статического крена судна
-    angle_static_roll: Option<f64>,
+    angle_static_roll: Rc<RefCell<Option<f64>>>,
 }
 ///
-impl StabilityArm {
+impl LeverDiagram {
     /// Основной конструктор.
     /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     /// * center_draught_shift - Отстояние центра величины погруженной части судна
@@ -55,18 +55,18 @@ impl StabilityArm {
             data,
             mean_draught,
             metacentric_height,
-            dso: None,
-            ddo: None,
-            theta_max: None,
-            theta_last: None,
-            max_angles: None,
-            angle_static_roll: None,
+            dso: Rc::new(RefCell::new(None)),
+            ddo: Rc::new(RefCell::new(None)),
+            theta_max: Rc::new(RefCell::new(None)),
+            theta_last: Rc::new(RefCell::new(None)),
+            max_angles: Rc::new(RefCell::new(None)),
+            angle_static_roll: Rc::new(RefCell::new(None)),
         }
     }
     /// Расчет диаграммы статической остойчивости l, м,  
     /// для каждого угла крена (11) + расчет плеча
     /// динамической остойчивости (13)
-    fn calculate(&mut self) {
+    fn calculate(&self) {
         // расчет диаграммы
         let delta_y = self.mass.shift().y() - self.center_draught_shift.y();
         let mut dso = (-90..=90)
@@ -108,10 +108,10 @@ impl StabilityArm {
             delta_angle *= 0.5;
             //    log::info!("StabilityArm calculate: value:{value} angle:{angle} max_value:{max_value} max_angle:{max_angle} delta_angle:{delta_angle} i:{i} ");
         }
-        self.theta_max = Some(max_angle);
+        *self.theta_max.borrow_mut() = Some(max_angle);
         dso.push((max_angle, max_value));
         dso.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-        self.dso = Some(dso);
+        *self.dso.borrow_mut() = Some(dso);
         // нахождение углов максимумов и угла пересечения с 0
         let mut max_angles: Vec<(f64, f64)> = Vec::new();
         let mut last_value = curve.value(0.);
@@ -126,12 +126,12 @@ impl StabilityArm {
                 }
             }
             if value <= 0. && last_value > 0. {
-                self.theta_last = Some(angle_deg);
+                *self.theta_last.borrow_mut() = Some(angle_deg);
             }
             last_value = value;
             last_angle = angle_deg
         });
-        self.max_angles = Some(max_angles);
+        *self.max_angles.borrow_mut() = Some(max_angles);
         //
         let angle_zero = *self
             .angle(0.)
@@ -149,24 +149,26 @@ impl StabilityArm {
                 })
                 .collect::<Vec<(f64, f64)>>(),
         );
-        self.ddo = Some(ddo);
+        *self.ddo.borrow_mut() = Some(ddo);
     }
 }
 ///
-impl IStabilityArm for StabilityArm {
+impl ILeverDiagram for LeverDiagram {
     /// Углы крена судна соответствующие плечу кренящего момента
-    fn angle(&mut self, target: f64) -> Vec<f64> {
-        if self.dso.is_none() {
+    fn angle(&self, target: f64) -> Vec<f64> {
+        if self.dso.borrow().is_none() {
             self.calculate();
         }
         let curve = Curve::new_linear(
             &self
                 .dso
+                .borrow()
                 .clone()
                 .expect("StabilityArm angle error: no diagram!"),
         );
         let max_angle = self
             .theta_max
+            .borrow()
             .expect("StabilityArm angle error: no max_angle!");
         if curve.value(max_angle) < target {
             return Vec::new();
@@ -193,69 +195,74 @@ impl IStabilityArm for StabilityArm {
         angles
     }
     /// Диаграмма статической остойчивости
-    fn dso(&mut self) -> Vec<(f64, f64)> {
-        if self.dso.is_none() {
+    fn dso(&self) -> Vec<(f64, f64)> {
+        if self.dso.borrow().is_none() {
             self.calculate();
         }
         self.dso
+            .borrow()
             .clone()
             .expect("StabilityArm diagram error: no diagram!")
     }
     /// Диаграмма динамической остойчивости
-    fn ddo(&mut self) -> Vec<(f64, f64)> {
-        if self.ddo.is_none() {
+    fn ddo(&self) -> Vec<(f64, f64)> {
+        if self.ddo.borrow().is_none() {
             self.calculate();
         }
         self.ddo
+            .borrow()
             .clone()
             .expect("StabilityArm diagram error: no diagram!")
     }
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    fn theta_max(&mut self) -> f64 {
-        if self.theta_max.is_none() {
+    fn theta_max(&self) -> f64 {
+        if self.theta_max.borrow().is_none() {
             self.calculate();
         }
         self.theta_max
+            .borrow()
             .clone()
             .expect("StabilityArm theta_max error: no theta_max!")
     }
     /// Угол пересечения с нулем диаграммы плеч статической остойчивости
-    fn theta_last(&mut self) -> f64 {
-        if self.theta_last.is_none() {
+    fn theta_last(&self) -> f64 {
+        if self.theta_last.borrow().is_none() {
             self.calculate();
         }
         self.theta_last
+            .borrow()
             .clone()
             .expect("StabilityArm theta_last error: no theta_last!")
     }
     /// Углы максимумов диаграммы плеч статической остойчивости
-    fn max_angles(&mut self) -> Vec<(f64, f64)> {
-        if self.theta_max.is_none() {
+    fn max_angles(&self) -> Vec<(f64, f64)> {
+        if self.theta_max.borrow().is_none() {
             self.calculate();
         }
         self.max_angles
+            .borrow()
             .clone()
             .expect("StabilityArm max_angles error: no max_angles!")
     }
 }
 #[doc(hidden)]
-pub trait IStabilityArm {
+pub trait ILeverDiagram {
     /// Углы крена судна соответствующие плечу кренящего момента
-    fn angle(&mut self, target: f64) -> Vec<f64>;
+    fn angle(&self, target: f64) -> Vec<f64>;
     /// Диаграмма статической остойчивости
-    fn dso(&mut self) -> Vec<(f64, f64)>;
+    fn dso(&self) -> Vec<(f64, f64)>;
     /// Диаграмма динамической остойчивости
-    fn ddo(&mut self) -> Vec<(f64, f64)>;
+    fn ddo(&self) -> Vec<(f64, f64)>;
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    fn theta_max(&mut self) -> f64;
+    fn theta_max(&self) -> f64;
     /// Угол пересечения с нулем диаграммы плеч статической остойчивости
-    fn theta_last(&mut self) -> f64;
+    fn theta_last(&self) -> f64;
     /// Уголы максимумов диаграммы плеч статической остойчивости
-    fn max_angles(&mut self) -> Vec<(f64, f64)>;
+    fn max_angles(&self) -> Vec<(f64, f64)>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
-pub struct FakeStabilityArm {
+pub struct FakeLeverDiagram {
     angle: Vec<f64>,
     dso: Vec<(f64, f64)>,
     ddo: Vec<(f64, f64)>,
@@ -265,7 +272,7 @@ pub struct FakeStabilityArm {
 }
 #[doc(hidden)]
 #[allow(dead_code)]
-impl FakeStabilityArm {
+impl FakeLeverDiagram {
     pub fn new(
         angle: Vec<f64>,
         dso: Vec<(f64, f64)>,
@@ -285,29 +292,29 @@ impl FakeStabilityArm {
     }
 }
 #[doc(hidden)]
-impl IStabilityArm for FakeStabilityArm {
+impl ILeverDiagram for FakeLeverDiagram {
     /// Углы крена судна соответствующие плечу кренящего момента
-    fn angle(&mut self, _: f64) -> Vec<f64> {
+    fn angle(&self, _: f64) -> Vec<f64> {
         self.angle.clone()
     }
     /// Диаграмма статической остойчивости
-    fn dso(&mut self) -> Vec<(f64, f64)> {
+    fn dso(&self) -> Vec<(f64, f64)> {
         self.dso.clone()
     }
     /// Диаграмма динамической остойчивости
-    fn ddo(&mut self) -> Vec<(f64, f64)> {
+    fn ddo(&self) -> Vec<(f64, f64)> {
         self.ddo.clone()
     }
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    fn theta_max(&mut self) -> f64 {
+    fn theta_max(&self) -> f64 {
         self.theta_max
     }
     /// Угол пересечения с нулем диаграммы плеч статической остойчивости
-    fn theta_last(&mut self) -> f64 {
+    fn theta_last(&self) -> f64 {
         self.theta_last
     }
     /// Уголы максимумов диаграммы плеч статической остойчивости
-    fn max_angles(&mut self) -> Vec<(f64, f64)> {
+    fn max_angles(&self) -> Vec<(f64, f64)> {
         self.max_angles.clone()
     }
 }
