@@ -25,9 +25,7 @@ mod tests {
                 1000./9.81,
                 vec![0.],
                 Position::new(0., 0., 0.),
-                DeltaMH::new(0., 0.),
                 Position::new(0., 0., 0.,), 
-                SurfaceMoment::new(0., 0.,),
             )),
         )
         .arm_wind_dynamic();

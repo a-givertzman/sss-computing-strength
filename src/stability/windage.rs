@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use crate::{icing::IIcingStab, ILoad, Moment, Position};
+use crate::{icing::IIcingStab, Moment};
 
 /// Парусность судна, площадь и положение 
 /// центра относительно миделя и ОП

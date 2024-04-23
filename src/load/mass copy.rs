@@ -57,7 +57,7 @@ impl LoadMass {
             mass_shift,
             Bound::from(bound_x),
             bound_y.map(|v| Bound::from(v)),
-            bound_y.map(|v| Bound::from(v)),
+            bound_z.map(|v| Bound::from(v)),
         )
     }
 }

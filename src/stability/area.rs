@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::{
     area::{HAreaStability, VerticalArea},
-    ILoad, Moment, Position,
+    IDesk, Moment, Position,
 };
 
 /// Момент площади горизонтальных поверхностей и
@@ -16,24 +16,24 @@ pub struct Area {
     area_const_v: Vec<VerticalArea>,
     /// Площадь горизонтальных поверхностей корпуса судна
     area_const_h: Vec<HAreaStability>,
-    /// Все грузы судна
-    loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
+    /// Все палубные грузы судна
+    desk_cargo: Rc<Vec<Rc<dyn IDesk>>>,
 }
 ///
 impl Area {
     /// Аргументы конструктора:  
     /// * area_const_v - Площадь парусности корпуса судна
     /// * area_const_h - Площадь горизонтальных поверхностей корпуса судна
-    /// * loads_cargo - Все грузы судна
+    /// * desk_cargo - Все палубные грузы судна
     pub fn new(
         area_const_v: Vec<VerticalArea>,
         area_const_h: Vec<HAreaStability>,
-        loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
+        desk_cargo: Rc<Vec<Rc<dyn IDesk>>>,
     ) -> Self {
         Self {
             area_const_v,
             area_const_h,
-            loads_cargo,
+            desk_cargo,
         }
     }
 }
@@ -43,7 +43,7 @@ impl IArea for Area {
     fn area_v(&self) -> f64 {
         self.area_const_v.iter().map(|v| v.value(None)).sum::<f64>()
             + self
-                .loads_cargo
+                .desk_cargo
                 .iter()
                 .map(|v| v.windage_area(None))
                 .sum::<f64>()
@@ -52,7 +52,7 @@ impl IArea for Area {
     fn moment_v(&self) -> Moment {
         self.area_const_v.iter().map(|v| v.moment()).sum::<Moment>()
             + self
-                .loads_cargo
+                .desk_cargo
                 .iter()
                 .map(|v| v.windage_moment())
                 .sum::<Moment>()
@@ -61,19 +61,27 @@ impl IArea for Area {
     fn moment_h(&self) -> Moment {
         self.area_const_h.iter().map(|v| v.moment()).sum::<Moment>()
             + self
-                .loads_cargo
+                .desk_cargo
                 .iter()
                 .map(|v| Moment::new(0., 0., v.horizontal_area(None) * v.height()))
                 .sum::<Moment>()
     }
     /// Момент площади горизонтальных поверхностей палубного груза - леса
     fn moment_timber_h(&self) -> Moment {
-        self
-                .loads_cargo
-                .iter()
-                .filter(|v| v.is_timber())
-                .map(|v| Moment::from_pos(Position::new(v.mass_shift().x(), v.mass_shift().y(), v.mass_shift().z() + v.height()/2.), v.horizontal_area(None)))
-                .sum::<Moment>()
+        self.desk_cargo
+            .iter()
+            .filter(|v| v.is_timber())
+            .map(|v| {
+                Moment::from_pos(
+                    Position::new(
+                        v.shift().x(),
+                        v.shift().y(),
+                        v.shift().z() + v.height() / 2.,
+                    ),
+                    v.horizontal_area(None),
+                )
+            })
+            .sum::<Moment>()
     }
 }
 #[doc(hidden)]
@@ -98,12 +106,7 @@ pub struct FakeArea {
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeArea {
-    pub fn new(
-        area_v: f64,
-        moment_v: Moment,
-        moment_h: Moment,
-        moment_timber_h: Moment,
-    ) -> Self {
+    pub fn new(area_v: f64, moment_v: Moment, moment_h: Moment, moment_timber_h: Moment) -> Self {
         Self {
             area_v,
             moment_v,

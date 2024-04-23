@@ -23,9 +23,7 @@ mod tests {
                 50.0,
                 vec![0.],
                 Position::new(0., 0., 0.),
-                DeltaMH::new(0., 0.),
                 Position::new(0., 0., 0.),
-                SurfaceMoment::new(0., 0.),
             ));
 
             let center_draught_shift = Position::new(0., 0., 0.);
@@ -59,7 +57,7 @@ mod tests {
                     ],
                 ),
             ];
-            let mut lever_diagram = LeverDiagram::new(
+            let lever_diagram = LeverDiagram::new(
                 mass,
                 center_draught_shift,
                 Curve2D::from_values_linear(pantocaren),
