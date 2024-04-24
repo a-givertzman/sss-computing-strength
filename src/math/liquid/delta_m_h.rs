@@ -1,6 +1,6 @@
 //! Поправка к продольной метацентрической высоте на  
 //! влияние свободной поверхности жидкости в цистернах 
-use crate::math::SurfaceMoment;
+use crate::math::FreeSurfaceMoment;
 
 /// Поправка к продольной метацентрической высоте на  
 /// влияние свободной поверхности жидкости в цистернах 
@@ -18,7 +18,7 @@ impl DeltaMH {
         Self{ long, cross: lat }
     }
     ///рассчет поправки из момента свободной поверхности
-    pub fn from_moment(moment: SurfaceMoment, mass: f64) -> Self {
+    pub fn from_moment(moment: FreeSurfaceMoment, mass: f64) -> Self {
         Self::new(moment.x()/mass, moment.y()/mass)
     }
     /// Продольная составляющая

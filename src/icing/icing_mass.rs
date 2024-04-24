@@ -16,7 +16,7 @@ pub struct IcingMass {
     icing_stab: Rc<dyn IIcingStab>,
     /// Распределение площади поверхностей
     area_strength: Rc<dyn crate::strength::IArea>,
-    /// Площади поверхности для расчета остойсивости
+    /// Площади поверхности для расчета остойчивости
     area_stability: Rc<dyn crate::stability::IArea>,
 }
 ///

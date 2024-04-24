@@ -1,19 +1,19 @@
 //! Расчет характеристик остойчивости судна
 
-use std::f64::consts::PI;
+use std::{f64::consts::PI, rc::Rc};
 
 use crate::{math::{Curve, ICurve}, Error};
 
-use super::{rolling_amplitude::IRollingAmplitude, stability_arm::IStabilityArm, wind::IWind};
+use super::{rolling_amplitude::IRollingAmplitude, lever_diagram::ILeverDiagram, wind::IWind};
 
 /// Расчет характеристик остойчивости судна
 pub struct Stability {
     /// Угол заливания отверстий
     flooding_angle: f64,
     /// Диаграмма плеч статической и динамической остойчивости
-    stability_arm: Box<dyn IStabilityArm>,
+    lever_diagram: Rc<dyn ILeverDiagram>,
     /// Амплитуда качки судна с круглой скулой (2.1.5)
-    rolling_amplitude: Box<dyn IRollingAmplitude>,
+    rolling_amplitude: Rc<dyn IRollingAmplitude>,
     /// Расчет плеча кренящего момента от давления ветра
     wind: Box<dyn IWind>,
     /// Кривая диаграммы плеч статической остойчивости
@@ -30,13 +30,13 @@ impl Stability {
     /// * wind - Расчет плеча кренящего момента от давления ветра
     pub fn new(
         flooding_angle: f64,
-        stability_arm: Box<dyn IStabilityArm>,
-        rolling_amplitude: Box<dyn IRollingAmplitude>,
+        lever_diagram: Rc<dyn ILeverDiagram>,
+        rolling_amplitude: Rc<dyn IRollingAmplitude>,
         wind: Box<dyn IWind>,
     ) -> Self {
         Self {
             flooding_angle,
-            stability_arm,
+            lever_diagram,
             rolling_amplitude,
             wind,
             dso_curve: None, 
@@ -65,13 +65,13 @@ impl Stability {
         if self.k.is_none() {
             self.calculate()?;
         }
-        Ok(self.stability_arm.theta_max())
+        Ok(self.lever_diagram.theta_max())
     }
     fn calculate(&mut self) -> Result<(), Error>  {
         let l_w1 = self.wind.arm_wind_static();
         let l_w2 = self.wind.arm_wind_dynamic();
         let theta_w1 = *self
-            .stability_arm
+            .lever_diagram
             .angle(l_w1)
             .first()
             .ok_or(Error::Calculate(
@@ -79,14 +79,14 @@ impl Stability {
             ))?;
         let theta_w2: f64 = 50.;
         let theta_f = self.flooding_angle;
-        let l_w2_angles = self.stability_arm.angle(l_w2);
+        let l_w2_angles = self.lever_diagram.angle(l_w2);
         let l_w2_angle_first = *l_w2_angles.first().ok_or(Error::Calculate(
             "Stability calculate error: no angle for l_w2".to_owned(),
         ))?;
         let theta_c = *l_w2_angles.get(1).ok_or(Error::Calculate(
             "Stability calculate error: no second angle for l_w2".to_owned(), 
         ))?;
-        let dso_curve = Curve::new_catmull_rom(&self.stability_arm.dso());
+        let dso_curve = Curve::new_catmull_rom(&self.lever_diagram.dso());
         // расчет а
         let a_angle_first = theta_w1 - self.rolling_amplitude.calculate().round();
         let a_angle_second = l_w2_angle_first;

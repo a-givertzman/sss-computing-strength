@@ -41,6 +41,8 @@ pub struct ParsedShipData {
     /// Коэффициент k для судов, имеющих скуловые кили или 
     /// брусковый киль для расчета качки, Табл. 2.1.5.2
     pub coefficient_k: CoefficientKArray,
+    /// Коэффициент k_theta учитывающий особенности качки судов смешанного типа
+    pub coefficient_k_theta: CoefficientKThetaArray,
     /// Длинна корпуса судна
     pub length: f64,
     /// Ширина корпуса судна
@@ -140,6 +142,7 @@ impl ParsedShipData {
         multipler_x2: MultiplerX2Array,
         multipler_s: MultiplerSArray,
         coefficient_k: CoefficientKArray,
+        coefficient_k_theta: CoefficientKThetaArray,
         ship_id: usize,
         ship_data: ShipArray,
         bounds: ComputedFrameDataArray,
@@ -394,6 +397,7 @@ impl ParsedShipData {
             multipler_x2,
             multipler_s,
             coefficient_k,
+            coefficient_k_theta,
             length: ship_length,
             breadth: ship_data.get("breadth").ok_or(format!(
                 "ParsedShipData parse error: no breadth for ship id:{}",
@@ -544,6 +548,11 @@ impl ParsedShipData {
         if self.coefficient_k.data.is_empty() {
             return Err(Error::Parameter(format!(
                 "Error check CoefficientKArray: no data"
+            )));
+        }
+        if self.coefficient_k_theta.data.is_empty() {
+            return Err(Error::Parameter(format!(
+                "Error check CoefficientKThetaArray: no data"
             )));
         }
         if self.length <= 0. {
