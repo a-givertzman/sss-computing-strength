@@ -1,15 +1,15 @@
-//! Учет крена от смещения зерна
+/// Угол крена от смещения зерна
 
 use std::rc::Rc;
 
 use crate::{ICurve, IMetacentricHeight, IRollingAmplitude, IRollingPeriod};
 
-/// Учет крена от смещения зерна
+/// Угол крена от смещения зерна
 pub struct Grain {
     /// Осадка судна d
     d: f64,
-    /// Все грузы судна
-    loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
+    /// Все навалочные смещаемые грузы судна
+    loads_bulk: Rc<Vec<Rc<dyn IBulk>>>,
     /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     mass: Rc<dyn IMass>,  
     /// Диаграмма плеч статической и динамической остойчивости
@@ -18,69 +18,60 @@ pub struct Grain {
 /// 
 impl Grain {
     /// Основной конструктор
-    /// * b - Ширина судна B
     /// * d - Осадка судна d
-    /// * k_theta - Коэффициент, учитывающий особенности качки судов смешанного типа
-    /// * rolling_amplitude - Амплитуда качки судна с круглой скулой (2.1.5)
-    /// * metacentric_height - Продольная и поперечная исправленная метацентрическая высота.
-    /// * rolling_period - Период качки судна  (2.1.5)
+    /// * loads_bulk - Все навалочные смещаемые грузы судна
+    /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+    /// * lever_diagram - Диаграмма плеч статической и динамической остойчивости
     pub fn new(
-        b: f64,
         d: f64,
-        k_theta: Rc<dyn ICurve>,
-        rolling_amplitude: Rc<dyn IRollingAmplitude>,    
-        metacentric_height: Rc<dyn IMetacentricHeight>,   
-        rolling_period: Rc<dyn IRollingPeriod>,  
+        loads_bulk: Rc<Vec<Rc<dyn IBulk>>>,
+        mass: Rc<dyn IMass>,  
+        lever_diagram: Rc<dyn ILeverDiagram>, 
     ) -> Self {
         Self {
-            b,
             d,
-            k_theta,
-            rolling_amplitude,    
-            metacentric_height,   
-            rolling_period,  
+            loads_bulk,
+            mass,
+            lever_diagram,
         }
     }
 }
 ///
 impl IGrain for Grain {
-    /// Расчет критерия ускорения
-    fn calculate(&self) -> f64 {
-        let c = self.rolling_period.c();    
-        let h_cross_0 = self.metacentric_height.h_cross_0();    
-        let k_theta = self.k_theta.value(self.b/self.d);
-        let theta_1_r = self.rolling_amplitude.calculate();
-        let a = 0.0105 * h_cross_0/(c*c*self.b)*k_theta*theta_1_r;
-        let k = 0.3/a; // >= 1;
-        k
+    /// Расчет угла крена от смещения зерна
+    fn angle(&self) -> f64 {
+        let m_grain = self.loads_bulk.iter().map(|v| v.moment() ).sum();    
+        let a_lever_moment = m_grain/self.mass.sum(); 
+        let a_grain = self.lever_diagram.angle(a_lever_moment);   
+        a_grain
     }
 }
 #[doc(hidden)]
 pub trait IGrain {
-    /// Расчет критерия ускорения
-    fn calculate(&self) -> f64;
+    /// Расчет угла крена от смещения зерна
+    fn angle(&self) -> f64;
 }
 // заглушка для тестирования
 #[doc(hidden)]
 pub struct FakeAccelleration {
-    value: f64,
+    angle: f64,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeAccelleration {
     pub fn new(
-        value: f64,
+        angle: f64,
     ) -> Self {
         Self {
-            value,
+            angle,
         }
     }
 }
 #[doc(hidden)]
 impl IGrain for FakeAccelleration {
     ///
-    fn calculate(&self) -> f64 {
-        self.value
+    fn angle(&self) -> f64 {
+        self.angle
     }
 }
 

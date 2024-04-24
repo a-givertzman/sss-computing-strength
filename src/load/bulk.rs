@@ -39,6 +39,7 @@ impl Bulk {
         center: Rc<dyn IPosShift>,        
         moment: Rc<dyn ICurve>,
     ) -> Self {
+        assert!(s_f > 0., "s_f {s_f} > 0.");
         Self {
             s_f,
             volume,

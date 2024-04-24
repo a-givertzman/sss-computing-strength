@@ -25,7 +25,7 @@ pub struct Windage {
 }
 ///
 impl Windage {
-    /// Аргументы конструктора: 
+    /// Главный конструктор: 
     /// * icing_stab - Тип обледенения
     /// * area_stability - Площади поверхности для расчета остойсивости
     /// * delta_area - Разница в площадях парусности
@@ -50,54 +50,6 @@ impl Windage {
     }
     ///
     fn calculate(&mut self) {
-/*         // Площадь и статический момент парусности сплошных поверхностей 
-        // для минимальной осадки без палубного груза
-        let a_v_cs_dmin1 = self.area;
-        // Cтатический момент относительно миделя (x) и ОП (z) 
-        // для минимальной осадки
-        let moment = Moment::from_pos(self.shift.clone(), self.area);
-        let m_vx_cs_dmin1 = moment.x();
-        let m_vz_cs_dmin1 = moment.z();
-
-        // Площадь и статический момент площади парусности палубного груза
-        let a_v_pg = self.loads_cargo.iter().map(|l| l.windage_area(None)).sum();
-        let shift_pg: Position = self.loads_cargo.iter().map(|l| l.windage_shift()).sum();
-        let m_pg = Moment::from_pos(shift_pg.clone(), a_v_pg);
-
-        // Площадь и статический момент для минимальной осадки
-        let a_v_cs_dmin = a_v_cs_dmin1 + a_v_pg;
-        let m_vx_cs_dmin = m_vx_cs_dmin1 + m_pg.x();
-        let m_vz_cs_dmin = m_vz_cs_dmin1 + m_pg.z();    
-
-        // учет обледенения
-        let a_v_ds_ice = self.icing_stab.coef_v_area() * a_v_cs_dmin;
-        let m_vx_ds_ice = 0.;
-        let m_vz_ds_ice = self.icing_stab.coef_v_moment() * m_vz_cs_dmin;
-    
-        // Парусность несплошных поверхностей
-        let a_v_ds = 0.05*a_v_cs_dmin;
-        let m_vx_ds = 0.;
-        let m_vz_ds = 0.1*m_vz_cs_dmin;        
-
-        // Площадь парусности и моменты судна для минимальной осадки 
-        let a_v_dmin = a_v_cs_dmin + a_v_ds + a_v_ds_ice ;
-        let m_vx_dmin = m_vx_cs_dmin + m_vx_ds + m_vx_ds_ice;
-        let m_vz_dmin = m_vz_cs_dmin + m_vz_ds + m_vz_ds_ice; 
-
-        // Площадь парусности и моменты судна с учетом поправки
-        let a_v = a_v_dmin - self.delta_area;
-        let m_vx = m_vx_dmin - self.delta_moment.x();
-        let m_vz = m_vz_dmin - self.delta_moment.z();
-
-
-        log::info!("Windage a_v_cs_dmin1:{a_v_cs_dmin1} m_vx_cs_dmin1:{m_vx_cs_dmin1} m_vz_cs_dmin1:{m_vz_cs_dmin1} 
-        a_v_pg:{a_v_pg} shift_pg.z:{} m_pg:{m_pg}  
-        a_v_cs_dmin:{a_v_cs_dmin} m_vx_cs_dmin:{m_vx_cs_dmin} m_vz_cs_dmin:{m_vz_cs_dmin}   
-        a_v_ds:{a_v_ds} m_vx_ds:{m_vx_ds} m_vz_ds:{m_vz_ds}   
-        a_v_dmin:{a_v_dmin} m_vx_dmin:{m_vx_dmin} m_vz_dmin:{m_vz_dmin}
-        a_v:{a_v} m_vx:{m_vx} m_vz:{m_vz} x_v:{x_v} z_v:{z_v}", shift_pg.z());
-        */
-
         // Площадь парусности и моменты судна с учетом поправки
         let a_v = self.area_stability.area_v()*self.icing_stab.coef_v_area() - self.delta_area;
         let moment = self.area_stability.moment_v().scale(self.icing_stab.coef_v_moment());

@@ -110,21 +110,7 @@ impl IMass for Mass {
             .clone()
             .expect("Mass shift error: no value")
     }
- /*   /// Поправка к продольной метацентрической высоте на влияние  
-    /// свободной поверхности жидкости в цистернах (2)
-    fn delta_m_h(&self) -> DeltaMH {
-        if self.delta_m_h.borrow().is_none() {
-            assert!(self.sum() > 0., "Mass delta_m_h sum > 0");
-            let res = DeltaMH::from_moment(self.moment_surface(), self.sum());
-            log::info!("\t Mass delta_m_h:({}, {})", res.long(), res.cross());
-            *self.delta_m_h.borrow_mut() = Some(res);
-        }
-        self.delta_m_h
-            .borrow()
-            .clone()
-            .expect("Mass delta_m_h error: no value")
-    }
- */   /// Суммарный статический момент. Для постоянной массы и для запасов считается по
+    /// Суммарный статический момент. Для постоянной массы и для запасов считается по
     /// заданным значениям смещения центра масс
     fn moment_mass(&self) -> Moment {
         if self.moment_mass.borrow().is_none() {
@@ -149,23 +135,6 @@ impl IMass for Mass {
             .clone()
             .expect("Mass moment_mass error: no value")
     }
-/*    /// Суммарный момент свободной поверхности
-    fn moment_surface(&self) -> SurfaceMoment {
-        if self.moment_surface.borrow().is_none() {
-            let res = self
-                .loads_cargo
-                .iter()
-                .map(|c| c.moment_surface())
-                .sum::<SurfaceMoment>();
-            log::info!("\t Mass moment_surface:{res} ");
-            *self.moment_surface.borrow_mut() = Some(res);
-        }
-        self.moment_surface
-            .borrow()
-            .clone()
-            .expect("Mass moment_surface error: no value")
-    }
-*/
 }
 
 #[doc(hidden)]

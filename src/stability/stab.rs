@@ -4,7 +4,7 @@ use std::{f64::consts::PI, rc::Rc};
 
 use crate::{math::{Curve, ICurve}, Error};
 
-use super::{rolling_amplitude::IRollingAmplitude, lever_diagram::ILeverDiagram, wind::IWind};
+use super::{rolling_amplitude::IRollingAmplitude, lever_diagram::ILeverDiagram, Stability::IStability};
 
 /// Расчет характеристик остойчивости судна
 pub struct Stability {
@@ -18,6 +18,8 @@ pub struct Stability {
     wind: Box<dyn IWind>,
     /// Кривая диаграммы плеч статической остойчивости
     dso_curve: Option<Curve>,
+    /// Статический угол крена θ𝑤1, вызванный постоянным ветром
+    theta_w1: Option<f64>,
     /// Критерий погоды
     k: Option<f64>,
 }
@@ -40,32 +42,9 @@ impl Stability {
             rolling_amplitude,
             wind,
             dso_curve: None, 
+            theta_w1: None,
             k: None,
         }
-    }
-    /// Расчет критерия погоды К (2.1.2)
-    pub fn k(&mut self) -> Result<f64, Error> {
-        if self.k.is_none() {
-            self.calculate()?;
-        }
-
-        Ok(self.k.expect("Stability k error: no k!"))
-    }
-    /// Площадь под положительной частью диаграммы статической остойчивости
-    pub fn dso_area(&mut self, angle1: f64, angle2: f64) -> Result<f64, Error> {
-        assert!(angle1 < angle2, "Stability dso_area angle1 {angle1} < angle2 {angle2}");
-        if self.k.is_none() {
-            self.calculate()?;
-        }
-
-        Ok(self.dso_curve.as_ref().expect("Stability k error: no k!").integral(angle1, angle2))
-    }
-    /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    pub fn theta_max(&mut self) -> Result<f64, Error>  {
-        if self.k.is_none() {
-            self.calculate()?;
-        }
-        Ok(self.lever_diagram.theta_max())
     }
     fn calculate(&mut self) -> Result<(), Error>  {
         let l_w1 = self.wind.arm_wind_static();
@@ -108,7 +87,83 @@ impl Stability {
             k:{k}");
 
         self.dso_curve = Some(dso_curve);
+        self.theta_w1 = Some(theta_w1);
         self.k = Some(k);
         Ok(())
     }
 }
+///
+impl IStability for Stability {
+    /// Расчет критерия погоды К (2.1.2)
+    fn k(&mut self) -> Result<f64, Error> {
+        if self.k.is_none() {
+            self.calculate()?;
+        }
+
+        Ok(self.k.expect("Stability k error: no k!"))
+    }
+    /// Площадь под положительной частью диаграммы статической остойчивости
+    fn dso_area(&mut self, angle1: f64, angle2: f64) -> Result<f64, Error> {
+        assert!(angle1 < angle2, "Stability dso_area angle1 {angle1} < angle2 {angle2}");
+        if self.k.is_none() {
+            self.calculate()?;
+        }
+
+        Ok(self.dso_curve.as_ref().expect("Stability k error: no k!").integral(angle1, angle2))
+    }
+    /// Угол, соответствующий максимуму диаграммы статической остойчивости
+    fn theta_max(&mut self) -> Result<f64, Error>  {
+        if self.k.is_none() {
+            self.calculate()?;
+        }
+        Ok(self.lever_diagram.theta_max())
+    }
+}
+#[doc(hidden)]
+pub trait IStability {
+    /// Расчет критерия погоды К (2.1.2)
+    fn k(&mut self) -> Result<f64, Error>;
+    /// Площадь под положительной частью диаграммы статической остойчивости
+    fn dso_area(&mut self, angle1: f64, angle2: f64) -> Result<f64, Error>;
+    /// Угол, соответствующий максимуму диаграммы статической остойчивости
+    fn theta_max(&mut self) -> Result<f64, Error>;
+}
+// заглушка для тестирования
+#[doc(hidden)]
+pub struct FakeStability {
+    k: Result<f64, Error>,
+    dso_area: Result<f64, Error>,
+    theta_max: Result<f64, Error>,
+}
+#[doc(hidden)]
+#[allow(dead_code)]
+impl FakeStability {
+    pub fn new(
+        k: Result<f64, Error>,
+        dso_area: Result<f64, Error>,
+        theta_max: Result<f64, Error>,
+    ) -> Self {
+        Self {
+            k,
+            dso_area,
+            theta_max,
+        }
+    }
+}
+#[doc(hidden)]
+impl IStability for FakeStability {
+    /// Расчет критерия погоды К (2.1.2)
+    fn k(&mut self) -> Result<f64, Error> {
+        self.k.clone()
+    }
+    /// Площадь под положительной частью диаграммы статической остойчивости
+    fn dso_area(&mut self, _: f64, _: f64) -> Result<f64, Error> {
+        self.dso_area.clone()
+    }
+    /// Угол, соответствующий максимуму диаграммы статической остойчивости
+    fn theta_max(&mut self) -> Result<f64, Error> {
+        self.theta_max.clone()
+    }
+}
+
+

@@ -10,6 +10,8 @@ pub(crate) mod windage;
 pub(crate) mod area;
 pub(crate) mod acceleration;
 pub(crate) mod circulation;
+pub(crate) mod grain;
+pub(crate) mod criterion;
 
 pub use metacentric_height::*;
 pub use rolling_amplitude::*;
@@ -20,3 +22,5 @@ pub use stab::*;
 pub use area::*;
 pub use acceleration::*;
 pub use circulation::*;
+pub use grain::*;
+pub use criterion::*;
