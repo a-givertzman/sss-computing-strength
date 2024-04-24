@@ -1,40 +1,41 @@
 #[cfg(test)]
 
 mod tests {
-
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, mass::*, strength::{volume::*, total_force::*}};
+    use crate::{
+        math::*, stability::circulation::*, FakeMass, FakeLeverDiagram,
+    };
 
     #[test]
-    fn total_force() {
+    fn circulation() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let self_id = "test TotalForce";
+        let self_id = "test Circulation heel_lever";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let gravity_g = 9.81;
-        let result = TotalForce::new(
+        let result = Circulation::new(
+            10.,
+            1000.,
+            40.,
+            4.,
             Rc::new(FakeMass::new(
-                30.,
-                vec![20.; 10],
+                1000.,
+                vec![1000.],
                 Position::new(0., 0., 0.),
-                Position::new(0., 0., 0.,), 
+                Moment::new(0., 0., 0.),
             )),
-            1.0,
-            FakeDraught::new(vec![5., 25., 25., 25., 25., 25., 25., 25., 15., 5.]),
-            gravity_g,
+            Rc::new(FakeLeverDiagram::new(vec![0.], vec![(0., 0.)], vec![(0., 0.)], 0., 0., vec![(0., 0.)])),
         )
-        .values();
-        let mut target = Vec::from([15., -5., -5., -5., -5., -5., -5., -5., 5., 15.]);
-        target.mul_single(gravity_g);
+        .heel_lever(10.);
 
+        let target = 1.;
         assert!(
-            result == target,
+            (result - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target

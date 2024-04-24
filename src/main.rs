@@ -1,12 +1,19 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
 use crate::{
-    area::{HAreaStability, HAreaStrength, VerticalArea}, icing::{IIcingStab, IcingMass, IcingStab}, load::*, mass::*, math::*, stability::*, strength::*, windage::Windage
+    area::{HAreaStability, HAreaStrength, VerticalArea},
+    icing::{IIcingStab, IcingMass, IcingStab},
+    load::*,
+    mass::*,
+    math::*,
+    stability::*,
+    strength::*,
+    windage::Windage,
 };
 use data::input_api_server::*;
 pub use error::Error;
 use log::info;
-use std::{collections::HashMap, rc::Rc, time::Instant};
+use std::{borrow::BorrowMut, collections::HashMap, rc::Rc, time::Instant};
 
 mod area;
 mod data;
@@ -100,8 +107,12 @@ fn main() -> Result<(), Error> {
     //let bounds = Rc::new(Bounds::from_n(ship_length, n_parts));
     let bounds = Rc::new(Bounds::from_frames(&data.bounds));
 
+    let mut tanks: Vec<Rc<dyn ITank>> = Vec::new();
+    let mut desks: Vec<Rc<dyn IDesk>> = Vec::new();
+    let mut load_mass: Vec<Rc<dyn ILoadMass>> = Vec::new();
+
     // Постоянная масса судна
-    let mut loads_const: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
+    let mut loads_const: Vec<Rc<dyn ILoadMass>> = Vec::new();
     let const_shift = Position::new(
         data.const_mass_shift_x,
         data.const_mass_shift_y,
@@ -110,27 +121,54 @@ fn main() -> Result<(), Error> {
     for index in 0..frames.len() - 1 {
         let bound = Bound::new(frames[index].shift_x(), frames[index + 1].shift_x());
         if let Some(mass) = data.load_constant.data().get(&index) {
-            loads_const.push(Rc::new(Box::new(LoadSpace::new(
-                Some(LoadMass::new(
-                    *mass,
-                    Some(Position::new(
-                        bound.center(),
-                        const_shift.y(),
-                        const_shift.z(),
-                    )),
-                    bound,
-                    None,
-                    None,
-                )),
-                None,
-                None,
+            let load_mass = Rc::new(LoadMass::new(
+                *mass,
+                bound,
+                Some(Position::new(
+                    bound.center(),
+                    const_shift.y(),
+                    const_shift.z(),
             ))));
+            loads_const.push(load_mass);            
         }
     }
-    // Грузы судна
-    let mut loads_cargo: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
+
     data.load_spaces.iter().for_each(|v| {
-        if v.mass != 0. {
+
+    /*  TODO: desk cargo, timber
+        if let (Some(shift), Some(windage_area), Some(bound_y), Some(bound_z)) =
+            (v.windage_shift, v.windage_area, v.bound_y, v.bound_z)
+        {
+            let desc: Rc<Box<dyn ILoad>> = Rc::new(Box::new(Desk::new(
+                v.mass,
+                Bound::from(v.bound_x),
+                windage_area,
+
+                Position::new(shift.0, 0., shift.1),
+                false, //TODO v.is_timber,
+            )));
+
+            loads_cargo.push(desc);
+        } else 
+
+        if let  =  {
+            
+        }
+*/
+        if let Some(mass_shift) = v.mass_shift { 
+            let load = Rc::new(LoadMass::new(
+                v.mass,
+                Bound::from(v.bound_x),
+                Some(Position::new(
+                    mass_shift.0,
+                    mass_shift.1,
+                    mass_shift.2,
+            ))));
+            load_mass.push(load);   
+        }
+
+
+/*        if v.mass != 0. {
             loads_cargo.push(Rc::new(Box::new(LoadSpace::from(
                 v.mass,
                 if let Some(mass_shift) = v.mass_shift {
@@ -150,9 +188,13 @@ fn main() -> Result<(), Error> {
                 v.m_f_s_y,
                 v.m_f_s_x,
             ))));
-        }
+        }*/
     });
-    let loads_cargo = Rc::new(loads_cargo);
+
+    let loads_const = Rc::new(loads_const);
+    let desks = Rc::new(desks);
+    let load_mass = Rc::new(load_mass);
+
     /*  // Цистерны
         data.tanks.iter().for_each(|v| {
             loads_cargo.push(Rc::new(Box::new(Tank::new(
@@ -187,9 +229,17 @@ fn main() -> Result<(), Error> {
         .map(|v| VerticalArea::new(v.value, v.shift_z, Bound::from(v.bound_x)))
         .collect::<Vec<_>>();
 
-    let area_strength: Rc<dyn crate::strength::IArea> = Rc::new(crate::strength::Area::new(icing_area_v.clone(), icing_area_h_str, Rc::clone(&loads_cargo)));
-    let area_stability: Rc<dyn crate::stability::IArea> = Rc::new(crate::stability::Area::new(icing_area_v, icing_area_h_stab, Rc::clone(&loads_cargo)));
-   
+    let area_strength: Rc<dyn crate::strength::IArea> = Rc::new(crate::strength::Area::new(
+        icing_area_v.clone(),
+        icing_area_h_str,
+        Rc::clone(&desks),
+    ));
+    let area_stability: Rc<dyn crate::stability::IArea> = Rc::new(crate::stability::Area::new(
+        icing_area_v,
+        icing_area_h_stab,
+        Rc::clone(&desks),
+    ));
+
     let icing_stab: Rc<dyn IIcingStab> = Rc::new(IcingStab::new(
         data.icing_stab.clone(),
         data.icing_m_timber,
@@ -214,9 +264,10 @@ fn main() -> Result<(), Error> {
             Rc::clone(&area_strength),
             Rc::clone(&area_stability),
         )),
-        Rc::clone(&loads_cargo),
+        Rc::clone(&load_mass),
         Rc::clone(&bounds),
     ));
+
     // Объемное водоизмещение (1)
     let volume = mass.sum() / data.water_density;
     // Отстояние центра величины погруженной части судна
@@ -279,7 +330,8 @@ fn main() -> Result<(), Error> {
         center_draught_shift.clone(), // отстояние центра величины погруженной части судна
         rad_long,                     // продольный метацентрические радиус
         rad_cross,                    // поперечный метацентрические радиус
-        Rc::clone(&mass),  // все грузы судна
+        tanks,
+        Rc::clone(&mass), // все грузы судна
     ));
 
     // Длинна по ватерлинии при текущей осадке
@@ -311,24 +363,24 @@ fn main() -> Result<(), Error> {
         });
     }
 
-    let mut stability_arm = StabilityArm::new(
+    let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
         Rc::clone(&mass),
         center_draught_shift.clone(),
         Curve2D::from_values_catmull_rom(data.pantocaren),
         // Curve2D::from_values_linear(data.pantocaren),
         mean_draught,
         Rc::clone(&metacentric_height),
-    );
-    dbg!(stability_arm.dso().len());
-    stability_arm
-            .dso()
-            .iter()
-            .for_each(|(k, v)| println!("{k} {v};"));
-        stability_arm
-            .ddo()
-            .iter()
-            .for_each(|(k, v)| println!("{k} {v};"));
-    
+    ));
+    dbg!(lever_diagram.dso().len());
+    lever_diagram
+        .dso()
+        .iter()
+        .for_each(|(k, v)| println!("{k} {v};"));
+    lever_diagram
+        .ddo()
+        .iter()
+        .for_each(|(k, v)| println!("{k} {v};"));
+
     // Предполагаемое давление ветра +
     // Добавка на порывистость ветра
     let (p_v, m) = data
@@ -354,7 +406,7 @@ fn main() -> Result<(), Error> {
         Rc::clone(&mass),
     );
 
-    let roll_amplitude = RollingAmplitude::new(
+    let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&metacentric_height),
         volume, // Объемное водоизмещение (1)
@@ -371,7 +423,7 @@ fn main() -> Result<(), Error> {
             mean_draught,
             Rc::clone(&metacentric_height),
         ),
-    );
+    ));
 
     dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
 
@@ -379,9 +431,9 @@ fn main() -> Result<(), Error> {
         // Угол заливания отверстий
         flooding_angle,
         // Диаграмма плеч статической остойчивости
-        Box::new(stability_arm),
+        Rc::clone(&lever_diagram),
         // Амплитуда качки судна с круглой скулой (2.1.5)
-        Box::new(roll_amplitude),
+        Rc::clone(&roll_amplitude),
         // Расчет плеча кренящего момента от давления ветра
         Box::new(wind),
     );

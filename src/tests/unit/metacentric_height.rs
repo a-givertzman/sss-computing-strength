@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::{DeltaMH, Position, SurfaceMoment}, stability::metacentric_height::MetacentricHeight, mass::FakeMass};
+    use crate::{math::Position, stability::metacentric_height::MetacentricHeight, mass::FakeMass};
 
     static INIT: Once = Once::new();
 
@@ -18,9 +18,7 @@ mod tests {
                 2044.10,
                 vec![0.],
                 Position::new(1.05, 0., 5.32),
-                DeltaMH::new(0., 0.),
                 Position::new(0., 0., 0.,), 
-                SurfaceMoment::new(0., 0.,),
             ));
 
             unsafe {
@@ -28,6 +26,7 @@ mod tests {
                     Position::new(-0.194609657, 0., 0.735524704),
                     696.702572991,
                     100.,
+                    Vec::new(),
                     mass,               
                 ));
             }

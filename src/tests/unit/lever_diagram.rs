@@ -8,14 +8,14 @@ mod tests {
 
     use crate::{
         math::*,
-        stability::{metacentric_height::*, stability_arm::*},
+        stability::{metacentric_height::*, lever_diagram::*},
         FakeMass,
     };
 
     static INIT: Once = Once::new();
 
-    unsafe impl Sync for StabilityArm {} //for static
-    static mut STABILITY_ARM: Option<StabilityArm> = None;
+    unsafe impl Sync for LeverDiagram {} //for static
+    static mut LEVER_DIAGRAM: Option<LeverDiagram> = None;
 
     fn init_once() {
         INIT.call_once(|| {
@@ -23,9 +23,7 @@ mod tests {
                 50.0,
                 vec![0.],
                 Position::new(0., 0., 0.),
-                DeltaMH::new(0., 0.),
                 Position::new(0., 0., 0.),
-                SurfaceMoment::new(0., 0.),
             ));
 
             let center_draught_shift = Position::new(0., 0., 0.);
@@ -59,16 +57,16 @@ mod tests {
                     ],
                 ),
             ];
-            let mut stability_arm = StabilityArm::new(
+            let lever_diagram = LeverDiagram::new(
                 mass,
                 center_draught_shift,
                 Curve2D::from_values_linear(pantocaren),
                 5.,
                 metacentric_height,
             );
-            stability_arm.dso();
+            lever_diagram.dso();
             unsafe {
-                STABILITY_ARM.replace(stability_arm);
+                LEVER_DIAGRAM.replace(lever_diagram);
             }
         })
     }
@@ -78,12 +76,12 @@ mod tests {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
         println!("");
-        let self_id = "test StabilityArm angle";
+        let self_id = "test LeverDiagram angle";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { STABILITY_ARM.clone().unwrap().angle(1.) };
+        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().angle(1.) };
         let target = vec![15., 75.];
         result.iter().zip(target.iter()).for_each(|(r, t)| {
             assert!((r - t).abs() < 0.001, "\nresult: {:?}\ntarget: {:?}", r, t)
@@ -98,12 +96,12 @@ mod tests {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
         println!("");
-        let self_id = "test StabilityArm diagram";
+        let self_id = "test LeverDiagram diagram";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { STABILITY_ARM.clone().unwrap().dso() };
+        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().dso() };
         let target = vec![(0., 0.), (30., 2.), (45., 3.), (60., 2.), (90., 0.)];
         assert!(
             result == target,

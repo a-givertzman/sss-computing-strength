@@ -1,0 +1,87 @@
+//! Учет крена от смещения зерна
+
+use std::rc::Rc;
+
+use crate::{ICurve, IMetacentricHeight, IRollingAmplitude, IRollingPeriod};
+
+/// Учет крена от смещения зерна
+pub struct Grain {
+    /// Осадка судна d
+    d: f64,
+    /// Все грузы судна
+    loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
+    /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+    mass: Rc<dyn IMass>,  
+    /// Диаграмма плеч статической и динамической остойчивости
+    lever_diagram: Rc<dyn ILeverDiagram>, 
+}
+/// 
+impl Grain {
+    /// Основной конструктор
+    /// * b - Ширина судна B
+    /// * d - Осадка судна d
+    /// * k_theta - Коэффициент, учитывающий особенности качки судов смешанного типа
+    /// * rolling_amplitude - Амплитуда качки судна с круглой скулой (2.1.5)
+    /// * metacentric_height - Продольная и поперечная исправленная метацентрическая высота.
+    /// * rolling_period - Период качки судна  (2.1.5)
+    pub fn new(
+        b: f64,
+        d: f64,
+        k_theta: Rc<dyn ICurve>,
+        rolling_amplitude: Rc<dyn IRollingAmplitude>,    
+        metacentric_height: Rc<dyn IMetacentricHeight>,   
+        rolling_period: Rc<dyn IRollingPeriod>,  
+    ) -> Self {
+        Self {
+            b,
+            d,
+            k_theta,
+            rolling_amplitude,    
+            metacentric_height,   
+            rolling_period,  
+        }
+    }
+}
+///
+impl IGrain for Grain {
+    /// Расчет критерия ускорения
+    fn calculate(&self) -> f64 {
+        let c = self.rolling_period.c();    
+        let h_cross_0 = self.metacentric_height.h_cross_0();    
+        let k_theta = self.k_theta.value(self.b/self.d);
+        let theta_1_r = self.rolling_amplitude.calculate();
+        let a = 0.0105 * h_cross_0/(c*c*self.b)*k_theta*theta_1_r;
+        let k = 0.3/a; // >= 1;
+        k
+    }
+}
+#[doc(hidden)]
+pub trait IGrain {
+    /// Расчет критерия ускорения
+    fn calculate(&self) -> f64;
+}
+// заглушка для тестирования
+#[doc(hidden)]
+pub struct FakeAccelleration {
+    value: f64,
+}
+#[doc(hidden)]
+#[allow(dead_code)]
+impl FakeAccelleration {
+    pub fn new(
+        value: f64,
+    ) -> Self {
+        Self {
+            value,
+        }
+    }
+}
+#[doc(hidden)]
+impl IGrain for FakeAccelleration {
+    ///
+    fn calculate(&self) -> f64 {
+        self.value
+    }
+}
+
+
