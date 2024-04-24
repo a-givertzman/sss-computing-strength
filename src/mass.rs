@@ -3,34 +3,29 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{icing::IIcingMass, math::*};
 
-use super::load::ILoad;
+use super::load::ILoadMass;
 
 /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
 #[derive(Clone)]
 pub struct Mass {
     /// Постоянная масса судна распределенная по шпациям
-    loads_const: Vec<Rc<Box<dyn ILoad>>>,
+    loads_const: Rc<Vec<Rc<dyn ILoadMass>>>, 
     /// Смещение постоянный массы судна
     shift_const: Position,
     /// Учет распределения обледенения судна
     icing_mass: Rc<dyn IIcingMass>,
     /// Все грузы судна
-    loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
+    loads_cargo: Rc<Vec<Rc<dyn ILoadMass>>>, 
     /// Вектор разбиения на отрезки для эпюров
     bounds: Rc<Bounds>,
     /// Суммарный статический момент
     moment_mass: Rc<RefCell<Option<Moment>>>,
-    /// Суммарный момент свободной поверхности
-    moment_surface: Rc<RefCell<Option<SurfaceMoment>>>,
     /// Суммарная масса
     sum: Rc<RefCell<Option<f64>>>,
     /// Распределение массы по вектору разбиения
     values: Rc<RefCell<Option<Vec<f64>>>>,
     /// Отстояние центра масс
     shift: Rc<RefCell<Option<Position>>>,
-    /// Поправка к продольной метацентрической высоте на влияние  
-    /// свободной поверхности жидкости в цистернах
-    delta_m_h: Rc<RefCell<Option<DeltaMH>>>,
 }
 ///
 impl Mass {
@@ -44,10 +39,10 @@ impl Mass {
     /// * loads_cargo - грузы судна
     /// * bounds - вектор разбиения на отрезки для эпюров
     pub fn new(
-        loads_const: Vec<Rc<Box<dyn ILoad>>>,
+        loads_const: Rc<Vec<Rc<dyn ILoadMass>>>, 
         shift_const: Position,
         icing_mass: Rc<dyn IIcingMass>,
-        loads_cargo: Rc<Vec<Rc<Box<dyn ILoad>>>>,
+        loads_cargo: Rc<Vec<Rc<dyn ILoadMass>>>, 
         bounds: Rc<Bounds>,
     ) -> Self {
         Self {
@@ -57,11 +52,9 @@ impl Mass {
             loads_cargo,
             bounds,
             moment_mass: Rc::new(RefCell::new(None)),
-            moment_surface: Rc::new(RefCell::new(None)),
             sum: Rc::new(RefCell::new(None)),
             values: Rc::new(RefCell::new(None)),
             shift: Rc::new(RefCell::new(None)),
-            delta_m_h: Rc::new(RefCell::new(None)),
         }
     }
 }
@@ -70,8 +63,8 @@ impl IMass for Mass {
     /// Суммарная масса
     fn sum(&self) -> f64 {
         if self.sum.borrow().is_none() {
-            let res = self.loads_const.iter().map(|v| v.mass(None)).sum::<f64>()
-                + self.loads_cargo.iter().map(|v| v.mass(None)).sum::<f64>()
+            let res = self.loads_const.iter().map(|v| v.value(None)).sum::<f64>()
+                + self.loads_cargo.iter().map(|v| v.value(None)).sum::<f64>()
                 + self.icing_mass.mass(None);
             log::info!("\t Mass sum:{res} ");
             *self.sum.borrow_mut() = Some(res);
@@ -87,12 +80,12 @@ impl IMass for Mass {
                 .map(|b| {
                     self.loads_const
                         .iter()
-                        .map(|v| v.mass(Some(*b)))
+                        .map(|v| v.value(Some(*b)))
                         .sum::<f64>()
                         + self
                             .loads_cargo
                             .iter()
-                            .map(|v| v.mass(Some(*b)))
+                            .map(|v| v.value(Some(*b)))
                             .sum::<f64>()
                         + self.icing_mass.mass(Some(*b))
                 })
@@ -117,7 +110,7 @@ impl IMass for Mass {
             .clone()
             .expect("Mass shift error: no value")
     }
-    /// Поправка к продольной метацентрической высоте на влияние  
+ /*   /// Поправка к продольной метацентрической высоте на влияние  
     /// свободной поверхности жидкости в цистернах (2)
     fn delta_m_h(&self) -> DeltaMH {
         if self.delta_m_h.borrow().is_none() {
@@ -131,21 +124,21 @@ impl IMass for Mass {
             .clone()
             .expect("Mass delta_m_h error: no value")
     }
-    /// Суммарный статический момент. Для постоянной массы и для запасов считается по
+ */   /// Суммарный статический момент. Для постоянной массы и для запасов считается по
     /// заданным значениям смещения центра масс
     fn moment_mass(&self) -> Moment {
         if self.moment_mass.borrow().is_none() {
             let res = self
                 .loads_const
                 .iter()
-                .map(|c: &Rc<Box<dyn ILoad>>| {
-                    Moment::from_pos(self.shift_const.clone(), c.mass(None))
+                .map(|c| {
+                    Moment::from_pos(self.shift_const.clone(), c.value(None))
                 })
                 .sum::<Moment>()
                 + self
                     .loads_cargo
                     .iter()
-                    .map(|c| c.moment_mass())
+                    .map(|c| c.moment())
                     .sum::<Moment>()
                 + self.icing_mass.moment();
             log::info!("\t Mass moment_mass:{res} ");
@@ -156,7 +149,7 @@ impl IMass for Mass {
             .clone()
             .expect("Mass moment_mass error: no value")
     }
-    /// Суммарный момент свободной поверхности
+/*    /// Суммарный момент свободной поверхности
     fn moment_surface(&self) -> SurfaceMoment {
         if self.moment_surface.borrow().is_none() {
             let res = self
@@ -172,6 +165,7 @@ impl IMass for Mass {
             .clone()
             .expect("Mass moment_surface error: no value")
     }
+*/
 }
 
 #[doc(hidden)]
@@ -184,12 +178,12 @@ pub trait IMass {
     fn shift(&self) -> Position;
     /// Поправка к продольной метацентрической высоте на  
     /// влияние свободной поверхности жидкости в цистернах
-    fn delta_m_h(&self) -> DeltaMH;
+  //  fn delta_m_h(&self) -> DeltaMH;
     /// Суммарный статический момент. Для постоянной массы и для запасов считается по
     /// заданным значениям смещения центра масс
     fn moment_mass(&self) -> Moment;
-    /// Суммарный момент свободной поверхности
-    fn moment_surface(&self) -> SurfaceMoment;
+    // Суммарный момент свободной поверхности
+ //   fn moment_surface(&self) -> SurfaceMoment;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -197,9 +191,9 @@ pub struct FakeMass {
     sum: f64,
     values: Vec<f64>,
     shift: Position,
-    delta_m_h: DeltaMH,
+//    delta_m_h: DeltaMH,
     moment_mass: Moment,
-    moment_surface: SurfaceMoment,
+ //   moment_surface: SurfaceMoment,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
@@ -208,17 +202,17 @@ impl FakeMass {
         sum: f64,
         values: Vec<f64>,
         shift: Position,
-        delta_m_h: DeltaMH,
+  //      delta_m_h: DeltaMH,
         moment_mass: Moment,
-        moment_surface: SurfaceMoment,
+  //      moment_surface: SurfaceMoment,
     ) -> Self {
         Self {
             sum,
             values,
             shift,
-            delta_m_h,
+   //         delta_m_h,
             moment_mass,
-            moment_surface,
+   //         moment_surface,
         }
     }
 }
@@ -233,13 +227,13 @@ impl IMass for FakeMass {
     fn shift(&self) -> Position {
         self.shift.clone()
     }
-    fn delta_m_h(&self) -> DeltaMH {
+ /*   fn delta_m_h(&self) -> DeltaMH {
         self.delta_m_h.clone()
-    }
+    }*/
     fn moment_mass(&self) -> Moment {
         self.moment_mass.clone()
     }
-    fn moment_surface(&self) -> SurfaceMoment {
+  /*  fn moment_surface(&self) -> SurfaceMoment {
         self.moment_surface.clone()
-    }
+    }*/
 }

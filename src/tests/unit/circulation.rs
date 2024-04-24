@@ -6,8 +6,7 @@ mod tests {
     use testing::stuff::max_test_duration::TestDuration;
 
     use crate::{
-        math::*, stability::circulation::*, FakeMass, FakeMetacentricHeight, FakeRollingAmplitude,
-        FakeRollingPeriod, FakeLeverDiagram,
+        math::*, stability::circulation::*, FakeMass, FakeLeverDiagram,
     };
 
     #[test]
@@ -28,9 +27,7 @@ mod tests {
                 1000.,
                 vec![1000.],
                 Position::new(0., 0., 0.),
-                DeltaMH::new(0., 0.,),
                 Moment::new(0., 0., 0.),
-                SurfaceMoment::new(0., 0.),
             )),
             Rc::new(FakeLeverDiagram::new(vec![0.], vec![(0., 0.)], vec![(0., 0.)], 0., 0., vec![(0., 0.)])),
         )

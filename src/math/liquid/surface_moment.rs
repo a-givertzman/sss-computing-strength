@@ -1,16 +1,16 @@
-//! Момент инерции площади свободной поверхности
+//! Момент свободной поверхности жидкости
 use std::{iter::Sum, ops::Add};
 
-use super::inertia::inertia_moment::InertiaMoment;
+use super::inertia_moment::InertiaMoment;
 
-/// Момент инерции площади свободной поверхности
+/// Момент свободной поверхности жидкости
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct SurfaceMoment {
+pub struct FreeSurfaceMoment {
     x: f64, // поперечный
     y: f64, // продольный
 }
 ///
-impl SurfaceMoment {
+impl FreeSurfaceMoment {
     ///
     pub fn new(x: f64, y: f64) -> Self {
         Self { x, y }
@@ -29,21 +29,21 @@ impl SurfaceMoment {
     }
 }
 ///
-impl Add for SurfaceMoment {
+impl Add for FreeSurfaceMoment {
     type Output = Self;
     ///
     fn add(self, rhs: Self) -> Self::Output {
-        SurfaceMoment::new(self.x() + rhs.x(), self.y() + rhs.y())
+        FreeSurfaceMoment::new(self.x() + rhs.x(), self.y() + rhs.y())
     }
 }
 ///
-impl Sum for SurfaceMoment {
+impl Sum for FreeSurfaceMoment {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(Self::new(0., 0., ),|a, b| a + b )
     }
 }
 ///
-impl std::fmt::Display for SurfaceMoment {
+impl std::fmt::Display for FreeSurfaceMoment {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "({}, {})", self.x(), self.y(),)
     }

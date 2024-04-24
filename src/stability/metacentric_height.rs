@@ -1,16 +1,18 @@
 //! Исправленная метацентрическая высота
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{math::*, mass::IMass};
+use crate::{mass::IMass, math::*, ITank};
 /// Продольная и поперечная исправленная метацентрическая высота.
 pub struct MetacentricHeight {
-    /// отстояние центра величины погруженной части судна       
+    /// Отстояние центра величины погруженной части судна       
     center_draught_shift: Position,
-    /// продольный метацентрические радиус
+    /// Продольный метацентрические радиус
     rad_long: f64,
-    /// поперечный метацентрические радиус
+    /// Поперечный метацентрические радиус
     rad_cross: f64,
-    /// все грузы судна
+    /// Все жидкие грузы судна
+    tanks: Vec<Rc<dyn ITank>>,
+    /// Все грузы судна
     mass: Rc<dyn IMass>,
     /// Поперечная метацентрическая высота без учета поправки   
     /// на свободные поверхности жидких грузов
@@ -23,18 +25,25 @@ pub struct MetacentricHeight {
     z_g_fix: Rc<RefCell<Option<f64>>>,
 }
 ///
-impl MetacentricHeight {
+impl  MetacentricHeight {
     /// Основной конструктор
+    /// * center_draught_shift - Отстояние центра величины погруженной части судна       
+    /// * rad_long Продольный - метацентрические радиус
+    /// * rad_cross - Поперечный метацентрические радиус
+    /// * tanks - Все жидкие грузы судна
+    /// * mass - Все грузы судна
     pub fn new(
-        center_draught_shift: Position, // отстояние центра величины погруженной части судна
-        rad_long: f64,                  // продольный метацентрические радиус
-        rad_cross: f64,                 // поперечный метацентрические радиус
-        mass: Rc<dyn IMass>,            // все грузы судна
+        center_draught_shift: Position, 
+        rad_long: f64,                 
+        rad_cross: f64,                
+        tanks: Vec<Rc<dyn ITank>>,
+        mass: Rc<dyn IMass>,           
     ) -> Self {
         Self {
             center_draught_shift,
             rad_long,
             rad_cross,
+            tanks,
             mass,
             h_long_fix: Rc::new(RefCell::new(None)),
             h_cross_0: Rc::new(RefCell::new(None)),
@@ -49,7 +58,13 @@ impl MetacentricHeight {
         let Z_m = self.center_draught_shift.z() + self.rad_long;
         // Поправка к продольной метацентрической высоте на влияние
         // свободной поверхности жидкости в цистернах (2)
-        let delta_m_h = self.mass.delta_m_h();
+        let moment_surface = self
+        .tanks
+        .iter()
+        .map(|c| c.moment_surface())
+        .sum::<FreeSurfaceMoment>();
+        let delta_m_h = DeltaMH::from_moment(moment_surface, self.mass.sum());
+        //let delta_m_h = self.mass.delta_m_h();
         // Продольная метацентрическая высота без учета влияния
         // поправки на влияние свободной поверхности (3)
         let h_long_0 = Z_m - self.mass.shift().z();

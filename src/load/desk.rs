@@ -1,63 +1,104 @@
 //! Палубный груз
-use crate::math::*;
+use crate::{math::*, ILoad};
+
+use crate::load::ILoadMass;
 
 /// Палубный груз, имеет площадь и парусность
-pub struct DeskLoad {
-    /// границы груза 
-    bound_x: Bound,
-    bound_y: Bound,
-    bound_z: Bound,
-    /// Площадь парусности
-    windage_area: Option<f64>,
-    /// Смещение центра парусности
-    windage_shift: Option<Position>,
+pub trait IDesk: ILoad {
+    /// Парусность попадающая в Bound или вся если Bound отсутствует
+    fn windage_area(&self, bound: Option<Bound>) -> f64;
+    /// Статический момент площади парусности палубного груза, м^3
+    fn windage_moment(&self) -> Moment {
+        Moment::from_pos(self.shift(), self.windage_area(None))
+    }
+    /// Площадь горизонтальной поверхности, м^2
+    fn horizontal_area(&self, bound: Option<Bound>) -> f64;
+    /// Высота груза, м
+    fn height(&self) -> f64;
+    /// Признак палубного груза: лес
+    fn is_timber(&self) -> bool;
 }
-
-#[allow(dead_code)]
-impl DeskLoad {
-    /// Основной конструктор
-    /// * bound_x - границы груза вдоль продольной оси
-    /// * bound_y - границы груза вдоль поперечной оси
-    /// * bound_z - границы груза вдоль вертикальной оси
-    /// * windage_shift - Смещение центра парусности
+/// Палубный груз, имеет площадь и парусность  
+pub struct Desk { 
+    /// Масса груза   
+    mass: f64,
+    /// Границы груза   
+    bound_x: Bound,
+    /// Площадь парусности  
+    windage_area: f64,
+    /// Площадь горизонтальной поверхности 
+    horizontal_area: f64,
+    /// Смещение центра  
+    shift: Position,
+    /// Признак палубного груза: лес  
+    is_timber: bool,
+}
+///
+impl Desk {
+    /// Основной конструктор  
+    /// * mass - Масса груза  
+    /// * bound_x - границы груза вдоль продольной оси  
+    /// * bound_y - границы груза вдоль поперечной оси  
+    /// * bound_z - границы груза вдоль вертикальной оси  
+    /// * windage_area - Площадь парусности  
+    /// * horizontal_area - Площадь горизонтальной поверхности  
+    /// * shift - Смещение центра  
+    /// * is_timber - Признак палубного груза: лес  
     pub fn new(
+        mass: f64,
         bound_x: Bound,
-        bound_y: Bound,
-        bound_z: Bound,
-        windage_area: Option<f64>,
-        windage_shift: Option<Position>,
+        windage_area: f64,
+        horizontal_area: f64,
+        shift: Position,
+        is_timber: bool,
     ) -> Self {
         Self {
+            mass,
             bound_x,
-            bound_y,
-            bound_z,
             windage_area,
-            windage_shift,
+            horizontal_area,
+            shift,
+            is_timber,
         }
     }
 }
 ///
-impl DeskLoad {
+///
+impl IDesk for Desk {
     /// Парусность попадающая в Bound или вся если Bound отсутствует
-    pub fn windage_area(&self, bound: Option<Bound>) -> f64 {
+    fn windage_area(&self, bound: Option<Bound>) -> f64 {
         self.bound_x.part_ratio(&bound.unwrap_or(self.bound_x)) * 
-        self.windage_area.unwrap_or(self.bound_x.length()*self.bound_z.length())
-    }
-    /// Смещение центра парусности
-    pub fn shift(&self) -> Position {
-        if let Some(windage_shift) = self.windage_shift.clone() {
-            windage_shift
-        } else {
-            Position::new(self.bound_x.center(), self.bound_y.center(), self.bound_y.center(),)
-        }
+        self.windage_area
     }
     /// Площадь горизонтальной поверхности, м^2
-    pub fn horizontal_area(&self, bound: Option<Bound>) -> f64 {
+    fn horizontal_area(&self, bound: Option<Bound>) -> f64 {
         self.bound_x.part_ratio(&bound.unwrap_or(self.bound_x)) *
-        self.bound_y.length()
+        self.horizontal_area
     }
     /// Высота груза, м
-    pub fn height(&self) -> f64 {
-        self.bound_z.length()
+    fn height(&self) -> f64 {
+        self.windage_area/self.bound_x.length()
+    }
+    /// Признак палубного груза: лес
+    fn is_timber(&self) -> bool {
+        self.is_timber
     }
 }
+///
+impl ILoad for Desk {
+    ///
+    fn mass(&self) -> f64 {
+        self.mass
+    }
+    ///
+    fn bound_x(&self) -> Bound {
+        self.bound_x
+    }
+    ///
+    fn shift(&self) -> Position {
+        self.shift.clone()
+    }
+}
+///
+impl ILoadMass for Desk {}
+
