@@ -22,7 +22,7 @@ mod lever_diagram;
 mod wind;
 mod rolling_period;
 mod rolling_amplitude;
-//mod windage;
+mod windage;
 mod icing_mass;
 mod acceleration;
 mod circulation;

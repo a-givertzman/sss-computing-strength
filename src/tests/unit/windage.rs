@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, windage::*, ILoad, LoadSpace};
+    use crate::{math::*, windage::*, FakeArea, ILoad, LoadSpace};
 
     static INIT: Once = Once::new();
 
@@ -14,31 +14,17 @@ mod tests {
 
     fn init_once() {
         INIT.call_once(|| {
-            let loads_cargo: Vec<Rc<Box<dyn ILoad>>> = vec![Rc::new(Box::new(LoadSpace::from(
-                100.,
-                Some(Position::new(0., 0., 0.)),
-                (-10., 10.),
-                None,
-                None,
-                Some(100.),
-                Some(Position::new(0., 0., 2.)), 
-                None,
-                None,
-            )))];
-
             unsafe {
                 WINDAGE.replace(Windage::new(
-                    Rc::new(loads_cargo),
-                    "none".to_owned(),
+                    Rc::new(FakeIcingStab::new()),
+                    Rc::new(FakeArea::new()),
                     1000.,
                      Position::new(
                         0.,
                         0.,
                         2.,
                     ),
-                    100.,
-                    Moment::new(0., 0., 200.),
-                    1.,    
+                    1.,
                 ));
             }
         })
