@@ -2,7 +2,7 @@
 use thiserror::Error as ThisError;
 
 /// Общая структура ошибки. 
-#[derive(Debug, ThisError, Clone)]
+#[derive(Debug, ThisError)]
 pub enum Error {
     #[error("FromUtf8Error")]
     FromUtf8Error(#[from] std::string::FromUtf8Error),
