@@ -9,6 +9,7 @@ use crate::{
 
 /// Критерии проверки остойчивости
 struct Criterion {
+    /// Ship type: "Tanker  container Barge-carrying Roll-on/roll-off Dry-bulk  General cargo timber"
     /// Угол заливания отверстий
     flooding_angle: f64,
     /// Длина судна
