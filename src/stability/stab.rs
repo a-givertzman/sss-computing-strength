@@ -16,8 +16,6 @@ pub struct Stability {
     rolling_amplitude: Rc<dyn IRollingAmplitude>,
     /// Расчет плеча кренящего момента от давления ветра
     wind: Box<dyn IWind>,
-    /// Критерий погоды
-    k: Option<f64>,
 }
 
 impl Stability {
@@ -37,10 +35,13 @@ impl Stability {
             lever_diagram,
             rolling_amplitude,
             wind,
-            k: None,
         }
     }
-    fn calculate(&mut self) -> Result<(), Error>  {
+}
+///
+impl IStability for Stability {
+    /// Расчет критерия погоды К (2.1.2)
+    fn k(&self) -> Result<f64, Error> {
         let l_w1 = self.wind.arm_wind_static();
         let l_w2 = self.wind.arm_wind_dynamic();
         let theta_w1 = *self
@@ -78,25 +79,13 @@ impl Stability {
             a_angle1:{a_angle_first} a_angle2:{l_w2_angle_first} a_s1:{a_s1} a_s2:{a_s2} a:{a} 
             b_angle1:{l_w2_angle_first} b_angle2:{b_angle_second} b_s1:{b_s1} b_s2:{b_s2} b:{b} 
             k:{k}");
-        self.k = Some(k);
-        Ok(())
-    }
-}
-///
-impl IStability for Stability {
-    /// Расчет критерия погоды К (2.1.2)
-    fn k(&mut self) -> Result<f64, Error> {
-        if self.k.is_none() {
-            self.calculate()?;
-        }
-
-        Ok(self.k.expect("Stability k error: no k!"))
+        Ok(k)
     }
 }
 #[doc(hidden)]
 pub trait IStability {
     /// Расчет критерия погоды К (2.1.2)
-    fn k(&mut self) -> Result<f64, Error>;
+    fn k(&self) -> Result<f64, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -117,7 +106,7 @@ impl FakeStability {
 #[doc(hidden)]
 impl IStability for FakeStability {
     /// Расчет критерия погоды К (2.1.2)
-    fn k(&mut self) -> Result<f64, Error> {
+    fn k(&self) -> Result<f64, Error> {
         self.k.ok_or(Error::FromString(("Some error!".to_string())))
     }
 }

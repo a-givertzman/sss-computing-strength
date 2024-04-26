@@ -1,7 +1,7 @@
 //! Критерий крена от смещения зерна
 
 use std::{f64::consts::PI, rc::Rc};
-use crate::{ILeverDiagram, ICurve, IBulk, IMass};
+use crate::{ILeverDiagram, IBulk, IMass};
 
 /// Критерий крена от смещения зерна
 pub struct Grain {
@@ -45,12 +45,12 @@ impl IGrain for Grain {
     /// Остаточная площадь между кривой кренящих и
     /// кривой восстанавливающих плеч
     fn area(&self) -> f64 {
-        let m_grain = self.loads_bulk.iter().map(|v| v.moment() ).sum();    
+        let m_grain: f64 = self.loads_bulk.iter().map(|v| v.moment() ).sum();    
         let lambda_0 = m_grain/self.mass.sum(); 
         // Первая точка апроксимирующей прямой
-        let first_point_ab = (0., lambda_0); 
+        let first_point_ab = (0.0f64, lambda_0); 
         // Вторая точка апроксимирующей прямой
-        let second_point_ab = (40., 0.8*lambda_0);
+        let second_point_ab = (40.0f64, 0.8*lambda_0);
         // Изменение апроксимирующей прямой на один градус угла крена
         let delta_ab = (second_point_ab.1 - first_point_ab.1)/(second_point_ab.0 - first_point_ab.0);
         let precision = 0.1; // Точность определения пересечения в градусах

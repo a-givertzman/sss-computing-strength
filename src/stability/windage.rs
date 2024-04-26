@@ -49,47 +49,38 @@ impl Windage {
         }
     }
     ///
-    fn calculate(&mut self) {
-        // Площадь парусности и моменты судна с учетом поправки
-        let a_v = self.area_stability.area_v()*self.icing_stab.coef_v_area() - self.delta_area;
-        let moment = self.area_stability.moment_v().scale(self.icing_stab.coef_v_moment());
-        let m_vx = moment.x() - self.delta_moment.x();
-        let m_vz = moment.z() - self.delta_moment.z();
-
-        let x_v = m_vx/a_v;
-        let z_v_bp = m_vz/a_v;
-        let z_v = z_v_bp - self.volume_shift;
-        self.a_v = Some(a_v);
-        self.z_v = Some(z_v);
-
-        log::info!("Windage a_v:{a_v} m_vx:{m_vx} m_vz:{m_vz} x_v:{x_v} z_v:{z_v}");
+    fn moment(&self) -> Moment {
+        self.area_stability.moment_v().scale(1. + self.icing_stab.coef_v_moment())
     }
 }
 ///
 impl IWindage for Windage {
     /// Площадь парусности, м^2
-    fn a_v(&mut self) -> f64 {
-        if self.a_v.is_none() {
-            self.calculate();
-        }
-
-        self.a_v.expect("Windage a_v error: no value!")
+    fn a_v(&self) -> f64 {
+        self.area_stability.area_v()*(1. + self.icing_stab.coef_v_area()) - self.delta_area
     }    
     /// Плечо парусности, м
-    fn z_v(&mut self) -> f64 {
-        if self.z_v.is_none() {
-            self.calculate();
-        }
-
-        self.z_v.expect("Windage z_v error: no value!")
+    fn z_v(&self) -> f64 {
+        let m_vz = self.moment().z() - self.delta_moment.z();
+        let a_v = self.a_v();
+        let z_v_bp = m_vz/a_v;
+        z_v_bp - self.volume_shift
+    }
+    /// Отстояние центра площади парусности судна для текущей загрузки относительно миделя
+    fn x_v(&self) -> f64 {
+        let m_vx = self.moment().x() - self.delta_moment.x();
+        let a_v = self.a_v();
+        m_vx/a_v
     }
 }
 #[doc(hidden)]
 pub trait IWindage {
     /// Площадь парусности, м^2
-    fn a_v(&mut self) -> f64;
+    fn a_v(&self) -> f64;
     /// Плечо парусности, м
-    fn z_v(&mut self) -> f64;
+    fn z_v(&self) -> f64;
+    /// Отстояние центра площади парусности судна для текущей загрузки относительно миделя
+    fn x_v(&self) -> f64;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -98,6 +89,8 @@ pub struct FakeWindage {
     a_v: f64,
     /// Плечо парусности, м
     z_v: f64,
+    /// Отстояние центра площади парусности судна для текущей загрузки относительно миделя
+    x_v: f64,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
@@ -105,22 +98,28 @@ impl FakeWindage {
     pub fn new(
         a_v: f64,
         z_v: f64,
+        x_v: f64,
     ) -> Self {
         Self {
             a_v,
             z_v,
+            x_v,
         }
     }
 }
 #[doc(hidden)]
 impl IWindage for FakeWindage {
     /// Площадь парусности, м^2
-    fn a_v(&mut self) -> f64 {
+    fn a_v(&self) -> f64 {
         self.a_v
     }    
     /// Плечо парусности, м
-    fn z_v(&mut self) -> f64 {
+    fn z_v(&self) -> f64 {
         self.z_v
+    }
+    /// Отстояние центра площади парусности судна для текущей загрузки относительно миделя
+    fn x_v(&self) -> f64 {
+        self.x_v
     }
 }
 

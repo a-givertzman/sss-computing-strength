@@ -340,7 +340,6 @@ fn main() -> Result<(), Error> {
     let breadth = Curve::new_linear(&data.waterline_breadth).value(mean_draught);
     // Отстояние по вертикали центра площади проекции подводной части корпуса
     let volume_shift = Curve::new_linear(&data.volume_shift).value(mean_draught);
-
     // Проверяем есть ли пантокарены в отрицательной области углов
     // Если нет то считаем что судно симметорично и зеркально
     // копируем данные в отрицательную область углов крена
