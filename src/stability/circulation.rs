@@ -8,8 +8,6 @@ use crate::{IMass, ILeverDiagram};
 pub struct Circulation {
     /// Эксплуатационная скорость судна, m/s
     v_0: f64,
-    /// Объемное водоизмещение, t
-    volume: f64,
     /// Длина судна по ватерлинии
     l_wl: f64,
     /// Осадка судна d
@@ -23,25 +21,21 @@ pub struct Circulation {
 impl Circulation {
     /// Основной конструктор
     /// * v_0 - Эксплуатационная скорость судна, m/s
-    /// * volume - Объемное водоизмещение, t
     /// * l_wl - Длина судна по ватерлинии
     /// * d - Осадка судна d
     /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
-    /// * stability_arm - Диаграмма плеч статической и динамической остойчивости
+    /// * lever_diagram - Диаграмма плеч статической и динамической остойчивости
     pub fn new(
         v_0: f64,
-        volume: f64,
         l_wl: f64,
         d: f64,
         mass: Rc<dyn IMass>,
         lever_diagram: Rc<dyn ILeverDiagram>,
     ) -> Self {
-        assert!(volume > 0., "volume {volume} > 0.");
         assert!(l_wl > 0., "l_wl {l_wl} > 0.");
         assert!(d > 0., "d {d} > 0.");
         Self {
             v_0,
-            volume,
             l_wl,
             d,
             mass,
@@ -51,9 +45,9 @@ impl Circulation {
     /// Плечо кренящего момента на циркуляции при скорости v, m/s
     pub fn heel_lever(&self, v: f64) -> f64 {
         // Кренящий момент на циркуляции
-        let m_r = 0.2*(v*v*self.volume/self.l_wl)*(self.mass.shift().z() - self.d/2.).abs();
+        let m_r = 0.2*(v*v*self.mass.sum()/self.l_wl)*(self.mass.shift().z() - self.d/2.).abs();
         // Плечо кренящего момента на циркуляции
-        let l_r = m_r/self.volume;
+        let l_r = m_r/self.mass.sum();
         log::info!("Circulation angle v:{v} m_r:{m_r} l_r:{l_r}");
         return l_r;
     }

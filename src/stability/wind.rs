@@ -9,7 +9,7 @@ pub struct Wind {
     /// Добавка на порывистость ветра
     m: f64,
     /// Парусность судна
-    windage: Box<dyn IWindage>,
+    windage: Rc<dyn IWindage>,
     /// Ускорение свободного падения
     g: f64,
     /// Все грузы судна
@@ -31,7 +31,7 @@ impl Wind {
     pub fn new(
         p_v: f64,   
         m: f64,          
-        windage: Box<dyn IWindage>,
+        windage: Rc<dyn IWindage>,
         g: f64,             
         mass: Rc<dyn IMass>, 
     ) -> Self {

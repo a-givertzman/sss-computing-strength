@@ -32,7 +32,7 @@ mod tests {
             Curve::new_linear(&vec![(0., 0.8), (1., 0.8)]),
             Curve::new_linear(&vec![(0., 1.), (1., 1.)]),
             Curve::new_linear(&vec![(0., 0.1), (10., 0.1)]),
-            FakeRollingPeriod::new(5., 1.),
+            Rc::new(FakeRollingPeriod::new(5., 1.)),
         ).calculate();
 
         let target = 8.41378;

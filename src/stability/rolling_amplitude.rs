@@ -29,7 +29,7 @@ pub struct RollingAmplitude {
     /// Безразмерный множитель S Табл. 2.1.5.1-3
     s: Curve,
     /// Период качки судна
-    t: Box<dyn IRollingPeriod>,
+    t: Rc<dyn IRollingPeriod>,
 }
 ///
 impl RollingAmplitude {
@@ -57,7 +57,7 @@ impl RollingAmplitude {
         x_1: Curve,
         x_2: Curve,
         s: Curve,
-        t: impl IRollingPeriod + 'static,
+        t: Rc<dyn IRollingPeriod>,
     ) -> Self {
         assert!(d > 0., "RollingAmplitude draught {d} > 0.");
         Self {
@@ -71,7 +71,7 @@ impl RollingAmplitude {
             x_1,
             x_2,
             s,
-            t: Box::new(t),
+            t,
         }
     }
 }

@@ -8,7 +8,7 @@ use crate::{
     math::*,
     stability::*,
     strength::*,
-    windage::Windage,
+    windage::{IWindage, Windage},
 };
 use data::input_api_server::*;
 pub use error::Error;
@@ -109,6 +109,7 @@ fn main() -> Result<(), Error> {
 
     let mut tanks: Vec<Rc<dyn ITank>> = Vec::new();
     let mut desks: Vec<Rc<dyn IDesk>> = Vec::new();
+    let mut bulk: Vec<Rc<dyn IBulk>> = Vec::new();
     let mut load_mass: Vec<Rc<dyn ILoadMass>> = Vec::new();
 
     // Постоянная масса судна
@@ -128,72 +129,27 @@ fn main() -> Result<(), Error> {
                     bound.center(),
                     const_shift.y(),
                     const_shift.z(),
-            ))));
-            loads_const.push(load_mass);            
+                )),
+            ));
+            loads_const.push(load_mass);
         }
     }
 
     data.load_spaces.iter().for_each(|v| {
-
-    /*  TODO: desk cargo, timber
-        if let (Some(shift), Some(windage_area), Some(bound_y), Some(bound_z)) =
-            (v.windage_shift, v.windage_area, v.bound_y, v.bound_z)
-        {
-            let desc: Rc<Box<dyn ILoad>> = Rc::new(Box::new(Desk::new(
-                v.mass,
-                Bound::from(v.bound_x),
-                windage_area,
-
-                Position::new(shift.0, 0., shift.1),
-                false, //TODO v.is_timber,
-            )));
-
-            loads_cargo.push(desc);
-        } else 
-
-        if let  =  {
-            
-        }
-*/
-        if let Some(mass_shift) = v.mass_shift { 
+        if let Some(mass_shift) = v.mass_shift {
             let load = Rc::new(LoadMass::new(
                 v.mass,
                 Bound::from(v.bound_x),
-                Some(Position::new(
-                    mass_shift.0,
-                    mass_shift.1,
-                    mass_shift.2,
-            ))));
-            load_mass.push(load);   
+                Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2)),
+            ));
+            load_mass.push(load);
         }
-
-
-/*        if v.mass != 0. {
-            loads_cargo.push(Rc::new(Box::new(LoadSpace::from(
-                v.mass,
-                if let Some(mass_shift) = v.mass_shift {
-                    Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
-                } else {
-                    None
-                },
-                v.bound_x,
-                v.bound_y,
-                v.bound_z,
-                v.windage_area,
-                if let Some(windage_shift) = v.windage_shift {
-                    Some(Position::new(windage_shift.0, 0., windage_shift.1))
-                } else {
-                    None
-                },
-                v.m_f_s_y,
-                v.m_f_s_x,
-            ))));
-        }*/
     });
 
     let loads_const = Rc::new(loads_const);
     let desks = Rc::new(desks);
     let load_mass = Rc::new(load_mass);
+    let bulk = Rc::new(bulk);
 
     /*  // Цистерны
         data.tanks.iter().for_each(|v| {
@@ -335,7 +291,7 @@ fn main() -> Result<(), Error> {
     ));
 
     // Длинна по ватерлинии при текущей осадке
-    let length = Curve::new_linear(&data.waterline_length).value(mean_draught);
+    let length_wl = Curve::new_linear(&data.waterline_length).value(mean_draught);
     // Ширина по ватерлинии при текущей осадке
     let breadth = Curve::new_linear(&data.waterline_breadth).value(mean_draught);
     // Отстояние по вертикали центра площади проекции подводной части корпуса
@@ -387,46 +343,50 @@ fn main() -> Result<(), Error> {
         .get_area(&data.navigation_area_name)
         .expect("main error no area data!");
 
-    let mut wind = Wind::new(
+    let windage: Rc<dyn IWindage> = Rc::new(Windage::new(
+        Rc::clone(&icing_stab),
+        Rc::clone(&area_stability),
+        Curve::new_linear(&data.delta_windage_area).value(mean_draught),
+        Moment::new(
+            Curve::new_linear(&data.delta_windage_moment_x).value(mean_draught),
+            0.,
+            Curve::new_linear(&data.delta_windage_moment_z).value(mean_draught),
+        ),
+        volume_shift,
+    ));
+
+    let wind = Wind::new(
         p_v,
         m,
-        Box::new(Windage::new(
-            Rc::clone(&icing_stab),
-            Rc::clone(&area_stability),
-            Curve::new_linear(&data.delta_windage_area).value(mean_draught),
-            Moment::new(
-                Curve::new_linear(&data.delta_windage_moment_x).value(mean_draught),
-                0.,
-                Curve::new_linear(&data.delta_windage_moment_z).value(mean_draught),
-            ),
-            volume_shift,
-        )),
+        Rc::clone(&windage),
         gravity_g,
         Rc::clone(&mass),
     );
+
+    let roll_period: Rc<dyn IRollingPeriod> = Rc::new(RollingPeriod::new(
+        length_wl,
+        breadth,
+        mean_draught,
+        Rc::clone(&metacentric_height),
+    ));
 
     let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&metacentric_height),
         volume, // Объемное водоизмещение (1)
-        length, // длинна по ватерлинии при текущей осадке
+        length_wl, // длинна по ватерлинии при текущей осадке
         breadth,
         mean_draught,
         Curve::new_linear(&data.coefficient_k.data()),
         Curve::new_linear(&data.multipler_x1.data()),
         Curve::new_linear(&data.multipler_x2.data()),
         Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area_name)),
-        RollingPeriod::new(
-            length,
-            breadth,
-            mean_draught,
-            Rc::clone(&metacentric_height),
-        ),
+        Rc::clone(&roll_period),
     ));
 
     dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
 
-    let mut stability = Stability::new(
+    let stability = Stability::new(
         // Угол заливания отверстий
         flooding_angle,
         // Диаграмма плеч статической остойчивости
@@ -437,6 +397,51 @@ fn main() -> Result<(), Error> {
         Box::new(wind),
     );
     dbg!(stability.k()?);
+    // Давление ветра +
+    // Добавка на порывистость ветра для
+    // неограниченного района плавания
+    let (p_v, m) = data
+        .navigation_area_param
+        .get_area("Unlimited")
+        .expect("main error no area data!");
+    // Критерии остойчивости
+    Criterion::new(
+        data.ship_type,
+        flooding_angle,
+        data.length,
+        Rc::new(Wind::new(
+            p_v,
+            m,
+            Rc::clone(&windage),
+            gravity_g,
+            Rc::clone(&mass),
+        )),
+        Rc::clone(&lever_diagram),
+        Rc::new(stability),
+        Rc::clone(&metacentric_height),
+        Rc::new(Acceleration::new(
+            breadth, 
+            mean_draught,
+            Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())),
+            Rc::clone(&roll_amplitude),
+            Rc::clone(&metacentric_height),
+            Rc::clone(&roll_period),
+        )),
+        Rc::new(Circulation::new(
+            data.velocity,
+            length_wl,
+            mean_draught,
+            Rc::clone(&mass),
+            Rc::clone(&lever_diagram),
+        )),
+        Rc::new(Grain::new(
+            mean_draught,
+            flooding_angle,
+            Rc::clone(&bulk),
+            Rc::clone(&mass),
+            Rc::clone(&lever_diagram),
+        )),
+    );
 
     elapsed.insert("Completed", time.elapsed());
     for (key, e) in elapsed {

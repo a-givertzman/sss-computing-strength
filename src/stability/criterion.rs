@@ -8,8 +8,9 @@ use crate::{
 };
 
 /// Критерии проверки остойчивости
-struct Criterion {
-    /// Ship type: "Tanker  container Barge-carrying Roll-on/roll-off Dry-bulk  General cargo timber"
+pub struct Criterion {
+    /// Тип судна: "general dry cargo ship" "timber carryer"
+    ship_type: String,
     /// Угол заливания отверстий
     flooding_angle: f64,
     /// Длина судна
@@ -34,6 +35,7 @@ struct Criterion {
 ///
 impl Criterion {
     /// Главный конструктор:
+    /// * ship_type - Тип судна
     /// * flooding_angle - Угол заливания отверстий
     /// * ship_length - Длина судна
     /// * wind - Статический угол крена от действия постоянного ветра
@@ -44,6 +46,7 @@ impl Criterion {
     /// * circulation - Расчет крена на циркуляции
     /// * grain - Смещение груза при перевозки навалочных смещаемых грузов (зерна)
     pub fn new(
+        ship_type: String,
         flooding_angle: f64,
         ship_length: f64,
         wind: Rc<dyn IWind>,
@@ -55,6 +58,7 @@ impl Criterion {
         grain: Rc<dyn IGrain>,
     ) -> Self {
         Self {
+            ship_type,
             flooding_angle,
             ship_length,
             wind,
@@ -65,6 +69,9 @@ impl Criterion {
             circulation,
             grain,
         }
+    }
+    /// 
+    pub fn create(mut self) {
     }
     /// Критерий погоды K
     pub fn weather(&mut self) -> Result<(f64, f64), Error> {

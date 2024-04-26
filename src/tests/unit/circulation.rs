@@ -18,7 +18,6 @@ mod tests {
 
         let result = Circulation::new(
             10.,
-            1000.,
             40.,
             4.,
             Rc::new(FakeMass::new(

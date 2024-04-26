@@ -11,6 +11,8 @@ use super::*;
 /// для расчетов.
 #[derive(Debug)]
 pub struct ParsedShipData {
+    /// Тип судна
+    pub ship_type: String,    
     /// Параметры района плавания судна  
     pub navigation_area_name: String,
     /// Параметры района плавания судна  
@@ -47,6 +49,8 @@ pub struct ParsedShipData {
     pub length: f64,
     /// Ширина корпуса судна
     pub breadth: f64,
+    /// Эксплуатационная скорость судна, m/s
+    pub velocity: f64,
     /// Суммарная масса судна
     //pub mass: f64,
     /// Объемное водоизмещение
@@ -388,6 +392,10 @@ impl ParsedShipData {
         log::info!("result parse ok");
         log::info!("result check begin");
         Self {
+            ship_type: ship_data.get("ship_type").ok_or(format!(
+                "ParsedShipData parse error: no ship_type for ship id:{}",
+                ship_id
+            ))?.0.clone(),
             navigation_area_name: ship_data.get("navigation_area").ok_or(format!(
                 "ParsedShipData parse error: no navigation_area for ship id:{}",
                 ship_id
@@ -401,6 +409,10 @@ impl ParsedShipData {
             length: ship_length,
             breadth: ship_data.get("breadth").ok_or(format!(
                 "ParsedShipData parse error: no breadth for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            velocity: ship_data.get("velocity").ok_or(format!(
+                "ParsedShipData parse error: no velocity for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
          /*   mass: ship_data.get("mass").ok_or(format!(
@@ -565,6 +577,12 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: breadth must be positive {}",
                 self.breadth
+            )));
+        }
+        if self.velocity <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: velocity must be positive {}",
+                self.velocity
             )));
         }
         if let Some(keel_area) = self.keel_area {

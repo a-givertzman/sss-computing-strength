@@ -19,7 +19,7 @@ mod tests {
         let result = Wind::new(
             200.,
             0.50,
-            Box::new(FakeWindage::new(1000.,5., 1.)),
+            Rc::new(FakeWindage::new(1000.,5., 1.)),
             9.81,
             Rc::new(FakeMass::new(
                 1000./9.81,
