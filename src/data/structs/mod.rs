@@ -13,6 +13,8 @@ mod strength;
 pub mod computed_frame;
 pub mod delta_windage_moment;
 pub mod vertical_area;
+pub mod ship_type;
+pub mod navigation_area;
 
 
 use data_array::*;
@@ -29,6 +31,10 @@ pub use delta_windage_moment::*;
 pub use vertical_area::*;
 pub use stability::horizontal_area::*;
 pub use strength::horizontal_area::*;
+pub use ship_type::*;
+pub use navigation_area::*;
+
+
 pub use stability::navigation_area::NavigationAreaArray as NavigationAreaArray;
 pub use stability::multipler_s::MultiplerSArray as MultiplerSArray;
 pub use stability::MultiplerX1Array as MultiplerX1Array;

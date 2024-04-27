@@ -1,6 +1,7 @@
 //! Давление ветра p_v и добавка на порывистость m 
 //! в зависимости от района плавания судна, Табл. 2.1.4.1
-use crate::data::structs::DataArray;
+use crate::data::structs::{navigation_area, DataArray};
+use navigation_area::NavigationArea;
 use serde::{Deserialize, Serialize};
 
 /// Давление ветра p_v и добавка на порывистость m 
@@ -29,10 +30,10 @@ pub type NavigationAreaArray = DataArray<NavigationAreaData>;
 ///
 impl NavigationAreaArray {
     /// Условия района плавания
-    pub fn get_area(&self, area_name: &str) -> Option<(f64, f64)> {
+    pub fn get_area(&self, navigation_area: &NavigationArea) -> Option<(f64, f64)> {
         self.data
             .iter()
-            .filter(|data| area_name.eq_ignore_ascii_case(&data.area))
+            .filter(|data| navigation_area.eq(&NavigationArea::new(&data.area)))
             .map(|data| (data.p_v, data.m))
             .next()
     }

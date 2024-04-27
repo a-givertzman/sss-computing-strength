@@ -12,9 +12,9 @@ use super::*;
 #[derive(Debug)]
 pub struct ParsedShipData {
     /// Тип судна
-    pub ship_type: String,    
+    pub ship_type: ShipType,    
     /// Параметры района плавания судна  
-    pub navigation_area_name: String,
+    pub navigation_area: NavigationArea,
     /// Параметры района плавания судна  
     pub navigation_area_param: NavigationAreaArray,
     /// Тип обледенения
@@ -392,14 +392,14 @@ impl ParsedShipData {
         log::info!("result parse ok");
         log::info!("result check begin");
         Self {
-            ship_type: ship_data.get("ship_type").ok_or(format!(
+            ship_type: ShipType::new(&ship_data.get("ship_type").ok_or(format!(
                 "ParsedShipData parse error: no ship_type for ship id:{}",
                 ship_id
-            ))?.0.clone(),
-            navigation_area_name: ship_data.get("navigation_area").ok_or(format!(
+            ))?.0),
+            navigation_area: NavigationArea::new(&ship_data.get("navigation_area").ok_or(format!(
                 "ParsedShipData parse error: no navigation_area for ship id:{}",
                 ship_id
-            ))?.0.clone(),
+            ))?.0),
             navigation_area_param,
             multipler_x1,
             multipler_x2,

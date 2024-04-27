@@ -9,12 +9,24 @@ use crate::{
 
 /// Критерии проверки остойчивости
 pub struct Criterion {
-    /// Тип судна: "general dry cargo ship" "timber carryer"
-    ship_type: String,
+    /// Тип судна
+    ship_type: ShipType,
+    /// Район плавания судна
+    navigation_area: NavigationArea,
+    /// Признак наличия леса
+    have_timber: bool,
+    /// Признак наличия сыпучего груза
+    have_grain: bool,
+    /// Признак наличия груза или балласта
+    have_cargo: bool,
     /// Угол заливания отверстий
     flooding_angle: f64,
     /// Длина судна
     ship_length: f64,
+    /// Ширина судна
+    breadth: f64,
+    /// Средняя осадка
+    mean_draught: f64,
     /// Статический угол крена от действия постоянного ветра.
     /// Предполагаемое давление ветра 𝑝𝑣 принимается как для судна
     /// неограниченного района плавания судна.
@@ -36,6 +48,12 @@ pub struct Criterion {
 impl Criterion {
     /// Главный конструктор:
     /// * ship_type - Тип судна
+    /// * breadth - Ширина судна
+    /// * mean_draught - Средняя осадка
+    /// * navigation_area - Район плавания судна
+    /// * have_timber - Признак наличия леса
+    /// * have_grain - Признак наличия сыпучего груза
+    /// * have_cargo - Признак наличия груза или балласта
     /// * flooding_angle - Угол заливания отверстий
     /// * ship_length - Длина судна
     /// * wind - Статический угол крена от действия постоянного ветра
@@ -46,9 +64,15 @@ impl Criterion {
     /// * circulation - Расчет крена на циркуляции
     /// * grain - Смещение груза при перевозки навалочных смещаемых грузов (зерна)
     pub fn new(
-        ship_type: String,
+        ship_type: ShipType,
+        navigation_area: NavigationArea,
+        have_timber: bool,
+        have_grain: bool,
+        have_cargo: bool,
         flooding_angle: f64,
         ship_length: f64,
+        breadth: f64,
+        mean_draught: f64,
         wind: Rc<dyn IWind>,
         lever_diagram: Rc<dyn ILeverDiagram>,
         stability: Rc<dyn IStability>,
@@ -59,8 +83,14 @@ impl Criterion {
     ) -> Self {
         Self {
             ship_type,
+            navigation_area,
+            have_timber,
+            have_grain,
+            have_cargo,
             flooding_angle,
             ship_length,
+            breadth,
+            mean_draught,
             wind,
             stability,
             lever_diagram,
@@ -70,75 +100,153 @@ impl Criterion {
             grain,
         }
     }
-    /// 
-    pub fn create(mut self) {
+    ///
+    pub fn create(&mut self) -> Vec<String> {
+        let mut out_data = Vec::new();
+        out_data.push("TRUNCATE TABLE result_stability;".to_owned());
+        if self.navigation_area != NavigationArea::R3 {
+            out_data.push(self.weather());
+        }
+        if self.navigation_area != NavigationArea::R3 {
+            out_data.push(self.static_angle());
+        }
+        out_data.append(&mut self.dso());
+        out_data.push(self.dso_lever());
+        out_data.push(self.dso_lever_max_angle());
+        if self.have_cargo {
+            out_data.push(self.metacentric_height());
+        }
+        if self.navigation_area == NavigationArea::R2Rsn
+            || self.navigation_area == NavigationArea::R2Rsn45
+            || self.metacentric_height.h_cross_fix().sqrt() / self.breadth > 0.08
+            || self.breadth / self.mean_draught > 2.5
+        {
+            out_data.push(self.accelleration());
+        }
+        if self.ship_type == ShipType::ContainerShip {
+            out_data.push(self.circulation());
+        }
+        out_data
     }
     /// Критерий погоды K
-    pub fn weather(&mut self) -> Result<(f64, f64), Error> {
-        Ok((self.stability.k()?, 1.))
+    pub fn weather(&mut self) -> String {
+        let k = self.stability.k();
+        if let Ok(k) = k {
+            format!(
+                "INSERT INTO result_stability
+                        (title, value1, value2, relationship)
+                    VALUES
+                        ('Критерий погоды K', {v1}, 1, '>=');"
+            )
+        } else {
+            format!(
+                "INSERT INTO result_stability
+                        (title, comment)
+                    VALUES
+                        ('Критерий погоды K', {});",
+                k.err().map(|v| v.to_string())
+            )
+        }
     }
     /// Статический угол крена от действия постоянного ветра.
     /// При расчете плеча кренящего момента от давления ветра 𝑙𝑤1, используемое при
     /// определении угла крена θ𝑤1, предполагаемое давление ветра 𝑝𝑣 принимается как для судна
     /// неограниченного района плавания судна.
-    pub fn static_angle(&mut self) -> Result<(f64, f64), Error> {
+    pub fn static_angle(&mut self) -> String {
         // Для всех судов (кроме района плавания R3):
         // статического угла крена θ𝑤1, вызванного постоянным ветром
         let wind_lever = self.wind.arm_wind_static();
-        let binding = self
-            .lever_diagram
-            .angle(wind_lever);
-        let wind_angle = binding
-            .first()
-            .ok_or(Error::FromString("Moment of wind too height!".to_owned()))?;
-        Ok((*wind_angle, 16.0f64.min(0.8 * self.flooding_angle)))
-        // TODO: Для лесовозов:
-        // theta_w_1 <= 16.0
-        // Для контейнеровозов:
-        // theta_w_1 <= 16.0.min( 0.5*flooding_angle )
+        let angle = self.lever_diagram.angle(wind_lever).first();
+        let target_value = match self.ship_type {
+            ShipType::TimberCarrier => 16.,
+            ShipType::ContainerShip => 16.0f64.min(0.5 * self.flooding_angle),
+            _ => 16.0f64.min(0.8 * self.flooding_angle),
+        };
+        if let Some(angle) = angle {
+            return format!(
+                "INSERT INTO result_stability
+                        (title, value1, value2, relationship, unit)
+                    VALUES
+                        ('Статическй угол крена θ𝑤1', {angle}, {target_value}, '<=', 'deg');"
+            );
+        } else {
+            return format!(
+                "INSERT INTO result_stability
+                        (title, comment)
+                    VALUES
+                        ('Статическй угол крена θ𝑤1', 'Ошибка: нет угла крена для текущих условий');"
+            );
+        }
     }
     /// Площади под диаграммой статической остойчивости
-    pub fn dso(&self) -> Vec<(f64, f64)> {
-        //    Все суда
-        vec![
-            (self.lever_diagram.dso_area(0., 30.), 0.055),
-            (
-                self.lever_diagram
-                    .dso_area(0., 40.0f64.min(self.flooding_angle)),
-                0.09,
-            ),
-            (
-                self.lever_diagram
-                    .dso_area(30., 40.0f64.min(self.flooding_angle)),
-                0.03,
-            ),
-        ]
-        // TODO:    При перевозке палубного лесного груза
-        //    self.lever_diagram.area(0, 40.min(flooding_angle)) >= 0,08 м·рад
+    pub fn dso(&self) -> Vec<String> {
+        let result = Vec::new();
+        result.push(format!(
+            "INSERT INTO result_stability
+                    (title, value1, value2, relationship, unit)
+                VALUES
+                    ('Площадь DSO 0-30', {}, 0.055, '>=', 'm*rad');",
+            self.lever_diagram.dso_area(0., 30.),
+        ));
+        let second_angle_40 = 40.0f64.min(self.flooding_angle);
+        let target_area = if self.ship_type != ShipType::TimberCarrier {
+            0.09
+        } else {
+            0.08
+        };
+        result.push(format!(
+            "INSERT INTO result_stability
+                        (title, value1, value2, relationship, unit)
+                    VALUES
+                        ('Площадь DSO 0-{second_angle_40}', {}, {target_area}, '>=', 'm*rad');",
+            self.lever_diagram.dso_area(0., second_angle_40),
+        ));
+        result.push(format!(
+            "INSERT INTO result_stability
+                    (title, value1, value2, relationship, unit)
+                VALUES
+                    ('Площадь DSO 30-{second_angle_40}', {}, 0.03, '>=', 'm*rad');",
+            self.lever_diagram.dso_area(30., second_angle_40),
+        ));
+        result
     }
     /// Максимум диаграммы статической остойчивости
-    pub fn dso_lever(&self) -> Result<(f64, f64), Error> {
-        // Все суда (за исключением лесовозов)
+    pub fn dso_lever(&self) -> String {
         let curve = Curve::new_linear(&vec![(105., 0.25), (80., 20.)]);
-        Ok((
-            self.lever_diagram.lever_moment(30.),
+        format!(
+            "INSERT INTO result_stability
+                        (title, value1, value2, relationship, unit)
+                    VALUES
+                        ('Макс. плечо DSO', {}, {}, '>=', 'm*rad');",
+                        self.lever_diagram.lever_moment(30.),
             curve.value(self.ship_length),
-        ))
+        )
+
         // TODO:    При перевозке палубного лесного груза и обледенении
     }
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    pub fn dso_lever_max_angle(&self) -> Result<(f64, f64), Error> {
-        //   Все суда
-        let binding = self
-            .lever_diagram
-            .max_angles();
-        let mas_angle = binding
-            .first()
-            .ok_or(Error::FromString("No max angles!".to_owned()))?;
-        if self.lever_diagram.max_angles().len() == 1 {
-            Ok((mas_angle.0, 30.))
+    pub fn dso_lever_max_angle(&self) -> String {
+        let angles = self.lever_diagram.max_angles();
+        let target = if angles.len() > 1 {
+            30
         } else {
-            Ok((mas_angle.0, 25.))
+            25
+        };
+        if let Some(angle) = angles.first() {
+            return format!(
+                "INSERT INTO result_stability
+                        (title, value1, value2, relationship, unit)
+                    VALUES
+                        ('Угол соотв. макс. DSO', {}, {target}, '<=', 'deg');",
+                        angle.0, 
+            );
+        } else {
+            return format!(
+                "INSERT INTO result_stability
+                        (title, comment)
+                    VALUES
+                        ('Угол соотв. макс. DSO', 'Ошибка: нет угла соответствующего максимуму DSO для текущих условий');"
+            );
         }
 
         //    Судам, имеющим отношение 𝐵/𝐷>2,
@@ -157,55 +265,69 @@ impl Criterion {
         //    }
     }
     /// Метацентрическая высота
-    pub fn metacentric_height(&self) -> Result<(f64, f64), Error> {
+    pub fn metacentric_height(&self) -> String {
         // Все суда
-        // TODO: за исключением «судна порожнем» (если балласт и груз != 0)
-        Ok((self.metacentric_height.h_cross_fix(), 0.15))
+        let target = if self.have_grain {
+            0.3
+        } else if self.ship_type == {
+            ???  Сухогрузное накатное судно 0.2
+        } if self.have_timber == {
+            0.1
+        } else {
+            0.15
+        };
 
-        // Сухогрузное накатное судно 0.2
-        // При перевозке леса 0,1 м
-        // При перевозке зерна 0.3 м
-
-        // ДОПОЛНИТЕЛЬНЫЕ ТРЕБОВАНИЯ К СУХОГРУЗАМ
-        // if MetacentricHeight.h_cross_fix().sqrt()/B > 0.08 || B/d > 2.5
-        // то проверяем критерий ускорения 𝐾∗
-        //accelleration(&self)
+        format!(
+            "INSERT INTO result_stability
+                    (title, value1, value2, relationship, unit)
+                VALUES
+                    ('Исп. метацентрическая высота h', {}, {target}, '>=', 'm');",
+            self.metacentric_height.h_cross_fix(),
+        )
     }
     /// Критерий ускорения 𝐾∗
-    pub fn accelleration(&self) -> Result<(f64, f64), Error> {
-        // ДОПОЛНИТЕЛЬНЫЕ ТРЕБОВАНИЯ К СУДАМ СМЕШАННОГО РЕКА МОРЯ
-        Ok((self.acceleration.calculate(), 1.))
+    pub fn accelleration(&self) -> String {
+        format!(
+            "INSERT INTO result_stability
+                    (title, value1, value2, relationship)
+                VALUES
+                    ('Критерий ускорения 𝐾∗', {}, 1, '>=');",
+                    self.acceleration.calculate(),
+        )
     }
     /// Критерий крена на циркуляции
-    pub fn circulation(&self) -> Result<(f64, f64), Error> {
-        // ДОПОЛНИТЕЛЬНЫЕ ТРЕБОВАНИЯ К СУДАМ, ПЕРЕВОЗЯЩИМ КОНТЕЙНЕРЫ
-        let target_angle = 16.0f64.min(self.flooding_angle);
-        if let Some(angle) = self.circulation.angle() {
-            if angle <= target_angle {
-                return Ok((angle, target_angle));
-            }            
+    pub fn circulation(&self) -> String {
+        let target = 16.0f64.min(self.flooding_angle/2.);
+        if let Some(angle) = self.circulation.angle()  {
+            return format!(
+                "INSERT INTO result_stability
+                        (title, value1, value2, relationship, unit)
+                    VALUES
+                        ('Крен на циркуляции', {angle}, {target}, '<=', 'deg');"
+            );
+        } else {
+            return format!(
+                "INSERT INTO result_stability
+                        (title, value1, value2, relationship, unit, comment)
+                    VALUES
+                        ('Крен на циркуляции', {angle}, {target}, '<=', 'deg', 'Рекомендуемая скорость {} m/s');",
+                self.circulation.velocity(target)
+            );
         }
-        let velocity = self.circulation.velocity(target_angle);
-        Err(Error::FromString(format!("An angle of {target_angle} degree requires speed {velocity} m/s")))
 
-        // В случаях, когда палубный груз контейнеров размещается только на крышках грузовых
+        // TODO: В случаях, когда палубный груз контейнеров размещается только на крышках грузовых
         // люков, вместо угла входа кромки верхней палубы может приниматься меньший из углов
         // входа в воду верхней кромки комингса люка или входа контейнера в воду (в случае, когда
         // контейнеры выходят за пределы этого комингса).
-
-        // В случае если требование к величине угла крена на циркуляции при
-        // эксплуатационной скорости хода не выполняется, в Информации об остойчивости
-        // должна быть указана максимально допустимая скорость судна перед выходом на
-        // циркуляцию, определенная из выполнения указанного требования.
     }
     /// Критерий при перевозки навалочных смещаемых грузов
-    pub fn grain(&self) -> Result<(f64, f64), Error> {
-        // ДОПОЛНИЕТЕЛЬНЫЕ ТРЕБОВАНИЯ К ЗЕРНОВОЗАМ
-        Ok((self.grain.area(), 0.075))
-
-        // В случаях, когда палубный груз контейнеров размещается только на крышках грузовых
-        // люков, вместо угла входа кромки верхней палубы может приниматься меньший из углов
-        // входа в воду верхней кромки комингса люка или входа контейнера в воду (в случае, когда
-        // контейнеры выходят за пределы этого комингса).
+    pub fn grain(&self) -> String {
+        format!(
+            "INSERT INTO result_stability
+                    (title, value1, value2, relationship, unit)
+                VALUES
+                    ('Смещение зерна, А', {}, 0.075, '>=', 'm*rad');",
+                    self.grain.area(),
+        )
     }
 }

@@ -340,7 +340,7 @@ fn main() -> Result<(), Error> {
     // Добавка на порывистость ветра
     let (p_v, m) = data
         .navigation_area_param
-        .get_area(&data.navigation_area_name)
+        .get_area(&data.navigation_area)
         .expect("main error no area data!");
 
     let windage: Rc<dyn IWindage> = Rc::new(Windage::new(
@@ -380,7 +380,7 @@ fn main() -> Result<(), Error> {
         Curve::new_linear(&data.coefficient_k.data()),
         Curve::new_linear(&data.multipler_x1.data()),
         Curve::new_linear(&data.multipler_x2.data()),
-        Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area_name)),
+        Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area)),
         Rc::clone(&roll_period),
     ));
 
@@ -402,13 +402,19 @@ fn main() -> Result<(), Error> {
     // неограниченного района плавания
     let (p_v, m) = data
         .navigation_area_param
-        .get_area("Unlimited")
+        .get_area(&NavigationArea::Unlimited)
         .expect("main error no area data!");
     // Критерии остойчивости
     Criterion::new(
         data.ship_type,
+        data.navigation_area,
+        desks.iter().find(|v| v.is_timber()).is_some(),
+        bulk.iter().find(|v| v.moment() != 0. ).is_some(),
+        load_mass.iter().find(|v| v.value(None) != 0.).is_some(),
         flooding_angle,
         data.length,
+        breadth,
+        mean_draught,
         Rc::new(Wind::new(
             p_v,
             m,
