@@ -2,6 +2,7 @@
 
 use crate::{
     area::{HAreaStability, HAreaStrength, VerticalArea},
+    data::structs::NavigationArea,
     icing::{IIcingStab, IcingMass, IcingStab},
     load::*,
     mass::*,
@@ -9,9 +10,8 @@ use crate::{
     stability::*,
     strength::*,
     windage::{IWindage, Windage},
-    data::structs::NavigationArea,
 };
-use data::input_api_server::*;
+use data::api_server::*;
 pub use error::Error;
 use log::info;
 use std::{borrow::BorrowMut, collections::HashMap, rc::Rc, time::Instant};
@@ -274,7 +274,7 @@ fn main() -> Result<(), Error> {
         .iter()
         .for_each(|v| println!("{v};"));
 
-    send_data(
+    send_strenght_data(
         "sss-computing",
         1,
         &computer.shear_force(),
@@ -356,13 +356,7 @@ fn main() -> Result<(), Error> {
         volume_shift,
     ));
 
-    let wind = Wind::new(
-        p_v,
-        m,
-        Rc::clone(&windage),
-        gravity_g,
-        Rc::clone(&mass),
-    );
+    let wind = Wind::new(p_v, m, Rc::clone(&windage), gravity_g, Rc::clone(&mass));
 
     let roll_period: Rc<dyn IRollingPeriod> = Rc::new(RollingPeriod::new(
         length_wl,
@@ -374,7 +368,7 @@ fn main() -> Result<(), Error> {
     let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&metacentric_height),
-        volume, // Объемное водоизмещение (1)
+        volume,    // Объемное водоизмещение (1)
         length_wl, // длинна по ватерлинии при текущей осадке
         breadth,
         mean_draught,
@@ -406,11 +400,11 @@ fn main() -> Result<(), Error> {
         .get_area(&NavigationArea::Unlimited)
         .expect("main error no area data!");
     // Критерии остойчивости
-    Criterion::new(
+    let mut criterion = Criterion::new(
         data.ship_type,
         data.navigation_area,
         desks.iter().find(|v| v.is_timber()).is_some(),
-        bulk.iter().find(|v| v.moment() != 0. ).is_some(),
+        bulk.iter().find(|v| v.moment() != 0.).is_some(),
         load_mass.iter().find(|v| v.value(None) != 0.).is_some(),
         flooding_angle,
         data.length,
@@ -427,7 +421,7 @@ fn main() -> Result<(), Error> {
         Rc::new(stability),
         Rc::clone(&metacentric_height),
         Rc::new(Acceleration::new(
-            breadth, 
+            breadth,
             mean_draught,
             Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())),
             Rc::clone(&roll_amplitude),
@@ -449,8 +443,13 @@ fn main() -> Result<(), Error> {
             Rc::clone(&lever_diagram),
         )),
     );
-
     elapsed.insert("Completed", time.elapsed());
+
+    let time = Instant::now();
+    // criterion.create().iter().for_each(|v| println!("{v}"));
+    send_stability_data("sss-computing", criterion.create());// TODO errors
+    elapsed.insert("Write stability result", time.elapsed());
+
     for (key, e) in elapsed {
         println!("{}:\t{:?}", key, e);
     }

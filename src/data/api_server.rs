@@ -496,8 +496,8 @@ fn fetch_query(
     Ok(request.fetch(&query, true)?)
 }
 
-/// Запись данных из БД
-pub fn send_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>, bending_moment: &Vec<f64>) -> Result<(), error::Error> {
+/// Запись данных расчета прочности в БД
+pub fn send_strenght_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>, bending_moment: &Vec<f64>) -> Result<(), error::Error> {
     
     let mut string = 
         "INSERT INTO computed_strength (ship_id, left_frame, right_frame, key, value) VALUES".to_owned() + 
@@ -526,6 +526,30 @@ pub fn send_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>, bending_
     )?;
 
     Ok(())
+}
+
+
+/// Запись данных расчета остойчивости в БД
+pub fn send_stability_data(db_name: &str, data: Vec<String>) -> Vec<Result<Vec<u8>, error::Error>> {
+
+    let mut request = ApiRequest::new(
+        "parent",
+        "0.0.0.0:8080",
+        "auth_token",
+        ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(db_name, "")), false),
+        false,
+        false,
+    );
+    log::info!("input_api_server read begin");   
+
+    let result = data.iter().map(|string| {
+        fetch_query(
+            &mut request,
+            db_name,
+            string,
+        )
+    }).collect::<Vec<_>>();
+    result
 }
 /*
 /// Чтение данных из БД. Функция читает данные за несколько запросов,
