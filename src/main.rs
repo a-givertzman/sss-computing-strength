@@ -14,7 +14,7 @@ use crate::{
 use data::api_server::*;
 pub use error::Error;
 use log::info;
-use std::{borrow::BorrowMut, collections::HashMap, rc::Rc, time::Instant};
+use std::{collections::HashMap, rc::Rc, time::Instant};
 
 mod area;
 mod data;
@@ -436,7 +436,6 @@ fn main() -> Result<(), Error> {
             Rc::clone(&lever_diagram),
         )),
         Rc::new(Grain::new(
-            mean_draught,
             flooding_angle,
             Rc::clone(&bulk),
             Rc::clone(&mass),

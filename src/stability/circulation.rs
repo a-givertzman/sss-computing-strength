@@ -65,7 +65,7 @@ impl ICirculation for Circulation {
     fn velocity(&self, src_angle: f64) -> f64 {
         let mut current_vel = 10.; // m/s
         let mut delta_vel = current_vel/2.;
-        for i in 0..20 {
+        for _i in 0..20 {
             let delta_angle = src_angle - self.lever_diagram.angle(self.heel_lever(current_vel)).first().copied().unwrap_or(90.);
             if delta_angle.abs() < 0.001 {
                 break;

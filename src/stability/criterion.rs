@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use crate::{
     data::structs::{NavigationArea, ShipType},
-    Curve, Error, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight,
+    Curve, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight,
     IStability, IWind,
 };
 

@@ -14,10 +14,6 @@ pub struct Wind {
     g: f64,
     /// Все грузы судна
     mass: Rc<dyn IMass>,
-    /// Плечо кренящего момента постоянного ветра
-    l_w_1: Option<f64>,
-    /// Плечо кренящего момента порыва ветра
-    l_w_2: Option<f64>,
 }
 ///
 impl Wind {
@@ -41,8 +37,6 @@ impl Wind {
             windage,
             g,
             mass,
-            l_w_1: None,
-            l_w_2: None,
         }
     }
 }

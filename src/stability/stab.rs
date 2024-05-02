@@ -2,7 +2,7 @@
 
 use std::{f64::consts::PI, rc::Rc};
 
-use crate::{math::{Curve, ICurve}, Error};
+use crate::Error;
 
 use super::{rolling_amplitude::IRollingAmplitude, lever_diagram::ILeverDiagram, wind::IWind};
 

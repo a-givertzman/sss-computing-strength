@@ -18,10 +18,6 @@ pub struct Windage {
     delta_moment: Moment,
     /// Отстояние по вертикали центра площади проекции подводной части корпуса
     volume_shift: f64, 
-    /// Площадь парусности, м^2
-    a_v: Option<f64>,      
-    /// Плечо парусности, м
-    z_v: Option<f64>, 
 }
 ///
 impl Windage {
@@ -44,8 +40,6 @@ impl Windage {
             delta_area,
             delta_moment, 
             volume_shift,
-            a_v: None,            
-            z_v: None,
         }
     }
     ///

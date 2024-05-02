@@ -5,8 +5,6 @@ use crate::{ILeverDiagram, IBulk, IMass};
 
 /// Критерий крена от смещения зерна
 pub struct Grain {
-    /// Осадка судна d
-    d: f64,
     /// Угол заливания отверстий
     flooding_angle: f64, 
     /// Все навалочные смещаемые грузы судна
@@ -19,20 +17,17 @@ pub struct Grain {
 /// 
 impl Grain {
     /// Основной конструктор
-    /// * d - Осадка судна d
     /// * flooding_angle - Угол заливания отверстий
     /// * loads_bulk - Все навалочные смещаемые грузы судна
     /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     /// * lever_diagram - Диаграмма плеч статической и динамической остойчивости
     pub fn new(
-        d: f64,
         flooding_angle: f64, 
         loads_bulk: Rc<Vec<Rc<dyn IBulk>>>,
         mass: Rc<dyn IMass>,  
         lever_diagram: Rc<dyn ILeverDiagram>, 
     ) -> Self {
         Self {
-            d,
             flooding_angle,
             loads_bulk,
             mass,

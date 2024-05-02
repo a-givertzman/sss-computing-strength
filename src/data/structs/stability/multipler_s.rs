@@ -2,8 +2,6 @@
 use crate::data::structs::{DataArray, NavigationArea};
 use serde::{Deserialize, Serialize};
 
-use super::navigation_area;
-
 /// Промежуточные структуры для serde_json для парсинга
 /// Безразмерный множитель S. Табл. 2.1.5.1-3
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

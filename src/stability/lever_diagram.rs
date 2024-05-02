@@ -33,8 +33,6 @@ pub struct LeverDiagram {
     theta_last: Rc<RefCell<Option<f64>>>,
     /// Углы максимумов диаграммы плеч статической остойчивости
     max_angles: Rc<RefCell<Option<Vec<(f64, f64)>>>>,
-    /// Угол начального статического крена судна
-    angle_static_roll: Rc<RefCell<Option<f64>>>,
 }
 ///
 impl LeverDiagram {
@@ -63,7 +61,6 @@ impl LeverDiagram {
             theta_max: Rc::new(RefCell::new(None)),
             theta_last: Rc::new(RefCell::new(None)),
             max_angles: Rc::new(RefCell::new(None)),
-            angle_static_roll: Rc::new(RefCell::new(None)),
         }
     }
     /// Расчет диаграммы статической остойчивости l, м,  
@@ -105,7 +102,6 @@ impl LeverDiagram {
                 max_value = value;
                 max_angle = angle;
             } else {
-                value = max_value;
                 angle = max_angle;
             }
             delta_angle *= 0.5;
