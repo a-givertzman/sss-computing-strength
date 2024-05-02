@@ -122,8 +122,7 @@ impl LeverDiagram {
         let mut last_angle = 0.;
         (0..=9000).for_each(|angle_deg| {
             let angle_deg = angle_deg as f64 * 0.01;
-            let angle_rad = angle_deg * std::f64::consts::PI / 180.;
-            let value = curve.value(angle_rad);
+            let value = curve.value(angle_deg);
             if value < last_value {
                 if max_angles.is_empty() || max_angles.last().unwrap().1 < last_value {
                     max_angles.push((last_angle, last_value));
@@ -135,6 +134,9 @@ impl LeverDiagram {
             last_value = value;
             last_angle = angle_deg
         });
+        if max_angles.is_empty() {
+            max_angles.push((last_angle, last_value));
+        }
         *self.max_angles.borrow_mut() = Some(max_angles);
         //
         let angle_zero = *self
@@ -267,7 +269,7 @@ impl ILeverDiagram for LeverDiagram {
     }
     /// Углы максимумов диаграммы плеч статической остойчивости
     fn max_angles(&self) -> Vec<(f64, f64)> {
-        if self.theta_max.borrow().is_none() {
+        if self.max_angles.borrow().is_none() {
             self.calculate();
         }
         self.max_angles

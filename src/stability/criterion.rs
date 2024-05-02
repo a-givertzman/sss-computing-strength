@@ -3,7 +3,9 @@
 use std::rc::Rc;
 
 use crate::{
-    data::structs::{NavigationArea, ShipType}, Curve, Error, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight, IStability, IWind
+    data::structs::{NavigationArea, ShipType},
+    Curve, Error, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight,
+    IStability, IWind,
 };
 
 /// Критерии проверки остойчивости
@@ -80,6 +82,7 @@ impl Criterion {
         circulation: Rc<dyn ICirculation>,
         grain: Rc<dyn IGrain>,
     ) -> Self {
+        assert!(mean_draught > 0., "mean_draught {mean_draught} > 0.");
         Self {
             ship_type,
             navigation_area,
@@ -125,6 +128,9 @@ impl Criterion {
         if self.ship_type == ShipType::ContainerShip {
             out_data.push(self.circulation());
         }
+        if self.have_grain {
+            out_data.push(self.grain());
+        }
         out_data
     }
     /// Критерий погоды K
@@ -133,16 +139,16 @@ impl Criterion {
         match k {
             Ok(k) => format!(
                 "INSERT INTO result_stability
-                        (title, value1, value2, relationship)
+                        (title, value1, value2, relation)
                     VALUES
                         ('Критерий погоды K', {k}, 1, '>=');"
             ),
             Err(error) => format!(
                 "INSERT INTO result_stability
-                        (title, comment)
+                        (title, description)
                     VALUES
                         ('Критерий погоды K', {error});"
-            ),            
+            ),
         }
     }
     /// Статический угол крена от действия постоянного ветра.
@@ -163,14 +169,14 @@ impl Criterion {
         if let Some(angle) = angle {
             return format!(
                 "INSERT INTO result_stability
-                        (title, value1, value2, relationship, unit)
+                        (title, value1, value2, relation, unit)
                     VALUES
                         ('Статическй угол крена θ𝑤1', {angle}, {target_value}, '<=', 'deg');"
             );
         } else {
             return format!(
                 "INSERT INTO result_stability
-                        (title, comment)
+                        (title, description)
                     VALUES
                         ('Статическй угол крена θ𝑤1', 'Ошибка: нет угла крена для текущих условий');"
             );
@@ -181,7 +187,7 @@ impl Criterion {
         let mut result = Vec::new();
         result.push(format!(
             "INSERT INTO result_stability
-                    (title, value1, value2, relationship, unit)
+                    (title, value1, value2, relation, unit)
                 VALUES
                     ('Площадь DSO 0-30', {}, 0.055, '>=', 'm*rad');",
             self.lever_diagram.dso_area(0., 30.),
@@ -194,14 +200,14 @@ impl Criterion {
         };
         result.push(format!(
             "INSERT INTO result_stability
-                        (title, value1, value2, relationship, unit)
+                        (title, value1, value2, relation, unit)
                     VALUES
                         ('Площадь DSO 0-{second_angle_40}', {}, {target_area}, '>=', 'm*rad');",
             self.lever_diagram.dso_area(0., second_angle_40),
         ));
         result.push(format!(
             "INSERT INTO result_stability
-                    (title, value1, value2, relationship, unit)
+                    (title, value1, value2, relation, unit)
                 VALUES
                     ('Площадь DSO 30-{second_angle_40}', {}, 0.03, '>=', 'm*rad');",
             self.lever_diagram.dso_area(30., second_angle_40),
@@ -210,57 +216,75 @@ impl Criterion {
     }
     /// Максимум диаграммы статической остойчивости
     pub fn dso_lever(&self) -> String {
-        let curve = Curve::new_linear(&vec![(105., 0.25), (80., 20.)]);
-        format!(
-            "INSERT INTO result_stability
-                        (title, value1, value2, relationship, unit)
-                    VALUES
-                        ('Макс. плечо DSO', {}, {}, '>=', 'm*rad');",
-                        self.lever_diagram.lever_moment(30.),
-            curve.value(self.ship_length),
-        )
-
-        // TODO:    При перевозке палубного лесного груза и обледенении
+        if !self.have_timber {
+            let curve = Curve::new_linear(&vec![(105., 0.25), (80., 20.)]);
+            format!(
+                "INSERT INTO result_stability
+                            (title, value1, value2, relation, unit)
+                        VALUES
+                            ('Плечо DSO при 30 град.', {}, {}, '>=', 'm');",
+                self.lever_diagram.lever_moment(30.),
+                curve.value(self.ship_length),
+            )
+        } else {
+            if let Some(angle) = self.lever_diagram.max_angles().first() {
+                return format!(
+                    "INSERT INTO result_stability
+                    (title, value1, value2, relation, unit)
+                VALUES
+                    ('Макс. плечо DSO', {}, 0.25, '>=', 'm');",
+                    angle.1,
+                );
+            } else {
+                return format!(
+                    "INSERT INTO result_stability
+                            (title, description)
+                        VALUES
+                            ('Макс. плечо DSO', 'Ошибка: нет плеча соответствующего максимуму DSO для текущих условий');"
+                );
+            }
+        }
     }
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
     pub fn dso_lever_max_angle(&self) -> String {
         let angles = self.lever_diagram.max_angles();
-        let target = if angles.len() > 1 {
-            30
+        let b_div_d = self.breadth/self.mean_draught;
+        let target = if b_div_d <= 2. {
+            if angles.len() > 1 { 25. } else { 30. }
         } else {
-            25
+            let k = match self.stability.k() {
+                Ok(k) => k,
+                Err(error) => return format!(
+                    "INSERT INTO result_stability
+                            (title, description)
+                        VALUES
+                            ('Угол соотв. макс. DSO', 'Ошибка: {}');",
+                        error,
+                ),
+            };
+            (40.*(b_div_d.min(2.5) - 2.)*(k.min(1.5) - 1.)*0.5).round()
         };
-        if let Some(angle) = angles.first() {
+        
+        if let Some(angle) = angles.first() {        
+            if b_div_d > 2.5 && angle.0 < target { 
+                // TODO
+            };
+
             return format!(
                 "INSERT INTO result_stability
-                        (title, value1, value2, relationship, unit)
+                        (title, value1, value2, relation, unit)
                     VALUES
-                        ('Угол соотв. макс. DSO', {}, {target}, '<=', 'deg');",
-                        angle.0, 
+                        ('Угол соотв. макс. DSO', {}, {target}, '>=', 'deg');",
+                angle.0,
             );
         } else {
             return format!(
                 "INSERT INTO result_stability
-                        (title, comment)
+                        (title, description)
                     VALUES
                         ('Угол соотв. макс. DSO', 'Ошибка: нет угла соответствующего максимуму DSO для текущих условий');"
             );
         }
-
-        //    Судам, имеющим отношение 𝐵/𝐷>2,
-        //    delta_theta_max = 40.*((b/d).min(2.5) - 2.)*(k.min(1.5) - 1)*0.5;
-        //    theta_max - delta_theta_max <= ()
-
-        //    Судам, имеющим отношение 𝐵/𝐷>2,5,
-        //    theta_max >= 15
-
-        //    if theta_max == 15. {
-        //        dso_area(0, 15.) >= 0,07 м·рад,
-        //    } else if theta_max >= 30. {
-        //        dso_area(0, 30.) >= 0,055 м·рад,
-        //    } else {
-        //        dso_area(0, StabilityArm.theta_last()) >= 0.055 + 0.001*(30.0 - theta_max)
-        //    }
     }
     /// Метацентрическая высота
     pub fn metacentric_height(&self) -> String {
@@ -277,7 +301,7 @@ impl Criterion {
 
         format!(
             "INSERT INTO result_stability
-                    (title, value1, value2, relationship, unit)
+                    (title, value1, value2, relation, unit)
                 VALUES
                     ('Исп. метацентрическая высота h', {}, {target}, '>=', 'm');",
             self.metacentric_height.h_cross_fix(),
@@ -287,26 +311,26 @@ impl Criterion {
     pub fn accelleration(&self) -> String {
         format!(
             "INSERT INTO result_stability
-                    (title, value1, value2, relationship)
+                    (title, value1, value2, relation)
                 VALUES
                     ('Критерий ускорения 𝐾∗', {}, 1, '>=');",
-                    self.acceleration.calculate(),
+            self.acceleration.calculate(),
         )
     }
     /// Критерий крена на циркуляции
     pub fn circulation(&self) -> String {
-        let target = 16.0f64.min(self.flooding_angle/2.);
-        if let Some(angle) = self.circulation.angle()  {
+        let target = 16.0f64.min(self.flooding_angle / 2.);
+        if let Some(angle) = self.circulation.angle() {
             return format!(
                 "INSERT INTO result_stability
-                        (title, value1, value2, relationship, unit)
+                        (title, value1, value2, relation, unit)
                     VALUES
                         ('Крен на циркуляции', {angle}, {target}, '<=', 'deg');"
             );
         } else {
             return format!(
                 "INSERT INTO result_stability
-                        (title, comment)
+                        (title, description)
                     VALUES
                         ('Крен на циркуляции', 'Крен {target} градусов, рекомендуемая скорость {} m/s');",
                     self.circulation.velocity(target),
@@ -322,10 +346,10 @@ impl Criterion {
     pub fn grain(&self) -> String {
         format!(
             "INSERT INTO result_stability
-                    (title, value1, value2, relationship, unit)
+                    (title, value1, value2, relation, unit)
                 VALUES
                     ('Смещение зерна, А', {}, 0.075, '>=', 'm*rad');",
-                    self.grain.area(),
+            self.grain.area(),
         )
     }
 }
