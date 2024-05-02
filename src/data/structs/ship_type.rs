@@ -1,6 +1,7 @@
 //! Типы судов
 
 /// Типы судов
+#[derive(Debug, PartialEq)]
 pub enum ShipType {
     /// Навалочное судно
     BulkCarrier,       
@@ -12,6 +13,8 @@ pub enum ShipType {
     TimberCarrier,  
     /// Наливное судно    
     Tanker,
+    /// Ролкер
+    RoRo,
     /// Все остальные типы судов  
     Other,
 }
@@ -25,7 +28,8 @@ impl ShipType {
             "container ship" => ShipType::ContainerShip,      
             "general dry cargo ship" => ShipType::GeneralDryCargoShip,   
             "timber carrier" => ShipType::TimberCarrier,    
-            "tanker" => ShipType::Tanker,     
+            "tanker" => ShipType::Tanker,   
+            "Ro-ro ship" => ShipType::RoRo,
             _ => ShipType::Other,        
         }
     }

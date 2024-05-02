@@ -9,6 +9,7 @@ use crate::{
     stability::*,
     strength::*,
     windage::{IWindage, Windage},
+    data::structs::NavigationArea,
 };
 use data::input_api_server::*;
 pub use error::Error;

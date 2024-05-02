@@ -3,8 +3,7 @@
 use std::rc::Rc;
 
 use crate::{
-    Curve, Error, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight,
-    IStability, IWind,
+    data::structs::{NavigationArea, ShipType}, Curve, Error, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight, IStability, IWind
 };
 
 /// Критерии проверки остойчивости
@@ -104,10 +103,10 @@ impl Criterion {
     pub fn create(&mut self) -> Vec<String> {
         let mut out_data = Vec::new();
         out_data.push("TRUNCATE TABLE result_stability;".to_owned());
-        if self.navigation_area != NavigationArea::R3 {
+        if self.navigation_area != NavigationArea::R3Rsn {
             out_data.push(self.weather());
         }
-        if self.navigation_area != NavigationArea::R3 {
+        if self.navigation_area != NavigationArea::R3Rsn {
             out_data.push(self.static_angle());
         }
         out_data.append(&mut self.dso());
@@ -131,21 +130,19 @@ impl Criterion {
     /// Критерий погоды K
     pub fn weather(&mut self) -> String {
         let k = self.stability.k();
-        if let Ok(k) = k {
-            format!(
+        match k {
+            Ok(k) => format!(
                 "INSERT INTO result_stability
                         (title, value1, value2, relationship)
                     VALUES
-                        ('Критерий погоды K', {v1}, 1, '>=');"
-            )
-        } else {
-            format!(
+                        ('Критерий погоды K', {k}, 1, '>=');"
+            ),
+            Err(error) => format!(
                 "INSERT INTO result_stability
                         (title, comment)
                     VALUES
-                        ('Критерий погоды K', {});",
-                k.err().map(|v| v.to_string())
-            )
+                        ('Критерий погоды K', {error});"
+            ),            
         }
     }
     /// Статический угол крена от действия постоянного ветра.
@@ -156,7 +153,8 @@ impl Criterion {
         // Для всех судов (кроме района плавания R3):
         // статического угла крена θ𝑤1, вызванного постоянным ветром
         let wind_lever = self.wind.arm_wind_static();
-        let angle = self.lever_diagram.angle(wind_lever).first();
+        let binding = self.lever_diagram.angle(wind_lever);
+        let angle = binding.first();
         let target_value = match self.ship_type {
             ShipType::TimberCarrier => 16.,
             ShipType::ContainerShip => 16.0f64.min(0.5 * self.flooding_angle),
@@ -180,7 +178,7 @@ impl Criterion {
     }
     /// Площади под диаграммой статической остойчивости
     pub fn dso(&self) -> Vec<String> {
-        let result = Vec::new();
+        let mut result = Vec::new();
         result.push(format!(
             "INSERT INTO result_stability
                     (title, value1, value2, relationship, unit)
@@ -269,9 +267,9 @@ impl Criterion {
         // Все суда
         let target = if self.have_grain {
             0.3
-        } else if self.ship_type == {
-            ???  Сухогрузное накатное судно 0.2
-        } if self.have_timber == {
+        } else if self.ship_type == ShipType::RoRo {
+            0.2
+        } else if self.have_timber {
             0.1
         } else {
             0.15
@@ -308,10 +306,10 @@ impl Criterion {
         } else {
             return format!(
                 "INSERT INTO result_stability
-                        (title, value1, value2, relationship, unit, comment)
+                        (title, comment)
                     VALUES
-                        ('Крен на циркуляции', {angle}, {target}, '<=', 'deg', 'Рекомендуемая скорость {} m/s');",
-                self.circulation.velocity(target)
+                        ('Крен на циркуляции', 'Крен {target} градусов, рекомендуемая скорость {} m/s');",
+                    self.circulation.velocity(target),
             );
         }
 

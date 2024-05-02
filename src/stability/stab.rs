@@ -107,7 +107,7 @@ impl FakeStability {
 impl IStability for FakeStability {
     /// Расчет критерия погоды К (2.1.2)
     fn k(&self) -> Result<f64, Error> {
-        self.k.ok_or(Error::FromString(("Some error!".to_string())))
+        self.k.ok_or(Error::FromString("Some error!".to_string()))
     }
 }
 
