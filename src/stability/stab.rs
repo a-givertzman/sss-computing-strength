@@ -1,4 +1,4 @@
-//! Расчет характеристик остойчивости судна
+//! Расчет критерия погоды К
 
 use std::{f64::consts::PI, rc::Rc};
 
@@ -6,7 +6,7 @@ use crate::Error;
 
 use super::{rolling_amplitude::IRollingAmplitude, lever_diagram::ILeverDiagram, wind::IWind};
 
-/// Расчет характеристик остойчивости судна
+/// Расчет критерия погоды К
 pub struct Stability {
     /// Угол заливания отверстий
     flooding_angle: f64,

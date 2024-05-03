@@ -47,124 +47,58 @@ sss-computing-strength
       $Fs_i = Fs_{i-1} + Ft_i, Fs_0 = 0$.
    7. Вычисляется изгибающий момент BendingMoment для каждой шпации как интегральнуа  сумма срезающей силы:  
       $M_i = \left(M_{i-1} + Fs_{i-1} + Fs_i \right)*\frac{\Delta L}{2}, M_0 = 0$.
+
 ```mermaid
 classDiagram
 
     class Computer{   
-        -gravity_g: f64
-        -water_density: f64
-        -center_waterline_shift: f64
-        -mean_draught: f64
-        -mass: Rc~dyn IMass~
-        -displacement: Rc~Displacement~
-        -bounds: Rc~Bounds~ 
-        +bending_moment(&mut self) -> Vec~f64~
-        +shear_force(&mut self) -> Vec~f64~
-        -calculate(&mut self)
+        Класс для 
+        расчета прочности
     }
-
     class BendingMoment{
-        shear_force: Box~dyn IShearForce~
-        delta: f64
-        +values(&mut self) -> Vec~f64~
+        Изгибающий момент
     }
-
     class ShearForce{
-        total_force: Box~dyn ITotalForce~
-        +values(&mut self) -> Vec~f64~ 
+        Срезающая сила
     }
-
     class TotalForce{
-        mass: Rc~dyn IMass~
-        water_density: f64
-        draught: Box~dyn IDraught~
-        gravity_g: f64
-        +values(&mut self) -> Vec~f64~
+        Результирующая нагрузка
+        на шпацию
     }
-
     class Mass{
-        loads_const: Vec~Rc~Box~dyn ILoad~~~
-        shift_const: Position
-        loads_cargo: Vec~Rc~Box~dyn ILoad~~~
-        bounds: Rc~Bounds~
-        +sum(&self) -> f64
-        +values(&self) -> Vec~f64~
-        +shift(&self) -> Position
-        +delta_m_h(&self) -> DeltaMH
-        +moment_mass(&self) -> MassMoment
-        +moment_surface(&self) -> SurfaceMoment
+        Масса нагрузки 
+        на корпус судна
     }
-
-    class LoadSpace{
-        mass: f64
-        bound: Bound
-        center: Position
-        m_f_s_y: f64
-        m_f_s_x: f64
-        +mass(&self, bound: Option~Bound~) -> f64 
-        +center(&self) -> Position
-        +moment_surface(&self) -> SurfaceMoment
+    class Load{
+        Грузы судна
     }
-
     class Tank{
-        density: f64 
-        volume: f64
-        bound: Bound
-        center: PosShift,
-        free_surf_inertia: InertiaShift
-        +mass(&self, bound: Option~Bound~) -> f64 
-        +center(&self) -> Position
-        +moment_surface(&self) -> SurfaceMoment
+        Цистерны с жидкостью
     }
-
-    class Draught{
-        bounds: Rc~Bounds~
-        center_waterline_shift: f64
-        mean_draught: f64,
-        displacement: Rc~Displacement~
-        trim: f64,
-        +values(&mut self) -> Vec~f64~
+    class Volume{
+        Распределение объема
+        вытесненной воды
+        по шпациям
     }
-
     class Bounds{   
-        values: Vec~Bound~
-        delta: f64
-        +from_n(ship_length: f64, n: usize) -> Self 
-        +iter(&self) -> std::slice::Iter~'_, Bound~
-        +length(&self) -> f64
-        +delta(&self) -> f64        
+        Разбиение корпуса
+        судна по длинне       
     }
-
-    class Bound{
-        start: f64
-        end: f64
-        +part_ratio(&self, bound: &Bound) -> f64
-        +intersect(&self, other: &Bound) -> Option~Bound~
-        +length(&self) -> f64
-        +start(&self) -> f64
-        +end(&self) -> f64
-        +center(&self) -> f64
-    }
-
     class Displacement{        
-        frames: Vec~Frame~
-        +value(&self, bound: Bound, draft_start: f64, draft_end: f64) -> f64
-        +area(&self, pos_x: f64, draft: f64) -> f64
+        Водоизмещение
     }
-
     class Frame{  
-        shift_x: f64
-        area: Curve
-        +area(&self, draft: f64) -> f64
-        +shift_x(&self) -> f64
+        Шпангоут
     }
-
-    class Curve{
-        spline: Spline~f64, f64~
-        +new_linear(values: &Vec<(f64, f64)>) -> Curve
-        +new_catmull_rom(src: &Vec<(f64, f64)>) -> Curve 
-        +value(&self, key: f64) -> f64
-        +integral(&self, start: f64, end: f64) -> f64
+    class IcingMass{
+        Учет обледенения
+    }
+    class IcingStab{
+        Тип обледенения
+    }
+    class Area{
+        Площади горизонтальных
+        поверхностей и парусности
     }
 
     Computer <|-- BendingMoment    
@@ -172,17 +106,16 @@ classDiagram
     BendingMoment <|-- ShearForce
     ShearForce <|-- TotalForce
     TotalForce <|-- Mass
-    TotalForce <|-- Draught
-    Mass <|-- LoadSpace
+    TotalForce <|-- Volume       
+    Mass <|-- Load
     Mass <|-- Tank
+    Mass <|-- IcingMass 
     Mass <|-- Bounds
-    Draught <|-- Bounds
-    Draught <|-- Displacement
+    Volume <|-- Bounds
+    Volume <|-- Displacement
     Displacement <|-- Frame
-    Bounds <|-- Bound
-    LoadSpace <|-- Bound
-    Tank <|-- Bound
-    Frame <|-- Curve
+    IcingMass <|-- Area   
+    IcingMass <|-- IcingStab
 ```
 
    Общее описание и порядок расчетов для остойчивости:  
@@ -197,3 +130,118 @@ classDiagram
       - поперечный $r$ и продольный $R$ метацентрические радиусы, м;
       - среднюю осадку $d$;
    Для промежуточных значений определяется линейной интерполяцией. С учетом поправки на влияние свободной поверхности жидкости в цистернах вычисляется дифферент судна.
+
+```mermaid
+classDiagram
+
+    class Criterion{   
+        Критерии проверки 
+        остойчивости
+    }
+    class Wind{   
+        Расчет плеча кренящего
+        момента от давления ветра
+    }
+    class Windage{   
+        Парусность судна
+    }
+    class Mass{   
+        Нагрузка веса на
+        корпус судна
+    }
+    class Load{
+        Грузы судна
+    }
+    class Tank{
+        Цистерны с жидкостью
+    }
+    class IcingMass{
+        Учет обледенения
+    }
+    class Bounds{   
+        Разбиение корпуса
+        судна по длинне       
+    }
+    class Area{   
+        Момент площади горизонтальных 
+        поверхностей и площади 
+        парусности
+    }
+    class VerticalArea{   
+        Площадь парусности
+        корпуса судна
+    }
+    class HAreaStability{   
+        Площадь горизонтальных
+        поверхностей корпуса судна
+    }
+    class Desk{   
+        Палубные грузы судна
+    }
+    class IcingStab{   
+        Тип обледенения
+    }
+    class LeverDiagram{   
+        Диаграмма плеч статической
+        и динамической остойчивости
+    }
+    class MetacentricHeight{   
+        Продольная и поперечная
+        исправленная метацентрическая
+        высота
+    }
+    class RollingAmplitude{   
+        Амплитуда качки судна
+        с круглой скулой
+    }
+    class RollingPeriod{   
+        Период качки судна
+    }
+    class Acceleration{   
+        Расчет критерия ускорения
+    }
+    class Circulation{   
+        Расчет угла крена
+        на циркуляции
+    }
+    class Grain{   
+        Критерий крена от смещения зерна
+    }
+    class Bulk{   
+        Навалочный смещаемый груз
+    }
+    Criterion <|-- Stability
+    Criterion <|-- Grain     
+    Criterion <|-- Wind    
+    Criterion <|-- Acceleration
+    Criterion <|-- Circulation
+    Stability <|-- RollingAmplitude
+    Stability <|-- Wind
+    Circulation <|-- Mass
+    Grain <|-- Mass
+    Wind <|-- Mass
+    Circulation <|-- LeverDiagram
+    Grain <|-- LeverDiagram
+    Stability <|-- LeverDiagram    
+    Criterion <|-- LeverDiagram
+    LeverDiagram <|-- Mass    
+    LeverDiagram <|-- MetacentricHeight
+    Criterion <|-- MetacentricHeight
+    Wind <|-- Windage
+    Mass <|-- Load
+    Mass <|-- Tank
+    Mass <|-- IcingMass 
+    Mass <|-- Bounds
+    Windage <|-- Area
+    Windage <|-- IcingStab
+    Area <|-- VerticalArea
+    Area <|-- HAreaStability
+    Area <|-- Desk  
+    RollingAmplitude <|-- MetacentricHeight
+    RollingAmplitude <|-- RollingPeriod
+    RollingPeriod <|-- MetacentricHeight
+    Acceleration <|-- RollingAmplitude
+    Acceleration <|-- MetacentricHeight 
+    Acceleration <|-- RollingPeriod
+    Grain <|-- Bulk
+```
