@@ -114,7 +114,7 @@ impl Criterion {
         }
         out_data.append(&mut self.dso());
         out_data.push(self.dso_lever());
-        out_data.push(self.dso_lever_max_angle());
+        out_data.append(&mut self.dso_lever_max_angle());
         if self.have_cargo {
             out_data.push(self.metacentric_height());
         }
@@ -246,7 +246,8 @@ impl Criterion {
         }
     }
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    pub fn dso_lever_max_angle(&self) -> String {
+    pub fn dso_lever_max_angle(&self) -> Vec<String> {
+        let mut result = Vec::new();
         let angles = self.lever_diagram.max_angles();
         let b_div_d = self.breadth/self.mean_draught;
         let target = if b_div_d <= 2. {
@@ -254,37 +255,54 @@ impl Criterion {
         } else {
             let k = match self.stability.k() {
                 Ok(k) => k,
-                Err(error) => return format!(
+                Err(error) => {
+                    result.push(format!(
                     "INSERT INTO result_stability
                             (title, description)
                         VALUES
                             ('Угол соотв. макс. DSO', 'Ошибка: {}');",
                         error,
-                ),
+                    ));
+                    return result;
+                },
             };
             (40.*(b_div_d.min(2.5) - 2.)*(k.min(1.5) - 1.)*0.5).round()
         };
         
-        if let Some(angle) = angles.first() {        
-            if b_div_d > 2.5 && angle.0 < target { 
-                // TODO
-            };
-
-            return format!(
+        if let Some(angle) = angles.first() {    
+            result.push(format!(
                 "INSERT INTO result_stability
                         (title, value1, value2, relation, unit)
                     VALUES
                         ('Угол соотв. макс. DSO', {}, {target}, '>=', 'deg');",
                 angle.0,
-            );
+            ));  
+
+            if b_div_d > 2.5 && angle.0 < target { 
+                let src_area = self.lever_diagram.dso_area( 0., angle.0);
+                let target_area = if angle.0 <= 15.0 {
+                    0.07
+                } else if angle.0 >= 30.0 {
+                    0.055
+                } else {
+                    0.05 + 0.001*(30.0-angle.0)
+                };
+                result.push(format!(
+                    "INSERT INTO result_stability
+                            (title, value1, value2, relation, unit)
+                        VALUES
+                            ('Площадь DSO до угла макс.', {src_area}, {target_area}, '>=', 'm*rad');"
+                ));  
+            };
         } else {
-            return format!(
+            result.push(format!(
                 "INSERT INTO result_stability
                         (title, description)
                     VALUES
                         ('Угол соотв. макс. DSO', 'Ошибка: нет угла соответствующего максимуму DSO для текущих условий');"
-            );
+            ));
         }
+        result
     }
     /// Метацентрическая высота
     pub fn metacentric_height(&self) -> String {
