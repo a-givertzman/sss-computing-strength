@@ -42,7 +42,7 @@ impl Volume {
     }
 }
 ///
-impl IDraught for Volume {
+impl IVolume for Volume {
     /// Распределение объема вытесненной воды по шпациям
     fn values(&mut self) -> Vec<f64> {
         // длинна судна
@@ -71,30 +71,30 @@ impl IDraught for Volume {
                 displacement
             })
             .collect();
-//        log::info!("\t Draught ship_length:{ship_length} trim:{trim} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} result:{:?}, res_sum:{}", result, result.iter().sum::<f64>());
-  //          log::info!("\t Draught ship_length:{ship_length} trim:{trim} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} res_sum:{}", result.iter().sum::<f64>());
+        log::info!("\t Volume ship_length:{ship_length} trim:{trim} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} result:{:?}, res_sum:{}", result, result.iter().sum::<f64>());
+//            log::info!("\t Volume ship_length:{ship_length} trim:{trim} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} res_sum:{}", result.iter().sum::<f64>());
         result
     }
 }
 
 #[doc(hidden)]
-pub trait IDraught {
+pub trait IVolume {
     fn values(&mut self) -> Vec<f64>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
-pub struct FakeDraught {
+pub struct FakeVolume {
     data: Vec<f64>,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
-impl FakeDraught {
+impl FakeVolume {
     pub fn new(data: Vec<f64>) -> Self {
         Self { data }
     }
 }
 #[doc(hidden)]
-impl IDraught for FakeDraught {
+impl IVolume for FakeVolume {
     fn values(&mut self) -> Vec<f64> {
         self.data.clone()
     }

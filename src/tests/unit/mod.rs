@@ -8,7 +8,7 @@ mod frame;
 mod displacement;
 mod load;
 mod mass;
-mod draught;
+mod volume;
 mod shear_force;
 // mod tank;
 mod total_force;
