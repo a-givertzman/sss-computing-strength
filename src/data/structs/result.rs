@@ -59,7 +59,7 @@ pub struct ParsedShipData {
     /// либо площадь боковой проекции брускового киля
     pub keel_area: Option<f64>,
     /// разбиение на шпации - фреймы
-    pub bounds: Vec<(i32, f64)>,
+    pub bounds: Vec<(f64, f64,)>,
     /// плотность воды
     pub water_density: f64,
     /// отстояние центра тяжести постоянной массы судна по x  

@@ -207,7 +207,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         &mut request,
         db_name,
         format!(
-            "SELECT index, value FROM computed_frame WHERE ship_id={} AND key='shift_x';",
+            "SELECT index, key, value FROM computed_frame WHERE ship_id={};",
             ship_id
         ),
     )?)?;
@@ -500,9 +500,9 @@ fn fetch_query(
 pub fn send_strenght_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>, bending_moment: &Vec<f64>) -> Result<(), error::Error> {
     
     let mut string = 
-        "INSERT INTO computed_strength (ship_id, left_frame, right_frame, key, value) VALUES".to_owned() + 
-        &shear_force.iter().enumerate().map(|(i, v)| format!("({ship_id}, {}, {}, 'shear_force', {v}),\n", i, i+1) ).collect::<String>() +
-        &bending_moment.iter().enumerate().map(|(i, v)| format!("({ship_id}, {}, {}, 'bending_moment', {v}),\n", i, i+1) ).collect::<String>();
+        "INSERT INTO strength_result (ship_id, index, key, value) VALUES".to_owned() + 
+        &shear_force.iter().enumerate().map(|(i, v)| format!("({ship_id}, {}, 'shear_force', {v}),\n", i, ) ).collect::<String>() +
+        &bending_moment.iter().enumerate().map(|(i, v)| format!("({ship_id}, {}, 'bending_moment', {v}),\n", i, ) ).collect::<String>();
     string.pop();
     string.pop();
     string.push(';');

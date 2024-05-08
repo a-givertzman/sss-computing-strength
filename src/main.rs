@@ -38,7 +38,8 @@ fn main() -> Result<(), Error> {
     let mut elapsed = HashMap::new();
 
     let time = Instant::now();
-    let mut data = get_data("sss-computing", 1)?;
+    let ship_id = 1;
+    let mut data = get_data("sss-computing", ship_id)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
 
     /*   let time = Instant::now();
@@ -276,7 +277,7 @@ fn main() -> Result<(), Error> {
 
     send_strenght_data(
         "sss-computing",
-        1,
+        ship_id,
         &computer.shear_force(),
         &computer.bending_moment(),
     )?;
