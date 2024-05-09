@@ -3,6 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{mass::IMass, math::*, ITank};
 /// Продольная и поперечная исправленная метацентрическая высота.
+#[derive(Clone)]
 pub struct MetacentricHeight {
     /// Отстояние центра величины погруженной части судна       
     center_draught_shift: Position,

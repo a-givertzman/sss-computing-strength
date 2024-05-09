@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::Position, stability::metacentric_height::MetacentricHeight, mass::FakeMass};
+    use crate::{mass::FakeMass, math::Position, stability::metacentric_height::MetacentricHeight, IMetacentricHeight};
 
     static INIT: Once = Once::new();
 
@@ -15,16 +15,16 @@ mod tests {
     fn init_once() {
         INIT.call_once(|| {
             let mass = Rc::new(FakeMass::new(
-                2044.10,
+                1000.0,
                 vec![0.],
-                Position::new(1.05, 0., 5.32),
+                Position::new(1.0, 0., 2.),
                 Position::new(0., 0., 0.,), 
             ));
 
             unsafe {
                 HEIGHT.replace(MetacentricHeight::new(
-                    Position::new(-0.194609657, 0., 0.735524704),
-                    696.702572991,
+                    Position::new(-1., 0., 2.),
+                    1000.,
                     100.,
                     Vec::new(),
                     mass,               
@@ -34,46 +34,67 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "TODO"]
-    fn h_long() {
+    fn h_long_fix() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
+        init_once();
         println!("");
-        let self_id = "test MetacentricHeight h_long";
+        let self_id = "test MetacentricHeight h_long_fix";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        //TODO
+        let result = unsafe { HEIGHT.clone().unwrap().h_long_fix() };
+        let target = 1000.;
+        assert!(
+            result == target,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
 
         test_duration.exit();
     }
 
     #[test]
-    #[ignore = "TODO"]
-    fn h_cross() {
+    fn h_cross_fix() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
+        init_once();
         println!("");
-        let self_id = "test MetacentricHeight h_cross";
+        let self_id = "test MetacentricHeight h_cross_fix";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        //TODO
+        let result = unsafe { HEIGHT.clone().unwrap().h_cross_fix() };
+        let target = 100.;
+        assert!(
+            result == target,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
 
         test_duration.exit();
     }
 
     #[test]
-    #[ignore = "TODO"]
     fn z_g_fix() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
+        init_once();
         println!("");
         let self_id = "test MetacentricHeight z_g_fix";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        //TODO
+        let result = unsafe { HEIGHT.clone().unwrap().z_g_fix() };
+        let target = 2.;
+        assert!(
+            result == target,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
 
         test_duration.exit();
     }
