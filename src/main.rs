@@ -256,14 +256,14 @@ fn main() -> Result<(), Error> {
         Rc::clone(&bounds),
     );
     assert!(
-        computer.shear_force().len() == data.bounds.len(),
-        "shear_force.len {} == frame.len {}",
+        computer.shear_force().len() == data.bounds.len() + 1,
+        "shear_force.len {} == frame.len {} + 1",
         computer.shear_force().len(),
         data.bounds.len()
     );
     assert!(
-        computer.bending_moment().len() == data.bounds.len(),
-        "bending_moment.len {} == frame.len {}",
+        computer.bending_moment().len() == data.bounds.len() + 1,
+        "bending_moment.len {} == frame.len {} + 1",
         computer.bending_moment().len(),
         data.bounds.len()
     );
@@ -328,7 +328,7 @@ fn main() -> Result<(), Error> {
         mean_draught,
         Rc::clone(&metacentric_height),
     ));
-    dbg!(lever_diagram.dso().len());
+    //dbg!(lever_diagram.dso().len());
     lever_diagram
         .dso()
         .iter()
@@ -380,7 +380,7 @@ fn main() -> Result<(), Error> {
         Rc::clone(&roll_period),
     ));
 
-    dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
+    //dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
 
     let stability = Stability::new(
         // Угол заливания отверстий
@@ -392,7 +392,7 @@ fn main() -> Result<(), Error> {
         // Расчет плеча кренящего момента от давления ветра
         Box::new(wind),
     );
-    dbg!(stability.k()?);
+    // dbg!(stability.k()?);
     // Давление ветра +
     // Добавка на порывистость ветра для
     // неограниченного района плавания
