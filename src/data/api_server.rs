@@ -499,10 +499,10 @@ fn fetch_query(
 /// Запись данных расчета прочности в БД
 pub fn send_strenght_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>, bending_moment: &Vec<f64>) -> Result<(), error::Error> {
     
+    let tmp: Vec<_> = shear_force.clone().into_iter().zip(bending_moment.into_iter()).collect();
     let mut string = 
-        "INSERT INTO strength_result (ship_id, index, key, value) VALUES".to_owned() + 
-        &shear_force.iter().enumerate().map(|(i, v)| format!("({ship_id}, {}, 'shear_force', {v}),\n", i, ) ).collect::<String>() +
-        &bending_moment.iter().enumerate().map(|(i, v)| format!("({ship_id}, {}, 'bending_moment', {v}),\n", i, ) ).collect::<String>();
+        "INSERT INTO strength_result (ship_id, index, value_shear_force, value_bending_moment) VALUES".to_owned() + 
+        &tmp.iter().enumerate().map(|(i, (v1, v2))| format!("({ship_id}, {i}, {v1}, {v2}),\n" ) ).collect::<String>();
     string.pop();
     string.pop();
     string.push(';');
