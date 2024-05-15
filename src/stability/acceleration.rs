@@ -51,10 +51,10 @@ impl IAcceleration for Acceleration {
     /// Расчет критерия ускорения
     fn calculate(&self) -> f64 {
         let c = self.rolling_period.c();    
-        let h_cross_0 = self.metacentric_height.h_cross_0();    
+        let h_trans_0 = self.metacentric_height.h_trans_0();    
         let k_theta = self.k_theta.value(self.b/self.d);
         let theta_1_r = self.rolling_amplitude.calculate();
-        let a = 0.0105 * h_cross_0/(c*c*self.b)*k_theta*theta_1_r;
+        let a = 0.0105 * h_trans_0/(c*c*self.b)*k_theta*theta_1_r;
         let k = 0.3/a; // >= 1;
         k
     }

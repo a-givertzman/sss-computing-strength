@@ -120,7 +120,7 @@ impl Criterion {
         }
         if self.navigation_area == NavigationArea::R2Rsn
             || self.navigation_area == NavigationArea::R2Rsn45
-            || self.metacentric_height.h_cross_fix().sqrt() / self.breadth > 0.08
+            || self.metacentric_height.h_trans_fix().sqrt() / self.breadth > 0.08
             || self.breadth / self.mean_draught > 2.5
         {
             out_data.push(self.accelleration());
@@ -322,7 +322,7 @@ impl Criterion {
                     (title, value1, value2, relation, unit)
                 VALUES
                     ('Исп. метацентрическая высота h', {}, {target}, '>=', 'm');",
-            self.metacentric_height.h_cross_fix(),
+            self.metacentric_height.h_trans_fix(),
         )
     }
     /// Критерий ускорения 𝐾∗
