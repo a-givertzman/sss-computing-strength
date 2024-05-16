@@ -15,6 +15,7 @@ pub mod delta_windage_moment;
 pub mod vertical_area;
 pub mod ship_type;
 pub mod navigation_area;
+pub mod icing;
 
 
 use data_array::*;
@@ -33,7 +34,7 @@ pub use stability::horizontal_area::*;
 pub use strength::horizontal_area::*;
 pub use ship_type::*;
 pub use navigation_area::*;
-
+pub use icing::*;
 
 pub use stability::navigation_area::NavigationAreaArray as NavigationAreaArray;
 pub use stability::multipler_s::MultiplerSArray as MultiplerSArray;

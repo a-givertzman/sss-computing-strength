@@ -147,6 +147,7 @@ impl ParsedShipData {
         multipler_s: MultiplerSArray,
         coefficient_k: CoefficientKArray,
         coefficient_k_theta: CoefficientKThetaArray,
+        icing: IcingArray,
         ship_id: usize,
         ship_data: ShipArray,
         bounds: ComputedFrameDataArray,
@@ -335,6 +336,8 @@ impl ParsedShipData {
             }) 
         }).collect::<Result<Vec<ParsedVerticalArea>, Error>>()?;
 
+        let icing = icing.data();
+
         log::info!("result parse ok");
         log::info!("result check begin");
         Self {
@@ -409,50 +412,50 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no icing_stab for ship id:{}",
                 ship_id
             ))?.0.clone(),
-            icing_m_timber: ship_data.get("icing_m_timber").ok_or(format!(
+            icing_m_timber: *icing.get("icing_m_timber").ok_or(format!(
                 "ParsedShipData parse error: no icing_m_timber for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
-            icing_m_v_full: ship_data.get("icing_m_v_full").ok_or(format!(
+            ))?,
+            icing_m_v_full: *icing.get("icing_m_v_full").ok_or(format!(
                 "ParsedShipData parse error: no icing_m_v_full for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
-            icing_m_v_half: ship_data.get("icing_m_v_half").ok_or(format!(
+            ))?,
+            icing_m_v_half: *icing.get("icing_m_v_half").ok_or(format!(
                 "ParsedShipData parse error: no icing_m_v_half for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
-            icing_m_h_full: ship_data.get("icing_m_h_full").ok_or(format!(
+            ))?,
+            icing_m_h_full: *icing.get("icing_m_h_full").ok_or(format!(
                 "ParsedShipData parse error: no icing_m_h_full for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
-            icing_m_h_half: ship_data.get("icing_m_h_half").ok_or(format!(
+            ))?,
+            icing_m_h_half: *icing.get("icing_m_h_half").ok_or(format!(
                 "ParsedShipData parse error: no icing_m_h_half for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
-            icing_coef_v_area_full: ship_data.get("icing_coef_v_area_full").ok_or(format!(
+            ))?,
+            icing_coef_v_area_full: *icing.get("icing_coef_v_area_full").ok_or(format!(
                 "ParsedShipData parse error: no icing_coef_v_area_full for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
-            icing_coef_v_area_half: ship_data.get("icing_coef_v_area_half").ok_or(format!(
+            ))?,
+            icing_coef_v_area_half: *icing.get("icing_coef_v_area_half").ok_or(format!(
                 "ParsedShipData parse error: no icing_coef_v_area_half for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
-            icing_coef_v_area_zero: ship_data.get("icing_coef_v_area_zero").ok_or(format!(
+            ))?,
+            icing_coef_v_area_zero: *icing.get("icing_coef_v_area_zero").ok_or(format!(
                 "ParsedShipData parse error: no icing_coef_v_area_zero for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
-            icing_coef_v_moment_full: ship_data.get("icing_coef_v_moment_full").ok_or(format!(
+            ))?,
+            icing_coef_v_moment_full: *icing.get("icing_coef_v_moment_full").ok_or(format!(
                 "ParsedShipData parse error: no icing_coef_v_moment_full for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
-            icing_coef_v_moment_half: ship_data.get("icing_coef_v_moment_half").ok_or(format!(
+            ))?,
+            icing_coef_v_moment_half: *icing.get("icing_coef_v_moment_half").ok_or(format!(
                 "ParsedShipData parse error: no icing_coef_v_moment_half for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
-            icing_coef_v_moment_zero: ship_data.get("icing_coef_v_moment_zero").ok_or(format!(
+            ))?,
+            icing_coef_v_moment_zero: *icing.get("icing_coef_v_moment_zero").ok_or(format!(
                 "ParsedShipData parse error: no icing_coef_v_moment_zero for ship id:{}",
                 ship_id
-            ))?.0.parse::<f64>()?,
+            ))?,
             bounds: bounds.data(),
             center_waterline: center_waterline.data(),
             waterline_length: waterline_length.data(),
