@@ -317,6 +317,7 @@ fn main() -> Result<(), Error> {
                 .collect();
             vector.append(&mut negative);
             vector.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+     
         });
     }
 
@@ -328,8 +329,9 @@ fn main() -> Result<(), Error> {
         mean_draught,
         Rc::clone(&metacentric_height),
     ));
+   // dbg!(stability.k()?);
     //dbg!(lever_diagram.dso().len());
-    lever_diagram
+ /*   lever_diagram
         .dso()
         .iter()
         .for_each(|(k, v)| println!("{k} {v};"));
@@ -337,7 +339,7 @@ fn main() -> Result<(), Error> {
         .ddo()
         .iter()
         .for_each(|(k, v)| println!("{k} {v};"));
-
+*/
     // Предполагаемое давление ветра +
     // Добавка на порывистость ветра
     let (p_v, m) = data

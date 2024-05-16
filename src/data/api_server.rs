@@ -155,7 +155,17 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         &mut request,
         db_name,
         format!(
-            "SELECT space_id, key, value, value_type FROM load_space WHERE ship_id={};",
+            "SELECT space_id, 
+                    name, 
+                    mass, 
+                    bound_x1, 
+                    bound_x2, 
+                    bound_type, 
+                    mass_shift_x, 
+                    mass_shift_y,
+                    mass_shift_z,
+                    m_f_s_y,
+                    m_f_s_x FROM load_space WHERE ship_id={};",
             ship_id
         ),
     )?)?;

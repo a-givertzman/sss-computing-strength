@@ -19,12 +19,12 @@ pub struct LoadSpaceData {
     /// (физ. шпангоуты или метры)
     pub bound_type: String,  
     /// Отстояние центра величины, м
-    mass_shift_x: Option<f64>,
-    mass_shift_y: Option<f64>,
-    mass_shift_z: Option<f64>,
+    pub mass_shift_x: Option<f64>,
+    pub mass_shift_y: Option<f64>,
+    pub mass_shift_z: Option<f64>,
     /// Момент инерции площади ВЛ, м4
-    m_f_s_y: Option<f64>,
-    m_f_s_x: Option<f64>,
+    pub m_f_s_y: Option<f64>,
+    pub m_f_s_x: Option<f64>,
 }
 
 ///
@@ -35,14 +35,14 @@ impl std::fmt::Display for LoadSpaceData {
             "LoadSpaceData(space_id:{}, name:{}, mass:{} bound_x1:{} bound_x2:{} mass_shift_x:{} mass_shift_y:{} mass_shift_z:{} m_f_s_y:{} m_f_s_x:{})",
             self.space_id,
             self.name,
-            self.mass,
+            self.mass.unwrap_or(0.),
             self.bound_x1,
             self.bound_x2,
-            self.mass_shift_x,
-            self.mass_shift_y,
-            self.mass_shift_z,
-            self.m_f_s_y,
-            self.m_f_s_x,
+            self.mass_shift_x.unwrap_or(0.),
+            self.mass_shift_y.unwrap_or(0.),
+            self.mass_shift_z.unwrap_or(0.),
+            self.m_f_s_y.unwrap_or(0.),
+            self.m_f_s_x.unwrap_or(0.),
         )
     }
 }
@@ -51,7 +51,7 @@ pub type LoadSpaceArray = DataArray<LoadSpaceData>;
 ///
 impl LoadSpaceArray {
     /// 
-    pub fn data(self) -> Vec<LoadSpace> {
+    pub fn data(self) -> Vec<LoadSpaceData> {
         self.data
     }
 }

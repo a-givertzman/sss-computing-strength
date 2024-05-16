@@ -229,83 +229,29 @@ impl ParsedShipData {
         theoretical_frame.sort_by(|a, b| a.index.cmp(&b.index));
         
         let mut load_spaces = Vec::new();
-        for (space_id, map) in load_spaces_src.data() {
-            let (bound_x1_value, bound_x1_type) = map.get("bound_x1").ok_or(format!(
-                "ParsedShipData parse error: no bound_x1 for load_space id:{}",
-                space_id
-            ))?;
-            let (bound_x2_value, bound_x2_type) = map.get("bound_x2").ok_or(format!(
-                "ParsedShipData parse error: no bound_x2 for load_space id:{}",
-                space_id
-            ))?;
+        for load_space in load_spaces_src.data() {
             load_spaces.push(ParsedLoadSpaceData {
-                name: map.get("name").ok_or(format!(
-                    "ParsedShipData parse error: no name for load_space id:{}",
-                    space_id
-                ))?.0.to_owned(),
-                mass: map.get("mass").ok_or(format!(
-                    "ParsedShipData parse error: no mass for load_space id:{}",
-                    space_id
-                ))?.0.parse::<f64>()?,
+                name: load_space.name,
+                mass: load_space.mass.unwrap_or(0.),
                 bound_x: ( 
-                    bound_x(&bound_x1_value.parse::<f64>()?, bound_x1_type)?, 
-                    bound_x(&bound_x2_value.parse::<f64>()?, bound_x2_type)?, 
+                    bound_x(&load_space.bound_x1, &load_space.bound_type)?, 
+                    bound_x(&load_space.bound_x2, &load_space.bound_type)?, 
                 ),
-                bound_y: if map.contains_key("bound_y1") && map.contains_key("bound_y2") {
-                    Some((map.get("bound_y1").unwrap().0.parse::<f64>()?,
-                        map.get("bound_y2").unwrap().0.parse::<f64>()?))
-                } else {
+                bound_y: None,
+                bound_z: None,
+                mass_shift: if load_space.mass_shift_x.is_some() && 
+                                load_space.mass_shift_y.is_some() &&
+                                load_space.mass_shift_z.is_some() { Some((
+                                        load_space.mass_shift_x.expect("ParsedShipData parse error: no mass_shift_x"),
+                                        load_space.mass_shift_y.expect("ParsedShipData parse error: no mass_shift_y"),
+                                        load_space.mass_shift_z.expect("ParsedShipData parse error: no mass_shift_z"),
+                ))} else {
                     None
                 },
-                bound_z: if map.contains_key("bound_z1") && map.contains_key("bound_z2") {
-                    Some((map.get("bound_z1").unwrap().0.parse::<f64>()?,
-                        map.get("bound_z2").unwrap().0.parse::<f64>()?))
-                } else {
-                    None
-                },
-                mass_shift: if map.contains_key("mass_shift_x") && 
-                                map.contains_key("mass_shift_y") &&
-                                map.contains_key("mass_shift_z") {
-                                    Some((map.get("mass_shift_x").ok_or(format!(
-                                        "ParsedShipData parse error: no mass_shift_x for load_space id:{}",
-                                        space_id
-                                    ))?.0.parse::<f64>()?,
-                                    map.get("mass_shift_y").ok_or(format!(
-                                        "ParsedShipData parse error: no mass_shift_y for load_space id:{}",
-                                        space_id
-                                    ))?.0.parse::<f64>()?,
-                                    map.get("mass_shift_z").ok_or(format!(
-                                        "ParsedShipData parse error: no mass_shift_z for load_space id:{}",
-                                        space_id
-                                    ))?.0.parse::<f64>()?,
-                                    ))
-                } else {
-                    None
-                },
-                m_f_s_y: map.get("m_f_s_y").map(|v| v.0.clone() ).map(|v| v.parse::<f64>().ok()).flatten(),
-                m_f_s_x: map.get("m_f_s_x").map(|v| v.0.clone() ).map(|v| v.parse::<f64>().ok()).flatten(),
-                windage_area:  if map.contains_key("windage_area") {
-                    Some( map.get("windage_area").ok_or(format!(
-                            "ParsedShipData parse error: no windage_area for load_space id:{}",
-                            space_id
-                    ))?.0.parse::<f64>()?, )
-                } else {
-                    None
-                },
-                windage_shift: if map.contains_key("windage_shift_x") && 
-                                    map.contains_key("windage_shift_z") {
-                    Some(( map.get("windage_shift_x").ok_or(format!(
-                        "ParsedShipData parse error: no windage_shift_x for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
-                    map.get("windage_shift_z").ok_or(format!(
-                        "ParsedShipData parse error: no windage_shift_z for load_space id:{}",
-                        space_id
-                    ))?.0.parse::<f64>()?,
-                    ))
-                } else {
-                    None
-                },
+                m_f_s_y: load_space.m_f_s_y,
+                m_f_s_x: load_space.m_f_s_x,
+                windage_area:  None,
+                windage_shift: None,
             });
         }
 
@@ -857,7 +803,7 @@ impl ParsedShipData {
         .load_spaces
         .iter()
         .find(|s| { 
-            s.mass_shift.is_some() && (
+            s.mass > 0. && s.mass_shift.is_some() && (
                 s.bound_x.0 >= s.mass_shift.unwrap().0 ||
                 s.mass_shift.unwrap().0 >= s.bound_x.1 ||
                 (s.bound_y.is_some() && s.bound_y.unwrap().0 >= s.mass_shift.unwrap().1 )||
