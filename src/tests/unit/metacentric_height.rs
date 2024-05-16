@@ -56,16 +56,16 @@ mod tests {
     }
 
     #[test]
-    fn h_cross_fix() {
+    fn h_trans_fix() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
         println!("");
-        let self_id = "test MetacentricHeight h_cross_fix";
+        let self_id = "test MetacentricHeight h_trans_fix";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { HEIGHT.clone().unwrap().h_cross_fix() };
+        let result = unsafe { HEIGHT.clone().unwrap().h_trans_fix() };
         let target = 100.;
         assert!(
             result == target,
