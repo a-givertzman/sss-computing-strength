@@ -1,7 +1,7 @@
 //! Распределение объема вытесненной воды по шпациям
 use std::rc::Rc;
 use crate::math::Bounds;
-use super::displacement::Displacement;
+use super::displacement::*;
 
 ///
 /// Распределение объема вытесненной воды по шпациям
@@ -13,7 +13,7 @@ pub struct Volume {
     /// средняя осадка
     mean_draught: f64,
     /// водоизмещение судна
-    displacement: Rc<Displacement>,
+    displacement: Rc<dyn IDisplacement>,
     /// дифферент судна
     trim: f64,//Trim,
 }
@@ -28,7 +28,7 @@ impl Volume {
     pub fn new(    
         center_waterline_shift: f64, // отстояние центра тяжести ватерлинии по длине от миделя
         mean_draught: f64,           // средняя осадка
-        displacement: Rc<Displacement>,    // водоизмещение судна
+        displacement: Rc<dyn IDisplacement>,    // водоизмещение судна
         trim: f64,//Trim,                    // дифферент судна
         bounds: Rc<Bounds>,                // вектор разбиения на отрезки для эпюров
     ) -> Self {

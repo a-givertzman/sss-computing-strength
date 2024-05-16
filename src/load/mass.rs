@@ -66,5 +66,17 @@ impl ILoad for LoadMass {
 }
 ///
 impl ILoadMass for LoadMass {}
+///
+impl std::fmt::Display for LoadMass {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "LoadMass(mass:{}, bound_x:{}, shift:{})",
+            self.mass(),
+            self.bound_x(),
+            self.shift(),
+        )
+    }
+}
 
 

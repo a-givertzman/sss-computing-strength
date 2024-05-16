@@ -1,6 +1,6 @@
 //! Класс для расчета прочности
 
-use crate::{math::Bounds, mass::IMass,};
+use crate::{mass::IMass, math::Bounds, IDisplacement};
 
 use super::{    bending_moment::BendingMoment,
     displacement::Displacement,
@@ -24,7 +24,7 @@ pub struct Computer {
     /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     mass: Rc<dyn IMass>,
     /// Распределение осадки
-    displacement: Rc<Displacement>,
+    displacement: Rc<dyn IDisplacement>,
     /// Вектор разбиения судна на отрезки
     bounds: Rc<Bounds>,
     /// Вычисленное распределение изгибающего момента
@@ -41,7 +41,7 @@ impl Computer {
         center_waterline_shift: f64,    // Отстояние центра величины погруженной части судна
         mean_draught: f64,              // Средняя осадка
         mass: Rc<dyn IMass>, // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
-        displacement: Rc<Displacement>, // Распределение осадки
+        displacement: Rc<dyn IDisplacement>, // Распределение осадки
         bounds: Rc<Bounds>,  // Вектор разбиения судна на отрезки
     ) -> Self {
         Self {

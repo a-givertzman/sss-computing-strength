@@ -18,16 +18,6 @@ impl Displacement {
         assert!(frames.len() > 1, "frames.len() {} > 0", frames.len());
         Self { frames }
     }
-    /// Погруженный объем шпации.
-    /// - bound: диапазон корпуса в длинну, для которого считается водоизмещение
-    /// - draft: средняя осадка корпуса в диапазоне
-    pub fn value(&self, bound: Bound, draft_start: f64, draft_end: f64) -> f64 {
-        let area_start = self.area(bound.start(), draft_start);
-        let area_end = self.area(bound.end(), draft_end);
-        let result = bound.length() * (area_start + area_end) / 2.;
-        log::trace!("\t Displacement value bound:{bound} draft_start:{draft_start} draft_end:{draft_end} area_start:{area_start} area_end:{area_end} result:{result}");
-        result
-    }
     ///Интерполированние значение погруженной площади сечения.  
     ///Считается методом линейной интерполяции.
     /// - pos_x: координата шпангоута по х от центра судна
@@ -56,5 +46,45 @@ impl Displacement {
         let result = frame_up.area(draft) * coeff_len_up + frame_down.area(draft) * coeff_len_down;
         log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  index_up:{index_up} delta_x:{delta_x} coeff_len_up:{coeff_len_up} coeff_len_down:{coeff_len_down} result:{result}");
         result
+    }
+}
+
+
+impl IDisplacement for Displacement {
+    /// Погруженный объем шпации.
+    /// - bound: диапазон корпуса в длинну, для которого считается водоизмещение
+    /// - draft: средняя осадка корпуса в диапазоне
+    fn value(&self, bound: Bound, draft_start: f64, draft_end: f64) -> f64 {
+        let area_start = self.area(bound.start(), draft_start);
+        let area_end = self.area(bound.end(), draft_end);
+        let result = bound.length() * (area_start + area_end) / 2.;
+        log::trace!("\t Displacement value bound:{bound} draft_start:{draft_start} draft_end:{draft_end} area_start:{area_start} area_end:{area_end} result:{result}");
+        result
+    }
+}
+
+#[doc(hidden)]
+pub trait IDisplacement {
+    /// Погруженный объем шпации.
+    /// - bound: диапазон корпуса в длинну, для которого считается водоизмещение
+    /// - draft: средняя осадка корпуса в диапазоне
+    fn value(&self, _: Bound, _: f64, _: f64) -> f64;
+}
+// заглушка для тестирования
+#[doc(hidden)]
+pub struct FakeDisplacement {
+    value: f64,
+}
+#[doc(hidden)]
+#[allow(dead_code)]
+impl FakeDisplacement {
+    pub fn new(value: f64) -> Self {
+        Self { value }
+    }
+}
+#[doc(hidden)]
+impl IDisplacement for FakeDisplacement {
+    fn value(&self, _: Bound, _: f64, _: f64) -> f64 {
+        self.value
     }
 }

@@ -12,7 +12,7 @@ impl Bound {
     /// * start - начало диапазона
     /// * end - конец диапазона
     pub fn new(start: f64, end: f64) -> Self {
-        assert!(end > start);
+        assert!(end > start, "end {end} > start {start}");
         Self {
             start,
             end,
