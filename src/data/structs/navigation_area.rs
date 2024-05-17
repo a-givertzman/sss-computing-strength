@@ -22,7 +22,7 @@ impl NavigationArea {
     /// Конструктор
     /// * area_type - Район плавания судна
     pub fn new(area_type: &str) -> Self {
-        match area_type.trim().to_lowercase().as_str() {
+        match area_type.trim().to_uppercase().as_str() {
             "R2-RSN(4,5)" => NavigationArea::R2Rsn45,
             "R2-RSN" => NavigationArea::R2Rsn,
             "R3-RSN" => NavigationArea::R3Rsn,

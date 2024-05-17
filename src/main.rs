@@ -133,6 +133,7 @@ fn main() -> Result<(), Error> {
                     const_shift.z(),
                 )),
             ));
+            log::info!("\t Mass loads_const:{:?} ", load_mass);
             loads_const.push(load_mass);
         }
     }
@@ -144,6 +145,7 @@ fn main() -> Result<(), Error> {
                 Bound::from(v.bound_x),
                 Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2)),
             ));
+            log::info!("\t Mass load_mass:{:?} ", load);
             load_mass.push(load);
         }
     });
@@ -395,13 +397,13 @@ fn main() -> Result<(), Error> {
         Box::new(wind),
     );
     // dbg!(stability.k()?);
-    // Давление ветра +
-    // Добавка на порывистость ветра для
+    /* // TODO: Давление ветра + добавка на порывистость ветра для 
+    // контейнеровоза/или судна перевозящего палубный груз контейнеров
     // неограниченного района плавания
     let (p_v, m) = data
         .navigation_area_param
         .get_area(&NavigationArea::Unlimited)
-        .expect("main error no area data!");
+        .expect("main error no area data!");*/
     // Критерии остойчивости
     let mut criterion = Criterion::new(
         data.ship_type,
