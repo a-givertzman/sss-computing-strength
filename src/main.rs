@@ -572,14 +572,17 @@ fn main() -> Result<(), Error> {
         (86225.00,	0.07),
     ];
     bd.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    
     let bounds = Rc::new(Bounds::from_n((wd.last().unwrap().0 - wd[0].0)/1000., wd.len()));
     dbg!(&bounds);
     let mut load_mass: Vec<Rc<dyn ILoadMass>> = Vec::new();
 
-    
+    let delta_l = bounds.length()/2.;
+    let fix_l = wd.last().unwrap().0/2000.;
     for i in 0..wd.len()-1 {
-            let (x1, x2) = (wd[i].0/1000.0 - bounds.length()/2., wd[i+1].0/1000.0 - bounds.length()/2.);
-            let m = (x2 - x1)*(wd[i+1].1 + wd[i].1)/2.;
+            let (x1, x2) = (wd[i].0/1000.0 - delta_l, wd[i+1].0/1000.0 - delta_l);
+    //        let m = (x2 - x1)*(wd[i+1].1 + wd[i].1)/2.;
+            let m = (x2 - x1)*wd[i].1;
             let dx = (x1 + x2)/2.;
             println!("{i} {x1} {x2} {m} {dx}");
             let load = Rc::new(LoadMass::new(
@@ -591,8 +594,9 @@ fn main() -> Result<(), Error> {
             load_mass.push(load);
     }
     for i in 0..bd.len()-1 {
-            let (x1, x2) = (bd[i].0/1000.0 - bounds.length()/2., bd[i+1].0/1000.0 - bounds.length()/2.);
-            let m: f64 = (x2 - x1)*(bd[i+1].1 + bd[i].1)/2.;
+            let (x1, x2) = (bd[i].0/1000.0 - delta_l, bd[i+1].0/1000.0 - delta_l);
+    //        let m: f64 = (x2 - x1)*(bd[i+1].1 + bd[i].1)/2.;
+            let m: f64 = (x2 - x1)*bd[i].1;
             let dx = (x1 + x2)/2.;
             println!("{i} {x1} {x2} {m} {dx}");
             let load = Rc::new(LoadMass::new(
@@ -604,15 +608,15 @@ fn main() -> Result<(), Error> {
             load_mass.push(load);
     }
         // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
-    let mass = Mass::new(
+    let mass: Rc<dyn IMass> = Rc::new(Mass::new(
         Rc::new(Vec::new()),
         Position::new(0.,0.,0.,),
         Rc::new(FakeIcing::new(0.,Moment::new(0.,0.,0.,),)),
         Rc::new(load_mass),
         Rc::clone(&bounds),
-    );
+    ));
     let mut shear_force = ShearForce::new(TotalForce::new(
-        Rc::new(mass),
+        Rc::clone(&mass),
         1.025,
         Volume::new(
             0.,
@@ -625,10 +629,17 @@ fn main() -> Result<(), Error> {
     ));
     let shear_force_values = shear_force.values();
     let bending_moment_values = BendingMoment::new(Box::new(shear_force), bounds.delta()).values();
-
-    shear_force_values.iter().zip(bounds.iter().map(|v| v.center()).collect::<Vec<f64>>()).for_each(|v| println!("{} {};", v.0, v.1));
-    bending_moment_values.iter().for_each(|v| println!("{v};"));
-    dbg!(49.- bounds.length()/2.);
+    
+//    println!("mass");
+//    mass.values().iter().for_each(|v| println!("{v};"));
+    mass.values().iter().zip(bounds.iter().map(|v| v.center()).collect::<Vec<f64>>()).for_each(|v| println!("{} {};", v.1+fix_l, v.0));
+    println!("shear_force");
+//    shear_force_values.iter().zip(bounds.iter().map(|v| v.center()).collect::<Vec<f64>>()).for_each(|v| println!("{} {};", v.1, v.0));
+ //   shear_force_values.iter().for_each(|v| println!("{v};"));
+    println!("bending_moment");
+ //   bending_moment_values.iter().zip(bounds.iter().map(|v| v.center()).collect::<Vec<f64>>()).for_each(|v| println!("{} {};", v.1, v.0));
+ //   bending_moment_values.iter().for_each(|v| println!("{v};"));
+   // dbg!(49.- delta_l);
 
 
     elapsed.insert("Write stability result", time.elapsed());
