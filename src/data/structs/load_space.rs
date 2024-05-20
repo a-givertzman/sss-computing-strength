@@ -12,6 +12,10 @@ pub struct LoadSpaceData {
     pub name: String,
     /// Общая масса, т
     pub mass: Option<f64>,
+    /// Плотность t/m^3
+    pub density: Option<f64>,
+    /// Объем m^3
+    pub volume: Option<f64>,
     /// Диапазон по длинне
     pub bound_x1: f64,
     pub bound_x2: f64,
@@ -32,10 +36,12 @@ impl std::fmt::Display for LoadSpaceData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadSpaceData(space_id:{}, name:{}, mass:{} bound_x1:{} bound_x2:{} mass_shift_x:{} mass_shift_y:{} mass_shift_z:{} m_f_s_y:{} m_f_s_x:{})",
+            "LoadSpaceData(space_id:{} name:{} mass:{} density:{} volume:{} bound_x1:{} bound_x2:{} mass_shift_x:{} mass_shift_y:{} mass_shift_z:{} m_f_s_y:{} m_f_s_x:{})",
             self.space_id,
             self.name,
             self.mass.unwrap_or(0.),
+            self.density.unwrap_or(0.),
+            self.volume.unwrap_or(0.),
             self.bound_x1,
             self.bound_x2,
             self.mass_shift_x.unwrap_or(0.),
@@ -63,6 +69,10 @@ pub struct ParsedLoadSpaceData {
     pub name: String, 
     /// Общая масса, т
     pub mass: f64,
+    /// Плотность 
+    pub density: Option<f64>, 
+    /// Объем m^3
+    pub volume: Option<f64>,
     /// Границы груза
     pub bound_x: (f64, f64),
     pub bound_y: Option<(f64, f64)>,

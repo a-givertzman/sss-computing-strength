@@ -232,8 +232,10 @@ impl ParsedShipData {
         let mut load_spaces = Vec::new();
         for load_space in load_spaces_src.data() {
             load_spaces.push(ParsedLoadSpaceData {
-                name: load_space.name,
+                name: load_space.name,                
                 mass: load_space.mass.unwrap_or(0.),
+                density: load_space.density,
+                volume: load_space.volume,
                 bound_x: ( 
                     bound_x(&load_space.bound_x1, &load_space.bound_type)?, 
                     bound_x(&load_space.bound_x2, &load_space.bound_type)?, 

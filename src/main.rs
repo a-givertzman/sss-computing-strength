@@ -138,13 +138,32 @@ fn main() -> Result<(), Error> {
     }
 
     data.load_spaces.iter().for_each(|v| {
-        if let Some(mass_shift) = v.mass_shift {
-            let load = Rc::new(LoadMass::new(
-                v.mass,
-                Bound::from(v.bound_x),
-                Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2)),
+        let mass_shift = if let Some(mass_shift) = v.mass_shift.as_ref().clone() { 
+            Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
+        } else {
+            None
+        };
+        let bound_x = Bound::from(v.bound_x);
+
+        let load = Rc::new(LoadMass::new(
+            v.mass,
+            bound_x,
+            mass_shift.clone(),
+        ));
+        load_mass.push(load);
+
+        if v.m_f_s_x.is_some() && v.m_f_s_y.is_some() && v.density.is_some() {        
+            let tank: Rc<dyn ITank> = Rc::new(Tank::new(
+                v.density.unwrap_or(1.),
+                v.volume.unwrap_or(0.),
+                bound_x,
+                mass_shift.clone(),
+                InertiaMoment::new(
+                    v.m_f_s_x.unwrap_or(0.),
+                    v.m_f_s_y.unwrap_or(0.),
+                ),
             ));
-            load_mass.push(load);
+            tanks.push(tank);
         }
     });
 

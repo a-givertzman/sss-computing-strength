@@ -158,6 +158,8 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
             "SELECT space_id, 
                     name, 
                     mass, 
+                    density,
+                    volume,
                     bound_x1, 
                     bound_x2, 
                     bound_type, 
