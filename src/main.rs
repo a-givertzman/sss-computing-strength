@@ -578,11 +578,14 @@ fn main() -> Result<(), Error> {
     let mut load_mass: Vec<Rc<dyn ILoadMass>> = Vec::new();
 
     let delta_l = bounds.length()/2.;
-    let fix_l = wd.last().unwrap().0/2000.;
+ //   let fix_l = wd.last().unwrap().0/2000.;
+    let mut wd_sum = 0.;
     for i in 0..wd.len()-1 {
             let (x1, x2) = (wd[i].0/1000.0 - delta_l, wd[i+1].0/1000.0 - delta_l);
-    //        let m = (x2 - x1)*(wd[i+1].1 + wd[i].1)/2.;
-            let m = (x2 - x1)*wd[i].1;
+            let m = (x2 - x1)*(wd[i+1].1 + wd[i].1)/2.;
+            wd_sum += m;
+            //let m = (x2 - x1)*wd[i].1;
+            //let m = wd[i].1;//(wd[i].1+wd[i+1].1)/2.;
             let dx = (x1 + x2)/2.;
             println!("{i} {x1} {x2} {m} {dx}");
             let load = Rc::new(LoadMass::new(
@@ -593,10 +596,13 @@ fn main() -> Result<(), Error> {
             println!("{}", load);
             load_mass.push(load);
     }
+    let mut bd_sum = 0.;
     for i in 0..bd.len()-1 {
             let (x1, x2) = (bd[i].0/1000.0 - delta_l, bd[i+1].0/1000.0 - delta_l);
-    //        let m: f64 = (x2 - x1)*(bd[i+1].1 + bd[i].1)/2.;
-            let m: f64 = (x2 - x1)*bd[i].1;
+            let m: f64 = (x2 - x1)*(bd[i+1].1 + bd[i].1)/2.;
+       //     let m: f64 = (x2 - x1)*bd[i].1;
+        //    let m = bd[i].1;//(bd[i].1+bd[i+1].1)/2.;
+            bd_sum += m;
             let dx = (x1 + x2)/2.;
             println!("{i} {x1} {x2} {m} {dx}");
             let load = Rc::new(LoadMass::new(
@@ -630,15 +636,19 @@ fn main() -> Result<(), Error> {
     let shear_force_values = shear_force.values();
     let bending_moment_values = BendingMoment::new(Box::new(shear_force), bounds.delta()).values();
     
-//    println!("mass");
+    //println!("wd sum: {}", wd.iter().map(|v| v.1 ).sum::<f64>());
+    //println!("bd sum: {}", bd.iter().map(|v| v.1 ).sum::<f64>());
+    println!("wd sum: {}", wd_sum);
+    println!("bd sum: {}", bd_sum);
+    println!("mass sum: {}", mass.values().into_iter().sum::<f64>());
 //    mass.values().iter().for_each(|v| println!("{v};"));
-    mass.values().iter().zip(bounds.iter().map(|v| v.center()).collect::<Vec<f64>>()).for_each(|v| println!("{} {};", v.1+fix_l, v.0));
+//    mass.values().iter().zip(bounds.iter().map(|v| v.center()).collect::<Vec<f64>>()).for_each(|v| println!("{} {};", v.1+fix_l, v.0));
     println!("shear_force");
 //    shear_force_values.iter().zip(bounds.iter().map(|v| v.center()).collect::<Vec<f64>>()).for_each(|v| println!("{} {};", v.1, v.0));
- //   shear_force_values.iter().for_each(|v| println!("{v};"));
+    shear_force_values.iter().for_each(|v| println!("{v};"));
     println!("bending_moment");
  //   bending_moment_values.iter().zip(bounds.iter().map(|v| v.center()).collect::<Vec<f64>>()).for_each(|v| println!("{} {};", v.1, v.0));
- //   bending_moment_values.iter().for_each(|v| println!("{v};"));
+    bending_moment_values.iter().for_each(|v| println!("{v};"));
    // dbg!(49.- delta_l);
 
 

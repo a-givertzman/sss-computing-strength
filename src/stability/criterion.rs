@@ -133,15 +133,15 @@ impl Criterion {
         }
         out_data
     }
-    /// Критерий погоды K
+    /// Критерий погоды, id = 1
     pub fn weather(&mut self) -> String {
         let k = self.stability.k();
         match k {
             Ok(k) => format!(
                 "INSERT INTO result_stability
-                        (title, value1, value2, relation)
+                        (value1, value2)
                     VALUES
-                        ('Критерий погоды K', {k}, 1, '>=');"
+                        ({k}, 1,);"
             ),
             Err(error) => format!(
                 "INSERT INTO result_stability
