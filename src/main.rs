@@ -455,6 +455,7 @@ fn main() -> Result<(), Error> {
     // criterion.create().iter().for_each(|v| println!("{v}"));
     send_stability_data("sss-computing", criterion.create());// TODO errors
 */
+
     let mut wd = vec![
         (-2685.79200000000,	0.00),
         (-2337.17400000000,	4.03),
@@ -524,8 +525,6 @@ fn main() -> Result<(), Error> {
         (87176.0000000000,	1.87),
         (87821.,	0.00),   
     ];
-    wd.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-
     let mut bd: Vec<(f64, f64)> = vec![
         (0.00,	0.00),
         (1615.38600000000,	0.21),
@@ -571,18 +570,44 @@ fn main() -> Result<(), Error> {
         (82856.00,	0.34),
         (86225.00,	0.07),
     ];
-    bd.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-    
-    let bounds = Rc::new(Bounds::from_n((wd.last().unwrap().0 - wd[0].0)/1000., wd.len()));
-    dbg!(&bounds);
-    let mut load_mass: Vec<Rc<dyn ILoadMass>> = Vec::new();
+  //  let ship_len = wd.last().unwrap().0 - wd[0].0;
+  //  let delta_l = ship_len/2. + wd[0].0;
 
-    let delta_l = bounds.length()/2.;
+
+
+    let ship_len = wd.last().unwrap().0 - wd[0].0;
+    let delta_l = ship_len/2. + wd[0].0;
+    let bounds = Rc::new(Bounds::from_n(ship_len*0.001, 20));
+    dbg!(&bounds);
+
+
+    bd = bd.into_iter().map(|v| ((v.0 - delta_l)*0.001 , v.1) ).collect::<Vec<_>>();
+    bd.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    wd = wd.into_iter().map(|v| ((v.0 - delta_l)*0.001, v.1) ).collect::<Vec<_>>();
+    wd.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+
+    let mut load_mass: Vec<Rc<dyn ILoadMass>> = Vec::new();    
+    let curve = Curve::new_linear(&wd);
+    let mut wd_sum = 0.;
+    bounds.iter().for_each(|v| {
+        let m = curve.integral(v.start(), v.end());
+        wd_sum += m;
+        let load = Rc::new(LoadMass::new(
+            m,
+            v.clone(),
+            Some(Position::new(v.center(), 0., 0.)),
+        ));
+        println!("{}", load);
+        load_mass.push(load);
+    });
+
+    /* 
  //   let fix_l = wd.last().unwrap().0/2000.;
     let mut wd_sum = 0.;
-    for i in 0..wd.len()-1 {
-            let (x1, x2) = (wd[i].0/1000.0 - delta_l, wd[i+1].0/1000.0 - delta_l);
-            let m = (x2 - x1)*(wd[i+1].1 + wd[i].1)/2.;
+    for i in 1..wd.len() {
+            let (x1, x2) = (wd[i-1].0, wd[i].0);
+            let m = (x2 - x1)*wd[i].1;//(wd[i-1].1 + wd[i].1)/2.;
             wd_sum += m;
             //let m = (x2 - x1)*wd[i].1;
             //let m = wd[i].1;//(wd[i].1+wd[i+1].1)/2.;
@@ -596,10 +621,26 @@ fn main() -> Result<(), Error> {
             println!("{}", load);
             load_mass.push(load);
     }
+*/
+
+    let curve = Curve::new_linear(&bd);
     let mut bd_sum = 0.;
-    for i in 0..bd.len()-1 {
-            let (x1, x2) = (bd[i].0/1000.0 - delta_l, bd[i+1].0/1000.0 - delta_l);
-            let m: f64 = (x2 - x1)*(bd[i+1].1 + bd[i].1)/2.;
+    bounds.iter().for_each(|v| {
+        let m = curve.integral(v.start(), v.end());
+        bd_sum += m;
+        let load = Rc::new(LoadMass::new(
+            -m,
+            v.clone(),
+            Some(Position::new(v.center(), 0., 0.)),
+        ));
+        println!("{}", load);
+        load_mass.push(load);
+    });
+
+ /*   let mut bd_sum = 0.;
+    for i in 1..bd.len() {
+            let (x1, x2) = (bd[i-1].0/1000.0 - delta_l, bd[i].0/1000.0 - delta_l);
+            let m: f64 = (x2 - x1)*(bd[i-1].1 + bd[i].1)/2.;
        //     let m: f64 = (x2 - x1)*bd[i].1;
         //    let m = bd[i].1;//(bd[i].1+bd[i+1].1)/2.;
             bd_sum += m;
@@ -613,7 +654,10 @@ fn main() -> Result<(), Error> {
             println!("{}", load);
             load_mass.push(load);
     }
-        // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+*/
+    println!("delta_l {}", delta_l);
+
+    // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     let mass: Rc<dyn IMass> = Rc::new(Mass::new(
         Rc::new(Vec::new()),
         Position::new(0.,0.,0.,),
