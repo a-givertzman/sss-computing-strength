@@ -38,6 +38,7 @@ impl Area {
     }
 }
 ///
+/// 
 impl IArea for Area {
     /// Площадь парусности для заданного диапазона, м^2
     fn area_v(&self, bound: Option<Bound>) -> f64 {

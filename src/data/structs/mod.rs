@@ -1,5 +1,6 @@
 //! Структуры для ввода/вывода данных
-pub mod frame;
+pub mod frame_area;
+pub mod frame_index;
 pub mod load_space;
 pub mod tank;
 pub mod result;
@@ -20,7 +21,8 @@ pub mod icing;
 
 use data_array::*;
 pub use ship::*;
-pub use frame::*;
+pub use frame_area::*;
+pub use frame_index::*;
 pub use load_space::*;
 pub use tank::*;
 pub use result::*;

@@ -164,9 +164,9 @@ impl ParsedShipData {
         entry_angle: EntryAngleDataArray,
         delta_windage_area: DeltaWindageAreaDataArray,
         delta_windage_moment: DeltaWindageMomentDataArray,
-        physical_frame_src: FrameDataArray,    
-        theoretical_frame_src: FrameDataArray,
-        frame_area: FrameAreaData,
+        physical_frame: FrameIndexDataArray,    
+        theoretical_frame_src: FrameIndexDataArray,
+        frame_area: FrameAreaDataArray,
         load_constant: LoadConstantArray,
         load_spaces_src: LoadSpaceArray,
         tank_data: TankDataArray,
@@ -186,14 +186,10 @@ impl ParsedShipData {
             panic!("Ship length parse error: ship_length <= 0.",);
         }
 
-        let mut physical_frame = HashMap::new();        
-        for (index, map) in physical_frame_src.data() {
-            let value = map.get("x").ok_or(format!(
-                "physical_frame parse error: no x for frame index:{}",
-                index
-            ))?;
-            physical_frame.insert(index, *value);
-        }
+        let physical_frame = physical_frame.data();
+
+        let frame_area = frame_area.data();
+
         // Два варианта задания распределения по х - координата или физический шпангоут.
         // Если тип шпангоут, то находим и подставляем его координату
         // Координата шпангоута задана относительно кормы, считаем ее относительно центра
@@ -210,18 +206,11 @@ impl ParsedShipData {
         };
 
         let mut theoretical_frame = Vec::new();        
-        for (index, map) in theoretical_frame_src.data() {
+        for (index, x) in theoretical_frame_src.data() {
             theoretical_frame.push(ParsedFrameData {
                 index,
-                x: *map.get("x").ok_or(format!(
-                    "ParsedShipData parse error: no x for frame index:{}",
-                    index
-                ))?,
-                delta_x: *map.get("delta_x").ok_or(format!(
-                    "ParsedShipData parse error: no delta_x for frame index:{}",
-                    index
-                ))?,
-                immersion_area: frame_area.get(index).ok_or(format!(
+                x,
+                immersion_area: frame_area.get(&index).ok_or(format!(
                     "ParsedShipData parse error: no immersion_area for frame index:{}",
                     index
                 ))?.to_vec(),
@@ -759,12 +748,6 @@ impl ParsedShipData {
         if let Some(frame) = self.theoretical_frame.iter().find(|f| f.x < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: x of frame must be greater or equal to 0, {}",
-                frame
-            )));
-        }
-        if let Some(frame) = self.theoretical_frame.iter().find(|f| f.delta_x < 0.) {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: delta_x of frame must be greater or equal to 0, {}",
                 frame
             )));
         }

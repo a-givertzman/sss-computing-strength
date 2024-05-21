@@ -1,5 +1,4 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use super::DataArray;
 

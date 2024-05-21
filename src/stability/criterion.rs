@@ -8,6 +8,38 @@ use crate::{
     IStability, IWind,
 };
 
+/// Результат проверки критерия
+pub struct CriterionData {
+    /// id критерия
+    pub criterion_id: usize,
+    /// Результат расчета
+    pub result: f64,
+    /// Пороговое значение критерия
+    pub target: f64,
+    /// Текст ошибки
+    pub error_message: Option<String>,
+}
+///
+impl CriterionData {
+    /// Конструктор при наличии результата
+    pub fn new_result(criterion_id: usize, result: f64, target: f64) -> Self {
+        Self {
+            criterion_id,
+            result,
+            target,
+            error_message: None,
+        }
+    }
+    /// Конструктор при наличии ошибке расчета
+    pub fn new_error(criterion_id: usize, error_message: String) -> Self {
+        Self {
+            criterion_id,
+            result: 0.,
+            target: 0.,
+            error_message: Some(error_message),
+        }
+    }
+}
 /// Критерии проверки остойчивости
 pub struct Criterion {
     /// Тип судна
@@ -103,9 +135,8 @@ impl Criterion {
         }
     }
     ///
-    pub fn create(&mut self) -> Vec<String> {
+    pub fn create(&mut self) -> Vec<CriterionData> {
         let mut out_data = Vec::new();
-        out_data.push("TRUNCATE TABLE result_stability;".to_owned());
         if self.navigation_area != NavigationArea::R3Rsn {
             out_data.push(self.weather());
         }
@@ -134,28 +165,18 @@ impl Criterion {
         out_data
     }
     /// Критерий погоды K
-    pub fn weather(&mut self) -> String {
+    pub fn weather(&mut self) -> CriterionData {
         let k = self.stability.k();
         match k {
-            Ok(k) => format!(
-                "INSERT INTO result_stability
-                        (title, value1, value2, relation)
-                    VALUES
-                        ('Критерий погоды K', {k}, 1, '>=');"
-            ),
-            Err(error) => format!(
-                "INSERT INTO result_stability
-                        (title, description)
-                    VALUES
-                        ('Критерий погоды K', {error});"
-            ),
+            Ok(k) => CriterionData::new_result(1, k, 1.),
+            Err(error) => CriterionData::new_error(1, error.to_string()),
         }
     }
     /// Статический угол крена от действия постоянного ветра.
     /// При расчете плеча кренящего момента от давления ветра 𝑙𝑤1, используемое при
     /// определении угла крена θ𝑤1, предполагаемое давление ветра 𝑝𝑣 принимается как для судна
     /// неограниченного района плавания судна.
-    pub fn static_angle(&mut self) -> String {
+    pub fn static_angle(&mut self) -> CriterionData {
         // Для всех судов (кроме района плавания R3):
         // статического угла крена θ𝑤1, вызванного постоянным ветром
         let wind_lever = self.wind.arm_wind_static();
@@ -166,31 +187,19 @@ impl Criterion {
             ShipType::ContainerShip => 16.0f64.min(0.5 * self.flooding_angle),
             _ => 16.0f64.min(0.8 * self.flooding_angle),
         };
-        if let Some(angle) = angle {
-            return format!(
-                "INSERT INTO result_stability
-                        (title, value1, value2, relation, unit)
-                    VALUES
-                        ('Статическй угол крена θ𝑤1', {angle}, {target_value}, '<=', 'deg');"
-            );
+        return if let Some(angle) = angle {
+            CriterionData::new_result(2, *angle, target_value)
         } else {
-            return format!(
-                "INSERT INTO result_stability
-                        (title, description)
-                    VALUES
-                        ('Статическй угол крена θ𝑤1', 'Ошибка: нет угла крена для текущих условий');"
-            );
-        }
+            CriterionData::new_error(2, "Нет угла крена для текущих условий".to_owned())
+        };
     }
     /// Площади под диаграммой статической остойчивости
-    pub fn dso(&self) -> Vec<String> {
+    pub fn dso(&self) -> Vec<CriterionData> {
         let mut result = Vec::new();
-        result.push(format!(
-            "INSERT INTO result_stability
-                    (title, value1, value2, relation, unit)
-                VALUES
-                    ('Площадь DSO 0-30', {}, 0.055, '>=', 'm*rad');",
+        result.push(CriterionData::new_result(
+            3,
             self.lever_diagram.dso_area(0., 30.),
+            0.055,
         ));
         let second_angle_40 = 40.0f64.min(self.flooding_angle);
         let target_area = if self.ship_type != ShipType::TimberCarrier {
@@ -198,106 +207,112 @@ impl Criterion {
         } else {
             0.08
         };
-        result.push(format!(
-            "INSERT INTO result_stability
-                        (title, value1, value2, relation, unit)
-                    VALUES
-                        ('Площадь DSO 0-{second_angle_40}', {}, {target_area}, '>=', 'm*rad');",
+        result.push(CriterionData::new_result(
+            4,
             self.lever_diagram.dso_area(0., second_angle_40),
+            target_area,
         ));
-        result.push(format!(
-            "INSERT INTO result_stability
-                    (title, value1, value2, relation, unit)
-                VALUES
-                    ('Площадь DSO 30-{second_angle_40}', {}, 0.03, '>=', 'm*rad');",
+        result.push(CriterionData::new_result(
+            5,
             self.lever_diagram.dso_area(30., second_angle_40),
+            0.03,
         ));
         result
     }
     /// Максимум диаграммы статической остойчивости
-    pub fn dso_lever(&self) -> String {
+    pub fn dso_lever(&self) -> CriterionData {
         if !self.have_timber {
             let curve = Curve::new_linear(&vec![(105., 0.25), (80., 20.)]);
-            format!(
-                "INSERT INTO result_stability
-                            (title, value1, value2, relation, unit)
-                        VALUES
-                            ('Плечо DSO при 30 град.', {}, {}, '>=', 'm');",
-                self.lever_diagram.lever_moment(30.),
-                curve.value(self.ship_length),
+            CriterionData::new_result(
+                6,
+                self.lever_diagram.dso_area(self.lever_diagram.lever_moment(30.), curve.value(self.ship_length)),
+                0.03,
             )
         } else {
             if let Some(angle) = self.lever_diagram.max_angles().first() {
-                return format!(
-                    "INSERT INTO result_stability
-                    (title, value1, value2, relation, unit)
-                VALUES
-                    ('Макс. плечо DSO', {}, 0.25, '>=', 'm');",
+                CriterionData::new_result(
+                    6,
                     angle.1,
-                );
+                    0.25,
+                )
             } else {
-                return format!(
-                    "INSERT INTO result_stability
-                            (title, description)
-                        VALUES
-                            ('Макс. плечо DSO', 'Ошибка: нет плеча соответствующего максимуму DSO для текущих условий');"
-                );
+                CriterionData::new_error(6, "Нет плеча соответствующего максимуму DSO для текущих условий".to_owned())
             }
         }
     }
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    pub fn dso_lever_max_angle(&self) -> Vec<String> {
+    pub fn dso_lever_max_angle(&self) -> Vec<CriterionData> {
         let mut result = Vec::new();
         let angles = self.lever_diagram.max_angles();
-        let b_div_d = self.breadth/self.mean_draught;
+        let b_div_d = self.breadth / self.mean_draught;
         let target = if b_div_d <= 2. {
-            if angles.len() > 1 { 25. } else { 30. }
+            if angles.len() > 1 {
+                25.
+            } else {
+                30.
+            }
         } else {
             let k = match self.stability.k() {
                 Ok(k) => k,
                 Err(error) => {
+
+
                     result.push(format!(
-                    "INSERT INTO result_stability
-                            (title, description)
+                        "INSERT INTO result_stability
+                            (description)
                         VALUES
                             ('Угол соотв. макс. DSO', 'Ошибка: {}');",
                         error,
                     ));
                     return result;
-                },
+                }
             };
-            (40.*(b_div_d.min(2.5) - 2.)*(k.min(1.5) - 1.)*0.5).round()
+            (40. * (b_div_d.min(2.5) - 2.) * (k.min(1.5) - 1.) * 0.5).round()
         };
-        
-        if let Some(angle) = angles.first() {    
-            result.push(format!(
+
+        if let Some(angle) = angles.first() {
+            result.push(
+                CriterionData::new_result(
+                    6,
+                    angle.1,
+                    0.25,
+                )
+                
+                format!(
                 "INSERT INTO result_stability
-                        (title, value1, value2, relation, unit)
+                        (value1, value2, unit)
                     VALUES
                         ('Угол соотв. макс. DSO', {}, {target}, '>=', 'deg');",
                 angle.0,
-            ));  
+            ));
 
-            if b_div_d > 2.5 && angle.0 < target { 
-                let src_area = self.lever_diagram.dso_area( 0., angle.0);
+            if b_div_d > 2.5 && angle.0 < target {
+                let src_area = self.lever_diagram.dso_area(0., angle.0);
                 let target_area = if angle.0 <= 15.0 {
                     0.07
                 } else if angle.0 >= 30.0 {
                     0.055
                 } else {
-                    0.05 + 0.001*(30.0-angle.0)
+                    0.05 + 0.001 * (30.0 - angle.0)
                 };
-                result.push(format!(
+                result.push(
+                    CriterionData::new_result(
+                        6,
+                        angle.1,
+                        0.25,
+                    )
+                    
+                    format!(
                     "INSERT INTO result_stability
-                            (title, value1, value2, relation, unit)
+                            (value1, value2, unit)
                         VALUES
                             ('Площадь DSO до угла макс.', {src_area}, {target_area}, '>=', 'm*rad');"
-                ));  
+                ));
             };
         } else {
             result.push(format!(
                 "INSERT INTO result_stability
-                        (title, description)
+                        (description)
                     VALUES
                         ('Угол соотв. макс. DSO', 'Ошибка: нет угла соответствующего максимуму DSO для текущих условий');"
             ));
@@ -305,7 +320,7 @@ impl Criterion {
         result
     }
     /// Метацентрическая высота
-    pub fn metacentric_height(&self) -> String {
+    pub fn metacentric_height(&self) -> CriterionData {
         // Все суда
         let target = if self.have_grain {
             0.3
@@ -319,36 +334,36 @@ impl Criterion {
 
         format!(
             "INSERT INTO result_stability
-                    (title, value1, value2, relation, unit)
+                    (value1, value2, unit)
                 VALUES
                     ('Исп. метацентрическая высота h', {}, {target}, '>=', 'm');",
             self.metacentric_height.h_trans_fix(),
         )
     }
     /// Критерий ускорения 𝐾∗
-    pub fn accelleration(&self) -> String {
+    pub fn accelleration(&self) -> CriterionData {
         format!(
             "INSERT INTO result_stability
-                    (title, value1, value2, relation)
+                    (value1, value2)
                 VALUES
                     ('Критерий ускорения 𝐾∗', {}, 1, '>=');",
             self.acceleration.calculate(),
         )
     }
     /// Критерий крена на циркуляции
-    pub fn circulation(&self) -> String {
+    pub fn circulation(&self) -> CriterionData {
         let target = 16.0f64.min(self.flooding_angle / 2.);
         if let Some(angle) = self.circulation.angle() {
             return format!(
                 "INSERT INTO result_stability
-                        (title, value1, value2, relation, unit)
+                        (value1, value2, unit)
                     VALUES
                         ('Крен на циркуляции', {angle}, {target}, '<=', 'deg');"
             );
         } else {
             return format!(
                 "INSERT INTO result_stability
-                        (title, description)
+                        (description)
                     VALUES
                         ('Крен на циркуляции', 'Крен {target} градусов, рекомендуемая скорость {} m/s');",
                     self.circulation.velocity(target),
@@ -361,10 +376,10 @@ impl Criterion {
         // контейнеры выходят за пределы этого комингса).
     }
     /// Критерий при перевозки навалочных смещаемых грузов
-    pub fn grain(&self) -> String {
+    pub fn grain(&self) -> CriterionData {
         format!(
             "INSERT INTO result_stability
-                    (title, value1, value2, relation, unit)
+                    (value1, value2, unit)
                 VALUES
                     ('Смещение зерна, А', {}, 0.075, '>=', 'm*rad');",
             self.grain.area(),
