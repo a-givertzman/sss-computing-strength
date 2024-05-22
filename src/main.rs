@@ -433,6 +433,7 @@ fn main() -> Result<(), Error> {
         data.length,
         breadth,
         mean_draught,
+        Curve::new_linear(&data.h_subdivision).value(mean_draught),
         Rc::new(Wind::new(
             p_v,
             m,

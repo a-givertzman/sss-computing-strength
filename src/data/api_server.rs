@@ -309,6 +309,16 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //    dbg!(&rad_cross);
     log::info!("input_api_server rad_cross read ok");
+    let h_subdivision = MetacentricHeightSubdivisionArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT key, value FROM min_metacentric_height_subdivision WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //    dbg!(&h_subdivision);
+    log::info!("input_api_server h_subdivision read ok");
     let pantocaren = PantocarenDataArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -483,6 +493,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         volume_shift,
         rad_long,
         rad_cross,
+        h_subdivision,
         mean_draught,
         center_draught_shift,
         pantocaren,
