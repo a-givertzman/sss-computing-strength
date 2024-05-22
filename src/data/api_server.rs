@@ -1,7 +1,7 @@
 //! Функции для работы с АПИ-сервером
 use api_tools::client::{api_query::*, api_request::ApiRequest};
 
-use crate::{data::structs::*, error::{self, Error}};
+use crate::{data::structs::*, error::{self, Error}, CriterionData};
 /*
 /// Создание тестовой БД
 #[allow(dead_code)]
@@ -547,13 +547,56 @@ pub fn send_strenght_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>,
 
 
 /// Запись данных расчета остойчивости в БД
-pub fn send_stability_data(db_name: &str, data: Vec<String>) -> Vec<Result<Vec<u8>, error::Error>> {
-    out_data.push("TRUNCATE TABLE result_stability;".to_owned());
-    "INSERT INTO result_stability
-    (value1, value2)
-VALUES
-    ('Критерий погоды K', {k}, 1, '>=')
-WHERE id=1;"
+pub fn send_stability_data(db_name: &str, ship_id: usize, data: Vec<CriterionData>) -> Vec<Result<Vec<u8>, error::Error>> {
+    let mut result = Vec::new();
+    let mut request = ApiRequest::new(
+        "parent",
+        "0.0.0.0:8080",
+        "auth_token",
+        ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(db_name, "")), false),
+        false,
+        false,
+    );
+    log::info!("input_api_server read begin");   
+    
+    result.push(fetch_query(
+        &mut request,
+        db_name,
+        "TRUNCATE TABLE result_stability;".to_owned(),
+    ));
+
+    result.append(&mut data.into_iter().map(|v| 
+            if let Some(error) = v.error_message {
+                fetch_query(
+                    &mut request,
+                    db_name,
+                    format!(
+                        "INSERT INTO result_stability (ship_id, criterion_id, error_message) VALUES ({ship_id}, {}, '{}');",
+                        usize::from(v.criterion_id), error).to_owned(),
+                )
+            } else {
+                fetch_query(
+                    &mut request,
+                    db_name,
+                    format!(
+                        "INSERT INTO result_stability (ship_id, criterion_id, result, target) VALUES ({ship_id}, {}, {}, {});",
+                        usize::from(v.criterion_id), v.result, v.target).to_owned(),
+                )
+            }
+        ).collect() );
+    result
+ /* 
+    let string = data.into_iter().map(|v| 
+        if let Some(error) = v.error_message {
+            format!(
+                "INSERT INTO result_stability (ship_id, criterion_id, error_message) VALUES ({ship_id}, {}, '{}');",
+                usize::from(v.criterion_id), error)
+        } else {
+            format!(
+                "INSERT INTO result_stability (ship_id, criterion_id, result, target) VALUES ({ship_id}, {}, {}, {});",
+                usize::from(v.criterion_id), v.result, v.target)
+        }
+    ).collect::<String>();
 
     let mut request = ApiRequest::new(
         "parent",
@@ -565,12 +608,16 @@ WHERE id=1;"
     );
     log::info!("input_api_server read begin");   
 
-    let result = data.iter().map(|string| {
-        fetch_query(
-            &mut request,
-            db_name,
-            string,
-        )
-    }).collect::<Vec<_>>();
-    result
+    fetch_query(
+        &mut request,
+        db_name,
+        "TRUNCATE TABLE result_stability;".to_owned(),
+    )?;
+
+    fetch_query(
+        &mut request,
+        db_name,
+        string,
+    )
+    */
 }

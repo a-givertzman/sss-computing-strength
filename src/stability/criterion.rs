@@ -7,7 +7,44 @@ use crate::{
     Curve, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight,
     IStability, IWind,
 };
-
+/// 
+enum CriterionID {
+    CriterionWheather = 1,
+    CriterionWindStaticHeel = 2,
+    CriterionAreaLC0_30 = 3,
+    CriterionAreaLC0_40 = 4,
+    CriterionAreaLC30_40 = 5,
+    CriterionMaximumLC = 6,
+    CriterionMaximumLcTimber = 7,
+    CriterionMaximumLcIcing = 8,
+    CriterionHeelMaximumLC = 9,
+    CriterionMetacentricHight = 10,
+    CriterionAcceleration = 11,
+    CriterionHeelTurning = 12,
+    CriterionHeelGrainDisplacement = 13,
+    CriterionAreaLcGrainDisplacement = 14,
+}
+///
+impl From<CriterionID> for usize {
+    fn from(criterion_id: CriterionID) -> Self {
+        match criterion_id {
+            CriterionID::CriterionWheather => 1,
+            CriterionID::CriterionWindStaticHeel => 2,
+            CriterionID::CriterionAreaLC0_30 => 3,
+            CriterionID::CriterionAreaLC0_40 => 4,
+            CriterionID::CriterionAreaLC30_40 => 5,
+            CriterionID::CriterionMaximumLC => 6,
+            CriterionID::CriterionMaximumLcTimber => 7,
+            CriterionID::CriterionMaximumLcIcing => 8,
+            CriterionID::CriterionHeelMaximumLC => 9,
+            CriterionID::CriterionMetacentricHight => 10,
+            CriterionID::CriterionAcceleration => 11,
+            CriterionID::CriterionHeelTurning => 12,
+            CriterionID::CriterionHeelGrainDisplacement => 13,
+            CriterionID::CriterionAreaLcGrainDisplacement => 14,
+        }
+    }
+}
 /// Результат проверки критерия
 pub struct CriterionData {
     /// id критерия
@@ -22,18 +59,18 @@ pub struct CriterionData {
 ///
 impl CriterionData {
     /// Конструктор при наличии результата
-    pub fn new_result(criterion_id: usize, result: f64, target: f64) -> Self {
+    pub fn new_result(criterion_id: CriterionID, result: f64, target: f64) -> Self {
         Self {
-            criterion_id,
+            criterion_id: criterion_id.into(),
             result,
             target,
             error_message: None,
         }
     }
     /// Конструктор при наличии ошибке расчета
-    pub fn new_error(criterion_id: usize, error_message: String) -> Self {
+    pub fn new_error(criterion_id: CriterionID, error_message: String) -> Self {
         Self {
-            criterion_id,
+            criterion_id: criterion_id.into(),
             result: 0.,
             target: 0.,
             error_message: Some(error_message),
@@ -75,7 +112,7 @@ pub struct Criterion {
     /// Расчет крена на циркуляции
     circulation: Rc<dyn ICirculation>,
     /// Смещение груза при перевозки навалочных смещаемых грузов (зерна)
-    grain: Rc<dyn IGrain>,
+    grain: Box<dyn IGrain>,
 }
 ///
 impl Criterion {
@@ -112,7 +149,7 @@ impl Criterion {
         metacentric_height: Rc<dyn IMetacentricHeight>,
         acceleration: Rc<dyn IAcceleration>,
         circulation: Rc<dyn ICirculation>,
-        grain: Rc<dyn IGrain>,
+        grain: Box<dyn IGrain>,
     ) -> Self {
         assert!(mean_draught > 0., "mean_draught {mean_draught} > 0.");
         Self {
@@ -160,7 +197,7 @@ impl Criterion {
             out_data.push(self.circulation());
         }
         if self.have_grain {
-            out_data.push(self.grain());
+            out_data.append(&mut self.grain());
         }
         out_data
     }
@@ -168,8 +205,8 @@ impl Criterion {
     pub fn weather(&mut self) -> CriterionData {
         let k = self.stability.k();
         match k {
-            Ok(k) => CriterionData::new_result(1, k, 1.),
-            Err(error) => CriterionData::new_error(1, error.to_string()),
+            Ok(k) => CriterionData::new_result(CriterionID::CriterionWheather, k, 1.),
+            Err(error) => CriterionData::new_error(CriterionID::CriterionWheather, error.to_string()),
         }
     }
     /// Статический угол крена от действия постоянного ветра.
@@ -188,16 +225,16 @@ impl Criterion {
             _ => 16.0f64.min(0.8 * self.flooding_angle),
         };
         return if let Some(angle) = angle {
-            CriterionData::new_result(2, *angle, target_value)
+            CriterionData::new_result(CriterionID::CriterionWindStaticHeel, *angle, target_value)
         } else {
-            CriterionData::new_error(2, "Нет угла крена для текущих условий".to_owned())
+            CriterionData::new_error(CriterionID::CriterionWindStaticHeel, "Нет угла крена для текущих условий".to_owned())
         };
     }
     /// Площади под диаграммой статической остойчивости
     pub fn dso(&self) -> Vec<CriterionData> {
         let mut result = Vec::new();
         result.push(CriterionData::new_result(
-            3,
+            CriterionID::CriterionAreaLC0_30,
             self.lever_diagram.dso_area(0., 30.),
             0.055,
         ));
@@ -208,12 +245,12 @@ impl Criterion {
             0.08
         };
         result.push(CriterionData::new_result(
-            4,
+            CriterionID::CriterionAreaLC0_40,
             self.lever_diagram.dso_area(0., second_angle_40),
             target_area,
         ));
         result.push(CriterionData::new_result(
-            5,
+            CriterionID::CriterionAreaLC30_40,
             self.lever_diagram.dso_area(30., second_angle_40),
             0.03,
         ));
@@ -222,21 +259,20 @@ impl Criterion {
     /// Максимум диаграммы статической остойчивости
     pub fn dso_lever(&self) -> CriterionData {
         if !self.have_timber {
-            let curve = Curve::new_linear(&vec![(105., 0.25), (80., 20.)]);
+            let curve = Curve::new_linear(&vec![(105., 0.25), (80., 0.20)]);
             CriterionData::new_result(
-                6,
-                self.lever_diagram.dso_area(self.lever_diagram.lever_moment(30.), curve.value(self.ship_length)),
-                0.03,
+                CriterionID::CriterionMaximumLC,                
+                self.lever_diagram.lever_moment(30.),
+                curve.value(self.ship_length),
             )
         } else {
             if let Some(angle) = self.lever_diagram.max_angles().first() {
-                CriterionData::new_result(
-                    6,
-                    angle.1,
-                    0.25,
-                )
+                CriterionData::new_result(CriterionID::CriterionMaximumLC, angle.1, 0.25)
             } else {
-                CriterionData::new_error(6, "Нет плеча соответствующего максимуму DSO для текущих условий".to_owned())
+                CriterionData::new_error(
+                    CriterionID::CriterionMaximumLC,
+                    "Нет плеча соответствующего максимуму DSO для текущих условий".to_owned(),
+                )
             }
         }
     }
@@ -255,15 +291,7 @@ impl Criterion {
             let k = match self.stability.k() {
                 Ok(k) => k,
                 Err(error) => {
-
-
-                    result.push(format!(
-                        "INSERT INTO result_stability
-                            (description)
-                        VALUES
-                            ('Угол соотв. макс. DSO', 'Ошибка: {}');",
-                        error,
-                    ));
+                    result.push(CriterionData::new_error(CriterionID::CriterionHeelMaximumLC, error.to_string()));
                     return result;
                 }
             };
@@ -271,22 +299,8 @@ impl Criterion {
         };
 
         if let Some(angle) = angles.first() {
-            result.push(
-                CriterionData::new_result(
-                    6,
-                    angle.1,
-                    0.25,
-                )
-                
-                format!(
-                "INSERT INTO result_stability
-                        (value1, value2, unit)
-                    VALUES
-                        ('Угол соотв. макс. DSO', {}, {target}, '>=', 'deg');",
-                angle.0,
-            ));
-
-            if b_div_d > 2.5 && angle.0 < target {
+            result.push(CriterionData::new_result(CriterionID::CriterionHeelMaximumLC, angle.0, target));
+            /*TODO 2.2.3  if b_div_d > 2.5 && angle.0 < target {
                 let src_area = self.lever_diagram.dso_area(0., angle.0);
                 let target_area = if angle.0 <= 15.0 {
                     0.07
@@ -296,25 +310,17 @@ impl Criterion {
                     0.05 + 0.001 * (30.0 - angle.0)
                 };
                 result.push(
-                    CriterionData::new_result(
-                        6,
-                        angle.1,
-                        0.25,
-                    )
-                    
                     format!(
                     "INSERT INTO result_stability
                             (value1, value2, unit)
                         VALUES
                             ('Площадь DSO до угла макс.', {src_area}, {target_area}, '>=', 'm*rad');"
                 ));
-            };
+            }*/
         } else {
-            result.push(format!(
-                "INSERT INTO result_stability
-                        (description)
-                    VALUES
-                        ('Угол соотв. макс. DSO', 'Ошибка: нет угла соответствующего максимуму DSO для текущих условий');"
+            result.push(CriterionData::new_error(
+                CriterionID::CriterionHeelMaximumLC,
+                "Нет угла соответствующего максимуму DSO для текущих условий".to_owned(),
             ));
         }
         result
@@ -331,43 +337,37 @@ impl Criterion {
         } else {
             0.15
         };
-
-        format!(
-            "INSERT INTO result_stability
-                    (value1, value2, unit)
-                VALUES
-                    ('Исп. метацентрическая высота h', {}, {target}, '>=', 'm');",
+        CriterionData::new_result(
+            CriterionID::CriterionMetacentricHight,
             self.metacentric_height.h_trans_fix(),
+            target,
         )
     }
     /// Критерий ускорения 𝐾∗
     pub fn accelleration(&self) -> CriterionData {
-        format!(
-            "INSERT INTO result_stability
-                    (value1, value2)
-                VALUES
-                    ('Критерий ускорения 𝐾∗', {}, 1, '>=');",
+        CriterionData::new_result(
+            CriterionID::CriterionAcceleration,
             self.acceleration.calculate(),
+            1.,
         )
     }
     /// Критерий крена на циркуляции
     pub fn circulation(&self) -> CriterionData {
         let target = 16.0f64.min(self.flooding_angle / 2.);
         if let Some(angle) = self.circulation.angle() {
-            return format!(
-                "INSERT INTO result_stability
-                        (value1, value2, unit)
-                    VALUES
-                        ('Крен на циркуляции', {angle}, {target}, '<=', 'deg');"
-            );
+            CriterionData::new_result(
+                CriterionID::CriterionHeelTurning,
+                angle,
+                target,
+            )
         } else {
-            return format!(
-                "INSERT INTO result_stability
-                        (description)
-                    VALUES
-                        ('Крен на циркуляции', 'Крен {target} градусов, рекомендуемая скорость {} m/s');",
-                    self.circulation.velocity(target),
-            );
+            CriterionData::new_error(
+                CriterionID::CriterionHeelTurning,
+                format!(
+                    "Крен {target} градусов, рекомендуемая скорость {} m/s');",
+                        self.circulation.velocity(target),
+                ),
+            )
         }
 
         // TODO: В случаях, когда палубный груз контейнеров размещается только на крышках грузовых
@@ -376,13 +376,21 @@ impl Criterion {
         // контейнеры выходят за пределы этого комингса).
     }
     /// Критерий при перевозки навалочных смещаемых грузов
-    pub fn grain(&self) -> CriterionData {
-        format!(
-            "INSERT INTO result_stability
-                    (value1, value2, unit)
-                VALUES
-                    ('Смещение зерна, А', {}, 0.075, '>=', 'm*rad');",
-            self.grain.area(),
-        )
+    pub fn grain(&mut self) -> Vec<CriterionData> {
+        let mut result = Vec::new();
+        let (angle1, angle2) = self.grain.angle(); 
+        result.push(CriterionData::new_result(
+            CriterionID::CriterionHeelGrainDisplacement,
+            angle1,
+            angle2,
+        ));
+        if let Some(area) = self.grain.area() {
+            result.push(CriterionData::new_result(
+                CriterionID::CriterionAreaLcGrainDisplacement,
+                area,
+                0.075,
+            ));
+        }
+        result
     }
 }

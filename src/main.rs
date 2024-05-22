@@ -458,7 +458,7 @@ fn main() -> Result<(), Error> {
             Rc::clone(&mass),
             Rc::clone(&lever_diagram),
         )),
-        Rc::new(Grain::new(
+        Box::new(Grain::new(
             flooding_angle,
             Rc::clone(&bulk),
             Rc::clone(&mass),
@@ -469,7 +469,7 @@ fn main() -> Result<(), Error> {
 
     let time = Instant::now();
     // criterion.create().iter().for_each(|v| println!("{v}"));
-    send_stability_data("sss-computing", criterion.create());// TODO errors
+    send_stability_data("sss-computing", ship_id, criterion.create());// TODO errors
     elapsed.insert("Write stability result", time.elapsed());
 
     for (key, e) in elapsed {
