@@ -429,6 +429,7 @@ fn main() -> Result<(), Error> {
         desks.iter().find(|v| v.is_timber()).is_some(),
         bulk.iter().find(|v| v.moment() != 0.).is_some(),
         load_mass.iter().find(|v| v.value(None) != 0.).is_some(),
+        icing_stab.is_some(),
         flooding_angle,
         data.length,
         breadth,

@@ -536,7 +536,6 @@ pub fn send_strenght_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>,
     string.push(';');
 
  //   dbg!(&string);
-
     let mut request = ApiRequest::new(
         "parent",
         "0.0.0.0:8080",
@@ -545,7 +544,6 @@ pub fn send_strenght_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>,
         false,
         false,
     );
-    log::info!("input_api_server read begin");   
 
     fetch_query(
         &mut request,

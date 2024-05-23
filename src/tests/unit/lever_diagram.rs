@@ -136,18 +136,19 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "TODO"]
-    fn dso_area() {
+    fn dso_lever_max() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
         println!("");
-        let self_id = "test LeverDiagram dso_area";
+        let self_id = "test LeverDiagram dso_lever_max";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().dso_area(15., 45.,) };
-        let target = (1. + 3.)*30.*PI/180.;
+        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().dso_lever_max(15., 90.,) };
+        let angle = 45.0;
+        let angle_rad = angle * std::f64::consts::PI / 180.;
+        let target = 3. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos();
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",

@@ -12,7 +12,7 @@ enum CriterionID {
     Wheather = 1,
     WindStaticHeel = 2,
     AreaLC0_30 = 3,
-    AreaLC0_Thetalmax = 4,
+    AreaLc0Thetalmax = 4,
     AreaLC0_40 = 5,
     AreaLC30_40 = 6,
     MaximumLC = 7,
@@ -34,7 +34,7 @@ impl From<CriterionID> for usize {
             CriterionID::Wheather => 1,
             CriterionID::WindStaticHeel => 2,
             CriterionID::AreaLC0_30 => 3,
-            CriterionID::AreaLC0_Thetalmax => 4,
+            CriterionID::AreaLc0Thetalmax => 4,
             CriterionID::AreaLC0_40 => 5,
             CriterionID::AreaLC30_40 => 6,
             CriterionID::MaximumLC => 7,
@@ -95,6 +95,8 @@ pub struct Criterion {
     have_grain: bool,
     /// Признак наличия груза или балласта
     have_cargo: bool,
+    /// Признак учета обледенения
+    have_icing: bool,
     /// Угол заливания отверстий
     flooding_angle: f64,
     /// Длина судна
@@ -133,6 +135,7 @@ impl Criterion {
     /// * have_timber - Признак наличия леса
     /// * have_grain - Признак наличия сыпучего груза
     /// * have_cargo - Признак наличия груза или балласта
+    /// * have_icing - Признак учета обледенения
     /// * flooding_angle - Угол заливания отверстий
     /// * ship_length - Длина судна
     /// * wind - Статический угол крена от действия постоянного ветра
@@ -148,6 +151,7 @@ impl Criterion {
         have_timber: bool,
         have_grain: bool,
         have_cargo: bool,
+        have_icing: bool,
         flooding_angle: f64,
         ship_length: f64,
         breadth: f64,
@@ -168,6 +172,7 @@ impl Criterion {
             have_timber,
             have_grain,
             have_cargo,
+            have_icing,
             flooding_angle,
             ship_length,
             breadth,
@@ -193,6 +198,13 @@ impl Criterion {
         }
         out_data.append(&mut self.dso());
         out_data.push(self.dso_lever());
+        if self.have_timber != false {
+            out_data.push(self.dso_lever_timber());
+        } 
+        if self.navigation_area != NavigationArea::Unlimited &&
+            self.have_icing != false {
+            out_data.push(self.dso_lever_icing());
+        } 
         out_data.append(&mut self.dso_lever_max_angle());
         if self.have_cargo {
             out_data.push(self.metacentric_height());
@@ -270,23 +282,20 @@ impl Criterion {
     }
     /// Максимум диаграммы статической остойчивости
     pub fn dso_lever(&self) -> CriterionData {
-        if !self.have_timber {
-            let curve = Curve::new_linear(&vec![(105., 0.25), (80., 0.20)]);
-            CriterionData::new_result(
-                CriterionID::MaximumLC,                
-                self.lever_diagram.lever_moment(30.),
-                curve.value(self.ship_length),
-            )
-        } else {
-            if let Some(angle) = self.lever_diagram.max_angles().first() {
-                CriterionData::new_result(CriterionID::MaximumLC, angle.1, 0.25)
-            } else {
-                CriterionData::new_error(
-                    CriterionID::MaximumLC,
-                    "Нет плеча соответствующего максимуму DSO для текущих условий".to_owned(),
-                )
-            }
-        }
+        let curve = Curve::new_linear(&vec![(105., 0.25), (80., 0.20)]);
+        CriterionData::new_result(
+            CriterionID::MaximumLC,                
+            self.lever_diagram.dso_lever_max(30., 90.),
+            curve.value(self.ship_length),
+        )
+    }
+    /// Максимум диаграммы статической остойчивости для лесовозов
+    pub fn dso_lever_timber(&self) -> CriterionData {
+        CriterionData::new_result(CriterionID::MaximumLcTimber, self.lever_diagram.dso_lever_max(0., 90.), 0.25)
+    }
+    /// Максимум диаграммы статической остойчивости с учетом обледенения
+    pub fn dso_lever_icing(&self) -> CriterionData {
+        CriterionData::new_result(CriterionID::MaximumLcIcing, self.lever_diagram.dso_lever_max(25., 90.), 0.20)
     }
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
     pub fn dso_lever_max_angle(&self) -> Vec<CriterionData> {
@@ -321,7 +330,7 @@ impl Criterion {
                 } else {
                     0.05 + 0.001 * (30.0 - angle.0)
                 };
-                result.push(CriterionData::new_result(CriterionID::AreaLC0_Thetalmax, src_area, target_area));
+                result.push(CriterionData::new_result(CriterionID::AreaLc0Thetalmax, src_area, target_area));
             } else {
                 result.push(CriterionData::new_error(
                     CriterionID::HeelMaximumLC,
