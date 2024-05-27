@@ -140,17 +140,16 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         false,
     );
     log::info!("input_api_server read begin");
-
-    let ship_data = ShipArray::parse(&fetch_query(
+    let ship_parameters = ShipArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!(
-            "SELECT key, value, value_type FROM ship WHERE ship_id={};",
+            "SELECT key, value, value_type FROM ship_parameters WHERE ship_id={};",
             ship_id
         ),
     )?)?;
     //   dbg!(&ship);
-    log::info!("input_api_server ship read ok");
+    log::info!("input_api_server ship_parameters read ok");
     let load_space = LoadSpaceArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -388,7 +387,17 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         ),
     )?)?;
     //    dbg!(&theoretical_frame);
-    log::info!("input_api_server theoretical_frame read ok");
+    log::info!("input_api_server physical_frame read ok");   
+    let bonjean_frame = FrameIndexDataArray::parse(&fetch_query(
+        &mut request,
+        db_name,
+        format!(
+            "SELECT frame_index, pos_x FROM bonjean_frame WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
+    //    dbg!(&bonjean_frame);
+    log::info!("input_api_server bonjean_frame read ok");
     let frame_area = FrameAreaDataArray::parse(&fetch_query(
             &mut request,
             db_name,
@@ -485,7 +494,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         coefficient_k_theta,
         icing,
         ship_id,
-        ship_data,
+        ship_parameters,
         bounds,
         center_waterline,
         waterline_length,
@@ -503,6 +512,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         delta_windage_moment,
         physical_frame,
         theoretical_frame,
+        bonjean_frame,
         frame_area,
         load_constant,
         load_space,

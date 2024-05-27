@@ -86,12 +86,12 @@ fn main() -> Result<(), Error> {
 
     // шпангоуты
     let frames: Vec<Frame> = data
-        .theoretical_frame
+        .frame_area
         .iter()
         .map(|v| {
             Frame::new(
                 v.x - data
-                    .theoretical_frame
+                    .frame_area
                     .last()
                     .expect("frames last error: no frame")
                     .x
