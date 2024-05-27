@@ -65,11 +65,24 @@ impl Grain {
             let angle = i * precision;  
             // значение апроксимирующей прямой плеч момента зерна в текущей точке
             let lever_ab = delta_ab * angle; 
-            // значение апроксимирующей прямой плеч момента зерна в текущей точке
+            // значение восстанавливающего момента в текущей точке
             let lever_dso = self.lever_diagram.lever_moment(angle);
             lever_dso >= lever_ab
         }).unwrap_or((90./precision) as usize) as f64 * precision;
-        let second_angle = self.flooding_angle.min(40.);
+        // угол соответствующий максимальной разности между ординатами двух кривых
+        let mut angles: Vec<(f64, f64)> = (0..=max_i).map(|i| {
+            let i = i as f64; 
+            // значение угла крена в текущей точке
+            let angle = i * precision;  
+            // значение апроксимирующей прямой плеч момента зерна в текущей точке
+            let lever_ab = delta_ab * angle; 
+            // значение восстанавливающего момента в текущей точке
+            let lever_dso = self.lever_diagram.lever_moment(angle);
+            (angle, lever_dso - lever_ab)
+        }).collect();
+        angles.sort_by(|v1, v2| v1.1.partial_cmp(&v2.1).expect("Grain calculate cmp error"));
+        let angle_delta_max = angles.last().expect("Grain calculate last error").0;
+        let second_angle = self.flooding_angle.min(40.).min(angle_delta_max);
         self.angle = Some((first_angle, second_angle));
         if first_angle >= second_angle {
             return;
@@ -82,7 +95,7 @@ impl Grain {
         let grain_area = ((second_grain_lever - first_grain_lever)/2.) * (second_angle - first_angle) * PI/180.;
         let result_area = dso_area - grain_area;
         self.area = Some(result_area);
-        log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} first_angle:{first_angle} 
+        log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} first_angle:{first_angle} angle_delta_max:{angle_delta_max}
             second_angle:{second_angle} dso_area:{dso_area} grain_area:{grain_area} result_area:{result_area}");
     }
 
