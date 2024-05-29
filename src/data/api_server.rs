@@ -402,7 +402,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
             &mut request,
             db_name,
             format!(
-                "SELECT frame_index, displacement, area FROM frame_area WHERE ship_id={};",
+                "SELECT frame_index, draft, area FROM frame_area WHERE ship_id={};",
                 ship_id
             ),
         )?)?;

@@ -10,7 +10,7 @@ pub struct FrameAreaData {
     /// Индекс шпангоута
     pub frame_index: i32,
     /// Осадка
-    pub displacement: f64,
+    pub draft: f64,
     /// Погруженная площадь
     pub area: f64,
 }
@@ -19,8 +19,8 @@ impl std::fmt::Display for FrameAreaData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "FrameAreaData(frame_index:{}, displacement:{}, area:{} )",
-            self.frame_index, self.displacement, self.area,
+            "FrameAreaData(frame_index:{}, draft:{}, area:{} )",
+            self.frame_index, self.draft, self.area,
         )
     }
 }
@@ -32,9 +32,9 @@ impl FrameAreaDataArray {
         let mut map: HashMap<i32, Vec<(f64, f64)>> = HashMap::new();
         self.data.into_iter().for_each(|v| {
             if let Some(vector) = map.get_mut(&v.frame_index) {
-                vector.push((v.displacement, v.area));
+                vector.push((v.draft, v.area));
             } else {
-                map.insert(v.frame_index, vec![(v.displacement, v.area)]);       
+                map.insert(v.frame_index, vec![(v.draft, v.area)]);       
             }
         });
         map
