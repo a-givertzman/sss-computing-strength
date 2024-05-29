@@ -408,16 +408,19 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         )?)?;
     //    dbg!(&frame_area);
     log::info!("input_api_server frame_area read ok");
-    let load_constant = LoadConstantArray::parse(&fetch_query(
+    let cargo = LoadCargoArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!(
-            "SELECT frame_space_index, key, value FROM load_constant WHERE ship_id={};",
+            "SELECT name, mass, bound_x1, bound_x2, bound_type, bound_y1, bound_y2, bound_z1, bound_z2, \
+            mass_shift_x, mass_shift_y, mass_shift_z, horizontal_area, horizontal_area_shift_x, \
+            horizontal_area_shift_y, vertical_area, vertical_area_shift_x, vertical_area_shift_y, \
+            vertical_area_shift_z FROM cargo WHERE ship_id={};",
             ship_id
         ),
     )?)?;
-    //    dbg!(&load_constant);
-    log::info!("input_api_server load_constant read ok");
+    //    dbg!(&cargo);
+    log::info!("input_api_server cargo read ok");
     let tank = TankDataArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -514,7 +517,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         theoretical_frame,
         bonjean_frame,
         frame_area,
-        load_constant,
+        cargo,
         load_space,
         tank,
         tank_center,

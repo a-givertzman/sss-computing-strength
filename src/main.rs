@@ -121,22 +121,23 @@ fn main() -> Result<(), Error> {
         data.const_mass_shift_y,
         data.const_mass_shift_z,
     );
-    for index in 0..frames.len() - 1 {
-        let bound = Bound::new(frames[index].shift_x(), frames[index + 1].shift_x());
-        if let Some(mass) = data.load_constant.data().get(&index) {
-            let load_mass = Rc::new(LoadMass::new(
-                *mass,
-                bound,
-                Some(Position::new(
-                    bound.center(),
-                    const_shift.y(),
-                    const_shift.z(),
-                )),
-            ));
-            log::info!("\t Mass loads_const:{:?} ", load_mass);
-            loads_const.push(load_mass);
-        }
-    }
+
+    data.cargoes.iter().for_each(|v| {
+        let mass_shift = if let Some(mass_shift) = v.mass_shift.as_ref().clone() { 
+            Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
+        } else {
+            None
+        };
+        let bound_x = Bound::from(v.bound_x);
+
+        let load = Rc::new(LoadMass::new(
+            v.mass,
+            bound_x,
+            mass_shift.clone(),
+        ));
+        log::info!("\t Mass loads_const:{:?} ", load);
+        loads_const.push(load);
+    });
 
     data.load_spaces.iter().for_each(|v| {
         let mass_shift = if let Some(mass_shift) = v.mass_shift.as_ref().clone() { 

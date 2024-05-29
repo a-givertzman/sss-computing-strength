@@ -2,7 +2,7 @@
 use serde::{Deserialize, Serialize};
 use super::DataArray;
 
-/// Груз, конструкции корпуса, контейнер или другой твердый груз
+/// Нагрузка судна: цистерны и трюмы  
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LoadSpaceData {
     /// ID груза

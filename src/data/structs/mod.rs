@@ -7,7 +7,7 @@ pub mod result;
 pub mod serde_parser;
 pub mod ship;
 mod data_array;
-pub mod load_constant;
+//pub mod load_constant;
 mod pantocaren;
 mod stability;
 mod strength;
@@ -17,6 +17,7 @@ pub mod vertical_area;
 pub mod ship_type;
 pub mod navigation_area;
 pub mod icing;
+pub mod cargo;
 
 
 use data_array::*;
@@ -27,7 +28,7 @@ pub use load_space::*;
 pub use tank::*;
 pub use result::*;
 pub use serde_parser::*;
-pub use load_constant::*;
+//pub use load_constant::*;
 pub use pantocaren::*;
 pub use computed_frame::*;
 pub use delta_windage_moment::*;
@@ -37,6 +38,7 @@ pub use strength::horizontal_area::*;
 pub use ship_type::*;
 pub use navigation_area::*;
 pub use icing::*;
+pub use cargo::*;
 
 pub use stability::navigation_area::NavigationAreaArray as NavigationAreaArray;
 pub use stability::multipler_s::MultiplerSArray as MultiplerSArray;

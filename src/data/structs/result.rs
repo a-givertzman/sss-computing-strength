@@ -68,12 +68,6 @@ pub struct ParsedShipData {
     pub const_mass_shift_y: f64,
     /// отстояние центра тяжести постоянной массы судна по z
     pub const_mass_shift_z: f64,
-    /// Суммарная площадь парусности
-    pub windage_area: f64,
-    /// Отстояние центра парусности по x 
-    pub windage_shift_x: f64,
-    /// Отстояние центра парусности по z 
-    pub windage_shift_z: f64,
     /// Минимальная осадка, м
     pub draught_min: f64,
     /// Коэффициент увеличения площади парусности несплощной
@@ -121,15 +115,11 @@ pub struct ParsedShipData {
     pub flooding_angle: Vec<(f64, f64)>,
     /// Угол входа верхней палубы в воду
     pub entry_angle: Vec<(f64, f64)>,
-    /// Практические шпангоуты судна
-    pub physical_frame: HashMap<i32, f64>,
-    /// Теоретические шпангоуты судна
-    pub theoretical_frame: HashMap<i32, f64>,
     /// Погруженная площадь шпангоута
     pub frame_area: Vec<ParsedFrameData>,
-    /// Постоянный груз, приходящийся на шпацию
-    pub load_constant: LoadConstantArray,
-    /// Нагрузка судна без жидких грузов    
+    /// Нагрузка судна без жидких грузов   
+    pub cargoes: Vec<ParsedCargoData>,
+    /// Нагрузка судна: цистерны и трюмы   
     pub load_spaces: Vec<ParsedLoadSpaceData>,
     /// Нагрузка судна, жидкие грузы
     pub tanks: Vec<ParsedTankData>,
@@ -173,7 +163,7 @@ impl ParsedShipData {
         theoretical_frame: FrameIndexDataArray,
         bonjean_frame: FrameIndexDataArray,
         frame_area: FrameAreaDataArray,
-        load_constant: LoadConstantArray,
+        cargo_src: LoadCargoArray,
         load_spaces_src: LoadSpaceArray,
         tank_data: TankDataArray,
         tank_centetr_volume: CenterVolumeData,
@@ -224,6 +214,62 @@ impl ParsedShipData {
         }
         parsed_frame_area.sort_by(|a, b| a.x.partial_cmp(&b.x).expect("result parsed_frame_area cpm error!"));
         
+
+        let mut cargoes = Vec::new();
+        for cargo in cargo_src.data() {
+            cargoes.push(ParsedCargoData {
+                name: cargo.name,                
+                mass: cargo.mass.unwrap_or(0.),
+                bound_x: ( 
+                    bound_x(&cargo.bound_x1, &cargo.bound_type)?, 
+                    bound_x(&cargo.bound_x2, &cargo.bound_type)?, 
+                ),
+                bound_y: if cargo.bound_y1.is_some() && 
+                            cargo.bound_y2.is_some() { Some(( 
+                                cargo.bound_y1.expect("ParsedShipData parse error: no bound_y1"),
+                                cargo.bound_y2.expect("ParsedShipData parse error: no bound_y2"),
+                ))} else {
+                    None
+                },
+                bound_z: if cargo.bound_z1.is_some() && 
+                            cargo.bound_z2.is_some() { Some(( 
+                                cargo.bound_z1.expect("ParsedShipData parse error: no bound_z1"),
+                                cargo.bound_z2.expect("ParsedShipData parse error: no bound_z2"),
+                ))} else {
+                    None
+                },
+                mass_shift: if cargo.mass_shift_x.is_some() && 
+                            cargo.mass_shift_y.is_some() &&
+                            cargo.mass_shift_z.is_some() { Some((
+                                cargo.mass_shift_x.expect("ParsedShipData parse error: no mass_shift_x"),
+                                cargo.mass_shift_y.expect("ParsedShipData parse error: no mass_shift_y"),
+                                cargo.mass_shift_z.expect("ParsedShipData parse error: no mass_shift_z"),
+                ))} else {
+                    None
+                },
+                horizontal_area: cargo.horizontal_area,
+                horizontal_area_shift: if cargo.horizontal_area_shift_x.is_some() && 
+                            cargo.horizontal_area_shift_y.is_some() &&
+                            cargo.horizontal_area_shift_z.is_some() { Some((
+                                cargo.horizontal_area_shift_x.expect("ParsedShipData parse error: no horizontal_area_shift_x"),
+                                cargo.horizontal_area_shift_y.expect("ParsedShipData parse error: no horizontal_area_shift_y"),
+                                cargo.horizontal_area_shift_z.expect("ParsedShipData parse error: no horizontal_area_shift_z"),
+                ))} else {
+                    None
+                },
+                vertical_area: cargo.vertical_area,
+                vertical_area_shift: if cargo.vertical_area_shift_x.is_some() && 
+                            cargo.vertical_area_shift_y.is_some() &&
+                            cargo.vertical_area_shift_z.is_some() { Some((
+                                cargo.vertical_area_shift_x.expect("ParsedShipData parse error: no vertical_area_shift_x"),
+                                cargo.vertical_area_shift_y.expect("ParsedShipData parse error: no vertical_area_shift_y"),
+                                cargo.vertical_area_shift_z.expect("ParsedShipData parse error: no vertical_area_shift_z"),
+                ))} else {
+                    None
+                },
+            });
+        }
+
         let mut load_spaces = Vec::new();
         for load_space in load_spaces_src.data() {
             load_spaces.push(ParsedLoadSpaceData {
@@ -389,18 +435,6 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no const_mass_shift_z for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
-            windage_area: ship_data.get("windage_area").ok_or(format!(
-                "ParsedShipData parse error: no windage_area for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            windage_shift_x: ship_data.get("windage_shift_x").ok_or(format!(
-                "ParsedShipData parse error: no windage_shift_x for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            windage_shift_z: ship_data.get("windage_shift_z").ok_or(format!(
-                "ParsedShipData parse error: no windage_shift_z for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
             draught_min: ship_data.get("draught_min").ok_or(format!(
                 "ParsedShipData parse error: no draught_min for ship id:{}",
                 ship_id
@@ -471,10 +505,8 @@ impl ParsedShipData {
             delta_windage_area: delta_windage_area.data(),
             delta_windage_moment_x: delta_windage_moment.x(),
             delta_windage_moment_z: delta_windage_moment.z(),
-            physical_frame,
-            theoretical_frame,
             frame_area: parsed_frame_area,
-            load_constant,
+            cargoes,
             load_spaces,
             tanks,
             area_h_stab: area_h_stab.data(),
@@ -773,13 +805,13 @@ impl ParsedShipData {
         }) {
             return Err(Error::Parameter(format!("Error check ParsedShipData: values of immersion_area in frame must be greater or equal to 0, {}", frame)));
         }
-        let load_constant_data = self.load_constant.data();
-        if let Some((index, value)) = load_constant_data.iter().find(|(_, value)| **value < 0.) {
+  /*      let cargo_data = self.cargo.data();
+        if let Some((index, value)) = cargo_data.iter().find(|(_, value)| **value < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check LoadConstantArray: mass of load_constant must be greater or equal to 0, index:{}, value:{}",
                 index, value, 
             )));
-        } 
+        } */
  /*     if let Some((index, _)) = load_constant_data.iter().find(|(index, _)| self.theoretical_frame.iter().find(|frame| frame.index == **index as i32 ).is_none()) {
             return Err(Error::Parameter(format!(
                 "Error check LoadConstantArray: index of load_constant must be contained in frames, index:{}", index)));
