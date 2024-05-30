@@ -20,7 +20,7 @@ enum CriterionID {
     MaximumLcIcing = 9,
     HeelMaximumLC = 10,
     HeelFirstMaximumLC = 11,
-    MetacentricHight = 12,
+    MinMetacentricHight = 12,
     Acceleration = 13,
     HeelTurning = 14,
     HeelGrainDisplacement = 15,
@@ -42,7 +42,7 @@ impl From<CriterionID> for usize {
             CriterionID::MaximumLcIcing => 9,
             CriterionID::HeelMaximumLC => 10,
             CriterionID::HeelFirstMaximumLC => 11,
-            CriterionID::MetacentricHight => 12,
+            CriterionID::MinMetacentricHight => 12,
             CriterionID::Acceleration => 13,
             CriterionID::HeelTurning => 14,
             CriterionID::HeelGrainDisplacement => 15,
@@ -421,7 +421,7 @@ impl Criterion {
             0.15
         };
         CriterionData::new_result(
-            CriterionID::MetacentricHight,
+            CriterionID::MinMetacentricHight,
             self.metacentric_height.h_trans_fix(),
             target,
         )
@@ -472,7 +472,7 @@ impl Criterion {
     pub fn metacentric_height_subdivision(&self) -> CriterionData {
         // Все суда
         CriterionData::new_result(
-            CriterionID::MetacentricHight,
+            CriterionID::MinMetacentricHight,
             self.metacentric_height.h_trans_fix(),
             self.h_subdivision,
         )

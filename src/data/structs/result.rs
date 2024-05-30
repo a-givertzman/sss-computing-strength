@@ -176,7 +176,7 @@ impl ParsedShipData {
     ) -> Result<Self, Error> {
         log::info!("result parse begin");
         let ship_data = ship_parameters.data();
-        let ship_length = ship_data.get("Ship hull length").ok_or(format!(
+        let ship_length = ship_data.get("LBP").ok_or(format!(
             "ParsedShipData parse error: no length for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
@@ -397,7 +397,7 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no ship_type for ship id:{}",
                 ship_id
             ))?.0),
-            navigation_area: NavigationArea::new(&ship_data.get("Type of navigation area").ok_or(format!(
+            navigation_area: NavigationArea::new(&ship_data.get("Navigation area").ok_or(format!(
                 "ParsedShipData parse error: no navigation_area for ship id:{}",
                 ship_id
             ))?.0),
@@ -408,7 +408,7 @@ impl ParsedShipData {
             coefficient_k,
             coefficient_k_theta,
             length: ship_length,
-            width: ship_data.get("Ship hull width").ok_or(format!(
+            width: ship_data.get("Hull width").ok_or(format!(
                 "ParsedShipData parse error: no breadth for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
