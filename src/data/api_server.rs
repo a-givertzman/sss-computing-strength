@@ -1,132 +1,6 @@
 //! Функции для работы с АПИ-сервером
 use api_tools::client::{api_query::*, api_request::ApiRequest};
-
 use crate::{data::structs::*, error::{self, Error}, CriterionData};
-/*
-/// Создание тестовой БД
-#[allow(dead_code)]
-pub fn create_test_db(db_name: &str) -> Result<(), Error> {
-    //   let script = include_str!("../../src/data/sql/tables/create_postgres_db.sql");
-
-    let mut request = ApiRequest::new(
-        "parent",
-        "0.0.0.0:8080",
-        "auth_token",
-        ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(db_name, "")), false),
-        false,
-        false,
-    );
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/ship.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/center_waterline.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/rad_long.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/mean_draught.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/center_draught.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/frame.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/frame_area.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/load_space.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/load_constant.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/tank.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/tank_center.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-            db_name,
-            include_str!("../../src/data/sql/tables/tank_inertia.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-    Ok(())
-}
-*/
 
 /// Чтение данных из БД. Функция читает данные за несколько запросов,
 /// парсит их и проверяет данные на корректность.
@@ -150,28 +24,30 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //   dbg!(&ship);
     log::info!("input_api_server ship_parameters read ok");
-    let load_space = LoadSpaceArray::parse(&fetch_query(
+    let compartment = CompartmentArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!(
-            "SELECT space_id, 
-                    name, 
-                    mass, 
-                    density,
-                    volume,
-                    bound_x1, 
-                    bound_x2, 
-                    bound_type, 
-                    mass_shift_x, 
-                    mass_shift_y,
-                    mass_shift_z,
-                    m_f_s_y,
-                    m_f_s_x FROM load_space WHERE ship_id={};",
+            "SELECT space_id, \
+                    name, \
+                    mass, \
+                    density, \
+                    volume, \
+                    bound_x1, \
+                    bound_x2, \
+                    bound_type, \
+                    mass_shift_x, \
+                    mass_shift_y, \
+                    mass_shift_z, \
+                    m_f_s_y, \
+                    m_f_s_x, \
+                    loading_type \
+                FROM compartment WHERE ship_id={};",
             ship_id
         ),
     )?)?;
-    //    dbg!(&load_space);
-    log::info!("input_api_server load_space read ok");
+    //    dbg!(&compartment);
+    log::info!("input_api_server compartment read ok");
     let navigation_area_param = NavigationAreaArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -378,7 +254,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     )?)?;
     //    dbg!(&physical_frame);
     log::info!("input_api_server physical_frame read ok");   
-    let theoretical_frame = FrameIndexDataArray::parse(&fetch_query(
+ /*   let theoretical_frame = FrameIndexDataArray::parse(&fetch_query(
         &mut request,
         db_name,
         format!(
@@ -387,7 +263,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         ),
     )?)?;
     //    dbg!(&theoretical_frame);
-    log::info!("input_api_server physical_frame read ok");   
+    log::info!("input_api_server theoretical_frame read ok");   */
     let bonjean_frame = FrameIndexDataArray::parse(&fetch_query(
         &mut request,
         db_name,
@@ -415,7 +291,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
             "SELECT name, mass, bound_x1, bound_x2, bound_type, bound_y1, bound_y2, bound_z1, bound_z2, \
             mass_shift_x, mass_shift_y, mass_shift_z, horizontal_area, horizontal_area_shift_x, \
             horizontal_area_shift_y, vertical_area, vertical_area_shift_x, vertical_area_shift_y, \
-            vertical_area_shift_z FROM cargo WHERE ship_id={};",
+            vertical_area_shift_z, loading_type FROM cargo WHERE ship_id={};",
             ship_id
         ),
     )?)?;
@@ -514,11 +390,11 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         delta_windage_area,
         delta_windage_moment,
         physical_frame,
-        theoretical_frame,
+  //      theoretical_frame,
         bonjean_frame,
         frame_area,
         cargo,
-        load_space,
+        compartment,
         tank,
         tank_center,
         tank_inertia,

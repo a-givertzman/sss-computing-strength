@@ -38,7 +38,7 @@ pub struct LoadCargoData {
     pub vertical_area_shift_y: Option<f64>,
     pub vertical_area_shift_z: Option<f64>,
     /// Тип груза
-    pub loading_type: String,
+    pub loading_type: Option<String>,
 }
 
 ///
@@ -69,7 +69,7 @@ impl std::fmt::Display for LoadCargoData {
             self.vertical_area_shift_x.unwrap_or(0.),
             self.vertical_area_shift_y.unwrap_or(0.),
             self.vertical_area_shift_z.unwrap_or(0.),
-            self.loading_type,
+            self.loading_type.as_ref().unwrap_or(&"-".to_owned()),
         )
     }
 }

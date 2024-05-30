@@ -139,7 +139,7 @@ fn main() -> Result<(), Error> {
         loads_const.push(load);
     });
 
-    data.load_spaces.iter().for_each(|v| {
+    data.compartments.iter().for_each(|v| {
         let mass_shift = if let Some(mass_shift) = v.mass_shift.as_ref().clone() { 
             Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
         } else {
@@ -468,6 +468,9 @@ fn main() -> Result<(), Error> {
             Rc::clone(&lever_diagram),
         )),
     );
+    
+
+
     elapsed.insert("Completed", time.elapsed());
 
     let time = Instant::now();

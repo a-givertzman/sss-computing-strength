@@ -4,7 +4,7 @@ use super::DataArray;
 
 /// Нагрузка судна: цистерны и трюмы  
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct LoadSpaceData {
+pub struct CompartmentData {
     /// ID груза
     pub space_id: usize,
     /// Имя груза
@@ -28,14 +28,17 @@ pub struct LoadSpaceData {
     /// Момент инерции площади ВЛ, м4
     pub m_f_s_y: Option<f64>,
     pub m_f_s_x: Option<f64>,
+    /// Тип груза
+    pub loading_type: Option<String>,
 }
 
 ///
-impl std::fmt::Display for LoadSpaceData {
+impl std::fmt::Display for CompartmentData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadSpaceData(space_id:{} name:{} mass:{} density:{} volume:{} bound_x1:{} bound_x2:{} mass_shift_x:{} mass_shift_y:{} mass_shift_z:{} m_f_s_y:{} m_f_s_x:{})",
+            "CompartmentData(space_id:{} name:{} mass:{} density:{} volume:{} bound:({}, {}) \
+             mass_shift:({}, {}, {}) m_f_s_y:{} m_f_s_x:{} loading_type:{})",
             self.space_id,
             self.name,
             self.mass.unwrap_or(0.),
@@ -48,22 +51,23 @@ impl std::fmt::Display for LoadSpaceData {
             self.mass_shift_z.unwrap_or(0.),
             self.m_f_s_y.unwrap_or(0.),
             self.m_f_s_x.unwrap_or(0.),
+            self.loading_type.as_ref().unwrap_or(&"-".to_owned()),
         )
     }
 }
 /// Массив данных по грузам
-pub type LoadSpaceArray = DataArray<LoadSpaceData>;
+pub type CompartmentArray = DataArray<CompartmentData>;
 ///
-impl LoadSpaceArray {
+impl CompartmentArray {
     /// 
-    pub fn data(self) -> Vec<LoadSpaceData> {
+    pub fn data(self) -> Vec<CompartmentData> {
         self.data
     }
 }
 
 /// Груз
 #[derive(Debug)]
-pub struct ParsedLoadSpaceData {
+pub struct ParsedCompartmentData {
     /// Название 
     pub name: String, 
     /// Общая масса, т
@@ -88,11 +92,11 @@ pub struct ParsedLoadSpaceData {
     pub windage_shift: Option<(f64, f64)>,
 }
 ///
-impl std::fmt::Display for ParsedLoadSpaceData {
+impl std::fmt::Display for ParsedCompartmentData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadSpaceData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} mass_shift:({} {} {}) m_f_s_y:{:?}, m_f_s_x:{:?} windage_area:{} windage_shift:(x:{}, z:{}))",
+            "CompartmentData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} mass_shift:({} {} {}) m_f_s_y:{:?}, m_f_s_x:{:?} windage_area:{} windage_shift:(x:{}, z:{}))",
             self.name,
             self.mass,
             self.bound_x,
