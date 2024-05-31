@@ -268,7 +268,7 @@ fn main() -> Result<(), Error> {
         &computer.shear_force(),
         &computer.bending_moment(),
     )?;
-/* 
+
     let flooding_angle = Curve::new_linear(&data.flooding_angle).value(mean_draught);
 
     let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
@@ -431,7 +431,7 @@ fn main() -> Result<(), Error> {
         )),
     );
     elapsed.insert("Completed", time.elapsed());
-*/
+
     let time = Instant::now();
     // criterion.create().iter().for_each(|v| println!("{v}"));
     send_stability_data("sss-computing", criterion.create());// TODO errors
