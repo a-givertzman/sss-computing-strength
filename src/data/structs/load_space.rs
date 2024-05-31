@@ -1,58 +1,81 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use super::DataArray;
 
-/// Груз, конструкции корпуса, контейнер или другой твердый груз
+/// Нагрузка судна: цистерны и трюмы  
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct LoadSpaceData {
+pub struct CompartmentData {
     /// ID груза
     pub space_id: usize,
-    /// Параметр в виде текста
-    pub key: String,
-    /// Величина параметра
-    pub value: String,
-    /// Тип параметра
-    pub value_type: String,
+    /// Имя груза
+    pub name: String,
+    /// Общая масса, т
+    pub mass: Option<f64>,
+    /// Плотность t/m^3
+    pub density: Option<f64>,
+    /// Объем m^3
+    pub volume: Option<f64>,
+    /// Диапазон по длинне
+    pub bound_x1: f64,
+    pub bound_x2: f64,
+    /// Тип задания диапазона 
+    /// (физ. шпангоуты или метры)
+    pub bound_type: String,  
+    /// Отстояние центра величины, м
+    pub mass_shift_x: Option<f64>,
+    pub mass_shift_y: Option<f64>,
+    pub mass_shift_z: Option<f64>,
+    /// Момент инерции площади ВЛ, м4
+    pub m_f_s_y: Option<f64>,
+    pub m_f_s_x: Option<f64>,
+    /// Тип груза
+    pub loading_type: Option<String>,
 }
+
 ///
-impl std::fmt::Display for LoadSpaceData {
+impl std::fmt::Display for CompartmentData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadSpaceData(index:{}, key:{}, value:{} type:{})",
+            "CompartmentData(space_id:{} name:{} mass:{} density:{} volume:{} bound:({}, {}) \
+             mass_shift:({}, {}, {}) m_f_s_y:{} m_f_s_x:{} loading_type:{})",
             self.space_id,
-            self.key,
-            self.value,
-            self.value_type,
+            self.name,
+            self.mass.unwrap_or(0.),
+            self.density.unwrap_or(0.),
+            self.volume.unwrap_or(0.),
+            self.bound_x1,
+            self.bound_x2,
+            self.mass_shift_x.unwrap_or(0.),
+            self.mass_shift_y.unwrap_or(0.),
+            self.mass_shift_z.unwrap_or(0.),
+            self.m_f_s_y.unwrap_or(0.),
+            self.m_f_s_x.unwrap_or(0.),
+            self.loading_type.as_ref().unwrap_or(&"-".to_owned()),
         )
     }
 }
 /// Массив данных по грузам
-pub type LoadSpaceArray = DataArray<LoadSpaceData>;
+pub type CompartmentArray = DataArray<CompartmentData>;
 ///
-impl LoadSpaceArray {
-    /// Преобразование и возвращает данные в виде мапы id/данные груза
-    pub fn data(self) -> HashMap<usize, HashMap<String, (String, String)>> {
-        let mut map: HashMap<usize, HashMap<String, (String, String)>> = HashMap::new();
-        self.data.into_iter().for_each(|v| {
-            if let Some(sub_map) = map.get_mut(&v.space_id) {
-                sub_map.insert(v.key.clone(), (v.value, v.value_type));
-            } else {
-                map.insert(v.space_id, HashMap::from([(v.key.clone(), (v.value, v.value_type))]));       
-            }
-        });
-        map
+impl CompartmentArray {
+    /// 
+    pub fn data(self) -> Vec<CompartmentData> {
+        self.data
     }
 }
 
 /// Груз
 #[derive(Debug)]
-pub struct ParsedLoadSpaceData {
+pub struct ParsedCompartmentData {
     /// Название 
     pub name: String, 
-    /// Общая масса
+    /// Общая масса, т
     pub mass: f64,
+    /// Плотность 
+    pub density: Option<f64>, 
+    /// Объем m^3
+    pub volume: Option<f64>,
     /// Границы груза
     pub bound_x: (f64, f64),
     pub bound_y: Option<(f64, f64)>,
@@ -69,11 +92,11 @@ pub struct ParsedLoadSpaceData {
     pub windage_shift: Option<(f64, f64)>,
 }
 ///
-impl std::fmt::Display for ParsedLoadSpaceData {
+impl std::fmt::Display for ParsedCompartmentData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadSpaceData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} mass_shift:({} {} {}) m_f_s_y:{:?}, m_f_s_x:{:?} windage_area:{} windage_shift:(x:{}, z:{}))",
+            "CompartmentData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} mass_shift:({} {} {}) m_f_s_y:{:?}, m_f_s_x:{:?} windage_area:{} windage_shift:(x:{}, z:{}))",
             self.name,
             self.mass,
             self.bound_x,

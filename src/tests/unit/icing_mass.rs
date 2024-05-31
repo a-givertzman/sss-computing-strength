@@ -18,7 +18,7 @@ mod tests {
     fn init_once() {
         INIT.call_once(|| unsafe {
             ICING.replace(IcingMass::new(
-                Rc::new(FakeIcingStab::new(0.03, 0.04, 0.015, 0.1, 0.05, 0.2)),
+                Rc::new(FakeIcingStab::new(0.03, 0.04, 0.015, 0.1, 0.05, 0.2, true)),
                 Rc::new(crate::strength::FakeArea::new(50., 50., 50.)),
                 Rc::new(crate::stability::FakeArea::new(
                     50.,

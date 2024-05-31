@@ -22,10 +22,10 @@ pub struct Tank {
     volume: f64,
     /// Границы
     bound_x: Bound,
-    /// Зависимость отстояния центра величины от объема
-    center: Rc<dyn IPosShift>,    
-    /// Кривая поперечного момента инерции площади свободной поверхности жидкости
-    inertia: Rc<dyn IInertiaShift>,
+    /// Отстояние центра величины от объема
+    shift: Option<Position>, 
+    /// Поперечный момент инерции площади свободной поверхности жидкости
+    inertia: InertiaMoment,
 }
 ///
 impl Tank {
@@ -33,14 +33,14 @@ impl Tank {
     /// * density - Плотность жидкости в цистерне
     /// * volume - Объем жидкости в цистерне
     /// * bound_x - Границы цистерны по оси Х
-    /// * center - Кривая координат центра объема жидкости в цистерне в системе координат судна
-    /// * inertia - Кривая момента инерции площади свободной поверхности жидкости
+    /// * shift - Отстояние центра величины от объема
+    /// * inertia - Поперечный момент инерции площади свободной поверхности жидкости
     pub fn new(
         density: f64,
         volume: f64,
         bound_x: Bound,
-        center: Rc<dyn IPosShift>, 
-        inertia: Rc<dyn IInertiaShift>,
+        shift: Option<Position>,
+        inertia: InertiaMoment,
     ) -> Self {
         assert!(density > 0., "density {} > 0", density);
         assert!(volume >= 0., "volume {} >= 0", volume);
@@ -48,7 +48,7 @@ impl Tank {
             density,
             volume,
             bound_x,
-            center,
+            shift,
             inertia,
         }
     }
@@ -58,8 +58,8 @@ impl ITank for Tank {
     /// Момент свободной поверхности 
     fn moment_surface(&self) -> FreeSurfaceMoment {
         let result =
-            FreeSurfaceMoment::from_inertia(self.inertia.value(self.volume), self.density);
-        log::info!("\t Tank result:{:?}", result);    
+            FreeSurfaceMoment::from_inertia(self.inertia.clone(), self.density);
+ //       log::info!("\t Tank result:{:?}", result);    
         result
     }
 }
@@ -75,8 +75,12 @@ impl ILoad for Tank {
     }    
     ///
     fn shift(&self) -> Position {
-        self.center.value(self.volume)
-    } 
+        if let Some(shift) = self.shift.clone() {
+            shift
+        } else {
+            Position::new(self.bound_x.center(), 0., 0.,)
+        }
+    }
 }
 ///
 impl ILoadMass for Tank{}

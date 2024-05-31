@@ -10,18 +10,18 @@ pub struct MetacentricHeight {
     /// Продольный метацентрические радиус
     rad_long: f64,
     /// Поперечный метацентрические радиус
-    rad_cross: f64,
+    rad_trans: f64,
     /// Все жидкие грузы судна
     tanks: Vec<Rc<dyn ITank>>,
     /// Все грузы судна
     mass: Rc<dyn IMass>,
     /// Поперечная метацентрическая высота без учета поправки   
     /// на свободные поверхности жидких грузов
-    h_cross_0: Rc<RefCell<Option<f64>>>,
+    h_trans_0: Rc<RefCell<Option<f64>>>,
     /// Продольная исправленная метацентрическая высота
     h_long_fix: Rc<RefCell<Option<f64>>>,
     /// Поперечная исправленная метацентрическая высота
-    h_cross_fix: Rc<RefCell<Option<f64>>>,
+    h_trans_fix: Rc<RefCell<Option<f64>>>,
     /// Исправленное отстояние центра масс судна по высоте
     z_g_fix: Rc<RefCell<Option<f64>>>,
 }
@@ -30,25 +30,25 @@ impl  MetacentricHeight {
     /// Основной конструктор
     /// * center_draught_shift - Отстояние центра величины погруженной части судна       
     /// * rad_long Продольный - метацентрические радиус
-    /// * rad_cross - Поперечный метацентрические радиус
+    /// * rad_trans - Поперечный метацентрические радиус
     /// * tanks - Все жидкие грузы судна
     /// * mass - Все грузы судна
     pub fn new(
         center_draught_shift: Position, 
         rad_long: f64,                 
-        rad_cross: f64,                
+        rad_trans: f64,                
         tanks: Vec<Rc<dyn ITank>>,
         mass: Rc<dyn IMass>,           
     ) -> Self {
         Self {
             center_draught_shift,
             rad_long,
-            rad_cross,
+            rad_trans,
             tanks,
             mass,
             h_long_fix: Rc::new(RefCell::new(None)),
-            h_cross_0: Rc::new(RefCell::new(None)),
-            h_cross_fix: Rc::new(RefCell::new(None)),
+            h_trans_0: Rc::new(RefCell::new(None)),
+            h_trans_fix: Rc::new(RefCell::new(None)),
             z_g_fix: Rc::new(RefCell::new(None)),
         }
     }
@@ -72,19 +72,19 @@ impl  MetacentricHeight {
         // Продольная исправленная метацентрическая высота (3)
         let h_long_fix = h_long_0 - delta_m_h.long();
         // Аппликата поперечного метацентра (8)
-        let z_m = self.center_draught_shift.z() + self.rad_cross; //
+        let z_m = self.center_draught_shift.z() + self.rad_trans; //
                                                                   // Поперечная метацентрическая высота без учета влияния
                                                                   // поправки на влияние свободной поверхности (9)
-        let h_cross_0 = z_m - self.mass.shift().z();
+        let h_trans_0 = z_m - self.mass.shift().z();
         // Поперечная исправленная метацентрическая высота (9)
-        let h_cross_fix = h_cross_0 - delta_m_h.cross();
+        let h_trans_fix = h_trans_0 - delta_m_h.trans();
         // Исправленное отстояние центра масс судна по высоте (10)
-        let z_g_fix: f64 = self.mass.shift().z() + delta_m_h.cross();
-        log::info!("\t MetacentricHeight mass:{} center_draught:{} rad_cross:{} rad_long:{} Z_m:{Z_m} H_0:{h_long_0} H:{h_long_fix} z_m:{z_m} h_0:{h_cross_0} h:{h_cross_fix} z_g_fix:{z_g_fix}", 
-        self.mass.sum(), self.center_draught_shift, self.rad_cross, self.rad_long );
+        let z_g_fix: f64 = self.mass.shift().z() + delta_m_h.trans();
+        log::info!("\t MetacentricHeight mass:{} center_draught:{} rad_trans:{} rad_long:{} Z_m:{Z_m} H_0:{h_long_0} H:{h_long_fix} z_m:{z_m} h_0:{h_trans_0} h:{h_trans_fix} z_g_fix:{z_g_fix}", 
+        self.mass.sum(), self.center_draught_shift, self.rad_trans, self.rad_long );
         *self.h_long_fix.borrow_mut() = Some(h_long_fix);
-        *self.h_cross_0.borrow_mut() = Some(h_cross_0);
-        *self.h_cross_fix.borrow_mut() = Some(h_cross_fix);
+        *self.h_trans_0.borrow_mut() = Some(h_trans_0);
+        *self.h_trans_fix.borrow_mut() = Some(h_trans_fix);
         *self.z_g_fix.borrow_mut() = Some(z_g_fix);
     }
 }
@@ -103,24 +103,24 @@ impl IMetacentricHeight for MetacentricHeight {
     }
     /// Поперечная метацентрическая высота без учета поправки   
     /// на свободные поверхности жидких грузов
-    fn h_cross_0(&self) -> f64 {
-        if self.h_cross_0.borrow().is_none() {
+    fn h_trans_0(&self) -> f64 {
+        if self.h_trans_0.borrow().is_none() {
             self.calculate();
         }
-        self.h_cross_0
+        self.h_trans_0
             .borrow()
             .clone()
-            .expect("MetacentricHeight h_cross_0 error")
+            .expect("MetacentricHeight h_trans_0 error")
     }
     /// Поперечная исправленная метацентрическая высота
-    fn h_cross_fix(&self) -> f64 {
-        if self.h_cross_fix.borrow().is_none() {
+    fn h_trans_fix(&self) -> f64 {
+        if self.h_trans_fix.borrow().is_none() {
             self.calculate();
         }
-        self.h_cross_fix
+        self.h_trans_fix
             .borrow()
             .clone()
-            .expect("MetacentricHeight h_cross_fix error")
+            .expect("MetacentricHeight h_trans_fix error")
     }
     /// Исправленное отстояние центра масс судна по высоте
     fn z_g_fix(&self) -> f64 {
@@ -140,9 +140,9 @@ pub trait IMetacentricHeight {
     fn h_long_fix(&self) -> f64;
     /// Поперечная метацентрическая высота без учета поправки   
     /// на свободные поверхности жидких грузов
-    fn h_cross_0(&self) -> f64;
+    fn h_trans_0(&self) -> f64;
     /// Поперечная исправленная метацентрическая высота
-    fn h_cross_fix(&self) -> f64;
+    fn h_trans_fix(&self) -> f64;
     /// Исправленное отстояние центра масс судна по высоте
     fn z_g_fix(&self) -> f64;
 }
@@ -153,9 +153,9 @@ pub struct FakeMetacentricHeight {
     h_long_fix: f64,
     /// Поперечная метацентрическая высота без учета поправки   
     /// на свободные поверхности жидких грузов
-    h_cross_0: f64,
+    h_trans_0: f64,
     /// Поперечная исправленная метацентрическая высота h
-    h_cross_fix: f64,
+    h_trans_fix: f64,
     /// Исправленное отстояние центра масс судна по высоте
     z_g_fix: f64,
 }
@@ -164,11 +164,11 @@ pub struct FakeMetacentricHeight {
 #[allow(dead_code)]
 impl FakeMetacentricHeight {
     /// Основной конструктор
-    pub fn new(h_long_fix: f64, h_cross_0: f64, h_cross_fix: f64, z_g_fix: f64) -> Self {
+    pub fn new(h_long_fix: f64, h_trans_0: f64, h_trans_fix: f64, z_g_fix: f64) -> Self {
         Self {
             h_long_fix,
-            h_cross_0,
-            h_cross_fix,
+            h_trans_0,
+            h_trans_fix,
             z_g_fix,
         }
     }
@@ -183,12 +183,12 @@ impl IMetacentricHeight for FakeMetacentricHeight {
     }
     /// Поперечная метацентрическая высота без учета поправки   
     /// на свободные поверхности жидких грузов
-    fn h_cross_0(&self) -> f64 {
-        self.h_cross_0
+    fn h_trans_0(&self) -> f64 {
+        self.h_trans_0
     }
     /// Поперечная исправленная метацентрическая высота
-    fn h_cross_fix(&self) -> f64 {
-        self.h_cross_fix
+    fn h_trans_fix(&self) -> f64 {
+        self.h_trans_fix
     }
     /// Исправленное отстояние центра масс судна по высоте
     fn z_g_fix(&self) -> f64 {

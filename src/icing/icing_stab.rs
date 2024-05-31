@@ -136,6 +136,13 @@ impl IIcingStab for IcingStab {
             _ => self.icing_coef_v_moment_zero,
         }
     }
+    /// Признал наличия обледенения
+    fn is_some(&self) -> bool {
+        match self.icing_stab.as_str() {
+            "full" | "half" => true,
+            _ => false,
+        }
+    }
 }
 #[doc(hidden)]
 pub trait IIcingStab {
@@ -154,6 +161,8 @@ pub trait IIcingStab {
     /// Коэффициент увеличения статического момента
     /// площади парусности несплощной поверхности
     fn coef_v_moment(&self) -> f64;
+    /// Признал наличия обледенения
+    fn is_some(&self) -> bool;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -164,6 +173,7 @@ pub struct FakeIcingStab {
     coef_v_area: f64,
     coef_v_ds_area: f64,
     coef_v_moment: f64,
+    is_some: bool,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
@@ -175,6 +185,7 @@ impl FakeIcingStab {
         coef_v_area: f64,
         coef_v_ds_area: f64,
         coef_v_moment: f64,
+        is_some: bool,
     ) -> Self {
         Self {
             mass_desc_h,
@@ -183,6 +194,7 @@ impl FakeIcingStab {
             coef_v_area,
             coef_v_ds_area,
             coef_v_moment,
+            is_some,
         }
     }
 }
@@ -210,5 +222,9 @@ impl IIcingStab for FakeIcingStab {
 
     fn coef_v_moment(&self) -> f64 {
         self.coef_v_moment
+    }
+
+    fn is_some(&self) -> bool {
+        self.is_some
     }
 }
