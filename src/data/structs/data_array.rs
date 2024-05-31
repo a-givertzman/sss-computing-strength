@@ -1,6 +1,8 @@
 //! Промежуточные структуры для serde_json для парсинга данных судна
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use crate::ApiServer;
+
 use super::serde_parser::IFromJson;
 
 ///
@@ -35,7 +37,7 @@ impl <T> IFromJson for DataArray<T> {
     ///
     fn error(&self) -> Option<&String> {
         self.error.values().next()
-    }   
+    }
 }
 ///
 impl DataArray<Pair> {

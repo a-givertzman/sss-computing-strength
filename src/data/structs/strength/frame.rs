@@ -2,7 +2,7 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
-use super::DataArray;
+use crate::data::structs::DataArray;
 
 /// Данные по шпангоуту
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

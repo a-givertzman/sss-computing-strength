@@ -72,15 +72,6 @@ fn main() -> Result<(), Error> {
          });
     */
 
-    /*   (0..n as usize)
-    .map(|v| {
-        Bound::new(
-            start_x + delta_x * v as f64,
-            start_x + delta_x * (v as f64 + 1.),
-        )
-    })
-    .collect::<Vec<_>>();*/
-
     // ускорение свободного падения
     let gravity_g = 9.81;
 
@@ -101,12 +92,7 @@ fn main() -> Result<(), Error> {
         })
         .collect();
 
-    // длинна судна99
-    //let ship_length = frames.last().unwrap().shift_x() - frames.first().unwrap().shift_x();
-    //let ship_length = 120.0<<<<<<< MetacentricHeight
-    //let n_parts = 20; //data.n_parts as usize;
     // вектор разбиения судна на отрезки
-    //let bounds = Rc::new(Bounds::from_n(ship_length, n_parts));
     let bounds = Rc::new(Bounds::from_frames(&data.bounds));
 
     let mut tanks: Vec<Rc<dyn ITank>> = Vec::new();
@@ -267,6 +253,7 @@ fn main() -> Result<(), Error> {
         computer.bending_moment().len(),
         data.bounds.len()
     );
+
     println!("shear_force:");
     computer.shear_force().iter().for_each(|v| println!("{v};"));
     println!("bending_moment:");
@@ -281,7 +268,7 @@ fn main() -> Result<(), Error> {
         &computer.shear_force(),
         &computer.bending_moment(),
     )?;
-
+/* 
     let flooding_angle = Curve::new_linear(&data.flooding_angle).value(mean_draught);
 
     let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
@@ -444,7 +431,7 @@ fn main() -> Result<(), Error> {
         )),
     );
     elapsed.insert("Completed", time.elapsed());
-
+*/
     let time = Instant::now();
     // criterion.create().iter().for_each(|v| println!("{v}"));
     send_stability_data("sss-computing", criterion.create());// TODO errors

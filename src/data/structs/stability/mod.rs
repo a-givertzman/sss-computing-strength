@@ -1,9 +1,22 @@
 //! Промежуточные структуры для serde_json для парсинга данных
 //! для расчета остойчивости
-pub mod navigation_area;
+pub mod navigation_area_data;
 pub mod multipler_s;
 pub mod horizontal_area;
+mod pantocaren;
+pub mod delta_windage_moment;
+pub mod vertical_area;
+pub mod ship_type;
+pub mod navigation_area;
 
+pub use horizontal_area::*;
+pub use multipler_s::*;
+pub use pantocaren::*;
+pub use delta_windage_moment::*;
+pub use vertical_area::*;
+pub use ship_type::*;
+pub use navigation_area::*;
+pub use navigation_area_data::*;
 
 ///
 use super::{DataArray, Pair};
