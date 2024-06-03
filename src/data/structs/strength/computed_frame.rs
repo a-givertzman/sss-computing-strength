@@ -2,7 +2,7 @@
 //! разбиения корпуса для расчете эпюров
 use serde::{Deserialize, Serialize};
 
-use super::DataArray;
+use crate::data::structs::DataArray;
 
 /// Данные по шпангоуту
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

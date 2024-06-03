@@ -5,6 +5,8 @@ use std::collections::{HashMap, HashSet};
 
 use crate::error::Error;
 
+use self::loads::{CenterVolumeData, FreeMomentInertiaData, LoadConstantArray, LoadSpaceArray, ParsedLoadSpaceData, ParsedTankData, TankDataArray};
+
 use super::*;
 
 /// Общая структура для ввода данных. Содержит все данные
@@ -53,10 +55,6 @@ pub struct ParsedShipData {
     pub midship: f64,
     /// Эксплуатационная скорость судна, m/s
     pub velocity: f64,
-    /// Суммарная масса судна
-    //pub mass: f64,
-    /// Объемное водоизмещение
-    //pub volume: f64,
     /// Cуммарная габаритная площадь скуловых килей,
     /// либо площадь боковой проекции брускового киля
     pub keel_area: Option<f64>,
