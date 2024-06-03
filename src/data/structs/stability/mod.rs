@@ -8,15 +8,15 @@ pub mod delta_windage_moment;
 pub mod vertical_area;
 pub mod ship_type;
 pub mod navigation_area;
+pub mod icing;
 
 pub use horizontal_area::*;
-pub use multipler_s::*;
 pub use pantocaren::*;
 pub use delta_windage_moment::*;
 pub use vertical_area::*;
 pub use ship_type::*;
 pub use navigation_area::*;
-pub use navigation_area_data::*;
+pub use icing::*;
 
 ///
 use super::{DataArray, Pair};

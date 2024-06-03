@@ -1,11 +1,10 @@
 //! Структуры для преобразования данных из формата данных DB
 //! в формат пригодный для создания объектов.
 
-use std::collections::{HashMap, HashSet};
+use loads::{CompartmentArray, LoadCargoArray, LoadConstantArray, ParsedCargoData, ParsedCompartmentData, ParsedLoadConstantData};
 
 use crate::error::Error;
 
-use self::loads::{CenterVolumeData, FreeMomentInertiaData, LoadConstantArray, LoadSpaceArray, ParsedLoadSpaceData, ParsedTankData, TankDataArray};
 
 use super::*;
 
@@ -121,8 +120,8 @@ pub struct ParsedShipData {
     pub cargoes: Vec<ParsedCargoData>,
     /// Нагрузка судна: цистерны и трюмы   
     pub compartments: Vec<ParsedCompartmentData>,
-    /// Нагрузка судна, жидкие грузы
-    pub tanks: Vec<ParsedTankData>,
+    /// Постоянная нагрузка на судно
+    pub load_constants: Vec<ParsedLoadConstantData>,
     /// Площадь горизонтальных поверхностей для остойчивости
     pub area_h_stab: Vec<HStabAreaData>,
     /// Площадь горизонтальных поверхностей для прочности
@@ -165,9 +164,7 @@ impl ParsedShipData {
         frame_area: FrameAreaDataArray,
         cargo_src: LoadCargoArray,
         compartments_src: CompartmentArray,
-        tank_data: TankDataArray,
-        tank_centetr_volume: CenterVolumeData,
-        tanks_free_moment_inertia: FreeMomentInertiaData,
+        load_constant_src: LoadConstantArray,
         area_h_stab: HStabAreaDataArray,
         area_h_str: HStrAreaDataArray,
         area_v_src: VerticalAreaDataArray,
@@ -306,47 +303,14 @@ impl ParsedShipData {
             });
         }
 
-        let mut tanks = Vec::new();
-        for (tank_id, map) in tank_data.data() {
-            tanks.push(ParsedTankData {
-                density: *map.get("density").ok_or(format!(
-                    "ParsedShipData parse error: no density for tanks id:{}",
-                    tank_id
-                ))?,
-                volume: *map.get("volume").ok_or(format!(
-                    "ParsedShipData parse error: no volume for tanks id:{}",
-                    tank_id
-                ))?,
-                bound: (
-                    *map.get("bound_x1").ok_or(format!(
-                        "ParsedShipData parse error: no bound_x1 for tanks id:{}",
-                        tank_id
-                    ))?,
-                    *map.get("bound_x2").ok_or(format!(
-                        "ParsedShipData parse error: no bound_x2 for tanks id:{}",
-                        tank_id
-                    ))?,
+        let mut load_constants = Vec::new();
+        for load_constant in load_constant_src.data() {
+            load_constants.push(ParsedLoadConstantData {
+                mass: load_constant.mass,
+                bound_x: ( 
+                    bound_x(&load_constant.bound_x1, &load_constant.bound_type)?, 
+                    bound_x(&load_constant.bound_x2, &load_constant.bound_type)?, 
                 ),
-                center_x: tank_centetr_volume.x(tank_id).ok_or(format!(
-                    "ParsedShipData parse error: no center_x for tanks id:{}",
-                    tank_id
-                ))?,
-                center_y: tank_centetr_volume.y(tank_id).ok_or(format!(
-                    "ParsedShipData parse error: no center_y for tanks id:{}",
-                    tank_id
-                ))?,
-                center_z: tank_centetr_volume.z(tank_id).ok_or(format!(
-                    "ParsedShipData parse error: no center_z for tanks id:{}",
-                    tank_id
-                ))?,
-                free_surf_inertia_x: tanks_free_moment_inertia.x(tank_id).ok_or(format!(
-                    "ParsedShipData parse error: no free_surf_inertia_x for tanks id:{}",
-                    tank_id
-                ))?,
-                free_surf_inertia_y: tanks_free_moment_inertia.y(tank_id).ok_or(format!(
-                    "ParsedShipData parse error: no free_surf_inertia_y for tanks id:{}",
-                    tank_id
-                ))?,
             });
         }
 
@@ -516,7 +480,7 @@ impl ParsedShipData {
             frame_area: parsed_frame_area,
             cargoes,
             compartments,
-            tanks,
+            load_constants,
             area_h_stab: area_h_stab.data(),
             area_h_str,
             area_v,
@@ -863,7 +827,7 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: compartment center out of bound error! {}", s )));
         }
-        if let Some(tank) = self.tanks.iter().find(|t| t.density <= 0.) {
+ /*       if let Some(tank) = self.tanks.iter().find(|t| t.density <= 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: density of liquid must be greater or equal to 0 {}",
                 tank
@@ -889,7 +853,7 @@ impl ParsedShipData {
         {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of free_surf_inertia's points must be {}", tank)));
         }
-        log::info!("result parse ok");
+  */      log::info!("result parse ok");
         if self.area_h_stab.len() <= 1 {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: number of area_h_stab's points {}",
