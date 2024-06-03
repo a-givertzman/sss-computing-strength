@@ -1,7 +1,7 @@
 //! Функции для работы с АПИ-сервером
 use api_tools::client::{api_query::*, api_request::ApiRequest};
 use loads::{CompartmentArray, LoadCargoArray};
-use crate::{data::{api_server::{loads::LoadConstantArray, serde_parser::IFromJson}, structs::*}, error::{self, Error}};
+use crate::{data::{api_server::{loads::LoadConstantArray, serde_parser::IFromJson}, structs::*}, error::{self, Error}, CriterionData};
 use std::{thread, time};
 
 pub struct ApiServer {
@@ -82,7 +82,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         &format!("SELECT key, value FROM icing;")
     )?)?;
     let bounds = ComputedFrameDataArray::parse(&api_server.fetch(
-        &format!("SELECT index, key, value FROM computed_frame WHERE ship_id={};", ship_id)
+        &format!("SELECT index, start_x, end_x FROM computed_frame WHERE ship_id={};", ship_id)
     )?)?;
     let center_waterline = CenterWaterlineArray::parse(&api_server.fetch(
         &format!("SELECT key, value FROM center_waterline WHERE ship_id={};", ship_id)
@@ -135,7 +135,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         &format!("SELECT frame_index, pos_x FROM bonjean_frame WHERE ship_id={ship_id};"),
     )?)?;
     let frame_area = FrameAreaDataArray::parse(&api_server.fetch(
-        &format!("SELECT frame_index, draft, area FROMframe_area WHERE ship_id={};", ship_id)
+        &format!("SELECT frame_index, draft, area FROM frame_area WHERE ship_id={};", ship_id)
     )?)?;
     let cargo = LoadCargoArray::parse(&api_server.fetch(
         &format!(
@@ -224,27 +224,39 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
 /// Запись данных расчета прочности в БД
 pub fn send_strenght_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>, bending_moment: &Vec<f64>) -> Result<(), error::Error> {
     let tmp: Vec<_> = shear_force.clone().into_iter().zip(bending_moment.into_iter()).collect();
-    let mut string = 
-        "INSERT INTO strength_result (ship_id, index, value_shear_force, value_bending_moment) VALUES".to_owned() + 
-        &tmp.iter().enumerate().map(|(i, (v1, v2))| format!("({ship_id}, {i}, {v1}, {v2}),\n" ) ).collect::<String>();
-    string.pop();
-    string.pop();
-    string.push(';');
+
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM strength_result WHERE ship_id={ship_id};");
+    full_sql += " INSERT INTO strength_result (ship_id, index, value_shear_force, value_bending_moment) VALUES"; 
+    tmp.iter().enumerate().for_each(|(i, (v1, v2))| full_sql += &format!(" ({ship_id}, {i}, {v1}, {v2})," ) );
+    full_sql.pop();
+    full_sql.push(';');
+    full_sql += " END$$;";
 
  //   dbg!(&string);
-    ApiServer::new(db_name.to_owned()).fetch(&string,)?;
+    ApiServer::new(db_name.to_owned()).fetch(&full_sql,)?;
 
     Ok(())
 }
 
 
 /// Запись данных расчета остойчивости в БД
-pub fn send_stability_data(db_name: &str, data: Vec<String>) -> Vec<Result<Vec<u8>, error::Error>> {
+pub fn send_stability_data(db_name: &str, ship_id: usize, data: Vec<CriterionData>) -> Result<(), error::Error> {
     log::info!("input_api_server read begin");   
-    let result = data.iter().map(|string| {
-        ApiServer::new(db_name.to_owned()).fetch(string,)
-    }).collect::<Vec<_>>();
-    result
+
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM result_stability WHERE ship_id={ship_id};");
+    data.into_iter().for_each(|v| {
+        full_sql += " INSERT INTO result_stability "; 
+            if let Some(error) = v.error_message {
+                full_sql += &format!("(ship_id, criterion_id, result, target, error_message) VALUES ({ship_id}, {}, {}, {}, '{}');", v.criterion_id, v.result, v.target, error);
+            } else {
+                full_sql += &format!("(ship_id, criterion_id, result, target) VALUES ({ship_id}, {}, {}, {});", v.criterion_id, v.result, v.target);
+            }
+    });
+    full_sql += " END$$;";
+    ApiServer::new(db_name.to_owned()).fetch(&full_sql)?;
+    Ok(())
 }
 /*
 /// Чтение данных из БД. Функция читает данные за несколько запросов,

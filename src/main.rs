@@ -108,7 +108,17 @@ fn main() -> Result<(), Error> {
         data.const_mass_shift_z,
     );
 
-loads_const
+    data.load_constants.iter().for_each(|v| {
+        let bound_x = Bound::from(v.bound_x);
+        let load = Rc::new(LoadMass::new(
+            v.mass,
+            bound_x,
+            Some(const_shift.clone()),
+        ));
+        log::info!("\t Mass loads_const:{:?} ", load);
+        loads_const.push(load);
+    });
+
     data.cargoes.iter().for_each(|v| {
         let mass_shift = if let Some(mass_shift) = v.mass_shift.as_ref().clone() { 
             Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
@@ -463,7 +473,7 @@ loads_const
 
     let time = Instant::now();
     // criterion.create().iter().for_each(|v| println!("{v}"));
-    send_stability_data("sss-computing", criterion.create());// TODO errors
+    send_stability_data("sss-computing", ship_id, criterion.create())?;//
     elapsed.insert("Write stability result", time.elapsed());
 
     for (key, e) in elapsed {

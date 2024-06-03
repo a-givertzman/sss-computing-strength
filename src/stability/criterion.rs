@@ -472,7 +472,7 @@ impl Criterion {
     pub fn metacentric_height_subdivision(&self) -> CriterionData {
         // Все суда
         CriterionData::new_result(
-            CriterionID::MinMetacentricHight,
+            CriterionID::MinMetacentricHeightSubdivIndex,
             self.metacentric_height.h_trans_fix(),
             self.h_subdivision,
         )
