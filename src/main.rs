@@ -77,12 +77,12 @@ fn main() -> Result<(), Error> {
 
     // шпангоуты
     let frames: Vec<Frame> = data
-        .theoretical_frame
+        .frame_area
         .iter()
         .map(|v| {
             Frame::new(
                 v.x - data
-                    .theoretical_frame
+                    .frame_area
                     .last()
                     .expect("frames last error: no frame")
                     .x
@@ -107,30 +107,62 @@ fn main() -> Result<(), Error> {
         data.const_mass_shift_y,
         data.const_mass_shift_z,
     );
-    for index in 0..frames.len() - 1 {
-        let bound = Bound::new(frames[index].shift_x(), frames[index + 1].shift_x());
-        if let Some(mass) = data.load_constant.data().get(&index) {
-            let load_mass = Rc::new(LoadMass::new(
-                *mass,
-                bound,
-                Some(Position::new(
-                    bound.center(),
-                    const_shift.y(),
-                    const_shift.z(),
-                )),
-            ));
-            loads_const.push(load_mass);
-        }
-    }
 
-    data.load_spaces.iter().for_each(|v| {
-        if let Some(mass_shift) = v.mass_shift {
-            let load = Rc::new(LoadMass::new(
-                v.mass,
-                Bound::from(v.bound_x),
-                Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2)),
+    data.load_constants.iter().for_each(|v| {
+        let bound_x = Bound::from(v.bound_x);
+        let load = Rc::new(LoadMass::new(
+            v.mass,
+            bound_x,
+            Some(const_shift.clone()),
+        ));
+        log::info!("\t Mass loads_const:{:?} ", load);
+        loads_const.push(load);
+    });
+
+    data.cargoes.iter().for_each(|v| {
+        let mass_shift = if let Some(mass_shift) = v.mass_shift.as_ref().clone() { 
+            Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
+        } else {
+            None
+        };
+        let bound_x = Bound::from(v.bound_x);
+
+        let load = Rc::new(LoadMass::new(
+            v.mass,
+            bound_x,
+            mass_shift.clone(),
+        ));
+        log::info!("\t Mass loads_const:{:?} ", load);
+        loads_const.push(load);
+    });
+
+    data.compartments.iter().for_each(|v| {
+        let mass_shift = if let Some(mass_shift) = v.mass_shift.as_ref().clone() { 
+            Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
+        } else {
+            None
+        };
+        let bound_x = Bound::from(v.bound_x);
+
+        let load = Rc::new(LoadMass::new(
+            v.mass,
+            bound_x,
+            mass_shift.clone(),
+        ));
+        load_mass.push(load);
+
+        if v.m_f_s_x.is_some() && v.m_f_s_y.is_some() && v.density.is_some() {        
+            let tank: Rc<dyn ITank> = Rc::new(Tank::new(
+                v.density.unwrap_or(1.),
+                v.volume.unwrap_or(0.),
+                bound_x,
+                mass_shift.clone(),
+                InertiaMoment::new(
+                    v.m_f_s_x.unwrap_or(0.),
+                    v.m_f_s_y.unwrap_or(0.),
+                ),
             ));
-            load_mass.push(load);
+            tanks.push(tank);
         }
     });
 
@@ -304,6 +336,7 @@ fn main() -> Result<(), Error> {
                 .collect();
             vector.append(&mut negative);
             vector.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+     
         });
     }
 
@@ -315,8 +348,9 @@ fn main() -> Result<(), Error> {
         mean_draught,
         Rc::clone(&metacentric_height),
     ));
+   // dbg!(stability.k()?);
     //dbg!(lever_diagram.dso().len());
-    lever_diagram
+ /*   lever_diagram
         .dso()
         .iter()
         .for_each(|(k, v)| println!("{k} {v};"));
@@ -324,7 +358,7 @@ fn main() -> Result<(), Error> {
         .ddo()
         .iter()
         .for_each(|(k, v)| println!("{k} {v};"));
-
+*/
     // Предполагаемое давление ветра +
     // Добавка на порывистость ветра
     let (p_v, m) = data
@@ -380,13 +414,13 @@ fn main() -> Result<(), Error> {
         Box::new(wind),
     );
     // dbg!(stability.k()?);
-    // Давление ветра +
-    // Добавка на порывистость ветра для
+    /* // TODO: Давление ветра + добавка на порывистость ветра для 
+    // контейнеровоза/или судна перевозящего палубный груз контейнеров
     // неограниченного района плавания
     let (p_v, m) = data
         .navigation_area_param
         .get_area(&NavigationArea::Unlimited)
-        .expect("main error no area data!");
+        .expect("main error no area data!");*/
     // Критерии остойчивости
     let mut criterion = Criterion::new(
         data.ship_type,
@@ -394,10 +428,12 @@ fn main() -> Result<(), Error> {
         desks.iter().find(|v| v.is_timber()).is_some(),
         bulk.iter().find(|v| v.moment() != 0.).is_some(),
         load_mass.iter().find(|v| v.value(None) != 0.).is_some(),
+        icing_stab.is_some(),
         flooding_angle,
         data.length,
         breadth,
         mean_draught,
+        Curve::new_linear(&data.h_subdivision).value(mean_draught),
         Rc::new(Wind::new(
             p_v,
             m,
@@ -423,18 +459,21 @@ fn main() -> Result<(), Error> {
             Rc::clone(&mass),
             Rc::clone(&lever_diagram),
         )),
-        Rc::new(Grain::new(
+        Box::new(Grain::new(
             flooding_angle,
             Rc::clone(&bulk),
             Rc::clone(&mass),
             Rc::clone(&lever_diagram),
         )),
     );
+    
+
+
     elapsed.insert("Completed", time.elapsed());
 
     let time = Instant::now();
     // criterion.create().iter().for_each(|v| println!("{v}"));
-    send_stability_data("sss-computing", criterion.create());// TODO errors
+    send_stability_data("sss-computing", ship_id, criterion.create())?;//
     elapsed.insert("Write stability result", time.elapsed());
 
     for (key, e) in elapsed {

@@ -1,7 +1,6 @@
 //! Промежуточные структуры для serde_json для парсинга данных судна
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::ApiServer;
 
 use super::serde_parser::IFromJson;
 

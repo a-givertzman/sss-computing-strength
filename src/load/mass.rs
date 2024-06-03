@@ -19,6 +19,7 @@ pub trait ILoadMass: ILoad {
 }
 
 /// Абстрактный груз - заглушка для учета массы
+#[derive(Debug)]
 pub struct LoadMass { 
     /// Масса груза 
     mass: f64,

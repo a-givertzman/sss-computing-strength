@@ -23,6 +23,7 @@ mod tests {
                         0.1,
                         0.2,
                         0.3,
+                        true,
                     )),
                     Rc::new(crate::stability::FakeArea::new(
                         1000.,

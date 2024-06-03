@@ -44,6 +44,8 @@ impl Wind {
 impl IWind for Wind {
     /// Плечо кренящего момента постоянного ветра
     fn arm_wind_static(&self) -> f64 {
+        log::info!("\t Wind arm_wind_static mass_sum:{} p_v:{} a_v:{}  z_v:{}",
+        self.mass.sum(), self.p_v, self.windage.a_v(), self.windage.z_v(),);
         (self.p_v * self.windage.a_v() * self.windage.z_v()) / (1000. * self.g * self.mass.sum())
     }
     /// Плечо кренящего момента порыва ветра

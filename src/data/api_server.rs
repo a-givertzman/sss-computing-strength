@@ -1,6 +1,7 @@
 //! Функции для работы с АПИ-сервером
 use api_tools::client::{api_query::*, api_request::ApiRequest};
-use crate::{data::{api_server::{loads::{CenterVolumeArray, CenterVolumeData, FreeMomentInertiaArray, FreeMomentInertiaData, LoadConstantArray, LoadSpaceArray, TankDataArray}, serde_parser::IFromJson}, structs::*}, error::{self, Error}};
+use loads::{CompartmentArray, LoadCargoArray};
+use crate::{data::{api_server::{loads::LoadConstantArray, serde_parser::IFromJson}, structs::*}, error::{self, Error}, CriterionData};
 use std::{thread, time};
 
 pub struct ApiServer {
@@ -51,153 +52,13 @@ impl ApiServer {
     }
 }
 
-/*
-/// Вспомогательная функция для выполнения запроса к апи-серверу
-fn api_server.fetch(
-    request: &mut ApiRequest,
-    database: impl Into<String>,
-    sql: impl Into<String>,
-) -> Result<Vec<u8>, Error> {
-    let query = ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(database, sql)), false);
-    Ok(request.fetch(&query, true)?)
-}
-*/
-/*
-/// Создание тестовой БД
-#[allow(dead_code)]
-pub fn create_test_db(db_name: &str) -> Result<(), Error> {
-    //   let script = include_str!("../../src/data/sql/tables/create_postgres_db.sql");
-
-    let mut request = ApiRequest::new(
-        "parent",
-        "0.0.0.0:8080",
-        "auth_token",
-        ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(db_name, "")), false),
-        false,
-        false,
-    );
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/ship.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/center_waterline.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/rad_long.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/mean_draught.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/center_draught.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/frame.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/frame_area.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/load_space.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/load_constant.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/tank.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/tank_center.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-
-    let query = ApiQuery::new(
-        ApiQueryKind::Sql(ApiQuerySql::new(
-    
-            include_str!("../../src/data/sql/tables/tank_inertia.sql"),
-        )),
-        false,
-    );
-    dbg!(&String::from_utf8(request.fetch(&query, false)?)?);
-    Ok(())
-}
-*/
-
 /// Чтение данных из БД. Функция читает данные за несколько запросов,
 /// парсит их и проверяет данные на корректность.
 pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> {
     log::info!("input_api_server read begin");    
     let mut api_server = ApiServer::new(db_name.to_owned()); 
-    let ship_data = ShipArray::parse(&api_server.fetch(
+    let ship_parameters = ShipArray::parse(&api_server.fetch(
         &format!("SELECT key, value, value_type FROM ship_parameters WHERE ship_id={};", ship_id)
-    )?)?;
-    let load_space = LoadSpaceArray::parse(&api_server.fetch(
-        &format!("SELECT space_id, key, value, value_type FROM load_space WHERE ship_id={};", ship_id)
     )?)?;
     let navigation_area_param = NavigationAreaArray::parse(&api_server.fetch(
         &format!("SELECT area, p_v, m FROM navigation_area;")
@@ -217,8 +78,11 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     let coefficient_k_theta = CoefficientKThetaArray::parse(&api_server.fetch(
         &format!("SELECT key, value FROM coefficient_k_theta;")
     )?)?;
+    let icing = IcingArray::parse(&api_server.fetch(
+        &format!("SELECT key, value FROM icing;")
+    )?)?;
     let bounds = ComputedFrameDataArray::parse(&api_server.fetch(
-        &format!("SELECT index, key, value FROM computed_frame WHERE ship_id={};", ship_id)
+        &format!("SELECT index, start_x, end_x FROM computed_frame WHERE ship_id={};", ship_id)
     )?)?;
     let center_waterline = CenterWaterlineArray::parse(&api_server.fetch(
         &format!("SELECT key, value FROM center_waterline WHERE ship_id={};", ship_id)
@@ -244,6 +108,11 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     let rad_cross = RadLongDataArray::parse(&api_server.fetch(
         &format!("SELECT key, value FROM rad_cross WHERE ship_id={};", ship_id)
     )?)?;
+    let h_subdivision = MetacentricHeightSubdivisionArray::parse(&api_server.fetch(
+        &format!("SELECT key, value FROM min_metacentric_height_subdivision WHERE ship_id={ship_id};")
+    )?)?;
+    //    dbg!(&h_subdivision);
+    log::info!("input_api_server h_subdivision read ok");
     let pantocaren = PantocarenDataArray::parse(&api_server.fetch(
         &format!("SELECT draught, roll, moment FROM pantocaren WHERE ship_id={};", ship_id)
     )?)?;
@@ -259,36 +128,46 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     let delta_windage_moment = DeltaWindageMomentDataArray::parse(&api_server.fetch(
         &format!("SELECT draught, value_x, value_z FROM delta_windage_moment WHERE ship_id={};", ship_id)
     )?)?;
-    let physical_frame = FrameDataArray::parse(&api_server.fetch(
-        &format!("SELECT index, key, value FROM physical_frame WHERE ship_id={};", ship_id)
+    let physical_frame = FrameIndexDataArray::parse(&api_server.fetch(
+        &format!("SELECT frame_index, pos_x FROM physical_frame WHERE ship_id={};", ship_id)
     )?)?;
-    let theoretical_frame = FrameDataArray::parse(&api_server.fetch(
-        &format!("SELECT index, key, value FROM theoretical_frame WHERE ship_id={};", ship_id)
+    let bonjean_frame = FrameIndexDataArray::parse(&api_server.fetch(
+        &format!("SELECT frame_index, pos_x FROM bonjean_frame WHERE ship_id={ship_id};"),
     )?)?;
-    let frame_area = FrameAreaData::new(
-        FrameAreaArray::parse(&api_server.fetch(
-        &format!("SELECT frame_index, key, value FROM frame_area WHERE ship_id={};", ship_id)
-        )?)?
-        .data(),
-    );
+    let frame_area = FrameAreaDataArray::parse(&api_server.fetch(
+        &format!("SELECT frame_index, draft, area FROM frame_area WHERE ship_id={};", ship_id)
+    )?)?;
+    let cargo = LoadCargoArray::parse(&api_server.fetch(
+        &format!(
+            "SELECT name, mass, bound_x1, bound_x2, bound_type, bound_y1, bound_y2, bound_z1, bound_z2, \
+            mass_shift_x, mass_shift_y, mass_shift_z, horizontal_area, horizontal_area_shift_x, \
+            horizontal_area_shift_y, vertical_area, vertical_area_shift_x, vertical_area_shift_y, \
+            vertical_area_shift_z, loading_type FROM cargo WHERE ship_id={ship_id};"
+        ),
+    )?)?;
+    let compartment = CompartmentArray::parse(&api_server.fetch(
+        &format!(
+            "SELECT space_id, \
+                    name, \
+                    mass, \
+                    density, \
+                    volume, \
+                    bound_x1, \
+                    bound_x2, \
+                    bound_type, \
+                    mass_shift_x, \
+                    mass_shift_y, \
+                    mass_shift_z, \
+                    m_f_s_y, \
+                    m_f_s_x, \
+                    loading_type \
+                FROM compartment WHERE ship_id={};",
+            ship_id
+        ),
+    )?)?;
     let load_constant = LoadConstantArray::parse(&api_server.fetch(
-        &format!("SELECT frame_space_index, key, value FROM load_constant WHERE ship_id={};", ship_id)
+        &format!("SELECT mass, bound_x1, bound_x2, bound_type FROM load_constant WHERE ship_id={};", ship_id)
     )?)?;
-    let tank = TankDataArray::parse(&api_server.fetch(
-        &format!("SELECT tank_id, key, value FROM tank WHERE ship_id={};", ship_id)
-    )?)?;
-    let tank_center = CenterVolumeData::new(
-        CenterVolumeArray::parse(&api_server.fetch(       
-            &format!("SELECT tank_id, key, value_x, value_y, value_z FROM tank_center WHERE tank_id={};", ship_id)
-        )?)?
-        .data(),
-    );
-    let tank_inertia = FreeMomentInertiaData::new(
-        FreeMomentInertiaArray::parse(&api_server.fetch(  
-            &format!("SELECT tank_id, key, value_x, value_y FROM tank_center WHERE tank_id={};", ship_id)
-        )?)?
-        .data(),
-    );
     let area_h_str = HStrAreaDataArray::parse(&api_server.fetch(
         &format!("SELECT name, value, bound_x1, bound_x2, bound_type FROM horizontal_area_strength WHERE ship_id={};", ship_id)
     )?)?;
@@ -312,8 +191,9 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         multipler_s,
         coefficient_k,
         coefficient_k_theta,
+        icing,
         ship_id,
-        ship_data,
+        ship_parameters,
         bounds,
         center_waterline,
         waterline_length,
@@ -321,6 +201,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         volume_shift,
         rad_long,
         rad_cross,
+        h_subdivision,
         mean_draught,
         center_draught_shift,
         pantocaren,
@@ -329,13 +210,11 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         delta_windage_area,
         delta_windage_moment,
         physical_frame,
-        theoretical_frame,
+        bonjean_frame,
         frame_area,
+        cargo,
+        compartment,
         load_constant,
-        load_space,
-        tank,
-        tank_center,
-        tank_inertia,
         area_h_stab,
         area_h_str,
         area_v,
@@ -345,27 +224,39 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
 /// Запись данных расчета прочности в БД
 pub fn send_strenght_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>, bending_moment: &Vec<f64>) -> Result<(), error::Error> {
     let tmp: Vec<_> = shear_force.clone().into_iter().zip(bending_moment.into_iter()).collect();
-    let mut string = 
-        "INSERT INTO strength_result (ship_id, index, value_shear_force, value_bending_moment) VALUES".to_owned() + 
-        &tmp.iter().enumerate().map(|(i, (v1, v2))| format!("({ship_id}, {i}, {v1}, {v2}),\n" ) ).collect::<String>();
-    string.pop();
-    string.pop();
-    string.push(';');
+
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM strength_result WHERE ship_id={ship_id};");
+    full_sql += " INSERT INTO strength_result (ship_id, index, value_shear_force, value_bending_moment) VALUES"; 
+    tmp.iter().enumerate().for_each(|(i, (v1, v2))| full_sql += &format!(" ({ship_id}, {i}, {v1}, {v2})," ) );
+    full_sql.pop();
+    full_sql.push(';');
+    full_sql += " END$$;";
 
  //   dbg!(&string);
-    ApiServer::new(db_name.to_owned()).fetch(&string,)?;
+    ApiServer::new(db_name.to_owned()).fetch(&full_sql,)?;
 
     Ok(())
 }
 
 
 /// Запись данных расчета остойчивости в БД
-pub fn send_stability_data(db_name: &str, data: Vec<String>) -> Vec<Result<Vec<u8>, error::Error>> {
+pub fn send_stability_data(db_name: &str, ship_id: usize, data: Vec<CriterionData>) -> Result<(), error::Error> {
     log::info!("input_api_server read begin");   
-    let result = data.iter().map(|string| {
-        ApiServer::new(db_name.to_owned()).fetch(string,)
-    }).collect::<Vec<_>>();
-    result
+
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM result_stability WHERE ship_id={ship_id};");
+    data.into_iter().for_each(|v| {
+        full_sql += " INSERT INTO result_stability "; 
+            if let Some(error) = v.error_message {
+                full_sql += &format!("(ship_id, criterion_id, result, target, error_message) VALUES ({ship_id}, {}, {}, {}, '{}');", v.criterion_id, v.result, v.target, error);
+            } else {
+                full_sql += &format!("(ship_id, criterion_id, result, target) VALUES ({ship_id}, {}, {}, {});", v.criterion_id, v.result, v.target);
+            }
+    });
+    full_sql += " END$$;";
+    ApiServer::new(db_name.to_owned()).fetch(&full_sql)?;
+    Ok(())
 }
 /*
 /// Чтение данных из БД. Функция читает данные за несколько запросов,
