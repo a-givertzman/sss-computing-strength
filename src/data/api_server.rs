@@ -194,7 +194,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
     log::info!("input_api_server read begin");    
     let mut api_server = ApiServer::new(db_name.to_owned()); 
     let ship_data = ShipArray::parse(&api_server.fetch(
-        &format!("SELECT key, value, value_type FROM ship WHERE ship_id={};", ship_id)
+        &format!("SELECT key, value, value_type FROM ship_parameters WHERE ship_id={};", ship_id)
     )?)?;
     let load_space = LoadSpaceArray::parse(&api_server.fetch(
         &format!("SELECT space_id, key, value, value_type FROM load_space WHERE ship_id={};", ship_id)
