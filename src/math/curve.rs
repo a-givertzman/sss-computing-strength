@@ -24,20 +24,6 @@ impl Curve {
             spline: Spline::from_vec(values),
         }
     }
-    /*   ///
-        /// Creates new instance of the Curve with Cosine interpolation
-        /// from vector of the key - value pairs
-        pub fn new_cosine(values: &Vec<(f64, f64)>) -> Curve {
-            assert!(values.len() > 1, "Curve.new | Input array must have at least two elements (values.len > 1), \nvalues: {:?}", values);
-            let mut res: Vec<_> = values
-                .iter()
-                .map(|v| Key::new(v.0, v.1, Interpolation::Cosine))
-                .collect();
-            Self {
-                spline: Spline::from_vec(res),
-            }
-        }
-    */
     ///
     /// Creates new instance of the Curve with CatmullRom interpolation  
     /// from vector of the key - value pairs
@@ -90,8 +76,6 @@ impl Curve {
             src.last().unwrap().1 + delta_value * 3.,
             Interpolation::CatmullRom,
         ));
-
-        //    res.push(Key::new(values.last().unwrap().0, values.last().unwrap().1, Interpolation::CatmullRom));
         Self {
             spline: Spline::from_vec(res),
         }

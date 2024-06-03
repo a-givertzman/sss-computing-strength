@@ -1,9 +1,17 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
 use crate::{
-    area::{HAreaStability, HAreaStrength, VerticalArea}, icing::{IIcingStab, IcingMass, IcingStab}, load::*, mass::*, math::*, stability::*, strength::*, windage::Windage
+    area::{HAreaStability, HAreaStrength, VerticalArea},
+    data::structs::NavigationArea,
+    icing::{IIcingStab, IcingMass, IcingStab},
+    load::*,
+    mass::*,
+    math::*,
+    stability::*,
+    strength::*,
+    windage::{IWindage, Windage},
 };
-use data::input_api_server::*;
+use data::api_server::*;
 pub use error::Error;
 use log::info;
 use std::{collections::HashMap, rc::Rc, time::Instant};
@@ -30,7 +38,8 @@ fn main() -> Result<(), Error> {
     let mut elapsed = HashMap::new();
 
     let time = Instant::now();
-    let mut data = get_data("sss-computing", 1)?;
+    let ship_id = 1;
+    let mut data = get_data("sss-computing", ship_id)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
 
     /*   let time = Instant::now();
@@ -63,15 +72,6 @@ fn main() -> Result<(), Error> {
          });
     */
 
-    /*   (0..n as usize)
-    .map(|v| {
-        Bound::new(
-            start_x + delta_x * v as f64,
-            start_x + delta_x * (v as f64 + 1.),
-        )
-    })
-    .collect::<Vec<_>>();*/
-
     // ускорение свободного падения
     let gravity_g = 9.81;
 
@@ -92,16 +92,16 @@ fn main() -> Result<(), Error> {
         })
         .collect();
 
-    // длинна судна99
-    //let ship_length = frames.last().unwrap().shift_x() - frames.first().unwrap().shift_x();
-    //let ship_length = 120.0<<<<<<< MetacentricHeight
-    //let n_parts = 20; //data.n_parts as usize;
     // вектор разбиения судна на отрезки
-    //let bounds = Rc::new(Bounds::from_n(ship_length, n_parts));
     let bounds = Rc::new(Bounds::from_frames(&data.bounds));
 
+    let mut tanks: Vec<Rc<dyn ITank>> = Vec::new();
+    let mut desks: Vec<Rc<dyn IDesk>> = Vec::new();
+    let mut bulk: Vec<Rc<dyn IBulk>> = Vec::new();
+    let mut load_mass: Vec<Rc<dyn ILoadMass>> = Vec::new();
+
     // Постоянная масса судна
-    let mut loads_const: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
+    let mut loads_const: Vec<Rc<dyn ILoadMass>> = Vec::new();
     let const_shift = Position::new(
         data.const_mass_shift_x,
         data.const_mass_shift_y,
@@ -110,49 +110,35 @@ fn main() -> Result<(), Error> {
     for index in 0..frames.len() - 1 {
         let bound = Bound::new(frames[index].shift_x(), frames[index + 1].shift_x());
         if let Some(mass) = data.load_constant.data().get(&index) {
-            loads_const.push(Rc::new(Box::new(LoadSpace::new(
-                Some(LoadMass::new(
-                    *mass,
-                    Some(Position::new(
-                        bound.center(),
-                        const_shift.y(),
-                        const_shift.z(),
-                    )),
-                    bound,
-                    None,
-                    None,
+            let load_mass = Rc::new(LoadMass::new(
+                *mass,
+                bound,
+                Some(Position::new(
+                    bound.center(),
+                    const_shift.y(),
+                    const_shift.z(),
                 )),
-                None,
-                None,
-            ))));
+            ));
+            loads_const.push(load_mass);
         }
     }
-    // Грузы судна
-    let mut loads_cargo: Vec<Rc<Box<dyn ILoad>>> = Vec::new();
+
     data.load_spaces.iter().for_each(|v| {
-        if v.mass != 0. {
-            loads_cargo.push(Rc::new(Box::new(LoadSpace::from(
+        if let Some(mass_shift) = v.mass_shift {
+            let load = Rc::new(LoadMass::new(
                 v.mass,
-                if let Some(mass_shift) = v.mass_shift {
-                    Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
-                } else {
-                    None
-                },
-                v.bound_x,
-                v.bound_y,
-                v.bound_z,
-                v.windage_area,
-                if let Some(windage_shift) = v.windage_shift {
-                    Some(Position::new(windage_shift.0, 0., windage_shift.1))
-                } else {
-                    None
-                },
-                v.m_f_s_y,
-                v.m_f_s_x,
-            ))));
+                Bound::from(v.bound_x),
+                Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2)),
+            ));
+            load_mass.push(load);
         }
     });
-    let loads_cargo = Rc::new(loads_cargo);
+
+    let loads_const = Rc::new(loads_const);
+    let desks = Rc::new(desks);
+    let load_mass = Rc::new(load_mass);
+    let bulk = Rc::new(bulk);
+
     /*  // Цистерны
         data.tanks.iter().for_each(|v| {
             loads_cargo.push(Rc::new(Box::new(Tank::new(
@@ -187,9 +173,17 @@ fn main() -> Result<(), Error> {
         .map(|v| VerticalArea::new(v.value, v.shift_z, Bound::from(v.bound_x)))
         .collect::<Vec<_>>();
 
-    let area_strength: Rc<dyn crate::strength::IArea> = Rc::new(crate::strength::Area::new(icing_area_v.clone(), icing_area_h_str, Rc::clone(&loads_cargo)));
-    let area_stability: Rc<dyn crate::stability::IArea> = Rc::new(crate::stability::Area::new(icing_area_v, icing_area_h_stab, Rc::clone(&loads_cargo)));
-   
+    let area_strength: Rc<dyn crate::strength::IArea> = Rc::new(crate::strength::Area::new(
+        icing_area_v.clone(),
+        icing_area_h_str,
+        Rc::clone(&desks),
+    ));
+    let area_stability: Rc<dyn crate::stability::IArea> = Rc::new(crate::stability::Area::new(
+        icing_area_v,
+        icing_area_h_stab,
+        Rc::clone(&desks),
+    ));
+
     let icing_stab: Rc<dyn IIcingStab> = Rc::new(IcingStab::new(
         data.icing_stab.clone(),
         data.icing_m_timber,
@@ -214,9 +208,10 @@ fn main() -> Result<(), Error> {
             Rc::clone(&area_strength),
             Rc::clone(&area_stability),
         )),
-        Rc::clone(&loads_cargo),
+        Rc::clone(&load_mass),
         Rc::clone(&bounds),
     ));
+
     // Объемное водоизмещение (1)
     let volume = mass.sum() / data.water_density;
     // Отстояние центра величины погруженной части судна
@@ -247,17 +242,18 @@ fn main() -> Result<(), Error> {
         Rc::clone(&bounds),
     );
     assert!(
-        computer.shear_force().len() == data.bounds.len(),
-        "shear_force.len {} == frame.len {}",
+        computer.shear_force().len() == data.bounds.len() + 1,
+        "shear_force.len {} == frame.len {} + 1",
         computer.shear_force().len(),
         data.bounds.len()
     );
     assert!(
-        computer.bending_moment().len() == data.bounds.len(),
-        "bending_moment.len {} == frame.len {}",
+        computer.bending_moment().len() == data.bounds.len() + 1,
+        "bending_moment.len {} == frame.len {} + 1",
         computer.bending_moment().len(),
         data.bounds.len()
     );
+
     println!("shear_force:");
     computer.shear_force().iter().for_each(|v| println!("{v};"));
     println!("bending_moment:");
@@ -266,9 +262,9 @@ fn main() -> Result<(), Error> {
         .iter()
         .for_each(|v| println!("{v};"));
 
-    send_data(
+    send_strenght_data(
         "sss-computing",
-        1,
+        ship_id,
         &computer.shear_force(),
         &computer.bending_moment(),
     )?;
@@ -279,16 +275,16 @@ fn main() -> Result<(), Error> {
         center_draught_shift.clone(), // отстояние центра величины погруженной части судна
         rad_long,                     // продольный метацентрические радиус
         rad_cross,                    // поперечный метацентрические радиус
-        Rc::clone(&mass),  // все грузы судна
+        tanks,
+        Rc::clone(&mass), // все грузы судна
     ));
 
     // Длинна по ватерлинии при текущей осадке
-    let length = Curve::new_linear(&data.waterline_length).value(mean_draught);
+    let length_wl = Curve::new_linear(&data.waterline_length).value(mean_draught);
     // Ширина по ватерлинии при текущей осадке
     let breadth = Curve::new_linear(&data.waterline_breadth).value(mean_draught);
     // Отстояние по вертикали центра площади проекции подводной части корпуса
     let volume_shift = Curve::new_linear(&data.volume_shift).value(mean_draught);
-
     // Проверяем есть ли пантокарены в отрицательной области углов
     // Если нет то считаем что судно симметорично и зеркально
     // копируем данные в отрицательную область углов крена
@@ -311,83 +307,136 @@ fn main() -> Result<(), Error> {
         });
     }
 
-    let mut stability_arm = StabilityArm::new(
+    let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
         Rc::clone(&mass),
         center_draught_shift.clone(),
         Curve2D::from_values_catmull_rom(data.pantocaren),
         // Curve2D::from_values_linear(data.pantocaren),
         mean_draught,
         Rc::clone(&metacentric_height),
-    );
-    dbg!(stability_arm.dso().len());
-    stability_arm
-            .dso()
-            .iter()
-            .for_each(|(k, v)| println!("{k} {v};"));
-        stability_arm
-            .ddo()
-            .iter()
-            .for_each(|(k, v)| println!("{k} {v};"));
-    
+    ));
+    //dbg!(lever_diagram.dso().len());
+    lever_diagram
+        .dso()
+        .iter()
+        .for_each(|(k, v)| println!("{k} {v};"));
+    lever_diagram
+        .ddo()
+        .iter()
+        .for_each(|(k, v)| println!("{k} {v};"));
+
     // Предполагаемое давление ветра +
     // Добавка на порывистость ветра
     let (p_v, m) = data
         .navigation_area_param
-        .get_area(&data.navigation_area_name)
+        .get_area(&data.navigation_area)
         .expect("main error no area data!");
 
-    let mut wind = Wind::new(
-        p_v,
-        m,
-        Box::new(Windage::new(
-            Rc::clone(&icing_stab),
-            Rc::clone(&area_stability),
-            Curve::new_linear(&data.delta_windage_area).value(mean_draught),
-            Moment::new(
-                Curve::new_linear(&data.delta_windage_moment_x).value(mean_draught),
-                0.,
-                Curve::new_linear(&data.delta_windage_moment_z).value(mean_draught),
-            ),
-            volume_shift,
-        )),
-        gravity_g,
-        Rc::clone(&mass),
-    );
+    let windage: Rc<dyn IWindage> = Rc::new(Windage::new(
+        Rc::clone(&icing_stab),
+        Rc::clone(&area_stability),
+        Curve::new_linear(&data.delta_windage_area).value(mean_draught),
+        Moment::new(
+            Curve::new_linear(&data.delta_windage_moment_x).value(mean_draught),
+            0.,
+            Curve::new_linear(&data.delta_windage_moment_z).value(mean_draught),
+        ),
+        volume_shift,
+    ));
 
-    let roll_amplitude = RollingAmplitude::new(
+    let wind = Wind::new(p_v, m, Rc::clone(&windage), gravity_g, Rc::clone(&mass));
+
+    let roll_period: Rc<dyn IRollingPeriod> = Rc::new(RollingPeriod::new(
+        length_wl,
+        breadth,
+        mean_draught,
+        Rc::clone(&metacentric_height),
+    ));
+
+    let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&metacentric_height),
-        volume, // Объемное водоизмещение (1)
-        length, // длинна по ватерлинии при текущей осадке
+        volume,    // Объемное водоизмещение (1)
+        length_wl, // длинна по ватерлинии при текущей осадке
         breadth,
         mean_draught,
         Curve::new_linear(&data.coefficient_k.data()),
         Curve::new_linear(&data.multipler_x1.data()),
         Curve::new_linear(&data.multipler_x2.data()),
-        Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area_name)),
-        RollingPeriod::new(
-            length,
-            breadth,
-            mean_draught,
-            Rc::clone(&metacentric_height),
-        ),
-    );
+        Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area)),
+        Rc::clone(&roll_period),
+    ));
 
-    dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
+    //dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
 
-    let mut stability = Stability::new(
+    let stability = Stability::new(
         // Угол заливания отверстий
         flooding_angle,
         // Диаграмма плеч статической остойчивости
-        Box::new(stability_arm),
+        Rc::clone(&lever_diagram),
         // Амплитуда качки судна с круглой скулой (2.1.5)
-        Box::new(roll_amplitude),
+        Rc::clone(&roll_amplitude),
         // Расчет плеча кренящего момента от давления ветра
         Box::new(wind),
     );
-    dbg!(stability.k()?);
-
+    // dbg!(stability.k()?);
+    // Давление ветра +
+    // Добавка на порывистость ветра для
+    // неограниченного района плавания
+    let (p_v, m) = data
+        .navigation_area_param
+        .get_area(&NavigationArea::Unlimited)
+        .expect("main error no area data!");
+    // Критерии остойчивости
+    let mut criterion = Criterion::new(
+        data.ship_type,
+        data.navigation_area,
+        desks.iter().find(|v| v.is_timber()).is_some(),
+        bulk.iter().find(|v| v.moment() != 0.).is_some(),
+        load_mass.iter().find(|v| v.value(None) != 0.).is_some(),
+        flooding_angle,
+        data.length,
+        breadth,
+        mean_draught,
+        Rc::new(Wind::new(
+            p_v,
+            m,
+            Rc::clone(&windage),
+            gravity_g,
+            Rc::clone(&mass),
+        )),
+        Rc::clone(&lever_diagram),
+        Rc::new(stability),
+        Rc::clone(&metacentric_height),
+        Rc::new(Acceleration::new(
+            breadth,
+            mean_draught,
+            Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())),
+            Rc::clone(&roll_amplitude),
+            Rc::clone(&metacentric_height),
+            Rc::clone(&roll_period),
+        )),
+        Rc::new(Circulation::new(
+            data.velocity,
+            length_wl,
+            mean_draught,
+            Rc::clone(&mass),
+            Rc::clone(&lever_diagram),
+        )),
+        Rc::new(Grain::new(
+            flooding_angle,
+            Rc::clone(&bulk),
+            Rc::clone(&mass),
+            Rc::clone(&lever_diagram),
+        )),
+    );
     elapsed.insert("Completed", time.elapsed());
+
+    let time = Instant::now();
+    // criterion.create().iter().for_each(|v| println!("{v}"));
+    send_stability_data("sss-computing", criterion.create());// TODO errors
+    elapsed.insert("Write stability result", time.elapsed());
+
     for (key, e) in elapsed {
         println!("{}:\t{:?}", key, e);
     }

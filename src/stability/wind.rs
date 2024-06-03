@@ -9,15 +9,11 @@ pub struct Wind {
     /// Добавка на порывистость ветра
     m: f64,
     /// Парусность судна
-    windage: Box<dyn IWindage>,
+    windage: Rc<dyn IWindage>,
     /// Ускорение свободного падения
     g: f64,
     /// Все грузы судна
     mass: Rc<dyn IMass>,
-    /// Плечо кренящего момента постоянного ветра
-    l_w_1: Option<f64>,
-    /// Плечо кренящего момента порыва ветра
-    l_w_2: Option<f64>,
 }
 ///
 impl Wind {
@@ -31,7 +27,7 @@ impl Wind {
     pub fn new(
         p_v: f64,   
         m: f64,          
-        windage: Box<dyn IWindage>,
+        windage: Rc<dyn IWindage>,
         g: f64,             
         mass: Rc<dyn IMass>, 
     ) -> Self {
@@ -41,44 +37,26 @@ impl Wind {
             windage,
             g,
             mass,
-            l_w_1: None,
-            l_w_2: None,
         }
-    }
-    /// Расчет плечей моментов от ветра
-    fn calculate(&mut self) {
-        // (2.1.4.1-1)
-        let l_w_1 = (self.p_v * self.windage.a_v() * self.windage.z_v()) / (1000. * self.g * self.mass.sum());
-        // (2.1.4.1-2)
-        let l_w_2 = (1. + self.m) * l_w_1;
-        log::info!("Wind l_w_1:{l_w_1} l_w_2:{l_w_2}");
-        self.l_w_1 = Some(l_w_1);
-        self.l_w_2 = Some(l_w_2);
     }
 }
 ///
 impl IWind for Wind {
     /// Плечо кренящего момента постоянного ветра
-    fn arm_wind_static(&mut self) -> f64 {
-        if self.l_w_1.is_none() {
-            self.calculate();
-        }
-        self.l_w_1.expect("Wind arm_wind_static error: no l_w_2!")
+    fn arm_wind_static(&self) -> f64 {
+        (self.p_v * self.windage.a_v() * self.windage.z_v()) / (1000. * self.g * self.mass.sum())
     }
     /// Плечо кренящего момента порыва ветра
-    fn arm_wind_dynamic(&mut self) -> f64 {
-        if self.l_w_2.is_none() {
-            self.calculate();
-        }
-        self.l_w_2.expect("Wind arm_wind_dynamic error: no l_w_2!")
+    fn arm_wind_dynamic(&self) -> f64 {
+        (1. + self.m) * self.arm_wind_static()
     }
 }
 #[doc(hidden)]
 pub trait IWind {
     /// Плечо кренящего момента постоянного ветра
-    fn arm_wind_static(&mut self) -> f64;
+    fn arm_wind_static(&self) -> f64;
     /// Плечо кренящего момента порыва ветра
-    fn arm_wind_dynamic(&mut self) -> f64;
+    fn arm_wind_dynamic(&self) -> f64;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -103,11 +81,11 @@ impl FakeWind {
 #[doc(hidden)]
 impl IWind for FakeWind {
     /// Плечо кренящего момента постоянного ветра
-    fn arm_wind_static(&mut self) -> f64 {
+    fn arm_wind_static(&self) -> f64 {
         self.arm_wind_static
     }
     /// Плечо кренящего момента порыва ветра
-    fn arm_wind_dynamic(&mut self) -> f64 {
+    fn arm_wind_dynamic(&self) -> f64 {
         self.arm_wind_dynamic
     }
 }

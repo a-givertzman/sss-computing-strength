@@ -24,14 +24,13 @@ mod tests {
                 696.702572991,
                     100.,
                     100.,
+                    100.,
             )),
             Rc::new(FakeMass::new(
                 2044.10,
                 vec![0.],
                 Position::new(1.05, 0., 5.32),
-                DeltaMH::new(0., 0.),
                 Position::new(0., 0., 0.,), 
-                SurfaceMoment::new(0., 0.,),
             )),
         )
         .value();

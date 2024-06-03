@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, windage::*, ILoad, LoadSpace};
+    use crate::{icing::FakeIcingStab, math::*, windage::*};
 
     static INIT: Once = Once::new();
 
@@ -14,31 +14,25 @@ mod tests {
 
     fn init_once() {
         INIT.call_once(|| {
-            let loads_cargo: Vec<Rc<Box<dyn ILoad>>> = vec![Rc::new(Box::new(LoadSpace::from(
-                100.,
-                Some(Position::new(0., 0., 0.)),
-                (-10., 10.),
-                None,
-                None,
-                Some(100.),
-                Some(Position::new(0., 0., 2.)), 
-                None,
-                None,
-            )))];
-
             unsafe {
                 WINDAGE.replace(Windage::new(
-                    Rc::new(loads_cargo),
-                    "none".to_owned(),
-                    1000.,
-                     Position::new(
-                        0.,
-                        0.,
-                        2.,
-                    ),
-                    100.,
-                    Moment::new(0., 0., 200.),
-                    1.,    
+                    Rc::new(FakeIcingStab::new(
+                        0.03,
+                        0.03,
+                        0.015,
+                        0.1,
+                        0.2,
+                        0.3,
+                    )),
+                    Rc::new(crate::stability::FakeArea::new(
+                        1000.,
+                        Moment::from_pos(Position::new(0., 0., 4.,), 1000.),
+                        Moment::from_pos(Position::new(0., 0., 2.,), 500.),
+                        Moment::from_pos(Position::new(0., 0., 4.,), 500.),
+                    )),
+                    500.,
+                    Moment::from_pos(Position::new(0., 0., 1.,), 500.),
+                    1.,
                 ));
             }
         })
@@ -55,7 +49,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = unsafe { WINDAGE.clone().unwrap().a_v() };
-        let target = 1055.;
+        let target = 600.; //1000.*(1.+0.1) - 500
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",
@@ -77,7 +71,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = unsafe { WINDAGE.clone().unwrap().z_v() };
-        let target = 2220./1055. - 1.;
+        let target = 6.833333333333333; // (1000.*4.*(1.+0.3) - 500.*1.)/600. - 1.
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",

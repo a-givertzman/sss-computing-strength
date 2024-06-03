@@ -1,39 +1,48 @@
-//! Давление ветра p_v и добавка на порывистость m 
-//! в зависимости от района плавания судна, Табл. 2.1.4.1
-use crate::data::structs::DataArray;
+//! Район плавания судна
 use serde::{Deserialize, Serialize};
 
-/// Давление ветра p_v и добавка на порывистость m 
-/// в зависимости от района плавания судна, Табл. 2.1.4.1
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct NavigationAreaData {
-    /// Район плавания суджна
-    pub area: String,
-    /// Предполагаемое давление ветра
-    pub p_v: f64,
-    /// Добавка на порывистость ветра
-    pub m: f64,
+/// Район плавания судна
+#[derive(PartialEq, Eq, Debug, Clone, Serialize, Deserialize,)]
+pub enum NavigationArea {
+    /// Неограниченный
+    Unlimited,
+    /// Ограниченный R1
+    R1,
+    /// Ограниченный R2
+    R2,
+    /// Ограниченный R2-RSN
+    R2Rsn,
+    /// Ограниченный R2-RSN(4,5)
+    R2Rsn45,
+    /// Ограниченный R3-RSN
+    R3Rsn,
 }
 ///
-impl std::fmt::Display for NavigationAreaData {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "NavigationAreaData(area:{}, p_v:{}, m:{} )",
-            self.area, self.p_v, self.m,
-        )
+impl NavigationArea {
+    /// Конструктор
+    /// * area_type - Район плавания судна
+    pub fn new(area_type: &str) -> Self {
+        match area_type.trim().to_lowercase().as_str() {
+            "R2-RSN(4,5)" => NavigationArea::R2Rsn45,
+            "R2-RSN" => NavigationArea::R2Rsn,
+            "R3-RSN" => NavigationArea::R3Rsn,
+            "R1" => NavigationArea::R1,
+            "R2" => NavigationArea::R2,
+            _ => NavigationArea::Unlimited,
+        }
     }
 }
 ///
-pub type NavigationAreaArray = DataArray<NavigationAreaData>;
-///
-impl NavigationAreaArray {
-    /// Условия района плавания
-    pub fn get_area(&self, area_name: &str) -> Option<(f64, f64)> {
-        self.data
-            .iter()
-            .filter(|data| area_name.eq_ignore_ascii_case(&data.area))
-            .map(|data| (data.p_v, data.m))
-            .next()
+impl std::fmt::Display for NavigationArea {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let text = match self {
+            NavigationArea::R2Rsn45 => "R2-RSN(4,5)",
+            NavigationArea::R2Rsn => "R2-RSN",
+            NavigationArea::R3Rsn => "R3-RSN",
+            NavigationArea::R1 => "R1",
+            NavigationArea::R2 => "R2",
+            _ => "Unlimited",
+        };
+        write!(f, "NavigationArea({text})",)
     }
 }

@@ -5,14 +5,18 @@ use std::collections::{HashMap, HashSet};
 
 use crate::error::Error;
 
+use self::loads::{CenterVolumeData, FreeMomentInertiaData, LoadConstantArray, LoadSpaceArray, ParsedLoadSpaceData, ParsedTankData, TankDataArray};
+
 use super::*;
 
 /// Общая структура для ввода данных. Содержит все данные
 /// для расчетов.
 #[derive(Debug)]
 pub struct ParsedShipData {
+    /// Тип судна
+    pub ship_type: ShipType,    
     /// Параметры района плавания судна  
-    pub navigation_area_name: String,
+    pub navigation_area: NavigationArea,
     /// Параметры района плавания судна  
     pub navigation_area_param: NavigationAreaArray,
     /// Тип обледенения
@@ -41,19 +45,19 @@ pub struct ParsedShipData {
     /// Коэффициент k для судов, имеющих скуловые кили или 
     /// брусковый киль для расчета качки, Табл. 2.1.5.2
     pub coefficient_k: CoefficientKArray,
+    /// Коэффициент k_theta учитывающий особенности качки судов смешанного типа
+    pub coefficient_k_theta: CoefficientKThetaArray,
     /// Длинна корпуса судна
     pub length: f64,
     /// Ширина корпуса судна
     pub breadth: f64,
-    /// Суммарная масса судна
-    //pub mass: f64,
-    /// Объемное водоизмещение
-    //pub volume: f64,
+    /// Эксплуатационная скорость судна, m/s
+    pub velocity: f64,
     /// Cуммарная габаритная площадь скуловых килей,
     /// либо площадь боковой проекции брускового киля
     pub keel_area: Option<f64>,
     /// разбиение на шпации - фреймы
-    pub bounds: Vec<(i32, f64)>,
+    pub bounds: Vec<(f64, f64,)>,
     /// плотность воды
     pub water_density: f64,
     /// отстояние центра тяжести постоянной массы судна по x  
@@ -140,6 +144,7 @@ impl ParsedShipData {
         multipler_x2: MultiplerX2Array,
         multipler_s: MultiplerSArray,
         coefficient_k: CoefficientKArray,
+        coefficient_k_theta: CoefficientKThetaArray,
         ship_id: usize,
         ship_data: ShipArray,
         bounds: ComputedFrameDataArray,
@@ -385,18 +390,27 @@ impl ParsedShipData {
         log::info!("result parse ok");
         log::info!("result check begin");
         Self {
-            navigation_area_name: ship_data.get("navigation_area").ok_or(format!(
+            ship_type: ShipType::new(&ship_data.get("ship_type").ok_or(format!(
+                "ParsedShipData parse error: no ship_type for ship id:{}",
+                ship_id
+            ))?.0),
+            navigation_area: NavigationArea::new(&ship_data.get("navigation_area").ok_or(format!(
                 "ParsedShipData parse error: no navigation_area for ship id:{}",
                 ship_id
-            ))?.0.clone(),
+            ))?.0),
             navigation_area_param,
             multipler_x1,
             multipler_x2,
             multipler_s,
             coefficient_k,
+            coefficient_k_theta,
             length: ship_length,
             breadth: ship_data.get("breadth").ok_or(format!(
                 "ParsedShipData parse error: no breadth for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            velocity: ship_data.get("velocity").ok_or(format!(
+                "ParsedShipData parse error: no velocity for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
          /*   mass: ship_data.get("mass").ok_or(format!(
@@ -546,6 +560,11 @@ impl ParsedShipData {
                 "Error check CoefficientKArray: no data"
             )));
         }
+        if self.coefficient_k_theta.data.is_empty() {
+            return Err(Error::Parameter(format!(
+                "Error check CoefficientKThetaArray: no data"
+            )));
+        }
         if self.length <= 0. {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: length must be positive {}",
@@ -556,6 +575,12 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: breadth must be positive {}",
                 self.breadth
+            )));
+        }
+        if self.velocity <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: velocity must be positive {}",
+                self.velocity
             )));
         }
         if let Some(keel_area) = self.keel_area {

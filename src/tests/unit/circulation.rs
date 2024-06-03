@@ -5,34 +5,43 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{mass::*, math::*, stability::wind::*, windage::FakeWindage};
+    use crate::{math::*, stability::circulation::*, FakeLeverDiagram, FakeMass};
 
     #[test]
-    fn wind() {
+    fn circulation() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let self_id = "test Wind";
+        let self_id = "test Circulation heel_lever";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = Wind::new(
-            200.,
-            0.50,
-            Rc::new(FakeWindage::new(1000.,5., 1.)),
-            9.81,
+        let result = Circulation::new(
+            10.,
+            40.,
+            4.,
             Rc::new(FakeMass::new(
-                1000./9.81,
-                vec![0.],
+                1000.,
+                vec![1000.],
                 Position::new(0., 0., 0.),
-                Position::new(0., 0., 0.,), 
+                Moment::new(0., 0., 0.),
+            )),
+            Rc::new(FakeLeverDiagram::new(
+                vec![0.],
+                1.,
+                vec![(0., 0.)],
+                0.5,
+                vec![(0., 0.)],
+                30.,
+                50.,
+                vec![(30., 1.)],
             )),
         )
-        .arm_wind_dynamic();
-        let target = 1.5;
+        .heel_lever(10.);
 
+        let target = 1.;
         assert!(
-            (result - target).abs() < result.abs() * 0.01, //TODO
+            (result - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target

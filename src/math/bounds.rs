@@ -33,7 +33,7 @@ impl Bounds {
         res
     }
     // Вспомогательный конструктор 
-    pub fn from_frames(frames: &Vec<(i32, f64)>) -> Self {
+    pub fn from_frames(frames: &Vec<(f64, f64,)>) -> Self {
         assert!(frames.len() > 1, "frames.len() {:?} > 1", frames);
         let mut res = Vec::new();
         let shift = if frames[0].1 >= 0. {
@@ -41,11 +41,11 @@ impl Bounds {
         } else {
             0.
         };
-        for i in 0..frames.len()-1 {
+        for i in 0..frames.len() {
             res.push(
                 Bound::new(
+                    frames[i].0 + shift,
                     frames[i].1 + shift,
-                    frames[i+1].1 + shift,
                 )
             );
         }

@@ -1,7 +1,7 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use super::DataArray;
+use crate::data::structs::DataArray;
 
 /// Груз, конструкции корпуса, контейнер или другой твердый груз
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

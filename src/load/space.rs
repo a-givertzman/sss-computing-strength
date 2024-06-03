@@ -1,5 +1,5 @@
 //! Нагрузка на судно: постоянный и переменный груз
-use crate::{math::*, DeskLoad, ILoad, LoadMass, Tank};
+use crate::{math::*, DeskLoad, ILoad, ILoadMass, Tank};
 
 /// Абстрактный груз: контейнер, трюм или бак.
 /// Имеет массу и может вернуть какая его часть попадает в указанные границы
@@ -122,7 +122,7 @@ impl ILoad for LoadSpace {
     }
     /// Смещение центра парусности
     fn windage_shift(&self) -> Position {
-        self.desk.as_ref().map(|desk| desk.shift()).unwrap_or(Position::new(0., 0., 0.,))
+        self.desk.as_ref().map(|desk| desk.windage_shift()).unwrap_or(Position::new(0., 0., 0.,))
     }
     /// Площадь горизонтальной поверхности, м^2
     fn horizontal_area(&self, bound: Option<Bound>) -> f64 {
