@@ -32,15 +32,15 @@ fn main() {
     env_logger::init();
     info!("starting up");
 
-    if let Err(error) = execute() {
-        let str1 = r#"{\"status\":\"failed\",\"message\":\"#;
-        let str2 = r#"\"}"#;
-        let _ = io::Write::write_all(&mut io::stdout().lock(),        
-        format!("{str1}{}{str2}", error).as_bytes());
+    let reply = if let Err(error) = execute() {
+        let str1 = r#"{"status":"failed","message":"#;
+        let str2 = r#""}"#;   
+        format!("{str1}{}{str2}", error)
     } else {
-        let string = r#"{\"status\":\"ok\",\"message\":null}"#;
-        let _ = io::Write::write_all(&mut io::stdout().lock(), string.as_bytes());        
-    }
+        r#"{"status":"ok","message":null}"#.to_owned()     
+    };
+//    let json_data: serde_json::Value = serde_json::from_str(&reply).unwrap();  
+    let _ = io::Write::write_all(&mut io::stdout().lock(), reply.as_bytes());
 }
 
 fn execute() -> Result<(), Error> {

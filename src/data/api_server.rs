@@ -82,7 +82,7 @@ pub fn get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipData, Error> 
         &format!("SELECT key, value FROM icing;")
     )?)?;
     let bounds = ComputedFrameDataArray::parse(&api_server.fetch(
-        &format!("SELECT index, start_x, end_x FROM computed_frame WHERE ship_id={};", ship_id)
+        &format!("SELECT index, start_x, end_x FROM computed_frame_space WHERE ship_id={};", ship_id)
     )?)?;
     let center_waterline = CenterWaterlineArray::parse(&api_server.fetch(
         &format!("SELECT key, value FROM center_waterline WHERE ship_id={};", ship_id)
@@ -226,8 +226,8 @@ pub fn send_strenght_data(db_name: &str, ship_id: usize, shear_force: &Vec<f64>,
     let tmp: Vec<_> = shear_force.clone().into_iter().zip(bending_moment.into_iter()).collect();
 
     let mut full_sql = "DO $$ BEGIN ".to_owned();
-    full_sql += &format!("DELETE FROM strength_result WHERE ship_id={ship_id};");
-    full_sql += " INSERT INTO strength_result (ship_id, index, value_shear_force, value_bending_moment) VALUES"; 
+    full_sql += &format!("DELETE FROM result_strength WHERE ship_id={ship_id};");
+    full_sql += " INSERT INTO result_strength (ship_id, index, value_shear_force, value_bending_moment) VALUES"; 
     tmp.iter().enumerate().for_each(|(i, (v1, v2))| full_sql += &format!(" ({ship_id}, {i}, {v1}, {v2})," ) );
     full_sql.pop();
     full_sql.push(';');
