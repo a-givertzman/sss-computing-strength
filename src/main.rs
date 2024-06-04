@@ -34,26 +34,40 @@ fn main() {
 
     let reply = if let Err(error) = execute() {
         let str1 = r#"{"status":"failed","message":""#;
-        let str2 = r#""}"#;   
+        let str2 = r#""}"#;
         format!("{str1}{}{str2}", error)
     } else {
-        r#"{"status":"ok","message":null}"#.to_owned()     
+        r#"{"status":"ok","message":null}"#.to_owned()
     };
-//    let json_data: serde_json::Value = serde_json::from_str(&reply).unwrap();  
+    //    let json_data: serde_json::Value = serde_json::from_str(&reply).unwrap();
     let _ = io::Write::write_all(&mut io::stdout().lock(), reply.as_bytes());
 }
 
 fn execute() -> Result<(), Error> {
     let mut input = String::new();
     io::stdin().read_line(&mut input)?;
-    let json_data: serde_json::Value = serde_json::from_str(&input)?;    
- //   println!("{}", json_data);
-    
+    let json_data: serde_json::Value = serde_json::from_str(&input)?;
+    //   let json_data = json_data.as_array().ok_or(Error::FromString("Parse param error: son_data.as_array()".to_owned()))?;
+    let host: String = json_data
+        .get("api-host")
+        .ok_or(Error::FromString(
+            "Parse param error: no api-host".to_owned(),
+        ))?
+        .to_string();
+    let port = json_data
+        .get("api-port")
+        .ok_or(Error::FromString(
+            "Parse param error: no api-host".to_owned(),
+        ))?
+        .to_string();
+    //   println!("{}", json_data);
+    let mut api_server = ApiServer::new("sss-computing".to_owned(), host.to_owned(), port.to_owned());
+
     let mut elapsed = HashMap::new();
 
     let time = Instant::now();
     let ship_id = 1;
-    let mut data = get_data("sss-computing", ship_id)?;
+    let mut data = get_data(&mut api_server, ship_id)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
 
     /*   let time = Instant::now();
@@ -104,49 +118,40 @@ fn execute() -> Result<(), Error> {
 
     data.load_constants.iter().for_each(|v| {
         let bound_x = Bound::from(v.bound_x);
-        let load = Rc::new(LoadMass::new(
-            v.mass,
-            bound_x,
-            Some(const_shift.clone()),
-        ));
+        let load = Rc::new(LoadMass::new(v.mass, bound_x, Some(const_shift.clone())));
         log::info!("\t Mass loads_const:{:?} ", load);
         loads_const.push(load);
     });
 
     data.cargoes.iter().for_each(|v| {
-        let mass_shift = v.mass_shift.as_ref().map(|mass_shift| Position::new(mass_shift.0, mass_shift.1, mass_shift.2));
+        let mass_shift = v
+            .mass_shift
+            .as_ref()
+            .map(|mass_shift| Position::new(mass_shift.0, mass_shift.1, mass_shift.2));
         let bound_x = Bound::from(v.bound_x);
 
-        let load = Rc::new(LoadMass::new(
-            v.mass,
-            bound_x,
-            mass_shift.clone(),
-        ));
+        let load = Rc::new(LoadMass::new(v.mass, bound_x, mass_shift.clone()));
         log::info!("\t Mass loads_const:{:?} ", load);
         loads_const.push(load);
     });
 
     data.compartments.iter().for_each(|v| {
-        let mass_shift = v.mass_shift.as_ref().map(|mass_shift| Position::new(mass_shift.0, mass_shift.1, mass_shift.2));
+        let mass_shift = v
+            .mass_shift
+            .as_ref()
+            .map(|mass_shift| Position::new(mass_shift.0, mass_shift.1, mass_shift.2));
         let bound_x = Bound::from(v.bound_x);
 
-        let load = Rc::new(LoadMass::new(
-            v.mass,
-            bound_x,
-            mass_shift.clone(),
-        ));
+        let load = Rc::new(LoadMass::new(v.mass, bound_x, mass_shift.clone()));
         load_mass.push(load);
 
-        if v.m_f_s_x.is_some() && v.m_f_s_y.is_some() && v.density.is_some() {        
+        if v.m_f_s_x.is_some() && v.m_f_s_y.is_some() && v.density.is_some() {
             let tank: Rc<dyn ITank> = Rc::new(Tank::new(
                 v.density.unwrap_or(1.),
                 v.volume.unwrap_or(0.),
                 bound_x,
                 mass_shift.clone(),
-                InertiaMoment::new(
-                    v.m_f_s_x.unwrap_or(0.),
-                    v.m_f_s_y.unwrap_or(0.),
-                ),
+                InertiaMoment::new(v.m_f_s_x.unwrap_or(0.), v.m_f_s_y.unwrap_or(0.)),
             ));
             tanks.push(tank);
         }
@@ -254,16 +259,16 @@ fn execute() -> Result<(), Error> {
         data.bounds.len()
     );
 
-/*    println!("shear_force:");
-    computer.shear_force().iter().for_each(|v| println!("{v};"));
-    println!("bending_moment:");
-    computer
-        .bending_moment()
-        .iter()
-        .for_each(|v| println!("{v};"));
-*/
+    /*    println!("shear_force:");
+        computer.shear_force().iter().for_each(|v| println!("{v};"));
+        println!("bending_moment:");
+        computer
+            .bending_moment()
+            .iter()
+            .for_each(|v| println!("{v};"));
+    */
     send_strenght_data(
-        "sss-computing",
+        &mut api_server, 
         ship_id,
         &computer.shear_force(),
         &computer.bending_moment(),
@@ -304,7 +309,6 @@ fn execute() -> Result<(), Error> {
                 .collect();
             vector.append(&mut negative);
             vector.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-     
         });
     }
 
@@ -316,17 +320,17 @@ fn execute() -> Result<(), Error> {
         mean_draught,
         Rc::clone(&metacentric_height),
     ));
-   // dbg!(stability.k()?);
+    // dbg!(stability.k()?);
     //dbg!(lever_diagram.dso().len());
- /*   lever_diagram
-        .dso()
-        .iter()
-        .for_each(|(k, v)| println!("{k} {v};"));
-    lever_diagram
-        .ddo()
-        .iter()
-        .for_each(|(k, v)| println!("{k} {v};"));
-*/
+    /*   lever_diagram
+            .dso()
+            .iter()
+            .for_each(|(k, v)| println!("{k} {v};"));
+        lever_diagram
+            .ddo()
+            .iter()
+            .for_each(|(k, v)| println!("{k} {v};"));
+    */
     // Предполагаемое давление ветра +
     // Добавка на порывистость ветра
     let (p_v, m) = data
@@ -382,7 +386,7 @@ fn execute() -> Result<(), Error> {
         Box::new(wind),
     );
     // dbg!(stability.k()?);
-    /* // TODO: Давление ветра + добавка на порывистость ветра для 
+    /* // TODO: Давление ветра + добавка на порывистость ветра для
     // контейнеровоза/или судна перевозящего палубный груз контейнеров
     // неограниченного района плавания
     let (p_v, m) = data
@@ -434,15 +438,15 @@ fn execute() -> Result<(), Error> {
             Rc::clone(&lever_diagram),
         )),
     );
-    
+
     elapsed.insert("Completed", time.elapsed());
 
     let time = Instant::now();
     // criterion.create().iter().for_each(|v| println!("{v}"));
-    send_stability_data("sss-computing", ship_id, criterion.create())?;//
+    send_stability_data(&mut api_server, ship_id, criterion.create())?; //
     elapsed.insert("Write stability result", time.elapsed());
 
- /*   for (key, e) in elapsed {
+    /*   for (key, e) in elapsed {
         println!("{}:\t{:?}", key, e);
     }*/
     Ok(())
