@@ -97,7 +97,7 @@ pub struct ParsedShipData {
     /// кривая продольного метацентрического радиуса
     pub rad_long: Vec<(f64, f64)>,
     /// кривая поперечного метацентрического радиуса 
-    pub rad_cross: Vec<(f64, f64)>,
+    pub rad_trans: Vec<(f64, f64)>,
     /// Минимальная допустимая метацентрическая высота деления на отсеки
     pub h_subdivision: Vec<(f64, f64)>,
     /// кривая средней осадки
@@ -149,7 +149,7 @@ impl ParsedShipData {
         waterline_breadth: WaterlineBreadthArray,
         volume_shift: VolumeShiftArray,
         rad_long: RadLongDataArray,
-        rad_cross: RadCrossDataArray,
+        rad_trans: RadTransDataArray,
         h_subdivision: MetacentricHeightSubdivisionArray,
         mean_draught: MeanDraughtDataArray,
         center_draught_shift: CenterDraughtShiftDataArray,
@@ -465,7 +465,7 @@ impl ParsedShipData {
             waterline_breadth: waterline_breadth.data(),
             volume_shift: volume_shift.data(),
             rad_long: rad_long.data(),
-            rad_cross: rad_cross.data(),
+            rad_trans: rad_trans.data(),
             h_subdivision: h_subdivision.data(),
             mean_draught: mean_draught.data(),
             center_draught_shift_x: center_draught_shift.x(),
@@ -658,10 +658,10 @@ impl ParsedShipData {
                 self.rad_long.len()
             )));
         }
-        if self.rad_cross.len() <= 1 {
+        if self.rad_trans.len() <= 1 {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: number of rad_cross's points {}",
-                self.rad_cross.len()
+                "Error check ParsedShipData: number of rad_trans's points {}",
+                self.rad_trans.len()
             )));
         }
         if self.h_subdivision.len() <= 1 {

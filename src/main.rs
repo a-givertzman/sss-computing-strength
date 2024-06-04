@@ -256,7 +256,7 @@ fn main() -> Result<(), Error> {
     // Продольный метацентрические радиус
     let rad_long = Curve::new_linear(&data.rad_long).value(volume);
     // Поперечный метацентрические радиус
-    let rad_cross = Curve::new_linear(&data.rad_cross).value(volume);
+    let rad_trans = Curve::new_linear(&data.rad_trans).value(volume);
     // Отстояние центра тяжести ватерлинии по длине от миделя
     let center_waterline_shift = Curve::new_linear(&data.center_waterline).value(volume);
     // Средняя осадка
@@ -306,7 +306,7 @@ fn main() -> Result<(), Error> {
     let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
         center_draught_shift.clone(), // отстояние центра величины погруженной части судна
         rad_long,                     // продольный метацентрические радиус
-        rad_cross,                    // поперечный метацентрические радиус
+        rad_trans,                    // поперечный метацентрические радиус
         tanks,
         Rc::clone(&mass), // все грузы судна
     ));

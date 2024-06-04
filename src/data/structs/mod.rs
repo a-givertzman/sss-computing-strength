@@ -22,7 +22,7 @@ pub use stability::CoefficientKArray as CoefficientKArray;
 pub use stability::CoefficientKThetaArray as CoefficientKThetaArray;
 
 pub type RadLongDataArray = DataArray<Pair>;
-pub type RadCrossDataArray = DataArray<Pair>;
+pub type RadTransDataArray = DataArray<Pair>;
 pub type MetacentricHeightSubdivisionArray = DataArray<Pair>;
 pub type MeanDraughtDataArray = DataArray<Pair>;
 pub type CenterWaterlineArray = DataArray<Pair>;
