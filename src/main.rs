@@ -33,7 +33,7 @@ fn main() {
     info!("starting up");
 
     let reply = if let Err(error) = execute() {
-        let str1 = r#"{"status":"failed","message":"#;
+        let str1 = r#"{"status":"failed","message":""#;
         let str2 = r#""}"#;   
         format!("{str1}{}{str2}", error)
     } else {
