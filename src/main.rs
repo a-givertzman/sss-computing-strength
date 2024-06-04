@@ -36,7 +36,7 @@ fn main() {
         let str1 = r#"{\"status\":\"failed\",\"message\":\"#;
         let str2 = r#"\"}"#;
         let _ = io::Write::write_all(&mut io::stdout().lock(),        
-        format!("{str1}{}{str2}", error.to_string()).as_bytes());
+        format!("{str1}{}{str2}", error).as_bytes());
     } else {
         let string = r#"{\"status\":\"ok\",\"message\":null}"#;
         let _ = io::Write::write_all(&mut io::stdout().lock(), string.as_bytes());        
@@ -114,11 +114,7 @@ fn execute() -> Result<(), Error> {
     });
 
     data.cargoes.iter().for_each(|v| {
-        let mass_shift = if let Some(mass_shift) = v.mass_shift.as_ref().clone() { 
-            Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
-        } else {
-            None
-        };
+        let mass_shift = v.mass_shift.as_ref().map(|mass_shift| Position::new(mass_shift.0, mass_shift.1, mass_shift.2));
         let bound_x = Bound::from(v.bound_x);
 
         let load = Rc::new(LoadMass::new(
@@ -131,11 +127,7 @@ fn execute() -> Result<(), Error> {
     });
 
     data.compartments.iter().for_each(|v| {
-        let mass_shift = if let Some(mass_shift) = v.mass_shift.as_ref().clone() { 
-            Some(Position::new(mass_shift.0, mass_shift.1, mass_shift.2))
-        } else {
-            None
-        };
+        let mass_shift = v.mass_shift.as_ref().map(|mass_shift| Position::new(mass_shift.0, mass_shift.1, mass_shift.2));
         let bound_x = Bound::from(v.bound_x);
 
         let load = Rc::new(LoadMass::new(
@@ -401,9 +393,9 @@ fn execute() -> Result<(), Error> {
     let mut criterion = Criterion::new(
         data.ship_type,
         data.navigation_area,
-        desks.iter().find(|v| v.is_timber()).is_some(),
-        bulk.iter().find(|v| v.moment() != 0.).is_some(),
-        load_mass.iter().find(|v| v.value(None) != 0.).is_some(),
+        desks.iter().any(|v| v.is_timber()),
+        bulk.iter().any(|v| v.moment() != 0.),
+        load_mass.iter().any(|v| v.value(None) != 0.),
         icing_stab.is_some(),
         flooding_angle,
         data.length,

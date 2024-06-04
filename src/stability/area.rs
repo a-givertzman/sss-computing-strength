@@ -119,7 +119,7 @@ impl FakeArea {
 impl IArea for FakeArea {
     /// Площадь парусности
     fn area_v(&self) -> f64 {
-        self.area_v.clone()
+        self.area_v
     }
     /// Момент площади парусности
     fn moment_v(&self) -> Moment {

@@ -49,7 +49,7 @@ impl Circulation {
         // Плечо кренящего момента на циркуляции
         let l_r = m_r/self.mass.sum();
         log::info!("Circulation angle v:{v} m_r:{m_r} l_r:{l_r}");
-        return l_r;
+        l_r
     }
 }
 ///
@@ -59,7 +59,7 @@ impl ICirculation for Circulation {
         // Угол соответствующий плечу кренящего момента
         let angle = self.lever_diagram.angle(self.heel_lever(self.v_0)).first().copied();
         log::info!("Circulation angle {:?} ", angle);
-        return angle;
+        angle
     }
     /// Максимальная скорость при заданном угле крена
     fn velocity(&self, src_angle: f64) -> f64 {
@@ -75,7 +75,7 @@ impl ICirculation for Circulation {
             current_vel = delta_vel*delta_angle.signum();
             delta_vel /= 2.;
         }
-        return current_vel;
+        current_vel
     }
 }
 #[doc(hidden)]

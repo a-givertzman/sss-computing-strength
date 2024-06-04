@@ -98,7 +98,6 @@ impl IMetacentricHeight for MetacentricHeight {
         }
         self.h_long_fix
             .borrow()
-            .clone()
             .expect("MetacentricHeight h_long_fix error")
     }
     /// Поперечная метацентрическая высота без учета поправки   
@@ -109,7 +108,6 @@ impl IMetacentricHeight for MetacentricHeight {
         }
         self.h_trans_0
             .borrow()
-            .clone()
             .expect("MetacentricHeight h_trans_0 error")
     }
     /// Поперечная исправленная метацентрическая высота
@@ -119,7 +117,6 @@ impl IMetacentricHeight for MetacentricHeight {
         }
         self.h_trans_fix
             .borrow()
-            .clone()
             .expect("MetacentricHeight h_trans_fix error")
     }
     /// Исправленное отстояние центра масс судна по высоте
@@ -129,7 +126,6 @@ impl IMetacentricHeight for MetacentricHeight {
         }
         self.z_g_fix
             .borrow()
-            .clone()
             .expect("MetacentricHeight z_g_fix error")
     }
 }

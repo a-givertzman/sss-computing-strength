@@ -29,7 +29,6 @@ impl TotalForce {
         }
     }
 }
-///
 /// 
 impl ITotalForce for TotalForce {
     ///

@@ -98,7 +98,7 @@ impl Computer {
             let tmp = BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values();
             // Последнее значение изгибающего момента в векторе.
             // Если корабль сбалансирован, должно равняться нулю            
-            let last_value = tmp.last().expect("BendingMoment values error: no last value").clone();
+            let last_value = *tmp.last().expect("BendingMoment values error: no last value");
             bending_moment_values = Some(tmp);
    //         log::info!("Computing Trim: BendingMoment last value:{last_value} trim:{trim} i:{i} delta:{delta} ");
             if self.mass.sum() <= 1. || last_value.abs() < 0.1 {

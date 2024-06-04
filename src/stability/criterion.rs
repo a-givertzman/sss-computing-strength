@@ -198,10 +198,10 @@ impl Criterion {
         }
         out_data.append(&mut self.dso());
         out_data.push(self.dso_lever());
-        if self.have_timber != false {
+        if self.have_timber {
             out_data.push(self.dso_lever_timber());
         }
-        if self.navigation_area != NavigationArea::Unlimited && self.have_icing != false {
+        if self.navigation_area != NavigationArea::Unlimited && self.have_icing {
             out_data.push(self.dso_lever_icing());
         }
         out_data.append(&mut self.dso_lever_max_angle());
@@ -247,14 +247,14 @@ impl Criterion {
             ShipType::ContainerShip => 16.0f64.min(0.5 * self.flooding_angle),
             _ => 16.0f64.min(0.8 * self.flooding_angle),
         };
-        return if let Some(angle) = angle {
+        if let Some(angle) = angle {
             CriterionData::new_result(CriterionID::WindStaticHeel, *angle, target_value)
         } else {
             CriterionData::new_error(
                 CriterionID::WindStaticHeel,
                 "Нет угла крена для текущих условий".to_owned(),
             )
-        };
+        }
     }
     /// Площади под диаграммой статической остойчивости
     pub fn dso(&self) -> Vec<CriterionData> {
@@ -324,7 +324,7 @@ impl Criterion {
                     return result;
                 }
             };
-            target = target - (40. * (b_div_d.min(2.5) - 2.) * (k.min(1.5) - 1.) * 0.5).round();
+            target -= (40. * (b_div_d.min(2.5) - 2.) * (k.min(1.5) - 1.) * 0.5).round();
         }
         if let Some(angle) = angles.first() {
             if b_div_d > 2.5 {

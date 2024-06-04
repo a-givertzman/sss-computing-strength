@@ -63,12 +63,11 @@ impl IVolume for Volume {
             .bounds
             .iter()
             .map(|v| {
-                let displacement = self.displacement.value(
+                self.displacement.value(
                     *v,
                     d + delta_draught * v.start(),
                     d + delta_draught * v.end(),
-                );
-                displacement
+                )
             })
             .collect();
    //     log::info!("\t Volume ship_length:{ship_length} trim:{trim} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} result:{:?}, res_sum:{}", result, result.iter().sum::<f64>());
