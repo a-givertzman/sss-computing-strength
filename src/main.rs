@@ -14,7 +14,7 @@ use crate::{
 use data::api_server::*;
 pub use error::Error;
 use log::info;
-use std::{collections::HashMap, rc::Rc, time::Instant};
+use std::{collections::HashMap, io, rc::Rc, time::Instant};
 
 mod area;
 mod data;
@@ -27,14 +27,28 @@ mod stability;
 mod strength;
 mod tests;
 
-fn main() -> Result<(), Error> {
+fn main() {
     //    std::env::set_var("RUST_LOG", "info");
     env_logger::init();
     info!("starting up");
 
-    // data::input_api_server::create_test_db("test")?;
-    // data::input_db::create_test_db("test");
+    if let Err(error) = execute() {
+        let str1 = r#"{\"status\":\"failed\",\"message\":\"#;
+        let str2 = r#"\"}"#;
+        let _ = io::Write::write_all(&mut io::stdout().lock(),        
+        format!("{str1}{}{str2}", error.to_string()).as_bytes());
+    } else {
+        let string = r#"{\"status\":\"ok\",\"message\":null}"#;
+        let _ = io::Write::write_all(&mut io::stdout().lock(), string.as_bytes());        
+    }
+}
 
+fn execute() -> Result<(), Error> {
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+    let json_data: serde_json::Value = serde_json::from_str(&input)?;    
+ //   println!("{}", json_data);
+    
     let mut elapsed = HashMap::new();
 
     let time = Instant::now();
@@ -51,26 +65,6 @@ fn main() -> Result<(), Error> {
 
     let time = Instant::now();
     //   dbg!(&data);
-
-    /*
-        DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        info!("Test the debugging...");
-        info!("Test the testing...");
-        let value = Value::Bool(false);
-        info!("\t bool value: {:?}", value);
-        let value = Value::Int(444);
-        info!("\t int value: {:?}", value);
-        let value = Value::Float(55.55);
-        info!("\t float value: {:?}", value);
-        let value = Value::String("66.77".to_string());
-        info!("\t string value: {:?}", value);
-    */
-
-    /*    let data = read().unwrap_or_else(|err| {
-             error!("Parsing arguments: {err}");
-             process::exit(1);
-         });
-    */
 
     // ускорение свободного падения
     let gravity_g = 9.81;
@@ -171,24 +165,6 @@ fn main() -> Result<(), Error> {
     let load_mass = Rc::new(load_mass);
     let bulk = Rc::new(bulk);
 
-    /*  // Цистерны
-        data.tanks.iter().for_each(|v| {
-            loads_cargo.push(Rc::new(Box::new(Tank::new(
-                v.density,
-                v.volume,
-                Bound::new(v.bound.0, v.bound.1),
-                PosShift::new(
-                    Curve::new_linear(&v.center_x),
-                    Curve::new_linear(&v.center_y),
-                    Curve::new_linear(&v.center_z),
-                ),
-                InertiaShift::new(
-                    Curve::new_linear(&v.free_surf_inertia_x),
-                    Curve::new_linear(&v.free_surf_inertia_y),
-                ),
-            ))));
-        });
-    */
     let icing_area_h_str = data
         .area_h_str
         .iter()
@@ -286,14 +262,14 @@ fn main() -> Result<(), Error> {
         data.bounds.len()
     );
 
-    println!("shear_force:");
+/*    println!("shear_force:");
     computer.shear_force().iter().for_each(|v| println!("{v};"));
     println!("bending_moment:");
     computer
         .bending_moment()
         .iter()
         .for_each(|v| println!("{v};"));
-
+*/
     send_strenght_data(
         "sss-computing",
         ship_id,
@@ -467,8 +443,6 @@ fn main() -> Result<(), Error> {
         )),
     );
     
-
-
     elapsed.insert("Completed", time.elapsed());
 
     let time = Instant::now();
@@ -476,9 +450,9 @@ fn main() -> Result<(), Error> {
     send_stability_data("sss-computing", ship_id, criterion.create())?;//
     elapsed.insert("Write stability result", time.elapsed());
 
-    for (key, e) in elapsed {
+ /*   for (key, e) in elapsed {
         println!("{}:\t{:?}", key, e);
-    }
+    }*/
     Ok(())
 }
 
