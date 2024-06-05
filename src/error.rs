@@ -10,7 +10,7 @@ pub enum Error {
     ParseIntError(#[from] std::num::ParseIntError),
     #[error("ParseFloatError")]
     ParseFloatError(#[from] std::num::ParseFloatError),
-    #[error("Error")]
+    #[error("Error: {0}")]
     FromString(String),
     #[error("Serde error")]
     Serde(#[from] serde_json::Error),
