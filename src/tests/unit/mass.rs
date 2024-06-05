@@ -7,7 +7,7 @@ mod tests {
         curve::Curve, liquid::inertia_shift::InertiaShift, pos_shift::PosShift,
         position::Position,
     };
-    use crate::{load::*, mass::*, Bound, Moment};
+    use crate::{load::*, mass::*, Bound, FakeParameters, Moment};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
@@ -23,20 +23,23 @@ mod tests {
                 Rc::new(LoadMass::new(
                     10.,
                     Bound::new(-10., 0.),
-                    Some(Position::new(-5., 0., 0.)),                   
+                    Some(Position::new(-5., 0., 0.)),     
+                    LoadType::Lightship,         
                 )),
                 Rc::new(LoadMass::new(
                     20.,
                     Bound::new(0., 10.),
                     Some(Position::new(5., 0., 0.)),
+                    LoadType::Lightship,  
                 )),
             ]);
 
-            let loads_cargo: Rc<Vec<Rc<dyn ILoadMass>>> = Rc::new(vec![
+            let loads_cargo: Rc<Vec<Rc<LoadMass>>> = Rc::new(vec![
                 Rc::new(LoadMass::new(
                 20.,
                 Bound::new(-5., 5.),
                 Some(Position::new(0., 0., 0.)),
+                LoadType::Cargo,  
             ))]);
 
             unsafe {
@@ -46,6 +49,7 @@ mod tests {
                     Rc::new(FakeIcing::new(0., Moment::new(0., 0., 0.,),)),
                     loads_cargo,
                     Rc::new(Bounds::from_n(20., 4)),
+                    Rc::new(FakeParameters{}),
                 ));
             }
         })

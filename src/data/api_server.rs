@@ -270,6 +270,7 @@ pub fn send_strenght_data(
     shear_force: &Vec<f64>,
     bending_moment: &Vec<f64>,
 ) -> Result<(), error::Error> {
+    log::info!("send_strenght_data begin");
     let tmp: Vec<_> = shear_force
         .clone()
         .into_iter()
@@ -288,7 +289,7 @@ pub fn send_strenght_data(
 
     //   dbg!(&string);
     api_server.fetch(&full_sql)?;
-
+    log::info!("send_strenght_data end");
     Ok(())
 }
 
@@ -298,7 +299,7 @@ pub fn send_stability_data(
     ship_id: usize,
     data: Vec<CriterionData>,
 ) -> Result<(), error::Error> {
-    log::info!("input_api_server read begin");
+    log::info!("send_stability_data begin");
 
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM result_stability WHERE ship_id={ship_id};");
@@ -312,8 +313,35 @@ pub fn send_stability_data(
     });
     full_sql += " END$$;";
     api_server.fetch(&full_sql)?;
+    log::info!("send_stability_data end");
     Ok(())
 }
+
+/// Запись данных расчета остойчивости в БД
+pub fn send_parameters_data(
+    api_server: &mut ApiServer,
+    ship_id: usize,
+    data: Vec<(usize, f64)>,
+) -> Result<(), error::Error> {
+    log::info!("send_parameters_data begin");
+
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM parameter_data WHERE ship_id={ship_id};");
+    if data.len() > 0 {
+        full_sql += " INSERT INTO parameter_data (ship_id, parameter_id, result) VALUES";
+        data.into_iter().for_each(|v| {
+            full_sql += &format!(" ({ship_id}, {}, {}),", v.0, v.1);
+        });
+        full_sql.pop();
+        full_sql.push(';');
+    }
+    full_sql += " END$$;";
+    api_server.fetch(&full_sql)?;
+    log::info!("send_parameters_data end");
+    Ok(())
+}
+
+
 /*
 /// Чтение данных из БД. Функция читает данные за несколько запросов,
 /// парсит их и проверяет данные на корректность.

@@ -104,6 +104,8 @@ pub struct ParsedCargoData {
     pub vertical_area: Option<f64>,
     /// Центр парусности, м
     pub vertical_area_shift: Option<(f64, f64, f64)>,
+    /// Тип груза
+    pub loading_type: Option<String>,
 }
 ///
 impl std::fmt::Display for ParsedCargoData {
@@ -112,7 +114,7 @@ impl std::fmt::Display for ParsedCargoData {
             f,
             "LoadCargoData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} mass_shift:({}, {}, {}) 
             horizontal_area:{} horizontal_area_shift:({}, {}, {})
-            vertical_area:{} vertical_area_shift:({}, {}, {}) ) ",
+            vertical_area:{} vertical_area_shift:({}, {}, {}) type:{}) ",
             self.name,
             self.mass,
             self.bound_x,
@@ -129,6 +131,7 @@ impl std::fmt::Display for ParsedCargoData {
             self.vertical_area_shift.unwrap_or((0.,0.,0.)).0,
             self.vertical_area_shift.unwrap_or((0.,0.,0.)).1,
             self.vertical_area_shift.unwrap_or((0.,0.,0.)).2,
+            self.loading_type.as_ref().unwrap_or(&"None".to_string()),
         )
     }
 }

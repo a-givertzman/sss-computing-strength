@@ -3,13 +3,13 @@
 mod tests {
 
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-    use std::{f64::consts::PI, rc::Rc, sync::Once, time::Duration};
+    use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
     use crate::{
         math::*,
-        stability::{metacentric_height::*, lever_diagram::*},
-        FakeMass,
+        stability::{lever_diagram::*, metacentric_height::*},
+        FakeMass, FakeParameters,
     };
 
     static INIT: Once = Once::new();

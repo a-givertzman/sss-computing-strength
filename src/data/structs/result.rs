@@ -271,6 +271,7 @@ impl ParsedShipData {
                 ))} else {
                     None
                 },
+                loading_type: cargo.loading_type,
             });
         }
 
@@ -300,6 +301,7 @@ impl ParsedShipData {
                 m_f_s_x: compartment.m_f_s_x,
                 windage_area:  None,
                 windage_shift: None,
+                loading_type: compartment.loading_type,
             });
         }
 

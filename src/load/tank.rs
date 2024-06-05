@@ -1,16 +1,13 @@
 //! Цистерна с жидкостью
-use std::rc::Rc;
-
-use crate::{math::*, ILoad, ILoadMass};
-
-use self::inertia_shift::IInertiaShift;
-
+use crate::{math::*, ILoad, ILoadMass, LoadType};
 
 /// Цистерна с жидкостью.
 /// Имеет свойства свободной поверхности жидкости.
 pub trait ITank: ILoad {
     /// Момент свободной поверхности 
     fn moment_surface(&self) -> FreeSurfaceMoment;
+    /// Тип груза
+    fn load_type(&self) -> LoadType;
 }
 /// Цистерна с жидкостью.
 /// Имеет свойства свободной поверхности жидкости.
@@ -26,6 +23,8 @@ pub struct Tank {
     shift: Option<Position>, 
     /// Поперечный момент инерции площади свободной поверхности жидкости
     inertia: InertiaMoment,
+    /// Тип груза
+    load_type: LoadType,
 }
 ///
 impl Tank {
@@ -35,12 +34,14 @@ impl Tank {
     /// * bound_x - Границы цистерны по оси Х
     /// * shift - Отстояние центра величины от объема
     /// * inertia - Поперечный момент инерции площади свободной поверхности жидкости
+    /// * load_type - Тип груза
     pub fn new(
         density: f64,
         volume: f64,
         bound_x: Bound,
         shift: Option<Position>,
         inertia: InertiaMoment,
+        load_type: LoadType,
     ) -> Self {
         assert!(density > 0., "density {} > 0", density);
         assert!(volume >= 0., "volume {} >= 0", volume);
@@ -50,6 +51,7 @@ impl Tank {
             bound_x,
             shift,
             inertia,
+            load_type,
         }
     }
 }
@@ -61,6 +63,10 @@ impl ITank for Tank {
             FreeSurfaceMoment::from_inertia(self.inertia.clone(), self.density);
  //       log::info!("\t Tank result:{:?}", result);    
         result
+    }
+    ///
+    fn load_type(&self) -> LoadType {
+        self.load_type
     }
 }
 ///

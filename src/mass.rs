@@ -1,7 +1,7 @@
 //! Нагрузка на корпус судна
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{icing::IIcingMass, math::*};
+use crate::{icing::IIcingMass, math::*, IParameters, LoadMass, LoadType, ParameterID, Parameters};
 
 use super::load::ILoadMass;
 
@@ -15,9 +15,11 @@ pub struct Mass {
     /// Учет распределения обледенения судна
     icing_mass: Rc<dyn IIcingMass>,
     /// Все грузы судна
-    loads_cargo: Rc<Vec<Rc<dyn ILoadMass>>>, 
+    loads_variable: Rc<Vec<Rc<LoadMass>>>, 
     /// Вектор разбиения на отрезки для эпюров
     bounds: Rc<Bounds>,
+    /// Набор результатов расчетов для записи в БД
+    parameters: Rc<dyn IParameters>, 
     /// Суммарный статический момент
     moment_mass: Rc<RefCell<Option<Moment>>>,
     /// Суммарная масса
@@ -33,24 +35,24 @@ impl Mass {
     /// * loads_const - постоянная масса судна распределенная по шпациям
     /// * shift_const - смещение постоянный массы судна
     /// * icing_mass - Учет обледенения судна
-    /// * icing_moment - Учет момента массы обледенения судна
-    /// * loads_stock - масса запасов судна распределенная по шпациям
-    /// * shift_stock - смещение массы запасов судна
-    /// * loads_cargo - грузы судна
+    /// * loads_variable - грузы судна
     /// * bounds - вектор разбиения на отрезки для эпюров
+    /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         loads_const: Rc<Vec<Rc<dyn ILoadMass>>>, 
         shift_const: Position,
         icing_mass: Rc<dyn IIcingMass>,
-        loads_cargo: Rc<Vec<Rc<dyn ILoadMass>>>, 
+        loads_variable: Rc<Vec<Rc<LoadMass>>>, 
         bounds: Rc<Bounds>,
+        parameters: Rc<dyn IParameters>, 
     ) -> Self {
         Self {
             loads_const,
             shift_const,
             icing_mass,
-            loads_cargo,
+            loads_variable,
             bounds,
+            parameters,
             moment_mass: Rc::new(RefCell::new(None)),
             sum: Rc::new(RefCell::new(None)),
             values: Rc::new(RefCell::new(None)),
@@ -63,11 +65,22 @@ impl IMass for Mass {
     /// Суммарная масса
     fn sum(&self) -> f64 {
         if self.sum.borrow().is_none() {
-            let res = self.loads_const.iter().map(|v| v.value(None)).sum::<f64>()
-                + self.loads_cargo.iter().map(|v| v.value(None)).sum::<f64>()
-                + self.icing_mass.mass(None);
-            log::info!("\t Mass sum:{res} ");
-            *self.sum.borrow_mut() = Some(res);
+            let ballast = self.loads_variable.iter().filter(|v| v.load_type() == LoadType::Ballast ).map(|v| v.value(None)).sum::<f64>();
+            let stores = self.loads_variable.iter().filter(|v| v.load_type() == LoadType::Store ).map(|v| v.value(None)).sum::<f64>();
+            let cargo = self.loads_variable.iter().filter(|v| v.load_type() == LoadType::Cargo ).map(|v| v.value(None)).sum::<f64>();
+            let deadweight = ballast + stores + cargo;
+            let lightship = self.loads_const.iter().map(|v| v.value(None)).sum::<f64>();
+            let icing = self.icing_mass.mass(None);
+            let wetting = 0.; //TODO
+            let mass_sum = deadweight + lightship + wetting;
+            self.parameters.add(ParameterID::MassBallast, ballast);
+            self.parameters.add(ParameterID::MassStores, stores);
+            self.parameters.add(ParameterID::MassCargo, cargo);
+            self.parameters.add(ParameterID::MassDeadweight, deadweight);
+            self.parameters.add(ParameterID::MassLightship, lightship);
+            self.parameters.add(ParameterID::MassIcing, icing);
+            self.parameters.add(ParameterID::MassWetting, wetting);
+            *self.sum.borrow_mut() = Some(mass_sum);
         }
         self.sum.borrow().clone().expect("Mass sum error: no value")
     }
@@ -83,7 +96,7 @@ impl IMass for Mass {
                         .map(|v| v.value(Some(*b)))
                         .sum::<f64>()
                         + self
-                            .loads_cargo
+                            .loads_variable
                             .iter()
                             .map(|v| v.value(Some(*b)))
                             .sum::<f64>()
@@ -103,6 +116,7 @@ impl IMass for Mass {
         if self.shift.borrow().is_none() {
             let res = self.moment_mass().to_pos(self.sum());
             log::info!("\t Mass shift:{res} ");
+            self.parameters.add(ParameterID::CenterMassZ, res.z());
             *self.shift.borrow_mut() = Some(res);
         }
         self.shift
@@ -122,7 +136,7 @@ impl IMass for Mass {
                 })
                 .sum::<Moment>()
                 + self
-                    .loads_cargo
+                    .loads_variable
                     .iter()
                     .map(|c| c.moment())
                     .sum::<Moment>()

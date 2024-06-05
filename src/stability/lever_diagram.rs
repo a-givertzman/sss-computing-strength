@@ -1,7 +1,6 @@
 //! Диаграмма плеч статической и динамической остойчивости.
 use crate::{
-    math::{Curve, Curve2D, ICurve, ICurve2D},
-    IMass, Position,
+    math::{Curve, Curve2D, ICurve, ICurve2D}, IMass, Position
 };
 
 use super::metacentric_height::IMetacentricHeight;

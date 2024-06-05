@@ -6,7 +6,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, stability::metacentric_height::*, mass::*, strength::trim::*};
+    use crate::{mass::*, math::*, stability::{metacentric_height::*, trim::*}, FakeParameters};
 
     #[test]
     fn trim() {
@@ -19,6 +19,8 @@ mod tests {
 
         let result = Trim::new(
             118.39,
+            2.4,
+            1.,
             Position::new(-0.194609657, 0., 0.735524704),
             Rc::new(FakeMetacentricHeight::new(
                 696.702572991,
@@ -32,6 +34,7 @@ mod tests {
                 Position::new(1.05, 0., 5.32),
                 Position::new(0., 0., 0.,), 
             )),
+            Rc::new(FakeParameters{}),
         )
         .value();
         let target = 0.2115;

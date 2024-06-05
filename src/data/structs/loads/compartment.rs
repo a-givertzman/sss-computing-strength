@@ -1,6 +1,6 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
-use serde::{Deserialize, Serialize};
 use crate::data::structs::DataArray;
+use serde::{Deserialize, Serialize};
 
 /// Нагрузка судна: цистерны и трюмы  
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -18,9 +18,9 @@ pub struct CompartmentData {
     /// Диапазон по длинне
     pub bound_x1: f64,
     pub bound_x2: f64,
-    /// Тип задания диапазона 
+    /// Тип задания диапазона
     /// (физ. шпангоуты или метры)
-    pub bound_type: String,  
+    pub bound_type: String,
     /// Отстояние центра величины, м
     pub mass_shift_x: Option<f64>,
     pub mass_shift_y: Option<f64>,
@@ -59,21 +59,20 @@ impl std::fmt::Display for CompartmentData {
 pub type CompartmentArray = DataArray<CompartmentData>;
 ///
 impl CompartmentArray {
-    /// 
+    ///
     pub fn data(self) -> Vec<CompartmentData> {
         self.data
     }
 }
-
 /// Груз
 #[derive(Debug)]
 pub struct ParsedCompartmentData {
-    /// Название 
-    pub name: String, 
+    /// Название
+    pub name: String,
     /// Общая масса, т
     pub mass: f64,
-    /// Плотность 
-    pub density: Option<f64>, 
+    /// Плотность
+    pub density: Option<f64>,
     /// Объем m^3
     pub volume: Option<f64>,
     /// Границы груза
@@ -85,18 +84,22 @@ pub struct ParsedCompartmentData {
     /// Продольный момент свободной поверхности жидкости
     pub m_f_s_y: Option<f64>,
     /// Поперечный момент инерции свободной поверхности жидкости в цистерне
-    pub m_f_s_x: Option<f64>,    
+    pub m_f_s_x: Option<f64>,
     /// Площадь парусности
     pub windage_area: Option<f64>,
     /// Центр парусности
     pub windage_shift: Option<(f64, f64)>,
+    /// Тип груза
+    pub loading_type: Option<String>,
 }
 ///
 impl std::fmt::Display for ParsedCompartmentData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "CompartmentData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} mass_shift:({} {} {}) m_f_s_y:{:?}, m_f_s_x:{:?} windage_area:{} windage_shift:(x:{}, z:{}))",
+            "CompartmentData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} 
+                mass_shift:({} {} {}) m_f_s_y:{:?}, m_f_s_x:{:?} 
+                windage_area:{} windage_shift:(x:{}, z:{}) type:{})",
             self.name,
             self.mass,
             self.bound_x,
@@ -110,6 +113,7 @@ impl std::fmt::Display for ParsedCompartmentData {
             self.windage_area.unwrap_or(0.),
             self.windage_shift.unwrap_or((0.,0.)).0,
             self.windage_shift.unwrap_or((0.,0.)).1,
+            self.loading_type.as_ref().unwrap_or(&"None".to_string()),
         )
     }
 }

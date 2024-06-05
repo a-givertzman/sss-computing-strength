@@ -44,29 +44,34 @@ fn main() {
 }
 
 fn execute() -> Result<(), Error> {
-    let mut input = String::new();
-    io::stdin().read_line(&mut input)?;
-    let json_data: serde_json::Value = serde_json::from_str(&input)?;
-    //   let json_data = json_data.as_array().ok_or(Error::FromString("Parse param error: son_data.as_array()".to_owned()))?;
-    let host: String = json_data
-        .get("api-host")
-        .ok_or(Error::FromString(
-            "Parse param error: no api-host".to_owned(),
-        ))?
-        .to_string();
-    let port = json_data
-        .get("api-port")
-        .ok_or(Error::FromString(
-            "Parse param error: no api-host".to_owned(),
-        ))?
-        .to_string();
-    //   println!("{}", json_data);
-    let mut api_server = ApiServer::new("sss-computing".to_owned(), host.to_owned(), port.to_owned());
+       let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        let json_data: serde_json::Value = serde_json::from_str(&input)?;
+        let host: String = json_data
+            .get("api-host")
+            .ok_or(Error::FromString(
+                "Parse param error: no api-host".to_owned(),
+            ))?
+            .to_string();
+        let port = json_data
+            .get("api-port")
+            .ok_or(Error::FromString(
+                "Parse param error: no api-host".to_owned(),
+            ))?
+            .to_string();
+        //   println!("{}", json_data);
+ /*   
+    let host: String = "localhost".to_string();
+    let port = "8080".to_string();    
+ */
+    let ship_id = 1;
+    let mut api_server =
+        ApiServer::new("sss-computing".to_owned(), host.to_owned(), port.to_owned());
 
     let mut elapsed = HashMap::new();
-
     let time = Instant::now();
-    let ship_id = 1;
+
+    let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
     let mut data = get_data(&mut api_server, ship_id)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
 
@@ -106,7 +111,7 @@ fn execute() -> Result<(), Error> {
     let mut tanks: Vec<Rc<dyn ITank>> = Vec::new();
     let mut desks: Vec<Rc<dyn IDesk>> = Vec::new();
     let mut bulk: Vec<Rc<dyn IBulk>> = Vec::new();
-    let mut load_mass: Vec<Rc<dyn ILoadMass>> = Vec::new();
+    let mut load_mass: Vec<Rc<LoadMass>> = Vec::new();
 
     // Постоянная масса судна
     let mut loads_const: Vec<Rc<dyn ILoadMass>> = Vec::new();
@@ -118,7 +123,12 @@ fn execute() -> Result<(), Error> {
 
     data.load_constants.iter().for_each(|v| {
         let bound_x = Bound::from(v.bound_x);
-        let load = Rc::new(LoadMass::new(v.mass, bound_x, Some(const_shift.clone())));
+        let load = Rc::new(LoadMass::new(
+            v.mass,
+            bound_x,
+            Some(const_shift.clone()),
+            LoadType::Lightship,
+        ));
         log::info!("\t Mass loads_const:{:?} ", load);
         loads_const.push(load);
     });
@@ -129,8 +139,12 @@ fn execute() -> Result<(), Error> {
             .as_ref()
             .map(|mass_shift| Position::new(mass_shift.0, mass_shift.1, mass_shift.2));
         let bound_x = Bound::from(v.bound_x);
-
-        let load = Rc::new(LoadMass::new(v.mass, bound_x, mass_shift.clone()));
+        let load = Rc::new(LoadMass::new(
+            v.mass,
+            bound_x,
+            mass_shift.clone(),
+            LoadType::from(v.loading_type.clone().unwrap_or("none".to_owned())),
+        ));
         log::info!("\t Mass loads_const:{:?} ", load);
         loads_const.push(load);
     });
@@ -141,10 +155,13 @@ fn execute() -> Result<(), Error> {
             .as_ref()
             .map(|mass_shift| Position::new(mass_shift.0, mass_shift.1, mass_shift.2));
         let bound_x = Bound::from(v.bound_x);
-
-        let load = Rc::new(LoadMass::new(v.mass, bound_x, mass_shift.clone()));
+        let load = Rc::new(LoadMass::new(
+            v.mass,
+            bound_x,
+            mass_shift.clone(),
+            LoadType::from(v.loading_type.clone().unwrap_or("none".to_owned())),
+        ));
         load_mass.push(load);
-
         if v.m_f_s_x.is_some() && v.m_f_s_y.is_some() && v.density.is_some() {
             let tank: Rc<dyn ITank> = Rc::new(Tank::new(
                 v.density.unwrap_or(1.),
@@ -152,6 +169,7 @@ fn execute() -> Result<(), Error> {
                 bound_x,
                 mass_shift.clone(),
                 InertiaMoment::new(v.m_f_s_x.unwrap_or(0.), v.m_f_s_y.unwrap_or(0.)),
+                LoadType::from(v.loading_type.clone().unwrap_or("none".to_owned())),
             ));
             tanks.push(tank);
         }
@@ -215,8 +233,8 @@ fn execute() -> Result<(), Error> {
         )),
         Rc::clone(&load_mass),
         Rc::clone(&bounds),
+        Rc::clone(&parameters),
     ));
-
     // Объемное водоизмещение (1)
     let volume = mass.sum() / data.water_density;
     // Отстояние центра величины погруженной части судна
@@ -226,15 +244,17 @@ fn execute() -> Result<(), Error> {
         Curve::new_linear(&data.center_draught_shift_z),
     )
     .value(volume);
+    parameters.add(ParameterID::CenterVolumeZ, center_draught_shift.z());
     // Продольный метацентрические радиус
     let rad_long = Curve::new_linear(&data.rad_long).value(volume);
+    parameters.add(ParameterID::MetacentricLongRad, rad_long);
     // Поперечный метацентрические радиус
     let rad_trans = Curve::new_linear(&data.rad_trans).value(volume);
+    parameters.add(ParameterID::MetacentricTransRad, rad_trans);
     // Отстояние центра тяжести ватерлинии по длине от миделя
     let center_waterline_shift = Curve::new_linear(&data.center_waterline).value(volume);
     // Средняя осадка
     let mean_draught = Curve::new_linear(&data.mean_draught).value(volume);
-
     // Для расчета прочности дифферент находится подбором
     // как условие для схождения изгибающего момента в 0
     let mut computer = Computer::new(
@@ -268,7 +288,7 @@ fn execute() -> Result<(), Error> {
             .for_each(|v| println!("{v};"));
     */
     send_strenght_data(
-        &mut api_server, 
+        &mut api_server,
         ship_id,
         &computer.shear_force(),
         &computer.bending_moment(),
@@ -282,7 +302,19 @@ fn execute() -> Result<(), Error> {
         rad_trans,                    // поперечный метацентрические радиус
         tanks,
         Rc::clone(&mass), // все грузы судна
+        Rc::clone(&parameters),
     ));
+
+    let trim = Trim::new(
+        data.length,
+        mean_draught,
+        center_waterline_shift,
+        center_draught_shift.clone(),        
+        Rc::clone(&metacentric_height),
+        Rc::clone(&mass),
+        Rc::clone(&parameters),
+    )
+    .value();
 
     // Длинна по ватерлинии при текущей осадке
     let length_wl = Curve::new_linear(&data.waterline_length).value(mean_draught);
@@ -372,7 +404,6 @@ fn execute() -> Result<(), Error> {
         Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area)),
         Rc::clone(&roll_period),
     ));
-
     //dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
 
     let stability = Stability::new(
@@ -445,6 +476,7 @@ fn execute() -> Result<(), Error> {
     // criterion.create().iter().for_each(|v| println!("{v}"));
     send_stability_data(&mut api_server, ship_id, criterion.create())?; //
     elapsed.insert("Write stability result", time.elapsed());
+    send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //
 
     /*   for (key, e) in elapsed {
         println!("{}:\t{:?}", key, e);

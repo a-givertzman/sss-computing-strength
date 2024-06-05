@@ -12,6 +12,8 @@ pub(crate) mod acceleration;
 pub(crate) mod circulation;
 pub(crate) mod grain;
 pub(crate) mod criterion;
+pub(crate) mod trim;
+pub(crate) mod parameters;
 
 pub use metacentric_height::*;
 pub use rolling_amplitude::*;
@@ -24,3 +26,5 @@ pub use acceleration::*;
 pub use circulation::*;
 pub use grain::*;
 pub use criterion::*;
+pub use trim::*;
+pub use parameters::*;
