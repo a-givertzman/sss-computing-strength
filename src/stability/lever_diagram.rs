@@ -81,7 +81,7 @@ impl LeverDiagram {
                 let angle_rad = angle_deg * std::f64::consts::PI / 180.;
                 let value = self.data.value(self.mean_draught, angle_deg)
                     - self.metacentric_height.z_g_fix() * angle_rad.sin()
-                    - delta_y * angle_rad.cos();
+                    - delta_y.abs() * angle_rad.cos();
                 (angle_deg, value)
             })
             .collect::<Vec<(f64, f64)>>();
