@@ -185,7 +185,7 @@ pub fn get_data(
             "SELECT name, mass, bound_x1, bound_x2, bound_type, bound_y1, bound_y2, bound_z1, bound_z2, \
             mass_shift_x, mass_shift_y, mass_shift_z, horizontal_area, horizontal_area_shift_x, \
             horizontal_area_shift_y, vertical_area, vertical_area_shift_x, vertical_area_shift_y, \
-            vertical_area_shift_z, loading_type FROM cargo WHERE ship_id={ship_id};"
+            vertical_area_shift_z, loading_type::TEXT FROM cargo WHERE ship_id={ship_id};"
         ),
     )?)?;
     let compartment = CompartmentArray::parse(&api_server.fetch(&format!(
