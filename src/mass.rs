@@ -1,7 +1,7 @@
 //! Нагрузка на корпус судна
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{icing::IIcingMass, math::*, IParameters, LoadMass, LoadType, ParameterID, Parameters};
+use crate::{icing::IIcingMass, math::*, IParameters, LoadMass, LoadingType, ParameterID, Parameters};
 
 use super::load::ILoadMass;
 
@@ -65,14 +65,15 @@ impl IMass for Mass {
     /// Суммарная масса
     fn sum(&self) -> f64 {
         if self.sum.borrow().is_none() {
-            let ballast = self.loads_variable.iter().filter(|v| v.load_type() == LoadType::Ballast ).map(|v| v.value(None)).sum::<f64>();
-            let stores = self.loads_variable.iter().filter(|v| v.load_type() == LoadType::Store ).map(|v| v.value(None)).sum::<f64>();
-            let cargo = self.loads_variable.iter().filter(|v| v.load_type() == LoadType::Cargo ).map(|v| v.value(None)).sum::<f64>();
+            let ballast = self.loads_variable.iter().filter(|v| v.load_type() == LoadingType::Ballast ).map(|v| v.value(None)).sum::<f64>();
+            let stores = self.loads_variable.iter().filter(|v| v.load_type() == LoadingType::Store ).map(|v| v.value(None)).sum::<f64>();
+            let cargo = self.loads_variable.iter().filter(|v| v.load_type() == LoadingType::Cargo ).map(|v| v.value(None)).sum::<f64>();
             let deadweight = ballast + stores + cargo;
             let lightship = self.loads_const.iter().map(|v| v.value(None)).sum::<f64>();
             let icing = self.icing_mass.mass(None);
             let wetting = 0.; //TODO
             let mass_sum = deadweight + lightship + wetting;
+            self.parameters.add(ParameterID::Displacement, mass_sum);
             self.parameters.add(ParameterID::MassBallast, ballast);
             self.parameters.add(ParameterID::MassStores, stores);
             self.parameters.add(ParameterID::MassCargo, cargo);
@@ -80,6 +81,8 @@ impl IMass for Mass {
             self.parameters.add(ParameterID::MassLightship, lightship);
             self.parameters.add(ParameterID::MassIcing, icing);
             self.parameters.add(ParameterID::MassWetting, wetting);
+            log::info!("\t Mass sum:{:?} ", mass_sum);
+        //    dbg!(ballast, stores, cargo, deadweight, lightship, icing);
             *self.sum.borrow_mut() = Some(mass_sum);
         }
         self.sum.borrow().clone().expect("Mass sum error: no value")

@@ -1,5 +1,5 @@
 //! Масса груз
-use crate::{math::*, ILoad, LoadType};
+use crate::{math::*, ILoad, LoadingType};
 /// Абстрактная масса груза.
 /// Может вернуть какая масса попадает в указанные границы
 pub trait ILoadMass: ILoad {
@@ -27,7 +27,7 @@ pub struct LoadMass {
     /// Смещение центра
     shift: Option<Position>,
     /// Тип груза
-    load_type: LoadType,
+    load_type: LoadingType,
 }
 ///
 impl LoadMass {
@@ -40,7 +40,7 @@ impl LoadMass {
         mass: f64,
         bound_x: Bound,
         shift: Option<Position>,
-        load_type: LoadType,
+        load_type: LoadingType,
     ) -> Self {
         Self {
             mass,
@@ -50,7 +50,7 @@ impl LoadMass {
         }
     }
     ///
-    pub fn load_type(&self) -> LoadType {
+    pub fn load_type(&self) -> LoadingType {
         self.load_type
     }
 }

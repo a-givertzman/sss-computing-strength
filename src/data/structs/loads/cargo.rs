@@ -1,6 +1,6 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
 use serde::{Deserialize, Serialize};
-use crate::data::structs::DataArray;
+use crate::{data::structs::DataArray, LoadingType};
 
 /// Груз, конструкции корпуса, контейнер или другой твердый груз
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -38,7 +38,7 @@ pub struct LoadCargoData {
     pub vertical_area_shift_y: Option<f64>,
     pub vertical_area_shift_z: Option<f64>,
     /// Тип груза
-    pub loading_type: Option<String>,
+    pub loading_type: LoadingType,
 }
 
 ///
@@ -69,7 +69,7 @@ impl std::fmt::Display for LoadCargoData {
             self.vertical_area_shift_x.unwrap_or(0.),
             self.vertical_area_shift_y.unwrap_or(0.),
             self.vertical_area_shift_z.unwrap_or(0.),
-            self.loading_type.as_ref().unwrap_or(&"-".to_owned()),
+            self.loading_type,
         )
     }
 }
@@ -105,7 +105,7 @@ pub struct ParsedCargoData {
     /// Центр парусности, м
     pub vertical_area_shift: Option<(f64, f64, f64)>,
     /// Тип груза
-    pub loading_type: Option<String>,
+    pub loading_type: LoadingType,
 }
 ///
 impl std::fmt::Display for ParsedCargoData {
@@ -131,7 +131,7 @@ impl std::fmt::Display for ParsedCargoData {
             self.vertical_area_shift.unwrap_or((0.,0.,0.)).0,
             self.vertical_area_shift.unwrap_or((0.,0.,0.)).1,
             self.vertical_area_shift.unwrap_or((0.,0.,0.)).2,
-            self.loading_type.as_ref().unwrap_or(&"None".to_string()),
+            self.loading_type,
         )
     }
 }

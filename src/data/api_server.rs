@@ -202,7 +202,7 @@ pub fn get_data(
                     mass_shift_z, \
                     m_f_s_y, \
                     m_f_s_x, \
-                    loading_type \
+                    loading_type::TEXT \
                 FROM compartment WHERE ship_id={};",
         ship_id
     ))?)?;

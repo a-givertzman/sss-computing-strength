@@ -8,7 +8,8 @@ use crate::{
     IStability, IWind,
 };
 ///
-enum CriterionID {
+#[derive(Hash, Eq, PartialEq)]
+pub enum CriterionID {
     Wheather = 1,
     WindStaticHeel = 2,
     AreaLC0_30 = 3,
@@ -27,30 +28,6 @@ enum CriterionID {
     AreaLcGrainDisplacement = 16,
     MinMetacentricHeightSubdivIndex = 17,
 }
-///
-impl From<CriterionID> for usize {
-    fn from(criterion_id: CriterionID) -> Self {
-        match criterion_id {
-            CriterionID::Wheather => 1,
-            CriterionID::WindStaticHeel => 2,
-            CriterionID::AreaLC0_30 => 3,
-            CriterionID::AreaLc0Thetalmax => 4,
-            CriterionID::AreaLC0_40 => 5,
-            CriterionID::AreaLC30_40 => 6,
-            CriterionID::MaximumLC => 7,
-            CriterionID::MaximumLcTimber => 8,
-            CriterionID::MaximumLcIcing => 9,
-            CriterionID::HeelMaximumLC => 10,
-            CriterionID::HeelFirstMaximumLC => 11,
-            CriterionID::MinMetacentricHight => 12,
-            CriterionID::Acceleration => 13,
-            CriterionID::HeelTurning => 14,
-            CriterionID::HeelGrainDisplacement => 15,
-            CriterionID::AreaLcGrainDisplacement => 16,
-            CriterionID::MinMetacentricHeightSubdivIndex => 17,
-        }
-    }
-}
 /// Результат проверки критерия
 pub struct CriterionData {
     /// id критерия
@@ -67,7 +44,7 @@ impl CriterionData {
     /// Конструктор при наличии результата
     pub fn new_result(criterion_id: CriterionID, result: f64, target: f64) -> Self {
         Self {
-            criterion_id: criterion_id.into(),
+            criterion_id: criterion_id as usize,
             result,
             target,
             error_message: None,
@@ -76,7 +53,7 @@ impl CriterionData {
     /// Конструктор при наличии ошибке расчета
     pub fn new_error(criterion_id: CriterionID, error_message: String) -> Self {
         Self {
-            criterion_id: criterion_id.into(),
+            criterion_id: criterion_id as usize,
             result: 0.,
             target: 0.,
             error_message: Some(error_message),

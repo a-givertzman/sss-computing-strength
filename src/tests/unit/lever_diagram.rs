@@ -63,6 +63,7 @@ mod tests {
                 Curve2D::from_values_linear(pantocaren),
                 2.,
                 metacentric_height,
+                Rc::new(FakeParameters{}),
             );
             lever_diagram.dso();
             unsafe {

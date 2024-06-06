@@ -44,7 +44,7 @@ fn main() {
 }
 
 fn execute() -> Result<(), Error> {
-       let mut input = String::new();
+   /*      let mut input = String::new();
         io::stdin().read_line(&mut input)?;
         let json_data: serde_json::Value = serde_json::from_str(&input)?;
         let host: String = json_data
@@ -59,11 +59,11 @@ fn execute() -> Result<(), Error> {
                 "Parse param error: no api-host".to_owned(),
             ))?
             .to_string();
-        //   println!("{}", json_data);
- /*   
+  */      //   println!("{}", json_data);
+    
     let host: String = "localhost".to_string();
     let port = "8080".to_string();    
- */
+ 
     let ship_id = 1;
     let mut api_server =
         ApiServer::new("sss-computing".to_owned(), host.to_owned(), port.to_owned());
@@ -111,11 +111,11 @@ fn execute() -> Result<(), Error> {
     let mut tanks: Vec<Rc<dyn ITank>> = Vec::new();
     let mut desks: Vec<Rc<dyn IDesk>> = Vec::new();
     let mut bulk: Vec<Rc<dyn IBulk>> = Vec::new();
-    let mut load_mass: Vec<Rc<LoadMass>> = Vec::new();
+    let mut load_variable: Vec<Rc<LoadMass>> = Vec::new();
 
     // Постоянная масса судна
     let mut loads_const: Vec<Rc<dyn ILoadMass>> = Vec::new();
-    let const_shift = Position::new(
+    let shift_const = Position::new(
         data.const_mass_shift_x,
         data.const_mass_shift_y,
         data.const_mass_shift_z,
@@ -126,10 +126,10 @@ fn execute() -> Result<(), Error> {
         let load = Rc::new(LoadMass::new(
             v.mass,
             bound_x,
-            Some(const_shift.clone()),
-            LoadType::Lightship,
+            Some(shift_const.clone()),
+            LoadingType::Lightship,
         ));
-        log::info!("\t Mass loads_const:{:?} ", load);
+        log::info!("\t Mass loads_const from load_constants:{:?} ", load);
         loads_const.push(load);
     });
 
@@ -143,10 +143,10 @@ fn execute() -> Result<(), Error> {
             v.mass,
             bound_x,
             mass_shift.clone(),
-            LoadType::from(v.loading_type.clone().unwrap_or("none".to_owned())),
+            v.loading_type,
         ));
-        log::info!("\t Mass loads_const:{:?} ", load);
-        loads_const.push(load);
+        log::info!("\t Mass load_variable from cargoes:{:?} ", load);
+        load_variable.push(load);
     });
 
     data.compartments.iter().for_each(|v| {
@@ -159,9 +159,10 @@ fn execute() -> Result<(), Error> {
             v.mass,
             bound_x,
             mass_shift.clone(),
-            LoadType::from(v.loading_type.clone().unwrap_or("none".to_owned())),
+            v.loading_type,
         ));
-        load_mass.push(load);
+        log::info!("\t Mass load_variable from compartments src:{:?} trg:{:?}", v, load, );
+        load_variable.push(load);
         if v.m_f_s_x.is_some() && v.m_f_s_y.is_some() && v.density.is_some() {
             let tank: Rc<dyn ITank> = Rc::new(Tank::new(
                 v.density.unwrap_or(1.),
@@ -169,15 +170,16 @@ fn execute() -> Result<(), Error> {
                 bound_x,
                 mass_shift.clone(),
                 InertiaMoment::new(v.m_f_s_x.unwrap_or(0.), v.m_f_s_y.unwrap_or(0.)),
-                LoadType::from(v.loading_type.clone().unwrap_or("none".to_owned())),
+                v.loading_type,
             ));
+    //        log::info!("\t Mass tanks from compartments:{:?} ", tank);
             tanks.push(tank);
         }
     });
 
     let loads_const = Rc::new(loads_const);
     let desks = Rc::new(desks);
-    let load_mass = Rc::new(load_mass);
+    let load_variable = Rc::new(load_variable);
     let bulk = Rc::new(bulk);
 
     let icing_area_h_str = data
@@ -225,13 +227,13 @@ fn execute() -> Result<(), Error> {
     // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     let mass: Rc<dyn IMass> = Rc::new(Mass::new(
         loads_const,
-        const_shift,
+        shift_const,
         Rc::new(IcingMass::new(
             Rc::clone(&icing_stab),
             Rc::clone(&area_strength),
             Rc::clone(&area_stability),
         )),
-        Rc::clone(&load_mass),
+        Rc::clone(&load_variable),
         Rc::clone(&bounds),
         Rc::clone(&parameters),
     ));
@@ -351,6 +353,7 @@ fn execute() -> Result<(), Error> {
         // Curve2D::from_values_linear(data.pantocaren),
         mean_draught,
         Rc::clone(&metacentric_height),
+        Rc::clone(&parameters),
     ));
     // dbg!(stability.k()?);
     //dbg!(lever_diagram.dso().len());
@@ -430,7 +433,7 @@ fn execute() -> Result<(), Error> {
         data.navigation_area,
         desks.iter().any(|v| v.is_timber()),
         bulk.iter().any(|v| v.moment() != 0.),
-        load_mass.iter().any(|v| v.value(None) != 0.),
+        load_variable.iter().any(|v| v.value(None) != 0.),
         icing_stab.is_some(),
         flooding_angle,
         data.length,

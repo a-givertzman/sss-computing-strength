@@ -1,5 +1,5 @@
 //! Цистерна с жидкостью
-use crate::{math::*, ILoad, ILoadMass, LoadType};
+use crate::{math::*, ILoad, ILoadMass, LoadingType};
 
 /// Цистерна с жидкостью.
 /// Имеет свойства свободной поверхности жидкости.
@@ -7,11 +7,11 @@ pub trait ITank: ILoad {
     /// Момент свободной поверхности 
     fn moment_surface(&self) -> FreeSurfaceMoment;
     /// Тип груза
-    fn load_type(&self) -> LoadType;
+    fn load_type(&self) -> LoadingType;
 }
 /// Цистерна с жидкостью.
 /// Имеет свойства свободной поверхности жидкости.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Tank {
     /// Плотность жидкости в цистерне
     density: f64,
@@ -24,7 +24,7 @@ pub struct Tank {
     /// Поперечный момент инерции площади свободной поверхности жидкости
     inertia: InertiaMoment,
     /// Тип груза
-    load_type: LoadType,
+    load_type: LoadingType,
 }
 ///
 impl Tank {
@@ -41,7 +41,7 @@ impl Tank {
         bound_x: Bound,
         shift: Option<Position>,
         inertia: InertiaMoment,
-        load_type: LoadType,
+        load_type: LoadingType,
     ) -> Self {
         assert!(density > 0., "density {} > 0", density);
         assert!(volume >= 0., "volume {} >= 0", volume);
@@ -65,7 +65,7 @@ impl ITank for Tank {
         result
     }
     ///
-    fn load_type(&self) -> LoadType {
+    fn load_type(&self) -> LoadingType {
         self.load_type
     }
 }

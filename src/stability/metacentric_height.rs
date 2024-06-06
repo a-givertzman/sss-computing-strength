@@ -1,7 +1,7 @@
 //! Исправленная метацентрическая высота
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{mass::IMass, math::*, IParameters, ITank, LoadType, ParameterID, Parameters};
+use crate::{mass::IMass, math::*, IParameters, ITank, LoadingType, ParameterID, Parameters};
 /// Продольная и поперечная исправленная метацентрическая высота.
 #[derive(Clone)]
 pub struct MetacentricHeight {
@@ -67,13 +67,13 @@ impl  MetacentricHeight {
         let delta_m_h_ballast = DeltaMH::from_moment(self
         .tanks
         .iter()
-        .filter(|v| v.load_type() == LoadType::Ballast )
+        .filter(|v| v.load_type() == LoadingType::Ballast )
         .map(|c| c.moment_surface())
         .sum::<FreeSurfaceMoment>(), self.mass.sum());
         let delta_m_h_store = DeltaMH::from_moment(self
         .tanks
         .iter()
-        .filter(|v| v.load_type() != LoadType::Ballast )
+        .filter(|v| v.load_type() != LoadingType::Ballast )
         .map(|c| c.moment_surface())
         .sum::<FreeSurfaceMoment>(), self.mass.sum());
        // let delta_m_h = DeltaMH::from_moment(moment_surface, self.mass.sum());
@@ -99,6 +99,7 @@ impl  MetacentricHeight {
         *self.h_trans_fix.borrow_mut() = Some(h_trans_fix);
         *self.z_g_fix.borrow_mut() = Some(z_g_fix);
         self.parameters.add(ParameterID::MetacentricLongRadZ, Z_m);
+        self.parameters.add(ParameterID::MetacentricTransRadZ, z_m);
         self.parameters.add(ParameterID::MetacentricTransBallast, delta_m_h_ballast.trans());
         self.parameters.add(ParameterID::MetacentricLongBallast, delta_m_h_ballast.long());
         self.parameters.add(ParameterID::MetacentricTransStore, delta_m_h_store.trans());

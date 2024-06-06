@@ -1,6 +1,6 @@
 //! Диаграмма плеч статической и динамической остойчивости.
 use crate::{
-    math::{Curve, Curve2D, ICurve, ICurve2D}, IMass, Position
+    math::{Curve, Curve2D, ICurve, ICurve2D}, IMass, IParameters, ParameterID, Position
 };
 
 use super::metacentric_height::IMetacentricHeight;
@@ -22,6 +22,8 @@ pub struct LeverDiagram {
     mean_draught: f64,
     /// Продольная и поперечная исправленная метацентрическая высота.
     metacentric_height: Rc<dyn IMetacentricHeight>,
+    /// Набор результатов расчетов для записи в БД
+    parameters: Rc<dyn IParameters>, 
     /// Результат расчета - диаграмма плеч статической остойчивости
     dso: RcOpt<Vec<(f64, f64)>>,
     /// Результат расчета - диаграмма плеч статической остойчивости
@@ -43,12 +45,14 @@ impl LeverDiagram {
     /// * data - Кривая плечей остойчивости формы для разных осадок
     /// * mean_draught - Средняя осадка
     /// * metacentric_height - Продольная и поперечная исправленная метацентрическая высота.
+    /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         mass: Rc<dyn IMass>,
         center_draught_shift: Position,
         data: Curve2D,
         mean_draught: f64,
         metacentric_height: Rc<dyn IMetacentricHeight>,
+        parameters: Rc<dyn IParameters>, 
     ) -> Self {
         Self {
             mass,
@@ -56,6 +60,7 @@ impl LeverDiagram {
             data,
             mean_draught,
             metacentric_height,
+            parameters,
             dso: Rc::new(RefCell::new(None)),
             dso_curve: Rc::new(RefCell::new(None)),
             ddo: Rc::new(RefCell::new(None)),
@@ -153,6 +158,7 @@ impl LeverDiagram {
                 .collect::<Vec<(f64, f64)>>(),
         );
         *self.ddo.borrow_mut() = Some(ddo);
+        self.parameters.add(ParameterID::Pitch, angle_zero);
     }
 }
 ///

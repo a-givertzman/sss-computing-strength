@@ -1,6 +1,5 @@
 //! Дифферент. Угол наклона корпуса судна в продольной плоскости.
 use crate::stability::metacentric_height::IMetacentricHeight;
-use std::f64::consts::PI;
 use std::rc::Rc;
 
 use crate::{math::*, IParameters, ParameterID};

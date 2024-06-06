@@ -1,5 +1,5 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
-use crate::data::structs::DataArray;
+use crate::{data::structs::DataArray, LoadingType};
 use serde::{Deserialize, Serialize};
 
 /// Нагрузка судна: цистерны и трюмы  
@@ -29,7 +29,7 @@ pub struct CompartmentData {
     pub m_f_s_y: Option<f64>,
     pub m_f_s_x: Option<f64>,
     /// Тип груза
-    pub loading_type: Option<String>,
+    pub loading_type: LoadingType,
 }
 
 ///
@@ -51,7 +51,7 @@ impl std::fmt::Display for CompartmentData {
             self.mass_shift_z.unwrap_or(0.),
             self.m_f_s_y.unwrap_or(0.),
             self.m_f_s_x.unwrap_or(0.),
-            self.loading_type.as_ref().unwrap_or(&"-".to_owned()),
+            self.loading_type,
         )
     }
 }
@@ -90,7 +90,7 @@ pub struct ParsedCompartmentData {
     /// Центр парусности
     pub windage_shift: Option<(f64, f64)>,
     /// Тип груза
-    pub loading_type: Option<String>,
+    pub loading_type: LoadingType,
 }
 ///
 impl std::fmt::Display for ParsedCompartmentData {
@@ -113,7 +113,7 @@ impl std::fmt::Display for ParsedCompartmentData {
             self.windage_area.unwrap_or(0.),
             self.windage_shift.unwrap_or((0.,0.)).0,
             self.windage_shift.unwrap_or((0.,0.)).1,
-            self.loading_type.as_ref().unwrap_or(&"None".to_string()),
+            self.loading_type,
         )
     }
 }

@@ -1,5 +1,6 @@
 //! Нагрузка на судно: постоянный и переменный груз. 
-
+use serde::{Deserialize, Serialize};
+use crate::{Bound, Position};
 mod tank;
 mod desk;
 mod mass;
@@ -10,27 +11,32 @@ pub use desk::*;
 pub use mass::*;
 pub use bulk::*;
 
-use crate::{Bound, Position};
-
 /// Тип груза
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum LoadType {
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+//#[serde(untagged)]
+pub enum LoadingType {
+    #[serde(alias="lightship")]
     Lightship,
+    #[serde(alias="ballast")]
     Ballast,
+    #[serde(alias="store")]
     Store,
+    #[serde(alias="cargo")]
     Cargo,
-    None,
 }
 ///
-impl From<String> for LoadType {
-    fn from(value: String) -> Self {
-        match value.as_str() {
-            "lightship" => LoadType::Lightship,
-            "ballast" => LoadType::Ballast,
-            "store" => LoadType::Store,
-            "cargo" => LoadType::Cargo,  
-            _ => LoadType::None,
-        }
+impl std::fmt::Display for LoadingType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                LoadingType::Lightship => "Lightship",
+                LoadingType::Ballast => "Ballast",
+                LoadingType::Store => "Store",
+                LoadingType::Cargo => "Cargo",  
+            },
+        )
     }
 }
 /// Абстрактный груз: контейнер, трюм или бак.

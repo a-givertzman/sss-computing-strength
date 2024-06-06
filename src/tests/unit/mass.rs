@@ -24,13 +24,13 @@ mod tests {
                     10.,
                     Bound::new(-10., 0.),
                     Some(Position::new(-5., 0., 0.)),     
-                    LoadType::Lightship,         
+                    LoadingType::Lightship,         
                 )),
                 Rc::new(LoadMass::new(
                     20.,
                     Bound::new(0., 10.),
                     Some(Position::new(5., 0., 0.)),
-                    LoadType::Lightship,  
+                    LoadingType::Lightship,  
                 )),
             ]);
 
@@ -39,7 +39,7 @@ mod tests {
                 20.,
                 Bound::new(-5., 5.),
                 Some(Position::new(0., 0., 0.)),
-                LoadType::Cargo,  
+                LoadingType::Cargo,  
             ))]);
 
             unsafe {
