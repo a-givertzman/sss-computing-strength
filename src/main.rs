@@ -292,6 +292,9 @@ fn execute() -> Result<(), Error> {
     send_strenght_data(
         &mut api_server,
         ship_id,
+        &&computer.mass(),
+        &computer.displacement(),
+        &computer.total_force(),
         &computer.shear_force(),
         &computer.bending_moment(),
     )?;

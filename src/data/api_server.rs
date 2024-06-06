@@ -9,7 +9,7 @@ use crate::{
 };
 use api_tools::client::{api_query::*, api_request::ApiRequest};
 use loads::{CompartmentArray, LoadCargoArray};
-use std::{thread, time};
+use std::{iter::zip, thread, time};
 
 pub struct ApiServer {
     database: String,
@@ -267,26 +267,29 @@ pub fn get_data(
 pub fn send_strenght_data(
     api_server: &mut ApiServer,
     ship_id: usize,
+    mass: &Vec<f64>,
+    displacement: &Vec<f64>,
+    total_force: &Vec<f64>,
     shear_force: &Vec<f64>,
     bending_moment: &Vec<f64>,
 ) -> Result<(), error::Error> {
     log::info!("send_strenght_data begin");
-    let tmp: Vec<_> = shear_force
-        .clone()
-        .into_iter()
-        .zip(bending_moment.into_iter())
-        .collect();
-
+    assert!(mass.len() == displacement.len() &&
+             displacement.len()== total_force.len() &&
+             total_force.len() + 1 == shear_force.len() &&
+             shear_force.len() == bending_moment.len());
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM result_strength WHERE ship_id={ship_id};");
-    full_sql += " INSERT INTO result_strength (ship_id, index, value_shear_force, value_bending_moment) VALUES";
-    tmp.iter()
-        .enumerate()
-        .for_each(|(i, (v1, v2))| full_sql += &format!(" ({ship_id}, {i}, {v1}, {v2}),"));
+    full_sql += " INSERT INTO result_strength (ship_id, index, value_mass, value_displacement, value_total_force, value_shear_force, value_bending_moment) VALUES";
+    (0..mass.len()).for_each(|i| {
+        full_sql += &format!(" ({ship_id}, {i}, {}, {}, {}, {}, {}),", 
+            mass[i], displacement[i], total_force[i], shear_force[i], bending_moment[i]);
+    });
+    full_sql += &format!(" ({ship_id}, {}, 0, 0, 0, {}, {}),", 
+        mass.len(), shear_force[mass.len()], bending_moment[mass.len()]);
     full_sql.pop();
     full_sql.push(';');
     full_sql += " END$$;";
-
     //   dbg!(&string);
     api_server.fetch(&full_sql)?;
     log::info!("send_strenght_data end");

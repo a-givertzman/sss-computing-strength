@@ -98,6 +98,7 @@ impl  MetacentricHeight {
         *self.h_trans_0.borrow_mut() = Some(h_trans_0);
         *self.h_trans_fix.borrow_mut() = Some(h_trans_fix);
         *self.z_g_fix.borrow_mut() = Some(z_g_fix);
+        self.parameters.add(ParameterID::CenterMassZFix, z_g_fix);
         self.parameters.add(ParameterID::MetacentricLongRadZ, Z_m);
         self.parameters.add(ParameterID::MetacentricTransRadZ, z_m);
         self.parameters.add(ParameterID::MetacentricTransBallast, delta_m_h_ballast.trans());

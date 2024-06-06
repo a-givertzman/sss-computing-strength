@@ -11,7 +11,7 @@ pub enum ParameterID {
     DraughtBow = 4,
     DraughtStern = 5,
     Trim = 6,
-    Pitch = 7,
+    Roll = 7,
     TonesPerCm = 8,
     MomentRollPerDeg = 9,
     MomentTrimPerCm = 10,

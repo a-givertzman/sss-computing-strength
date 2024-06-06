@@ -158,7 +158,7 @@ impl LeverDiagram {
                 .collect::<Vec<(f64, f64)>>(),
         );
         *self.ddo.borrow_mut() = Some(ddo);
-        self.parameters.add(ParameterID::Pitch, angle_zero);
+        self.parameters.add(ParameterID::Roll, angle_zero);
     }
 }
 ///
