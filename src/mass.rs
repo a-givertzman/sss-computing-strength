@@ -119,6 +119,7 @@ impl IMass for Mass {
         if self.shift.borrow().is_none() {
             let res = self.moment_mass().to_pos(self.sum());
             log::info!("\t Mass shift:{res} ");
+            self.parameters.add(ParameterID::CenterMassX, res.x());
             self.parameters.add(ParameterID::CenterMassZ, res.z());
             *self.shift.borrow_mut() = Some(res);
         }

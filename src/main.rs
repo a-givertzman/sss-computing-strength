@@ -257,6 +257,7 @@ fn execute() -> Result<(), Error> {
     let center_waterline_shift = Curve::new_linear(&data.center_waterline).value(volume);
     // Средняя осадка
     let mean_draught = Curve::new_linear(&data.mean_draught).value(volume);
+    parameters.add(ParameterID::DraughtMean, mean_draught);
     // Для расчета прочности дифферент находится подбором
     // как условие для схождения изгибающего момента в 0
     let mut computer = Computer::new(

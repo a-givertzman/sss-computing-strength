@@ -36,6 +36,7 @@ pub enum ParameterID {
     MassLightship = 29, 
     MassIcing = 30, 
     MassWetting = 31, 
+    CenterMassX = 32,
 }
 /// Набор результатов расчетов для записи в БД
 pub struct Parameters {

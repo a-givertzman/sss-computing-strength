@@ -77,7 +77,6 @@ impl Trim {
         self.parameters.add(ParameterID::Trim, trim_angle);
         self.parameters.add(ParameterID::DraughtBow, draught_bow);
         self.parameters.add(ParameterID::DraughtStern, draught_stern);
-        self.parameters.add(ParameterID::DraughtMean, draught_mid);
         value
     }
 }
