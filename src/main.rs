@@ -122,7 +122,7 @@ fn execute() -> Result<(), Error> {
             v.mass,
             bound_x,
             Some(shift_const.clone()),
-            LoadingType::Lightship,
+            LoadingType::from(v.load_constant_type),
         ));
      //   log::info!("\t Mass loads_const from load_constants:{:?} ", load);
         loads_const.push(load);
@@ -138,7 +138,7 @@ fn execute() -> Result<(), Error> {
             v.mass,
             bound_x,
             mass_shift.clone(),
-            v.loading_type,
+            LoadingType::from(v.loading_type),
         ));
       //  log::info!("\t Mass load_variable from cargoes:{:?} ", load);
         load_variable.push(load);
@@ -154,7 +154,7 @@ fn execute() -> Result<(), Error> {
             v.mass,
             bound_x,
             mass_shift.clone(),
-            v.loading_type,
+            LoadingType::from(v.loading_type),
         ));
        // log::info!("\t Mass load_variable from compartments src:{:?} trg:{:?}", v, load, );
         load_variable.push(load);
@@ -165,7 +165,7 @@ fn execute() -> Result<(), Error> {
                 bound_x,
                 mass_shift.clone(),
                 InertiaMoment::new(v.m_f_s_x.unwrap_or(0.), v.m_f_s_y.unwrap_or(0.)),
-                v.loading_type,
+                LoadingType::from(v.loading_type),
             ));
     //        log::info!("\t Mass tanks from compartments:{:?} ", tank);
             tanks.push(tank);

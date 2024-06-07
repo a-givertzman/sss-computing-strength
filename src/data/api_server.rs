@@ -207,7 +207,7 @@ pub fn get_data(
         ship_id
     ))?)?;
     let load_constant = LoadConstantArray::parse(&api_server.fetch(&format!(
-        "SELECT mass, bound_x1, bound_x2, bound_type FROM load_constant WHERE ship_id={};",
+        "SELECT mass, bound_x1, bound_x2, bound_type, load_constant_type::TEXT FROM load_constant WHERE ship_id={};",
         ship_id
     ))?)?;
     let area_h_str = HStrAreaDataArray::parse(&api_server.fetch(

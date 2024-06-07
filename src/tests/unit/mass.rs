@@ -24,13 +24,13 @@ mod tests {
                     10.,
                     Bound::new(-10., 0.),
                     Some(Position::new(-5., 0., 0.)),     
-                    LoadingType::Lightship,         
+                    LoadingType::Hull,         
                 )),
                 Rc::new(LoadMass::new(
                     20.,
                     Bound::new(0., 10.),
                     Some(Position::new(5., 0., 0.)),
-                    LoadingType::Lightship,  
+                    LoadingType::Hull,  
                 )),
             ]);
 

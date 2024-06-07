@@ -1,7 +1,28 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
 use serde::{Deserialize, Serialize};
-use crate::{data::structs::DataArray, LoadingType};
+use crate::{data::structs::DataArray};
 
+/// Тип груза
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+pub enum CargoType {
+    #[serde(alias="store")]
+    Store,
+    #[serde(alias="cargo")]
+    Cargo,
+}
+///
+impl std::fmt::Display for CargoType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                CargoType::Store => "Store", 
+                CargoType::Cargo => "Cargo", 
+            },
+        )
+    }
+}
 /// Груз, конструкции корпуса, контейнер или другой твердый груз
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LoadCargoData {
@@ -38,7 +59,7 @@ pub struct LoadCargoData {
     pub vertical_area_shift_y: Option<f64>,
     pub vertical_area_shift_z: Option<f64>,
     /// Тип груза
-    pub loading_type: LoadingType,
+    pub loading_type: CargoType,
 }
 
 ///
@@ -105,7 +126,7 @@ pub struct ParsedCargoData {
     /// Центр парусности, м
     pub vertical_area_shift: Option<(f64, f64, f64)>,
     /// Тип груза
-    pub loading_type: LoadingType,
+    pub loading_type: CargoType,
 }
 ///
 impl std::fmt::Display for ParsedCargoData {
