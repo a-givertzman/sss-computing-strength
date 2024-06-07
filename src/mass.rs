@@ -28,6 +28,12 @@ pub struct Mass {
     values: Rc<RefCell<Option<Vec<f64>>>>,
     /// Отстояние центра масс
     shift: Rc<RefCell<Option<Position>>>,
+    /// Вычисленное распределение массы по типам
+    mass_hull: Rc<RefCell<Option<Vec<f64>>>>,
+    mass_equipment: Rc<RefCell<Option<Vec<f64>>>>,
+    mass_ballast: Rc<RefCell<Option<Vec<f64>>>>,
+    mass_store: Rc<RefCell<Option<Vec<f64>>>>,
+    mass_cargo: Rc<RefCell<Option<Vec<f64>>>>,
 }
 ///
 impl Mass {
@@ -57,6 +63,11 @@ impl Mass {
             sum: Rc::new(RefCell::new(None)),
             values: Rc::new(RefCell::new(None)),
             shift: Rc::new(RefCell::new(None)),
+            mass_hull: Rc::new(RefCell::new(None)),
+            mass_equipment: Rc::new(RefCell::new(None)),
+            mass_ballast: Rc::new(RefCell::new(None)),
+            mass_store: Rc::new(RefCell::new(None)),
+            mass_cargo: Rc::new(RefCell::new(None)),
         }
     }
 }
@@ -90,6 +101,14 @@ impl IMass for Mass {
     /// Распределение массы по вектору разбиения
     fn values(&self) -> Vec<f64> {
         if self.values.borrow().is_none() {
+            let mut mass_hull = None;
+            let mut mass_equipment = None;
+            let mut mass_ballast = None;
+            let mut mass_store = None;
+            let mut mass_cargo = None;
+
+
+            
             let res: Vec<f64> = self
                 .bounds
                 .iter()
@@ -153,6 +172,47 @@ impl IMass for Mass {
             .clone()
             .expect("Mass moment_mass error: no value")
     }
+    /// Вычисленное распределение массы по типам
+    fn mass_hull(&mut self) -> Vec<f64> {
+        if self.mass_hull.is_none() {
+            self.calculate();
+        }
+        self.mass_hull
+            .clone()
+            .expect("Computer mass_hull error: no values")
+    }
+    fn mass_equipment(&mut self) -> Vec<f64> {
+        if self.mass_equipment.is_none() {
+            self.calculate();
+        }
+        self.mass_equipment
+            .clone()
+            .expect("Computer mass_equipment error: no values")
+    }
+    fn mass_ballast(&mut self) -> Vec<f64> {
+        if self.mass_ballast.is_none() {
+            self.calculate();
+        }
+        self.mass_ballast
+            .clone()
+            .expect("Computer mass_ballast error: no values")
+    }
+    fn mass_store(&mut self) -> Vec<f64> {
+        if self.mass_store.is_none() {
+            self.calculate();
+        }
+        self.mass_store
+            .clone()
+            .expect("Computer mass_store error: no values")
+    }
+    fn mass_cargo(&mut self) -> Vec<f64> {
+        if self.mass_cargo.is_none() {
+            self.calculate();
+        }
+        self.mass_cargo
+            .clone()
+            .expect("Computer mass_cargo error: no values")
+    }
 }
 
 #[doc(hidden)]
@@ -171,6 +231,12 @@ pub trait IMass {
     fn moment_mass(&self) -> Moment;
     // Суммарный момент свободной поверхности
  //   fn moment_surface(&self) -> SurfaceMoment;
+    /// Вычисленное распределение массы по типам
+    fn mass_hull(&mut self) -> Vec<f64>;
+    fn mass_equipment(&mut self) -> Vec<f64>;
+    fn mass_ballast(&mut self) -> Vec<f64>;
+    fn mass_store(&mut self) -> Vec<f64>;
+    fn mass_cargo(&mut self) -> Vec<f64>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -178,9 +244,12 @@ pub struct FakeMass {
     sum: f64,
     values: Vec<f64>,
     shift: Position,
-//    delta_m_h: DeltaMH,
     moment_mass: Moment,
- //   moment_surface: SurfaceMoment,
+    mass_hull: Vec<f64>,
+    mass_equipment: Vec<f64>,
+    mass_ballast: Vec<f64>,
+    mass_store: Vec<f64>,
+    mass_cargo: Vec<f64>,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
@@ -189,17 +258,23 @@ impl FakeMass {
         sum: f64,
         values: Vec<f64>,
         shift: Position,
-  //      delta_m_h: DeltaMH,
         moment_mass: Moment,
-  //      moment_surface: SurfaceMoment,
+        mass_hull: Vec<f64>,
+        mass_equipment: Vec<f64>,
+        mass_ballast: Vec<f64>,
+        mass_store: Vec<f64>,
+        mass_cargo: Vec<f64>,
     ) -> Self {
         Self {
             sum,
             values,
             shift,
-   //         delta_m_h,
             moment_mass,
-   //         moment_surface,
+            mass_hull,
+            mass_equipment,
+            mass_ballast,
+            mass_store,
+            mass_cargo,
         }
     }
 }
@@ -214,13 +289,23 @@ impl IMass for FakeMass {
     fn shift(&self) -> Position {
         self.shift.clone()
     }
- /*   fn delta_m_h(&self) -> DeltaMH {
-        self.delta_m_h.clone()
-    }*/
     fn moment_mass(&self) -> Moment {
         self.moment_mass.clone()
     }
-  /*  fn moment_surface(&self) -> SurfaceMoment {
-        self.moment_surface.clone()
-    }*/
+    /// Вычисленное распределение массы по типам
+    fn mass_hull(&mut self) -> Vec<f64> {
+        self.mass_hull.clone()
+    }
+    fn mass_equipment(&mut self) -> Vec<f64> {
+        self.mass_equipment.clone()
+    }
+    fn mass_ballast(&mut self) -> Vec<f64> {
+        self.mass_ballast.clone()
+    }
+    fn mass_store(&mut self) -> Vec<f64> {
+        self.mass_store.clone()
+    }
+    fn mass_cargo(&mut self) -> Vec<f64> {
+        self.mass_cargo.clone()
+    }
 }

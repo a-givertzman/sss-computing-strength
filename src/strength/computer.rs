@@ -27,8 +27,6 @@ pub struct Computer {
     displacement: Rc<Displacement>,
     /// Вектор разбиения судна на отрезки
     bounds: Rc<Bounds>,
-    /// Вычисленное распределение массы
-    mass_values: Option<Vec<f64>>,
     /// Вычисленное распределение осадки
     displacement_values: Option<Vec<f64>>,
     /// Вычисленное распределение результирующей силы
@@ -58,21 +56,11 @@ impl Computer {
             mass,
             displacement,
             bounds,
-            mass_values: None,
             displacement_values: None,
             total_force_values: None,
             bending_moment: None,
             shear_force: None,
         }
-    }
-    /// Вычисленное распределение массы
-    pub fn mass(&mut self) -> Vec<f64> {
-        if self.displacement_values.is_none() {
-            self.calculate();
-        }
-        self.mass_values
-            .clone()
-            .expect("Computer mass error: no values")
     }
     /// Вычисленное распределение осадки
     pub fn displacement(&mut self) -> Vec<f64> {
@@ -151,7 +139,6 @@ impl Computer {
             trim -= last_value.signum() * delta;
             delta *= 0.5;
         }
-        self.mass_values = Some(self.mass.values());
         self.displacement_values = displacement_values;
         self.total_force_values = total_force_values;
         self.shear_force = shear_force_values;

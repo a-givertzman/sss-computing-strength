@@ -86,7 +86,7 @@ pub fn get_data(
 ) -> Result<ParsedShipData, Error> {
     log::info!("input_api_server read begin");
     let ship_parameters = ShipArray::parse(&api_server.fetch(&format!(
-        "SELECT key, value, value_type FROM ship_parameters WHERE ship_id={};",
+        "SELECT key, value, type FROM ship_parameters WHERE ship_id={};",
         ship_id
     ))?)?;
     let navigation_area_param = NavigationAreaArray::parse(
@@ -129,7 +129,7 @@ pub fn get_data(
         ship_id
     ))?)?;
     let center_draught_shift = CenterDraughtShiftDataArray::parse(&api_server.fetch(&format!(
-        "SELECT key, value_x, value_y, value_z FROM center_draught WHERE ship_id={};",
+        "SELECT key, x, y, z FROM center_draught WHERE ship_id={};",
         ship_id
     ))?)?;
     let mean_draught = MeanDraughtDataArray::parse(&api_server.fetch(&format!(
@@ -166,7 +166,7 @@ pub fn get_data(
         ship_id
     ))?)?;
     let delta_windage_moment = DeltaWindageMomentDataArray::parse(&api_server.fetch(&format!(
-        "SELECT draught, value_x, value_z FROM delta_windage_moment WHERE ship_id={};",
+        "SELECT draught, x, z FROM delta_windage_moment WHERE ship_id={};",
         ship_id
     ))?)?;
     let physical_frame = FrameIndexDataArray::parse(&api_server.fetch(&format!(
@@ -267,26 +267,34 @@ pub fn get_data(
 pub fn send_strenght_data(
     api_server: &mut ApiServer,
     ship_id: usize,
-    mass: &Vec<f64>,
+    mass_hull: &Vec<f64>,
+    mass_equipment: &Vec<f64>,
+    mass_ballast: &Vec<f64>,
+    mass_store: &Vec<f64>,
+    mass_cargo: &Vec<f64>,
+    mass_sum: &Vec<f64>,
     displacement: &Vec<f64>,
     total_force: &Vec<f64>,
     shear_force: &Vec<f64>,
     bending_moment: &Vec<f64>,
 ) -> Result<(), error::Error> {
     log::info!("send_strenght_data begin");
-    assert!(mass.len() == displacement.len() &&
+    assert!(mass_sum.len() == displacement.len() &&
              displacement.len()== total_force.len() &&
              total_force.len() + 1 == shear_force.len() &&
              shear_force.len() == bending_moment.len());
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM result_strength WHERE ship_id={ship_id};");
-    full_sql += " INSERT INTO result_strength (ship_id, index, value_mass, value_displacement, value_total_force, value_shear_force, value_bending_moment) VALUES";
-    (0..mass.len()).for_each(|i| {
+    full_sql += " INSERT INTO result_strength (ship_id, index, mass_hull, \
+        mass_equipment, mass_ballast, mass_store, mass_cargo, \
+        mass_sum, displacement, total_force, shear_force, \
+        bending_moment) VALUES";
+    (0..mass_sum.len()).for_each(|i| {
         full_sql += &format!(" ({ship_id}, {i}, {}, {}, {}, {}, {}),", 
-            mass[i], displacement[i], total_force[i], shear_force[i], bending_moment[i]);
+            mass_sum[i], displacement[i], total_force[i], shear_force[i], bending_moment[i]);
     });
     full_sql += &format!(" ({ship_id}, {}, 0, 0, 0, {}, {}),", 
-        mass.len(), shear_force[mass.len()], bending_moment[mass.len()]);
+        mass_sum.len(), shear_force[mass_sum.len()], bending_moment[mass_sum.len()]);
     full_sql.pop();
     full_sql.push(';');
     full_sql += " END$$;";
@@ -371,7 +379,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
     let center_draught_shift = async_query(
 
         &format!(
-            "SELECT key, value_x, value_y, value_z FROM center_draught WHERE ship_id={};",
+            "SELECT key, x, y, z FROM center_draught WHERE ship_id={};",
             ship_id
         ),
     );
@@ -445,7 +453,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
     let tank_center = async_query(
 
         &format!(
-            "SELECT tank_id, key, value_x, value_y, value_z FROM tank_center WHERE tank_id={};",
+            "SELECT tank_id, key, x, y, z FROM tank_center WHERE tank_id={};",
             ship_id
         ),
     );
@@ -453,7 +461,7 @@ pub async fn async_get_data(db_name: &str, ship_id: usize) -> Result<ParsedShipD
     let tank_inertia = async_query(
 
         &format!(
-            "SELECT tank_id, key, value_x, value_y FROM tank_center WHERE tank_id={};",
+            "SELECT tank_id, key, x, y FROM tank_center WHERE tank_id={};",
             ship_id
         ),
     );
