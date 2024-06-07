@@ -189,7 +189,6 @@ impl ParsedShipData {
         }
 
         let physical_frame = physical_frame.data();
-    //    let theoretical_frame = theoretical_frame.data();
         let bonjean_frame = bonjean_frame.data();        
         let frame_area = frame_area.data();
 
@@ -198,7 +197,7 @@ impl ParsedShipData {
         // Координата шпангоута задана относительно кормы, считаем ее относительно центра
         let bound_x = |value: &f64, value_type: &str| -> Result<f64, Error> { 
             Ok(if value_type == "frame" {
-                TODO
+            //    TODO сделать пересчет из целого ингдекса в дробный
                 *physical_frame.get(&(*value as i32))
                     .ok_or(format!(
                         "compartments parse error: no physical_frame for value:{}",

@@ -94,12 +94,7 @@ fn execute() -> Result<(), Error> {
         .iter()
         .map(|v| {
             Frame::new(
-                v.x - data
-                    .frame_area
-                    .last()
-                    .expect("frames last error: no frame")
-                    .x
-                    / 2.,
+                v.x,
                 Curve::new_linear(&v.immersion_area),
             )
         })
@@ -129,7 +124,7 @@ fn execute() -> Result<(), Error> {
             Some(shift_const.clone()),
             LoadingType::Lightship,
         ));
-        log::info!("\t Mass loads_const from load_constants:{:?} ", load);
+     //   log::info!("\t Mass loads_const from load_constants:{:?} ", load);
         loads_const.push(load);
     });
 
@@ -145,7 +140,7 @@ fn execute() -> Result<(), Error> {
             mass_shift.clone(),
             v.loading_type,
         ));
-        log::info!("\t Mass load_variable from cargoes:{:?} ", load);
+      //  log::info!("\t Mass load_variable from cargoes:{:?} ", load);
         load_variable.push(load);
     });
 
@@ -161,7 +156,7 @@ fn execute() -> Result<(), Error> {
             mass_shift.clone(),
             v.loading_type,
         ));
-        log::info!("\t Mass load_variable from compartments src:{:?} trg:{:?}", v, load, );
+       // log::info!("\t Mass load_variable from compartments src:{:?} trg:{:?}", v, load, );
         load_variable.push(load);
         if v.m_f_s_x.is_some() && v.m_f_s_y.is_some() && v.density.is_some() {
             let tank: Rc<dyn ITank> = Rc::new(Tank::new(
