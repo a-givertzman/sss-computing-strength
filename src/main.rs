@@ -312,7 +312,7 @@ fn execute() -> Result<(), Error> {
     ));
 
     let trim = Trim::new(
-        data.length,
+        data.length_lbp,
         mean_draught,
         center_waterline_shift,
         center_draught_shift.clone(),        
@@ -325,7 +325,7 @@ fn execute() -> Result<(), Error> {
     // Длинна по ватерлинии при текущей осадке
     let length_wl = Curve::new_linear(&data.waterline_length).value(mean_draught);
     // Ширина по ватерлинии при текущей осадке
-    let breadth = Curve::new_linear(&data.waterline_breadth).value(mean_draught);
+    let breadth_wl = Curve::new_linear(&data.waterline_breadth).value(mean_draught);
     // Отстояние по вертикали центра площади проекции подводной части корпуса
     let volume_shift = Curve::new_linear(&data.volume_shift).value(mean_draught);
     // Проверяем есть ли пантокарены в отрицательной области углов
@@ -393,7 +393,7 @@ fn execute() -> Result<(), Error> {
 
     let roll_period: Rc<dyn IRollingPeriod> = Rc::new(RollingPeriod::new(
         length_wl,
-        breadth,
+        data.width,
         mean_draught,
         Rc::clone(&metacentric_height),
     ));
@@ -403,7 +403,8 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
         volume,    // Объемное водоизмещение (1)
         length_wl, // длинна по ватерлинии при текущей осадке
-        breadth,
+        data.width, // ширина полная
+        breadth_wl, // ширина по ватерлинии при текущей осадке
         mean_draught,
         Curve::new_linear(&data.coefficient_k.data()),
         Curve::new_linear(&data.multipler_x1.data()),
@@ -440,8 +441,8 @@ fn execute() -> Result<(), Error> {
         load_variable.iter().any(|v| v.value(None) != 0.),
         icing_stab.is_some(),
         flooding_angle,
-        data.length,
-        breadth,
+        data.length_lbp,
+        data.width,
         mean_draught,
         Curve::new_linear(&data.h_subdivision).value(mean_draught),
         Rc::new(Wind::new(
@@ -455,7 +456,7 @@ fn execute() -> Result<(), Error> {
         Rc::new(stability),
         Rc::clone(&metacentric_height),
         Rc::new(Acceleration::new(
-            breadth,
+            data.width,
             mean_draught,
             Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())),
             Rc::clone(&roll_amplitude),

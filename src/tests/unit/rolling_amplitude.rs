@@ -27,6 +27,7 @@ mod tests {
             18.,
             10.,  
             2.,
+            2.,
             1.,
             Curve::new_linear(&vec![(0., 0.7), (1., 0.7)]),
             Curve::new_linear(&vec![(0., 0.8), (1., 0.8)]),

@@ -46,8 +46,10 @@ pub struct ParsedShipData {
     pub coefficient_k: CoefficientKArray,
     /// Коэффициент k_theta учитывающий особенности качки судов смешанного типа
     pub coefficient_k_theta: CoefficientKThetaArray,
-    /// Длинна корпуса судна
-    pub length: f64,
+    /// Длинна корпуса судна между перпендикулярами
+    pub length_lbp: f64,
+    /// Длинна корпуса судна полная
+    pub length_loa: f64,
     /// Ширина корпуса судна
     pub width: f64,
     /// Отстояние миделя от нулевого шпангоута
@@ -171,18 +173,18 @@ impl ParsedShipData {
     ) -> Result<Self, Error> {
         log::info!("result parse begin");
         let ship_data = ship_parameters.data();
-        let ship_length = ship_data.get("LBP").ok_or(format!(
+        let length_lbp = ship_data.get("LBP").ok_or(format!(
             "ParsedShipData parse error: no length for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
-        if ship_length <= 0. {
+        if length_lbp <= 0. {
             return Err(Error::Parameter("Ship length parse error: ship_length <= 0.".to_owned()));
         }
         let midship = ship_data.get("X midship from Fr0").ok_or(format!(
             "ParsedShipData parse error: no midship for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
-        if midship <= 0. || midship >= ship_length {
+        if midship <= 0. || midship >= length_lbp {
             return Err(Error::Parameter("Ship length parse error: midship <= 0. || midship >= ship_length".to_owned()));
         }
 
@@ -196,6 +198,7 @@ impl ParsedShipData {
         // Координата шпангоута задана относительно кормы, считаем ее относительно центра
         let bound_x = |value: &f64, value_type: &str| -> Result<f64, Error> { 
             Ok(if value_type == "frame" {
+                TODO
                 *physical_frame.get(&(*value as i32))
                     .ok_or(format!(
                         "compartments parse error: no physical_frame for value:{}",
@@ -371,9 +374,13 @@ impl ParsedShipData {
             multipler_s,
             coefficient_k,
             coefficient_k_theta,
-            length: ship_length,
+            length_lbp,
+            length_loa: ship_data.get("LBP").ok_or(format!(
+                "ParsedShipData parse error: no length_loa for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
             width: ship_data.get("Ship hull width").ok_or(format!(
-                "ParsedShipData parse error: no breadth for ship id:{}",
+                "ParsedShipData parse error: no width for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
             midship,
@@ -521,10 +528,10 @@ impl ParsedShipData {
                 "Error check CoefficientKThetaArray: no data"
             )));
         }
-        if self.length <= 0. {
+        if self.length_lbp <= 0. {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: length must be positive {}",
-                self.length
+                self.length_lbp
             )));
         }
         if self.width <= 0. {

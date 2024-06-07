@@ -17,6 +17,8 @@ pub struct RollingAmplitude {
     l_wl: f64,
     /// Ширина судна B
     b: f64,
+    /// Ширина судна по ватерлинии
+    b_wl: f64,
     /// Осадка судна d
     d: f64,
     /// Коэффициент k для судов, имеющих скуловые кили или
@@ -39,6 +41,7 @@ impl RollingAmplitude {
         /// * volume - Объемное водоизмещение
         /// * l_wl - Длина судна по ватерлинии
         /// * b - Ширина судна B
+        /// * b_wl - Ширина судна по ватерлинии 
         /// * d - Осадка судна d
         /// * k - Коэффициент k для судов, имеющих скуловые кили или
         /// брусковый киль. Табл. 2.1.5.2
@@ -52,6 +55,7 @@ impl RollingAmplitude {
         volume: f64,
         l_wl: f64,
         b: f64,
+        b_wl: f64,
         d: f64,
         k: Curve,
         x_1: Curve,
@@ -66,6 +70,7 @@ impl RollingAmplitude {
             volume,
             l_wl,
             b,
+            b_wl,
             d,
             k,
             x_1,
@@ -80,7 +85,7 @@ impl IRollingAmplitude for RollingAmplitude {
     /// Амплитуда качки судна с круглой скулой (2.1.5)
     fn calculate(&self) -> f64 {
         // Коэффициент полноты судна
-        let c_b = self.volume / (self.l_wl * self.b * self.d);
+        let c_b = self.volume / (self.l_wl * self.b_wl * self.d);
         let k = self.a_k.map(|a_k| self.k.value(a_k*100./(self.l_wl*self.b))).unwrap_or(1.);
         let x_1 = self.x_1.value(self.b / self.d);
         let x_2 = self.x_2.value(c_b);
