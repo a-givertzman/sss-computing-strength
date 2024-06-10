@@ -75,16 +75,20 @@ impl LeverDiagram {
     fn calculate(&self) {
         // расчет диаграммы
         let delta_y = self.mass.shift().y() - self.center_draught_shift.y();
+        dbg!(delta_y, self.metacentric_height.z_g_fix(), self.mean_draught);
         let mut dso = (-90..=90)
             .map(|angle_deg| {
                 let angle_deg = angle_deg as f64;
                 let angle_rad = angle_deg * std::f64::consts::PI / 180.;
-                let value = self.data.value(self.mean_draught, angle_deg)
-                    - self.metacentric_height.z_g_fix() * angle_rad.sin()
-                    - delta_y.abs() * angle_rad.cos();
+                let v1 = self.data.value(self.mean_draught, angle_deg);
+                let v2 = self.metacentric_height.z_g_fix() * angle_rad.sin();
+                let v3 = delta_y.abs() * angle_rad.cos();
+                let value = v1 - v2 - v3;
+     //           log::info!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}");
                 (angle_deg, value)
             })
             .collect::<Vec<(f64, f64)>>();
+      //  dbg!(&dso);
         // нахождение максимума диаграммы
         let curve = Curve::new_catmull_rom(&dso);
         let mut angle = 45.;
@@ -111,7 +115,7 @@ impl LeverDiagram {
                 angle = max_angle;
             }
             delta_angle *= 0.5;
-            //    log::info!("StabilityArm calculate: value:{value} angle:{angle} max_value:{max_value} max_angle:{max_angle} delta_angle:{delta_angle} i:{i} ");
+    //        log::info!("StabilityArm calculate: value:{value} angle:{angle} max_value:{max_value} max_angle:{max_angle} delta_angle:{delta_angle} i:{_i} ");
         }
         *self.theta_max.borrow_mut() = Some(max_angle);
         dso.push((max_angle, max_value));
@@ -144,7 +148,7 @@ impl LeverDiagram {
         let angle_zero = *self
             .angle(0.)
             .first()
-            .expect("StabilityArm calculate err: no angle_zero");
+            .unwrap_or(&0.);
 
         let mut ddo = vec![(angle_zero, 0.)];
         let start = angle_zero.ceil() as i32;
@@ -187,7 +191,6 @@ impl ILeverDiagram for LeverDiagram {
             if last_delta_value.abs() > 0.00001 {
                 angles[0] += delta_angle * last_delta_value.signum();
             }
-
             let last_delta_value = lever_moment - curve.value(angles[1]);
     //        log::info!("StabilityArm calculate: target:{lever_moment} angle2:{} last_delta_value:{last_delta_value} i:{_i} delta_angle:{delta_angle} ", angles[1]);
             if last_delta_value.abs() > 0.00001 {
