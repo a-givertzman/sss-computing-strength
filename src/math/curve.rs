@@ -4,7 +4,7 @@ use splines::{Interpolation, Key, Spline};
 ///
 /// Представление кривой в виде массива пар значений
 /// - Обеспечивает получение промежуточных значений с помощью простой линейной интерполяции
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Curve {
     spline: Spline<f64, f64>,
 }
