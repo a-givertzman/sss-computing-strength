@@ -183,13 +183,13 @@ impl ILeverDiagram for LeverDiagram {
         let mut angles = vec![max_angle - delta_angle, max_angle + delta_angle];
         for _i in 0..30 {
             let last_delta_value = lever_moment - curve.value(angles[0]);
-                      log::info!("StabilityArm calculate: target:{lever_moment} angle1:{} last_delta_value:{last_delta_value} i:{_i} delta_angle:{delta_angle} ", angles[0]);
+    //        log::info!("StabilityArm calculate: target:{lever_moment} angle1:{} last_delta_value:{last_delta_value} i:{_i} delta_angle:{delta_angle} ", angles[0]);
             if last_delta_value.abs() > 0.00001 {
                 angles[0] += delta_angle * last_delta_value.signum();
             }
 
             let last_delta_value = lever_moment - curve.value(angles[1]);
-                      log::info!("StabilityArm calculate: target:{lever_moment} angle2:{} last_delta_value:{last_delta_value} i:{_i} delta_angle:{delta_angle} ", angles[1]);
+    //        log::info!("StabilityArm calculate: target:{lever_moment} angle2:{} last_delta_value:{last_delta_value} i:{_i} delta_angle:{delta_angle} ", angles[1]);
             if last_delta_value.abs() > 0.00001 {
                 angles[1] -= delta_angle * last_delta_value.signum();
                 angles[1] = angles[1].min(90.);
