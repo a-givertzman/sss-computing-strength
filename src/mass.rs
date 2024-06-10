@@ -1,7 +1,7 @@
 //! Нагрузка на корпус судна
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{icing::IIcingMass, math::*, IParameters, LoadMass, LoadingType, ParameterID, Parameters};
+use crate::{icing::IIcingMass, math::*, IParameters, IResults, LoadMass, LoadingType, ParameterID, Parameters};
 
 use super::load::ILoadMass;
 
@@ -19,6 +19,7 @@ pub struct Mass {
     /// Вектор разбиения на отрезки для эпюров
     bounds: Rc<Bounds>,
     /// Набор результатов расчетов для записи в БД
+    results: Rc<dyn IResults>, 
     parameters: Rc<dyn IParameters>, 
     /// Суммарный статический момент
     moment_mass: Rc<RefCell<Option<Moment>>>,
@@ -28,12 +29,6 @@ pub struct Mass {
     values: Rc<RefCell<Option<Vec<f64>>>>,
     /// Отстояние центра масс
     shift: Rc<RefCell<Option<Position>>>,
-    /// Вычисленное распределение массы по типам
-    mass_hull: Rc<RefCell<Option<Vec<f64>>>>,
-    mass_equipment: Rc<RefCell<Option<Vec<f64>>>>,
-    mass_ballast: Rc<RefCell<Option<Vec<f64>>>>,
-    mass_store: Rc<RefCell<Option<Vec<f64>>>>,
-    mass_cargo: Rc<RefCell<Option<Vec<f64>>>>,
 }
 ///
 impl Mass {
@@ -43,13 +38,14 @@ impl Mass {
     /// * icing_mass - Учет обледенения судна
     /// * loads_variable - грузы судна
     /// * bounds - вектор разбиения на отрезки для эпюров
-    /// * parameters - Набор результатов расчетов для записи в БД
+    /// * results, parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         loads_const: Rc<Vec<Rc<dyn ILoadMass>>>, 
         shift_const: Position,
         icing_mass: Rc<dyn IIcingMass>,
         loads_variable: Rc<Vec<Rc<LoadMass>>>, 
         bounds: Rc<Bounds>,
+        results: Rc<dyn IResults>, 
         parameters: Rc<dyn IParameters>, 
     ) -> Self {
         Self {
@@ -58,16 +54,12 @@ impl Mass {
             icing_mass,
             loads_variable,
             bounds,
+            results,
             parameters,
             moment_mass: Rc::new(RefCell::new(None)),
             sum: Rc::new(RefCell::new(None)),
             values: Rc::new(RefCell::new(None)),
             shift: Rc::new(RefCell::new(None)),
-            mass_hull: Rc::new(RefCell::new(None)),
-            mass_equipment: Rc::new(RefCell::new(None)),
-            mass_ballast: Rc::new(RefCell::new(None)),
-            mass_store: Rc::new(RefCell::new(None)),
-            mass_cargo: Rc::new(RefCell::new(None)),
         }
     }
 }
@@ -172,47 +164,6 @@ impl IMass for Mass {
             .clone()
             .expect("Mass moment_mass error: no value")
     }
-    /// Вычисленное распределение массы по типам
-    fn mass_hull(&mut self) -> Vec<f64> {
-        if self.mass_hull.is_none() {
-            self.calculate();
-        }
-        self.mass_hull
-            .clone()
-            .expect("Computer mass_hull error: no values")
-    }
-    fn mass_equipment(&mut self) -> Vec<f64> {
-        if self.mass_equipment.is_none() {
-            self.calculate();
-        }
-        self.mass_equipment
-            .clone()
-            .expect("Computer mass_equipment error: no values")
-    }
-    fn mass_ballast(&mut self) -> Vec<f64> {
-        if self.mass_ballast.is_none() {
-            self.calculate();
-        }
-        self.mass_ballast
-            .clone()
-            .expect("Computer mass_ballast error: no values")
-    }
-    fn mass_store(&mut self) -> Vec<f64> {
-        if self.mass_store.is_none() {
-            self.calculate();
-        }
-        self.mass_store
-            .clone()
-            .expect("Computer mass_store error: no values")
-    }
-    fn mass_cargo(&mut self) -> Vec<f64> {
-        if self.mass_cargo.is_none() {
-            self.calculate();
-        }
-        self.mass_cargo
-            .clone()
-            .expect("Computer mass_cargo error: no values")
-    }
 }
 
 #[doc(hidden)]
@@ -223,20 +174,9 @@ pub trait IMass {
     fn values(&self) -> Vec<f64>;
     /// Отстояние центра масс
     fn shift(&self) -> Position;
-    /// Поправка к продольной метацентрической высоте на  
-    /// влияние свободной поверхности жидкости в цистернах
-  //  fn delta_m_h(&self) -> DeltaMH;
     /// Суммарный статический момент. Для постоянной массы и для запасов считается по
     /// заданным значениям смещения центра масс
     fn moment_mass(&self) -> Moment;
-    // Суммарный момент свободной поверхности
- //   fn moment_surface(&self) -> SurfaceMoment;
-    /// Вычисленное распределение массы по типам
-    fn mass_hull(&mut self) -> Vec<f64>;
-    fn mass_equipment(&mut self) -> Vec<f64>;
-    fn mass_ballast(&mut self) -> Vec<f64>;
-    fn mass_store(&mut self) -> Vec<f64>;
-    fn mass_cargo(&mut self) -> Vec<f64>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -245,11 +185,6 @@ pub struct FakeMass {
     values: Vec<f64>,
     shift: Position,
     moment_mass: Moment,
-    mass_hull: Vec<f64>,
-    mass_equipment: Vec<f64>,
-    mass_ballast: Vec<f64>,
-    mass_store: Vec<f64>,
-    mass_cargo: Vec<f64>,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
@@ -259,22 +194,12 @@ impl FakeMass {
         values: Vec<f64>,
         shift: Position,
         moment_mass: Moment,
-        mass_hull: Vec<f64>,
-        mass_equipment: Vec<f64>,
-        mass_ballast: Vec<f64>,
-        mass_store: Vec<f64>,
-        mass_cargo: Vec<f64>,
     ) -> Self {
         Self {
             sum,
             values,
             shift,
             moment_mass,
-            mass_hull,
-            mass_equipment,
-            mass_ballast,
-            mass_store,
-            mass_cargo,
         }
     }
 }
@@ -291,21 +216,5 @@ impl IMass for FakeMass {
     }
     fn moment_mass(&self) -> Moment {
         self.moment_mass.clone()
-    }
-    /// Вычисленное распределение массы по типам
-    fn mass_hull(&mut self) -> Vec<f64> {
-        self.mass_hull.clone()
-    }
-    fn mass_equipment(&mut self) -> Vec<f64> {
-        self.mass_equipment.clone()
-    }
-    fn mass_ballast(&mut self) -> Vec<f64> {
-        self.mass_ballast.clone()
-    }
-    fn mass_store(&mut self) -> Vec<f64> {
-        self.mass_store.clone()
-    }
-    fn mass_cargo(&mut self) -> Vec<f64> {
-        self.mass_cargo.clone()
     }
 }

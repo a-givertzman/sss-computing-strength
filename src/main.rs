@@ -71,6 +71,7 @@ fn execute() -> Result<(), Error> {
     let mut elapsed = HashMap::new();
     let time = Instant::now();
 
+    let results: Rc<dyn IResults> = Rc::new(Results::new());
     let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
     let mut data = get_data(&mut api_server, ship_id)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
@@ -230,6 +231,7 @@ fn execute() -> Result<(), Error> {
         )),
         Rc::clone(&load_variable),
         Rc::clone(&bounds),
+        Rc::clone(&results),
         Rc::clone(&parameters),
     ));
     // Объемное водоизмещение (1)
@@ -255,7 +257,7 @@ fn execute() -> Result<(), Error> {
     parameters.add(ParameterID::DraughtMean, mean_draught);
     // Для расчета прочности дифферент находится подбором
     // как условие для схождения изгибающего момента в 0
-    let mut computer = Computer::new(
+    Computer::new(
         gravity_g,
         data.water_density,
         center_waterline_shift,
@@ -263,8 +265,9 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&mass),
         Rc::new(Displacement::new(frames)),
         Rc::clone(&bounds),
-    );
-    assert!(
+        Rc::clone(&results),
+    ).calculate();
+/*    assert!(
         computer.shear_force().len() == data.bounds.len() + 1,
         "shear_force.len {} == frame.len {} + 1",
         computer.shear_force().len(),
@@ -275,7 +278,7 @@ fn execute() -> Result<(), Error> {
         "bending_moment.len {} == frame.len {} + 1",
         computer.bending_moment().len(),
         data.bounds.len()
-    );
+    );*/
 
     /*    println!("shear_force:");
         computer.shear_force().iter().for_each(|v| println!("{v};"));
@@ -288,16 +291,7 @@ fn execute() -> Result<(), Error> {
     send_strenght_data(
         &mut api_server,
         ship_id,
-        &computer.mass_hull(),
-        &computer.mass_equipment(),
-        &computer.mass_ballast(),
-        &computer.mass_store(),
-        &computer.mass_cargo(),
-        &computer.mass_sum(),
-        &computer.displacement(),
-        &computer.total_force(),
-        &computer.shear_force(),
-        &computer.bending_moment(),
+        results.take_data(),
     )?;
 
     let flooding_angle = Curve::new_linear(&data.flooding_angle).value(mean_draught);

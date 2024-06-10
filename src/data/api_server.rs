@@ -267,16 +267,7 @@ pub fn get_data(
 pub fn send_strenght_data(
     api_server: &mut ApiServer,
     ship_id: usize,
-    mass_hull: &Vec<f64>,
-    mass_equipment: &Vec<f64>,
-    mass_ballast: &Vec<f64>,
-    mass_store: &Vec<f64>,
-    mass_cargo: &Vec<f64>,
-    mass_sum: &Vec<f64>,
-    displacement: &Vec<f64>,
-    total_force: &Vec<f64>,
-    shear_force: &Vec<f64>,
-    bending_moment: &Vec<f64>,
+    results: Vec<(String, Vec<f64>)>,
 ) -> Result<(), error::Error> {
     log::info!("send_strenght_data begin");
     assert!(mass_sum.len() == displacement.len() &&
