@@ -110,7 +110,7 @@ fn execute() -> Result<(), Error> {
     let mut load_variable: Vec<Rc<LoadMass>> = Vec::new();
 
     // Постоянная масса судна
-    let mut loads_const: Vec<Rc<dyn ILoadMass>> = Vec::new();
+    let mut loads_const: Vec<Rc<LoadMass>> = Vec::new();
     let shift_const = Position::new(
         data.const_mass_shift_x,
         data.const_mass_shift_y,

@@ -270,6 +270,29 @@ pub fn send_strenght_data(
     results: Vec<(String, Vec<f64>)>,
 ) -> Result<(), error::Error> {
     log::info!("send_strenght_data begin");
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM result_strength WHERE ship_id={ship_id};");
+    results.iter().for_each(|(k, v)| {
+        full_sql += &format!(" INSERT INTO result_strength (ship_id, index, {}) VALUES", k);
+        v.iter().enumerate().for_each(|(i, v)| {
+            full_sql += &format!(" ({ship_id}, {i}, {v}),");
+        });
+        full_sql.pop();
+        full_sql.push(';');
+    });
+    full_sql += " END$$;";
+    //   dbg!(&string);
+    api_server.fetch(&full_sql)?;
+    log::info!("send_strenght_data end");
+    Ok(())
+}
+/* /// Запись данных расчета прочности в БД
+pub fn send_strenght_data(
+    api_server: &mut ApiServer,
+    ship_id: usize,
+    results: Vec<(String, Vec<f64>)>,
+) -> Result<(), error::Error> {
+    log::info!("send_strenght_data begin");
     assert!(mass_sum.len() == displacement.len() &&
              displacement.len()== total_force.len() &&
              total_force.len() + 1 == shear_force.len() &&
@@ -293,8 +316,7 @@ pub fn send_strenght_data(
     api_server.fetch(&full_sql)?;
     log::info!("send_strenght_data end");
     Ok(())
-}
-
+} */
 /// Запись данных расчета остойчивости в БД
 pub fn send_stability_data(
     api_server: &mut ApiServer,

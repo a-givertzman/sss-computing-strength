@@ -3,11 +3,8 @@
 mod tests {
     use crate::icing::FakeIcing;
     use crate::math::Bounds;
-    use crate::math::{
-        curve::Curve, liquid::inertia_shift::InertiaShift, pos_shift::PosShift,
-        position::Position,
-    };
-    use crate::{load::*, mass::*, Bound, FakeParameters, Moment};
+    use crate::math::position::Position;
+    use crate::{load::*, mass::*, Bound, FakeParameters, FakeResults, Moment};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
@@ -19,7 +16,7 @@ mod tests {
 
     fn init_once() {
         INIT.call_once(|| {
-            let loads_const: Rc<Vec<Rc<dyn ILoadMass>>> = Rc::new(vec![
+            let loads_const: Rc<Vec<Rc<LoadMass>>> = Rc::new(vec![
                 Rc::new(LoadMass::new(
                     10.,
                     Bound::new(-10., 0.),
@@ -49,6 +46,7 @@ mod tests {
                     Rc::new(FakeIcing::new(0., Moment::new(0., 0., 0.,),)),
                     loads_cargo,
                     Rc::new(Bounds::from_n(20., 4)),
+                    Rc::new(FakeResults{}),
                     Rc::new(FakeParameters{}),
                 ));
             }
