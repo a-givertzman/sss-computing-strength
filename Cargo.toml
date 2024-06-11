@@ -10,9 +10,9 @@ log = "^0.4"
 env_logger = "^0.11"
 futures = "0.3.30"
 
-testing = { git = "https://github.com/a-givertzman/rust-testing.git", version = "0.1.1" }
-debugging = { git = "https://github.com/a-givertzman/rust-debuging.git", version = "0.0.1" }
-api-tools = { git = "https://github.com/a-givertzman/rust-api-tools.git", version = "0.0.6" }
+testing = { git = "https://github.com/a-givertzman/rust-testing.git", tag = "0.1.1" }
+debugging = { git = "https://github.com/a-givertzman/rust-debuging.git", tag = "0.0.1" }
+api-tools = { git = "https://github.com/a-givertzman/rust-api-tools.git", tag = "0.0.6" }
 serde = { version = "^1.0", features = ["derive"] }
 serde_json = "^1.0"
 splines = "4.3.1"
