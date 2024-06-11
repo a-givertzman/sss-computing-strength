@@ -1,5 +1,6 @@
 //! Дифферент. Угол наклона корпуса судна в продольной плоскости.
 use crate::stability::metacentric_height::IMetacentricHeight;
+use std::f64::consts::PI;
 use std::rc::Rc;
 
 use crate::{math::*, IParameters, ParameterID};
@@ -69,7 +70,7 @@ impl Trim {
             self.mass.sum(),
             self.center_draught_shift
         );
-        let trim_angle = (value/self.ship_length).atan();
+        let trim_angle = (value/self.ship_length).atan()*180.0/PI;
         let draught_bow = self.mean_draught + (0.5 - self.center_waterline_shift/self.ship_length)*value;
         let draught_stern = self.mean_draught - (0.5 + self.center_waterline_shift/self.ship_length)*value;
         let draught_mid = (draught_bow + draught_stern) / 2.;
