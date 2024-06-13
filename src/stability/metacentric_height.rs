@@ -92,8 +92,8 @@ impl  MetacentricHeight {
         let h_trans_fix = h_trans_0 - delta_m_h.trans();
         // Исправленное отстояние центра масс судна по высоте (10)
         let z_g_fix: f64 = self.mass.shift().z() + delta_m_h.trans();
-  //      log::info!("\t MetacentricHeight mass:{} mass_z:{}center_draught:{} rad_trans:{} rad_long:{} delta_m_h_ballast:{} delta_m_h_store:{} Z_m:{Z_m} H_0:{h_long_0} H:{h_long_fix} z_m:{z_m} h_0:{h_trans_0} h:{h_trans_fix} z_g_fix:{z_g_fix}", 
-   //         self.mass.sum(), self.mass.shift().z(), self.center_draught_shift, self.rad_trans, self.rad_long, delta_m_h_ballast.trans, delta_m_h_store.trans() );
+        log::info!("\t MetacentricHeight mass:{} mass_z:{}center_draught:{} rad_trans:{} rad_long:{} delta_m_h_ballast:{} delta_m_h_store:{} Z_m:{Z_m} H_0:{h_long_0} H:{h_long_fix} z_m:{z_m} h_0:{h_trans_0} h:{h_trans_fix} z_g_fix:{z_g_fix}", 
+            self.mass.sum(), self.mass.shift().z(), self.center_draught_shift, self.rad_trans, self.rad_long, delta_m_h_ballast.trans, delta_m_h_store.trans() );
         *self.h_long_fix.borrow_mut() = Some(h_long_fix);
         *self.h_trans_0.borrow_mut() = Some(h_trans_0);
         *self.h_trans_fix.borrow_mut() = Some(h_trans_fix);

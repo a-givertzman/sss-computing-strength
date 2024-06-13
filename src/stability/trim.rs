@@ -65,10 +65,13 @@ impl Trim {
         // Дифферент судна (5)
         let value = self.mass.sum() * (self.mass.shift().x() - self.center_draught_shift.x())
             / (100. * trim_moment);
+        // Дифферент судна, градусы (5)
+        let trim_angle = (value/self.ship_length).atan()*180.0/PI;
         log::info!(
-            "\t Trim H:{H} mass:{} center_draught:{} M:{trim_moment} result:{value}",
+            "\t Trim H:{H} mass:{} mass_shift_x:{} center_draught_x:{} M:{trim_moment} trim:{value}, trim_angle{trim_angle}",
             self.mass.sum(),
-            self.center_draught_shift
+            self.mass.shift().x(),
+            self.center_draught_shift.x()
         );
         let trim_angle = (value/self.ship_length).atan()*180.0/PI;
         let draught_bow = self.mean_draught + (0.5 - self.center_waterline_shift/self.ship_length)*value;
