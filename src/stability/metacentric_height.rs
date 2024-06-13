@@ -63,7 +63,7 @@ impl  MetacentricHeight {
         // Аппликата продольного метацентра (2)
         let Z_m = self.center_draught_shift.z() + self.rad_long;
         // Поправка к продольной метацентрической высоте на влияние
-        // свободной поверхности жидкости в цистернах балласта и запасов
+        // свободной поверхности жидкости в цистернах балласта и запасов (2)
         let delta_m_h_ballast = DeltaMH::from_moment(self
         .tanks
         .iter()
@@ -76,7 +76,6 @@ impl  MetacentricHeight {
         .filter(|v| v.load_type() != LoadingType::Ballast )
         .map(|c| c.moment_surface())
         .sum::<FreeSurfaceMoment>(), self.mass.sum());
-       // let delta_m_h = DeltaMH::from_moment(moment_surface, self.mass.sum());
         let delta_m_h = delta_m_h_ballast + delta_m_h_store;
         // Продольная метацентрическая высота без учета влияния
         // поправки на влияние свободной поверхности (3)
