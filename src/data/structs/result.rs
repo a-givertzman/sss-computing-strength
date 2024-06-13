@@ -192,17 +192,29 @@ impl ParsedShipData {
         let bonjean_frame = bonjean_frame.data();        
         let frame_area = frame_area.data();
 
+        // Получение координаты шпангоута относительно миделя по его индексу
+        let frame_x = |index: i32| -> Result<f64, Error> {
+            Ok(*physical_frame.get(&index)
+            .ok_or(format!(
+                "compartments parse error: no physical_frame for index:{index}"
+            ))? - midship) 
+        }; 
         // Два варианта задания распределения по х - координата или физический шпангоут.
         // Если тип шпангоут, то находим и подставляем его координату
         // Координата шпангоута задана относительно кормы, считаем ее относительно центра
         let bound_x = |value: &f64, value_type: &str| -> Result<f64, Error> { 
             Ok(if value_type == "frame" {
-            //    TODO сделать пересчет из целого ингдекса в дробный
-                *physical_frame.get(&(*value as i32))
-                    .ok_or(format!(
-                        "compartments parse error: no physical_frame for value:{}",
-                        value
-                    ))? - midship
+                let last_frame_index = value.floor() as i32;
+                let next_frame_index = value.ceil() as i32;
+                if last_frame_index as f64 == *value {
+                    frame_x(last_frame_index)?
+                } else {
+                    let last_frame_x = frame_x(last_frame_index)?;
+                    let next_frame_x = frame_x(next_frame_index)?;
+                    let delta = next_frame_x - last_frame_x;
+                    let result = last_frame_x + (value - last_frame_index as f64)*delta;
+                    result
+                }
             } else {
                 *value - midship
             }) 
