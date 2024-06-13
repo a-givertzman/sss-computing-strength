@@ -75,7 +75,7 @@ impl LeverDiagram {
     fn calculate(&self) {
         // расчет диаграммы
         let delta_y = self.mass.shift().y() - self.center_draught_shift.y();
-        dbg!(delta_y, self.metacentric_height.z_g_fix(), self.mean_draught);
+    //    dbg!(delta_y, self.metacentric_height.z_g_fix(), self.mean_draught);
         let mut dso = (-90..=90)
             .map(|angle_deg| {
                 let angle_deg = angle_deg as f64;
@@ -162,7 +162,7 @@ impl LeverDiagram {
                 .collect::<Vec<(f64, f64)>>(),
         );
         *self.ddo.borrow_mut() = Some(ddo);
-        self.parameters.add(ParameterID::Roll, angle_zero);
+        self.parameters.add(ParameterID::Roll, angle_zero*delta_y.signum());
     }
 }
 ///
