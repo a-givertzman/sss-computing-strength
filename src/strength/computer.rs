@@ -41,14 +41,21 @@ pub struct Computer {
 ///
 impl Computer {
     /// Основной конструктор
+    /// * gravity_g - Ускорение свободного падения
+    /// * water_density - Плотность воды
+    /// * center_waterline_shift - Отстояние центра величины погруженной части судна
+    /// * mean_draught - Средняя осадка
+    /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+    /// * displacement - Распределение осадки
+    /// * bounds - Вектор разбиения судна на отрезки
     pub fn new(
-        gravity_g: f64,                 // Ускорение свободного падения
-        water_density: f64,             // Плотность воды
-        center_waterline_shift: f64,    // Отстояние центра величины погруженной части судна
-        mean_draught: f64,              // Средняя осадка
-        mass: Rc<dyn IMass>, // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
-        displacement: Rc<Displacement>, // Распределение осадки
-        bounds: Rc<Bounds>,  // Вектор разбиения судна на отрезки
+        gravity_g: f64,              
+        water_density: f64,            
+        center_waterline_shift: f64,   
+        mean_draught: f64,             
+        mass: Rc<dyn IMass>, 
+        displacement: Rc<Displacement>, 
+        bounds: Rc<Bounds>, 
     ) -> Self {
         Self {
             gravity_g,

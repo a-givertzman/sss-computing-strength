@@ -306,7 +306,7 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&parameters),
     ));
 
-    let trim = Trim::new(
+    let trim = stability::Trim::new(
         data.length_lbp,
         mean_draught,
         center_waterline_shift,
