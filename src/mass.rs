@@ -178,9 +178,7 @@ pub struct FakeMass {
     sum: f64,
     values: Vec<f64>,
     shift: Position,
-//    delta_m_h: DeltaMH,
     moment_mass: Moment,
- //   moment_surface: SurfaceMoment,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
@@ -189,17 +187,13 @@ impl FakeMass {
         sum: f64,
         values: Vec<f64>,
         shift: Position,
-  //      delta_m_h: DeltaMH,
         moment_mass: Moment,
-  //      moment_surface: SurfaceMoment,
     ) -> Self {
         Self {
             sum,
             values,
             shift,
-   //         delta_m_h,
             moment_mass,
-   //         moment_surface,
         }
     }
 }

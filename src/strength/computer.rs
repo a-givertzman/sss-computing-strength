@@ -120,6 +120,55 @@ impl Computer {
     /// Вычисление изгибающего момента и срезающей силы. Дифферент  
     /// подбирается перебором.
     fn calculate(&mut self) {
+        let trim = Trim::new(
+                water_density: f64,   
+                center_waterline_shift: f64,
+                mean_draught: f64,
+                mass: Rc<dyn IMass>, 
+                displacement: Rc<Displacement>, 
+                bounds: Rc<Bounds>, 
+            ).value();
+
+        let mut displacement_values = None;
+        let mut total_force_values = None;
+        let mut shear_force_values = None;
+        let mut bending_moment_values = None;
+
+            let mut volume = Volume::new(
+                self.center_waterline_shift,
+                self.mean_draught,
+                Rc::clone(&self.displacement),
+                trim,
+                Rc::clone(&self.bounds),
+            );
+            displacement_values = Some(volume.values());
+            let mut total_force = TotalForce::new(
+                Rc::clone(&self.mass),
+                self.water_density,
+                volume,
+                self.gravity_g,
+            );
+            total_force_values = Some(total_force.values());
+            let mut shear_force = ShearForce::new(total_force);
+            shear_force_values = Some(shear_force.values());
+            let tmp = BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values();
+            // Последнее значение изгибающего момента в векторе.
+            // Если корабль сбалансирован, должно равняться нулю
+            let last_value = *tmp
+                .last()
+                .expect("BendingMoment values error: no last value");
+            bending_moment_values = Some(tmp);
+
+        self.mass_values = Some(self.mass.values());
+        self.displacement_values = displacement_values;
+        self.total_force_values = total_force_values;
+        self.shear_force = shear_force_values;
+        self.bending_moment = bending_moment_values;
+    }
+    /* 
+    /// Вычисление изгибающего момента и срезающей силы. Дифферент  
+    /// подбирается перебором.
+    fn calculate(&mut self) {
         let mut trim = 0.; // Дифферент
         let mut delta = 1.; // Изменение дифферента
         let mut displacement_values = None;
@@ -163,5 +212,5 @@ impl Computer {
         self.total_force_values = total_force_values;
         self.shear_force = shear_force_values;
         self.bending_moment = bending_moment_values;
-    }
+    } */
 }

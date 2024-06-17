@@ -1,12 +1,9 @@
 //! Класс для расчета дифферента в расчете прочности
 
-use crate::{mass::IMass, math::Bounds, ITotalForce, IVolume};
+use crate::{mass::IMass, math::Bounds, IVolume};
 
 use super::{
-    bending_moment::BendingMoment,
     displacement::Displacement,
-    shear_force::{IShearForce, ShearForce},
-    total_force::TotalForce,
     volume::Volume,
 };
 use std::rc::Rc;
@@ -53,43 +50,6 @@ impl Trim {
             bounds,
         }
     }
-    /// Вычисление дифферента перебором
-    pub fn value(&mut self) -> f64 {
-        let dx = self.bounds.iter().map(|v| v.center()).collect::<Vec<_>>();
-        let mass_pairs = dx.clone().into_iter().zip(self.mass.values()).collect::<Vec<_>>();
-        let (w_xg, w) = self.calc_s(&mass_pairs);
-        let mut trim = 0.; // Дифферент
-        let mut mean_draught = self.mean_draught;
-        for _i in 0..30 {
-            let mut delta_w;
-            let mut volume_values= Vec::new();
-            let mut delta_mean_draught = 0.5; 
-            for _i in 0..30 {
-                volume_values = Volume::new(
-                    self.center_waterline_shift,
-                    mean_draught,
-                    Rc::clone(&self.displacement),
-                    trim,
-                    Rc::clone(&self.bounds),
-                ).values();
-                delta_w = (w - volume_values.iter().sum::<f64>()/self.water_density)/w;
-                if delta_w <= 0.0001 {
-                    break;
-                }
-                mean_draught += mean_draught*delta_w*delta_mean_draught;
-                delta_mean_draught *= 0.5;
-            }
-            let volume_pairs = dx.clone().into_iter().zip(volume_values).collect::<Vec<_>>();
-            let (v_xc, _) = self.calc_s(&volume_pairs);
-
-            let delta_x = w_xg - v_xc;
-            if delta_x.abs() <= 0.002 {
-                break;
-            }     
-            trim = trim + (w_xg - v_xc) / 2.;
-        }
-        trim
-    }
     /// Вычисление суммы площади и смещения центра методом трапеций
     /// * values - Vec(x, value)>
     /// * result - (delta_x, sum_s)
@@ -99,7 +59,7 @@ impl Trim {
         let mut xc = 0.;
         for i in 0..values.len()-1 {
             let x_i1 = values[i].0;
-            let x_i2 = values[i].0;
+            let x_i2 = values[i+1].0;
             let y_i1 = values[i].1; 
             let y_i2 = values[i+1].1;             
             let x_ci = x_i1 + (l / 3.) * ((2. * y_i2 + y_i1) / (y_i2 + y_i1));
@@ -111,3 +71,65 @@ impl Trim {
         (xc, sum_s)
     }
 }
+/// 
+impl ITrim for Trim {
+    /// Вычисление дифферента перебором
+    fn value(&mut self) -> f64 {
+        let dx = self.bounds.iter().map(|v| v.center()).collect::<Vec<_>>();
+        let mass_pairs = dx.clone().into_iter().zip(self.mass.values()).collect::<Vec<_>>();
+        let (w_xg, w) = self.calc_s(&mass_pairs);
+        let mut trim = 0.; // Дифферент
+        let mut mean_draught = self.mean_draught;
+        for _i in 0..30 {
+            let mut delta_w;
+            let mut volume_values= Vec::new();
+            for _j in 0..30 {
+                volume_values = Volume::new(
+                    self.center_waterline_shift,
+                    mean_draught,
+                    Rc::clone(&self.displacement),
+                    trim,
+                    Rc::clone(&self.bounds),
+                ).values();
+                delta_w = (w - volume_values.iter().sum::<f64>()/self.water_density)/w;                
+                if delta_w.abs() <= 0.0001 {
+                    break;
+                }
+                mean_draught += self.mean_draught*delta_w;                
+            }
+            let volume_pairs = dx.clone().into_iter().zip(volume_values).collect::<Vec<_>>();
+            let (v_xc, _) = self.calc_s(&volume_pairs);
+            let delta_x = w_xg - v_xc;
+            if delta_x.abs() <= 0.002 {
+                break;
+            }     
+            trim = trim + (w_xg - v_xc) / 2.;
+        }
+        trim
+    }
+}
+
+#[doc(hidden)]
+pub trait ITrim {
+    /// Вычисление дифферента перебором
+    fn value(&mut self) -> f64;
+}
+// заглушка для тестирования
+#[doc(hidden)]
+pub struct FakeTrim {
+    value: f64,
+}
+#[doc(hidden)]
+#[allow(dead_code)]
+impl FakeTrim {
+    pub fn new(value: f64) -> Self {
+        Self { value }
+    }
+}
+#[doc(hidden)]
+impl ITrim for FakeTrim {
+    fn value(&mut self) -> f64 {
+        self.value
+    }
+}
+
