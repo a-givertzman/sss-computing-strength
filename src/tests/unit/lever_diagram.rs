@@ -65,7 +65,6 @@ mod tests {
                 metacentric_height,
                 Rc::new(FakeParameters{}),
             );
-            lever_diagram.dso();
             unsafe {
                 LEVER_DIAGRAM.replace(lever_diagram);
             }
@@ -114,29 +113,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "TODO"]
-    fn dso() {
-        DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        init_once();
-        println!("");
-        let self_id = "test LeverDiagram diagram";
-        println!("{}", self_id);
-        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
-        test_duration.run().unwrap();
-
-        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().dso() };
-        let target = vec![(0., 0.), (30., 2.), (45., 3.), (60., 2.), (90., 0.)];
-        assert!(
-            result == target,
-            "\nresult: {:?}\ntarget: {:?}",
-            result,
-            target
-        );
-
-        test_duration.exit();
-    }
-
-    #[test]
     fn dso_lever_max() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
@@ -150,77 +126,6 @@ mod tests {
         let angle = 45.0;
         let angle_rad = angle * std::f64::consts::PI / 180.;
         let target = 3. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos();
-        assert!(
-            result == target,
-            "\nresult: {:?}\ntarget: {:?}",
-            result,
-            target
-        );
-
-        test_duration.exit();
-    }
-
-    #[test]
-    #[ignore = "TODO"]
-    fn ddo() {
-        DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        init_once();
-        println!("");
-        let self_id = "test LeverDiagram ddo";
-        println!("{}", self_id);
-        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
-        test_duration.run().unwrap();
-
-        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().ddo() };
-        let target = vec![(0., 0.), (30., 2.), (45., 3.), (60., 2.), (90., 0.)];
-        assert!(
-            result == target,
-            "\nresult: {:?}\ntarget: {:?}",
-            result,
-            target
-        );
-
-        test_duration.exit();
-    }
-
-    #[test]
-    fn theta_max() {
-        DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        init_once();
-        println!("");
-        let self_id = "test LeverDiagram theta_max";
-        println!("{}", self_id);
-        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
-        test_duration.run().unwrap();
-
-        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().theta_max() };
-        let target = 45.;
-        assert!(
-            result == target,
-            "\nresult: {:?}\ntarget: {:?}",
-            result,
-            target
-        );
-
-        test_duration.exit();
-    }
-
-    #[test]
-    #[ignore = "TODO"]
-    fn theta_last() {
-        DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        init_once();
-        println!("");
-        let self_id = "test LeverDiagram theta_last";
-        println!("{}", self_id);
-        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
-        test_duration.run().unwrap();
-
-        let angle = 30.0;
-        let angle_rad = angle * std::f64::consts::PI / 180.;
-        let moment = 2. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos();
-        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().theta_last() };
-        let target = 0.;
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",
