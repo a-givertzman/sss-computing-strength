@@ -1,7 +1,32 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
-use crate::{data::structs::DataArray, LoadingType};
+use crate::data::structs::DataArray;
 use serde::{Deserialize, Serialize};
 
+
+/// Тип груза
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+pub enum CompartmentType {
+    #[serde(alias="ballast")]
+    Ballast,
+    #[serde(alias="store")]
+    Store,
+    #[serde(alias="cargo")]
+    Cargo,
+}
+///
+impl std::fmt::Display for CompartmentType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                CompartmentType::Ballast => "Ballast",
+                CompartmentType::Store => "Store", 
+                CompartmentType::Cargo => "Cargo", 
+            },
+        )
+    }
+}
 /// Нагрузка судна: цистерны и трюмы  
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CompartmentData {
@@ -29,9 +54,8 @@ pub struct CompartmentData {
     pub m_f_s_y: Option<f64>,
     pub m_f_s_x: Option<f64>,
     /// Тип груза
-    pub loading_type: LoadingType,
+    pub loading_type: CompartmentType,
 }
-
 ///
 impl std::fmt::Display for CompartmentData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -90,7 +114,7 @@ pub struct ParsedCompartmentData {
     /// Центр парусности
     pub windage_shift: Option<(f64, f64)>,
     /// Тип груза
-    pub loading_type: LoadingType,
+    pub loading_type: CompartmentType,
 }
 ///
 impl std::fmt::Display for ParsedCompartmentData {

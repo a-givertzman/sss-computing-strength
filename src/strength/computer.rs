@@ -1,6 +1,6 @@
 //! Класс для расчета прочности
 
-use crate::{mass::IMass, math::Bounds, ITotalForce, IVolume};
+use crate::{mass::IMass, math::Bounds, IResults, ITotalForce, IVolume};
 
 use super::{
     bending_moment::BendingMoment,
@@ -27,35 +27,27 @@ pub struct Computer {
     displacement: Rc<Displacement>,
     /// Вектор разбиения судна на отрезки
     bounds: Rc<Bounds>,
-    /// Вычисленное распределение массы
-    mass_values: Option<Vec<f64>>,
-    /// Вычисленное распределение осадки
-    displacement_values: Option<Vec<f64>>,
-    /// Вычисленное распределение результирующей силы
-    total_force_values: Option<Vec<f64>>,
-    /// Вычисленное распределение изгибающего момента
-    bending_moment: Option<Vec<f64>>,
-    /// Вычисленное распределение срезающей силы
-    shear_force: Option<Vec<f64>>,
+    /// Набор результатов расчетов для записи в БД
+    results: Rc<dyn IResults>, 
 }
-///
-impl Computer {
-    /// Основной конструктор
-    /// * gravity_g - Ускорение свободного падения
-    /// * water_density - Плотность воды
-    /// * center_waterline_shift - Отстояние центра величины погруженной части судна
+    /// Основной конструктор  
+    /// * gravity_g - Ускорение свободного падения  
+    /// * water_density - Плотность воды  
+    /// * center_waterline_shift - Отстояние центра величины погруженной части судна  
     /// * mean_draught - Средняя осадка
-    /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
-    /// * displacement - Распределение осадки
-    /// * bounds - Вектор разбиения судна на отрезки
+    /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.  
+    /// * displacement - Распределение осадки  
+    /// * bounds - Вектор разбиения судна на отрезки  
+    /// * results - Набор результатов расчетов для записи в БД  
     pub fn new(
-        gravity_g: f64,              
-        water_density: f64,            
-        center_waterline_shift: f64,   
-        mean_draught: f64,             
+        gravity_g: f64,                 
+        water_density: f64,             
+        center_waterline_shift: f64,    
+        mean_draught: f64,              
         mass: Rc<dyn IMass>, 
         displacement: Rc<Displacement>, 
-        bounds: Rc<Bounds>, 
+        bounds: Rc<Bounds>,  
+        results: Rc<dyn IResults>, 
     ) -> Self {
         Self {
             gravity_g,
@@ -65,57 +57,8 @@ impl Computer {
             mass,
             displacement,
             bounds,
-            mass_values: None,
-            displacement_values: None,
-            total_force_values: None,
-            bending_moment: None,
-            shear_force: None,
+            results,
         }
-    }
-    /// Вычисленное распределение массы
-    pub fn mass(&mut self) -> Vec<f64> {
-        if self.displacement_values.is_none() {
-            self.calculate();
-        }
-        self.mass_values
-            .clone()
-            .expect("Computer mass error: no values")
-    }
-    /// Вычисленное распределение осадки
-    pub fn displacement(&mut self) -> Vec<f64> {
-        if self.displacement_values.is_none() {
-            self.calculate();
-        }
-        self.displacement_values
-            .clone()
-            .expect("Computer displacement error: no values")
-    }
-    /// Вычисленное распределение результирующей силы
-    pub fn total_force(&mut self) -> Vec<f64> {
-        if self.total_force_values.is_none() {
-            self.calculate();
-        }
-        self.total_force_values
-            .clone()
-            .expect("Computer total_force error: no values")
-    }
-    /// Вычисленное распределение изгибающего момента
-    pub fn bending_moment(&mut self) -> Vec<f64> {
-        if self.bending_moment.is_none() {
-            self.calculate();
-        }
-        self.bending_moment
-            .clone()
-            .expect("Computer bending_moment error: no values")
-    }
-    /// Вычисленное распределение срезающей силы
-    pub fn shear_force(&mut self) -> Vec<f64> {
-        if self.shear_force.is_none() {
-            self.calculate();
-        }
-        self.shear_force
-            .clone()
-            .expect("Computer shear_force error: no values")
     }
     /// Вычисление изгибающего момента и срезающей силы. Дифферент  
     /// подбирается перебором.
@@ -159,22 +102,24 @@ impl Computer {
                 .expect("BendingMoment values error: no last value");
             bending_moment_values = Some(tmp);
 
-        self.mass_values = Some(self.mass.values());
-        self.displacement_values = displacement_values;
-        self.total_force_values = total_force_values;
-        self.shear_force = shear_force_values;
-        self.bending_moment = bending_moment_values;
+        displacement_values.push(displacement_values.iter().sum());
+        total_force_values.push(total_force_values.iter().sum());
+        self.results.add("value_displacement".to_owned(), displacement_values);
+        self.results.add("value_total_force".to_owned(), total_force_values);
+        self.results.add("value_shear_force".to_owned(), shear_force_values);
+        self.results.add("value_bending_moment".to_owned(), bending_moment_values);
     }
+
     /* 
     /// Вычисление изгибающего момента и срезающей силы. Дифферент  
     /// подбирается перебором.
     fn calculate(&mut self) {
         let mut trim = 0.; // Дифферент
         let mut delta = 1.; // Изменение дифферента
-        let mut displacement_values = None;
-        let mut total_force_values = None;
-        let mut shear_force_values = None;
-        let mut bending_moment_values = None;
+        let mut displacement_values = Vec::new();
+        let mut total_force_values = Vec::new();
+        let mut shear_force_values = Vec::new();
+        let mut bending_moment_values = Vec::new();
         for _i in 0..30 {
             let mut volume = Volume::new(
                 self.center_waterline_shift,
@@ -183,23 +128,22 @@ impl Computer {
                 trim,
                 Rc::clone(&self.bounds),
             );
-            displacement_values = Some(volume.values());
+            displacement_values = volume.values();
             let mut total_force = TotalForce::new(
                 Rc::clone(&self.mass),
                 self.water_density,
                 volume,
                 self.gravity_g,
             );
-            total_force_values = Some(total_force.values());
+            total_force_values = total_force.values();
             let mut shear_force = ShearForce::new(total_force);
-            shear_force_values = Some(shear_force.values());
-            let tmp = BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values();
+            shear_force_values = shear_force.values();
+            bending_moment_values = BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values();
             // Последнее значение изгибающего момента в векторе.
             // Если корабль сбалансирован, должно равняться нулю
-            let last_value = *tmp
+            let last_value = *bending_moment_values
                 .last()
                 .expect("BendingMoment values error: no last value");
-            bending_moment_values = Some(tmp);
             //         log::info!("Computing Trim: BendingMoment last value:{last_value} trim:{trim} i:{i} delta:{delta} ");
             if self.mass.sum() <= 1. || last_value.abs() < 0.1 {
                 break;

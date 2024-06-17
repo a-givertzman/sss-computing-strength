@@ -9,6 +9,7 @@ pub(crate) mod shear_force;
 pub(crate) mod total_force;
 pub(crate) mod area;
 pub(crate) mod trim;
+pub(crate) mod results;
 
 pub use computer::*;
 pub use displacement::*;
@@ -17,6 +18,6 @@ pub use frame::*;
 pub use total_force::*;
 pub use area::*;
 pub use trim::*;
-
+pub use results::*;
 
 
