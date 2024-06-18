@@ -74,21 +74,25 @@ impl LeverDiagram {
     /// динамической остойчивости (13)
     fn calculate(&self) {
         // расчет диаграммы
-        let delta_y = self.mass.shift().y() - self.center_draught_shift.y();
-    //    dbg!(delta_y, self.metacentric_height.z_g_fix(), self.mean_draught);
+        let theta = |angle_deg: i32| {
+            let angle_deg = angle_deg as f64;
+            let angle_rad = angle_deg * std::f64::consts::PI / 180.;
+            let v1 = self.data.value(self.mean_draught, angle_deg);
+            let v2 = self.metacentric_height.z_g_fix() * angle_rad.sin();
+            let v3 = (self.mass.shift().y() - self.center_draught_shift.y()) * angle_rad.cos();
+            let value = v1 - v2 - v3;
+ //           log::info!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}");
+            (angle_deg, value)
+        };
         let mut dso = (-90..=90)
             .map(|angle_deg| {
-                let angle_deg = angle_deg as f64;
-                let angle_rad = angle_deg * std::f64::consts::PI / 180.;
-                let v1 = self.data.value(self.mean_draught, angle_deg);
-                let v2 = self.metacentric_height.z_g_fix() * angle_rad.sin();
-                let v3 = delta_y.abs() * angle_rad.cos();
-                let value = v1 - v2 - v3;
-     //           log::info!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}");
-                (angle_deg, value)
+                theta(angle_deg)
             })
             .collect::<Vec<(f64, f64)>>();
-      //  dbg!(&dso);
+        // если крен на левый борт то переворачиваем диаграмму
+        if theta(0).1 > 0. {
+            dso = dso.into_iter().map(|(a, v)| (-a, -v) ).collect();
+        } 
         // нахождение максимума диаграммы
         let curve = Curve::new_catmull_rom(&dso);
         let mut angle = 45.;
@@ -162,7 +166,7 @@ impl LeverDiagram {
                 .collect::<Vec<(f64, f64)>>(),
         );
         *self.ddo.borrow_mut() = Some(ddo);
-        self.parameters.add(ParameterID::Roll, angle_zero*delta_y.signum());
+        self.parameters.add(ParameterID::Roll, angle_zero);
     }
 }
 ///
@@ -219,16 +223,6 @@ impl ILeverDiagram for LeverDiagram {
             .expect("LeverDiagram angle error: no dso_curve!")
             .value(angle)
     }
-    /// Диаграмма статической остойчивости
-    fn dso(&self) -> Vec<(f64, f64)> {
-        if self.dso.borrow().is_none() {
-            self.calculate();
-        }
-        self.dso
-            .borrow()
-            .clone()
-            .expect("StabilityArm diagram error: no diagram!")
-    }
     /// Площадь под положительной частью диаграммы статической остойчивости (rad^2)
     fn dso_area(&self, angle1: f64, angle2: f64) -> f64 {
         assert!(
@@ -271,34 +265,6 @@ impl ILeverDiagram for LeverDiagram {
             .expect("LeverDiagram dso_lever_max segment error: no values!")
             .1
     }
-    /// Диаграмма динамической остойчивости
-    fn ddo(&self) -> Vec<(f64, f64)> {
-        if self.ddo.borrow().is_none() {
-            self.calculate();
-        }
-        self.ddo
-            .borrow()
-            .clone()
-            .expect("StabilityArm diagram error: no diagram!")
-    }
-    /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    fn theta_max(&self) -> f64 {
-        if self.theta_max.borrow().is_none() {
-            self.calculate();
-        }
-        self.theta_max
-            .borrow()
-            .expect("StabilityArm theta_max error: no theta_max!")
-    }
-    /// Угол пересечения с нулем диаграммы плеч статической остойчивости
-    fn theta_last(&self) -> f64 {
-        if self.theta_last.borrow().is_none() {
-            self.calculate();
-        }
-        self.theta_last
-            .borrow()
-            .expect("StabilityArm theta_last error: no theta_last!")
-    }
     /// Углы максимумов диаграммы плеч статической остойчивости
     fn max_angles(&self) -> Vec<(f64, f64)> {
         if self.max_angles.borrow().is_none() {
@@ -316,18 +282,10 @@ pub trait ILeverDiagram {
     fn angle(&self, lever_moment: f64) -> Vec<f64>;
     /// Плечо кренящего момента соответствующие углу крена судна (angle >= 0. && angle <= 90.)
     fn lever_moment(&self, angle: f64) -> f64;
-    /// Диаграмма статической остойчивости
-    fn dso(&self) -> Vec<(f64, f64)>;
     /// Площадь под положительной частью диаграммы статической остойчивости (rad^2)
     fn dso_area(&self, angle1: f64, angle2: f64) -> f64;
     /// Максимальное плечо диаграммы статической остойчивости в диапазонеб (м)
     fn dso_lever_max(&self, angle1: f64, angle2: f64) -> f64;
-    /// Диаграмма динамической остойчивости
-    fn ddo(&self) -> Vec<(f64, f64)>;
-    /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    fn theta_max(&self) -> f64;
-    /// Угол пересечения с нулем диаграммы плеч статической остойчивости
-    fn theta_last(&self) -> f64;
     /// Углы и плечи максимумов диаграммы плеч статической остойчивости
     fn max_angles(&self) -> Vec<(f64, f64)>;
 }
@@ -336,12 +294,8 @@ pub trait ILeverDiagram {
 pub struct FakeLeverDiagram {
     angle: Vec<f64>,
     lever_moment: f64,
-    dso: Vec<(f64, f64)>,
     dso_area: f64,
     dso_lever_max: f64,
-    ddo: Vec<(f64, f64)>,
-    theta_max: f64,
-    theta_last: f64,
     max_angles: Vec<(f64, f64)>,
 }
 #[doc(hidden)]
@@ -350,24 +304,16 @@ impl FakeLeverDiagram {
     pub fn new(
         angle: Vec<f64>,
         lever_moment: f64,
-        dso: Vec<(f64, f64)>,
         dso_area: f64,
         dso_lever_max: f64,
-        ddo: Vec<(f64, f64)>,
-        theta_max: f64,
-        theta_last: f64,
         max_angles: Vec<(f64, f64)>,
     ) -> Self {
         Self {
             angle,
             lever_moment,
-            dso,
             dso_area,
             dso_lever_max,
-            ddo,
-            theta_max,
             max_angles,
-            theta_last,
         }
     }
 }
@@ -380,10 +326,6 @@ impl ILeverDiagram for FakeLeverDiagram {
     /// Плечо кренящего момента соответствующие углу крена судна (angle >= 0. && angle <= 90.)
     fn lever_moment(&self, _: f64) -> f64 {
         self.lever_moment
-    }
-    /// Диаграмма статической остойчивости
-    fn dso(&self) -> Vec<(f64, f64)> {
-        self.dso.clone()
     }
     /// Площадь под положительной частью диаграммы статической остойчивости
     fn dso_area(&self, angle1: f64, angle2: f64) -> f64 {
@@ -400,18 +342,6 @@ impl ILeverDiagram for FakeLeverDiagram {
             "FakeLeverDiagram dso_lever_max angle1 {angle1} < angle2 {angle2}"
         );
         self.dso_lever_max
-    }
-    /// Диаграмма динамической остойчивости
-    fn ddo(&self) -> Vec<(f64, f64)> {
-        self.ddo.clone()
-    }
-    /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    fn theta_max(&self) -> f64 {
-        self.theta_max
-    }
-    /// Угол пересечения с нулем диаграммы плеч статической остойчивости
-    fn theta_last(&self) -> f64 {
-        self.theta_last
     }
     /// Углы и плечи максимумов диаграммы плеч статической остойчивости
     fn max_angles(&self) -> Vec<(f64, f64)> {
