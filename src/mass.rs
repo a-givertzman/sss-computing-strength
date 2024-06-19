@@ -272,7 +272,12 @@ pub struct FakeMass {
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeMass {
-    pub fn new(sum: f64, values: Vec<f64>, shift: Position, moment_mass: Moment) -> Self {
+    pub fn new(
+        sum: f64,
+        values: Vec<f64>,
+        shift: Position,
+        moment_mass: Moment,
+    ) -> Self {
         Self {
             sum,
             values,

@@ -61,7 +61,7 @@ fn execute() -> Result<(), Error> {
             .to_string();
   */      //   println!("{}", json_data);
     
-    let host: String = "localhost".to_string();
+    let host: String = "0.0.0.0".to_string();
     let port = "8080".to_string();    
  
     let ship_id = 1;
@@ -305,7 +305,7 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&parameters),
     ));
 
-    let trim = Trim::new(
+    let trim = stability::Trim::new(
         data.length_lbp,
         mean_draught,
         center_waterline_shift,

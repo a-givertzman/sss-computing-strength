@@ -7,7 +7,7 @@ use super::{
     displacement::Displacement,
     shear_force::{IShearForce, ShearForce},
     total_force::TotalForce,
-    volume::Volume,
+    volume::Volume, Trim, ITrim,
 };
 use std::rc::Rc;
 
@@ -65,6 +65,48 @@ impl Computer {
     /// Вычисление изгибающего момента и срезающей силы. Дифферент  
     /// подбирается перебором.
     pub fn calculate(&mut self) {
+        let mut displacement_values;
+        let mut total_force_values;
+        let shear_force_values;
+        let bending_moment_values;
+        let trim = Trim::new(
+                self.water_density,  
+                self.center_waterline_shift,
+                self.mean_draught,
+                Rc::clone(&self.mass),
+                Rc::clone(&self.displacement),
+                Rc::clone(&self.bounds),
+            ).value();
+        let mut volume = Volume::new(
+            self.center_waterline_shift,
+            self.mean_draught,
+            Rc::clone(&self.displacement),
+            trim,
+            Rc::clone(&self.bounds),
+        );
+        displacement_values = volume.values();
+        displacement_values.push(displacement_values.iter().sum());
+        let mut total_force = TotalForce::new(
+            Rc::clone(&self.mass),
+            self.water_density,
+            volume,
+            self.gravity_g,
+        );
+        total_force_values = total_force.values();
+        total_force_values.push(total_force_values.iter().sum());
+        let mut shear_force = ShearForce::new(total_force);
+        shear_force_values = shear_force.values();
+        bending_moment_values = BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values();  
+        self.results.add("value_displacement".to_owned(), displacement_values);
+        self.results.add("value_total_force".to_owned(), total_force_values);
+        self.results.add("value_shear_force".to_owned(), shear_force_values);
+        self.results.add("value_bending_moment".to_owned(), bending_moment_values);
+    }
+
+    /* 
+    /// Вычисление изгибающего момента и срезающей силы. Дифферент  
+    /// подбирается перебором.
+    fn calculate(&mut self) {
         let mut trim = 0.; // Дифферент
         let mut delta = 1.; // Изменение дифферента
         let mut displacement_values = Vec::new();
@@ -102,11 +144,10 @@ impl Computer {
             trim -= last_value.signum() * delta;
             delta *= 0.5;
         }
-        displacement_values.push(displacement_values.iter().sum());
-        total_force_values.push(total_force_values.iter().sum());
-        self.results.add("value_displacement".to_owned(), displacement_values);
-        self.results.add("value_total_force".to_owned(), total_force_values);
-        self.results.add("value_shear_force".to_owned(), shear_force_values);
-        self.results.add("value_bending_moment".to_owned(), bending_moment_values);
-    }
+        self.mass_values = Some(self.mass.values());
+        self.displacement_values = displacement_values;
+        self.total_force_values = total_force_values;
+        self.shear_force = shear_force_values;
+        self.bending_moment = bending_moment_values;
+    } */
 }
