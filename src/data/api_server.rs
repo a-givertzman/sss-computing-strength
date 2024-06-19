@@ -335,7 +335,7 @@ pub fn send_stability_diagram(
     full_sql += &format!("DELETE FROM stability_diagram WHERE ship_id={ship_id};");
     full_sql += " INSERT INTO stability_diagram (ship_id, angle, value_dso, value_ddo) VALUES"; 
     data.into_iter().for_each(|(angle, value_dso, value_ddo) | {
-        full_sql += &format!(" ({ship_id}, {angle}, {value_dso}, {value_ddo})");
+        full_sql += &format!(" ({ship_id}, {angle}, {value_dso}, {value_ddo}),");
     });
     full_sql.pop();
     full_sql.push(';');

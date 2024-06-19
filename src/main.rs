@@ -123,7 +123,7 @@ fn execute() -> Result<(), Error> {
             v.mass,
             bound_x,
             Some(shift_const.clone()),
-            LoadingType::from(v.load_constant_type),
+            LoadingType::from(v.loading_type),
         ));
      //   log::info!("\t Mass loads_const from load_constants:{:?} ", load);
         loads_const.push(load);
@@ -280,14 +280,7 @@ fn execute() -> Result<(), Error> {
         data.bounds.len()
     );*/
 
-    /*    println!("shear_force:");
-        computer.shear_force().iter().for_each(|v| println!("{v};"));
-        println!("bending_moment:");
-        computer
-            .bending_moment()
-            .iter()
-            .for_each(|v| println!("{v};"));
-    */
+
     send_strenght_data(
         &mut api_server,
         ship_id,

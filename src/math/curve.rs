@@ -31,10 +31,11 @@ impl Curve {
     pub fn new_catmull_rom(src: &Vec<(f64, f64)>) -> Curve {
         assert!(src.len() > 2, "Curve.new | Input array must have at least four elements (values.len > 1), \nvalues: {:?}", src);
         let mut res = Vec::new();
-
+        let mut src = src.clone();
+        src.sort_by(|a, b| a.0.partial_cmp(&b.0).expect("Curve.new_catmull_rom src sort error!"));
         // Для метода CatmullRom добавляем по 3 значения вначало и конец вектора
         let delta_key = src[1].0 - src[0].0;
-        assert!(delta_key > 0., "Curve.new_catmull_rom delta_key > 0 {}:{} {}:{}", src[0].0, src[0].1 , src[1].0, src[1].1 );
+        assert!(delta_key > 0., "Curve.new_catmull_rom delta_key > 0 {}:{} {}:{}, src:{:?}", src[0].0, src[0].1 , src[1].0, src[1].1, &src );
         let delta_value = src[1].1 - src[0].1;
         res.push(Key::new(
             src[0].0 - delta_key * 3.,

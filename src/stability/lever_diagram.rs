@@ -89,9 +89,13 @@ impl LeverDiagram {
                 theta(angle_deg)
             })
             .collect::<Vec<(f64, f64)>>();
+
+       // dbg!(&dso);
         // если крен на левый борт то переворачиваем диаграмму
         if theta(0).1 > 0. {
             dso = dso.into_iter().map(|(a, v)| (-a, -v) ).collect();
+            dso.sort_by(|(a1, _), (a2, _)| a1.partial_cmp(a2).expect("LeverDiagram calculate error: sort dso!") );
+        //    dbg!("theta(0).1 > 0.", &dso);
         } 
         // нахождение максимума диаграммы
         let curve = Curve::new_catmull_rom(&dso);
@@ -134,7 +138,7 @@ impl LeverDiagram {
             let angle_deg = angle_deg as f64 * 0.01;
             let value = curve.value(angle_deg);
             if value < last_value {
-                if max_angles.is_empty() || max_angles.last().unwrap().1 < last_value {
+                if max_angles.is_empty() || max_angles.last().expect("LeverDiagram calculate error: no max_angle!").1 < last_value {
                     max_angles.push((last_angle, last_value));
                 }
             }
@@ -154,25 +158,24 @@ impl LeverDiagram {
             .angle(0.)
             .first()
             .unwrap_or(&0.);
-
-        let mut ddo = vec![(angle_zero, 0.)];
-        //let start = angle_zero.ceil() as i32;
-        ddo.append(
-            &mut (-90..=90)
+   //     dbg!(angle_zero);
+        let ddo = (-90..=90)
                 .map(|angle_deg| {
                     let angle_deg = angle_deg as f64;
                     let value = if angle_deg < angle_zero { 
                         curve.integral(angle_deg, angle_zero) * std::f64::consts::PI / 180.
-                    } else if angle_zero > angle_zero {
+                    } else if angle_deg > angle_zero {
                         curve.integral(angle_zero, angle_deg) * std::f64::consts::PI / 180.
                     } else {
                         0.
                     };
+          //          dbg!(angle_deg, value);
                     (angle_deg, value)
                 })
-                .collect::<Vec<(f64, f64)>>(),
-        );
+                .collect::<Vec<(f64, f64)>>();
+   //     dbg!(&ddo);
         *self.diagram.borrow_mut() = Some(dso.iter().zip(ddo.iter()).map(|((a1, v1), (_, v2))| (*a1, *v1, *v2) ).collect::<Vec<_>>());
+    //    dbg!(&self.diagram.clone());
         *self.ddo.borrow_mut() = Some(ddo);
         self.parameters.add(ParameterID::Roll, angle_zero);
     }

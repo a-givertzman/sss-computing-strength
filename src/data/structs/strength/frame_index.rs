@@ -9,7 +9,7 @@ use crate::data::structs::DataArray;
 pub struct FrameIndexData {
     /// Индекс шпангоута
     pub frame_index: i32,
-    /// Координата по оси Х
+    /// Координата по оси Х относительно нулевого шпангоута
     pub pos_x: f64,
 }
 ///

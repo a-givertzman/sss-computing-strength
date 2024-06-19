@@ -327,7 +327,7 @@ impl ParsedShipData {
                     bound_x(&load_constant.bound_x1, &load_constant.bound_type)?, 
                     bound_x(&load_constant.bound_x2, &load_constant.bound_type)?, 
                 ),
-                load_constant_type: load_constant.load_constant_type,
+                loading_type: load_constant.loading_type,
             });
         }
 

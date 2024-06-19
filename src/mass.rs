@@ -117,6 +117,7 @@ impl Mass {
         let mut vec_store = Vec::new();
         let mut vec_cargo = Vec::new();
         let mut vec_icing = Vec::new();
+        let mut vec_sum = Vec::new();
         let res: Vec<f64> = self
             .bounds
             .iter()
@@ -172,6 +173,8 @@ impl Mass {
         vec_store.push(vec_store.iter().sum());
         vec_cargo.push(vec_cargo.iter().sum());
         vec_icing.push(vec_icing.iter().sum());
+        vec_sum.append(&mut res.clone());
+        vec_sum.push(res.iter().sum());
         log::info!("\t Mass values:{:?} ", res);
         self.results.add("value_mass_hull".to_owned(), vec_hull);
         self.results.add("value_mass_equipment".to_owned(), vec_equipment);
@@ -179,6 +182,7 @@ impl Mass {
         self.results.add("value_mass_store".to_owned(), vec_store);
         self.results.add("value_mass_cargo".to_owned(), vec_cargo);
         self.results.add("value_mass_icing".to_owned(), vec_icing);
+        self.results.add("value_mass_sum".to_owned(), vec_sum);
         res
     }
     /// Отстояние центра масс

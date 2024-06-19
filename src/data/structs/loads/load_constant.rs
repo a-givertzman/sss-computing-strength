@@ -35,7 +35,7 @@ pub struct LoadConstantData {
     /// (физ. шпангоуты или метры)
     pub bound_type: String,  
     /// Тип груза, приходящегося на шпацию
-    pub load_constant_type: LoadConstantType,
+    pub loading_type: LoadConstantType,
 }
 ///
 impl std::fmt::Display for LoadConstantData {
@@ -47,7 +47,7 @@ impl std::fmt::Display for LoadConstantData {
             self.bound_x1,
             self.bound_x2,
             self.bound_type,
-            self.load_constant_type,
+            self.loading_type,
         )
     }
 }
@@ -68,5 +68,5 @@ pub struct ParsedLoadConstantData {
     /// Границы груза
     pub bound_x: (f64, f64),
     /// Границы груза
-    pub load_constant_type: LoadConstantType,
+    pub loading_type: LoadConstantType,
 }

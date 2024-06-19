@@ -38,7 +38,7 @@ mod tests {
         let target = 0.1956;
 
         assert!(
-            (result - target).abs() < result.abs() * 0.01, //TODO
+            (result.0 - target).abs() < result.0.abs() * 0.01, //TODO
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target

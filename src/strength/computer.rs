@@ -69,7 +69,7 @@ impl Computer {
         let mut total_force_values;
         let shear_force_values;
         let bending_moment_values;
-        let trim = Trim::new(
+        let (trim, mean_draught) = Trim::new(
                 self.water_density,  
                 self.center_waterline_shift,
                 self.mean_draught,
@@ -79,7 +79,7 @@ impl Computer {
             ).value();
         let mut volume = Volume::new(
             self.center_waterline_shift,
-            self.mean_draught,
+            mean_draught,
             Rc::clone(&self.displacement),
             trim,
             Rc::clone(&self.bounds),
