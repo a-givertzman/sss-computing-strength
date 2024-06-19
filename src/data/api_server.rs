@@ -9,7 +9,7 @@ use crate::{
 };
 use api_tools::client::{api_query::*, api_request::ApiRequest};
 use loads::{CompartmentArray, LoadCargoArray};
-use std::{iter::zip, thread, time};
+use std::{thread, time};
 
 pub struct ApiServer {
     database: String,
@@ -86,7 +86,7 @@ pub fn get_data(
 ) -> Result<ParsedShipData, Error> {
     log::info!("input_api_server read begin");
     let ship_parameters = ShipArray::parse(&api_server.fetch(&format!(
-        "SELECT key, value, type FROM ship_parameters WHERE ship_id={};",
+        "SELECT key, value, value_type FROM ship_parameters WHERE ship_id={};",
         ship_id
     ))?)?;
     let navigation_area_param = NavigationAreaArray::parse(
@@ -129,7 +129,7 @@ pub fn get_data(
         ship_id
     ))?)?;
     let center_draught_shift = CenterDraughtShiftDataArray::parse(&api_server.fetch(&format!(
-        "SELECT key, x, y, z FROM center_draught WHERE ship_id={};",
+        "SELECT key, value_x, value_y, value_z FROM center_draught WHERE ship_id={};",
         ship_id
     ))?)?;
     let mean_draught = MeanDraughtDataArray::parse(&api_server.fetch(&format!(
@@ -166,7 +166,7 @@ pub fn get_data(
         ship_id
     ))?)?;
     let delta_windage_moment = DeltaWindageMomentDataArray::parse(&api_server.fetch(&format!(
-        "SELECT draught, x, z FROM delta_windage_moment WHERE ship_id={};",
+        "SELECT draught, value_x, value_z FROM delta_windage_moment WHERE ship_id={};",
         ship_id
     ))?)?;
     let physical_frame = FrameIndexDataArray::parse(&api_server.fetch(&format!(
@@ -207,7 +207,7 @@ pub fn get_data(
         ship_id
     ))?)?;
     let load_constant = LoadConstantArray::parse(&api_server.fetch(&format!(
-        "SELECT mass, bound_x1, bound_x2, bound_type, load_constant_type::TEXT FROM load_constant WHERE ship_id={};",
+        "SELECT mass, bound_x1, bound_x2, bound_type, loading_type::TEXT FROM load_constant WHERE ship_id={};",
         ship_id
     ))?)?;
     let area_h_str = HStrAreaDataArray::parse(&api_server.fetch(
@@ -272,51 +272,34 @@ pub fn send_strenght_data(
     log::info!("send_strenght_data begin");
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM result_strength WHERE ship_id={ship_id};");
-    results.iter().for_each(|(k, v)| {
+    full_sql += &format!(" INSERT INTO result_strength (ship_id, index");
+    full_sql += &results.iter().map(|(k, _)| format!(", {k}") ).collect::<String>();
+    full_sql += ") VALUES";
+
+    for i in 0..results[0].1.len() {
+        full_sql += &format!(" ({ship_id}, {i}," );
+        full_sql += &results.iter().map(|(_, v)| format!(" {},", v[i])).collect::<String>();
+        full_sql.pop();
+        full_sql += &format!(")," );        
+    }
+    full_sql.pop();
+    full_sql.push(';');
+
+/*     results.iter().for_each(|(k, v)| {
         full_sql += &format!(" INSERT INTO result_strength (ship_id, index, {}) VALUES", k);
         v.iter().enumerate().for_each(|(i, v)| {
             full_sql += &format!(" ({ship_id}, {i}, {v}),");
         });
         full_sql.pop();
         full_sql.push(';');
-    });
+    }); */
+
     full_sql += " END$$;";
     //   dbg!(&string);
     api_server.fetch(&full_sql)?;
     log::info!("send_strenght_data end");
     Ok(())
 }
-/* /// Запись данных расчета прочности в БД
-pub fn send_strenght_data(
-    api_server: &mut ApiServer,
-    ship_id: usize,
-    results: Vec<(String, Vec<f64>)>,
-) -> Result<(), error::Error> {
-    log::info!("send_strenght_data begin");
-    assert!(mass_sum.len() == displacement.len() &&
-             displacement.len()== total_force.len() &&
-             total_force.len() + 1 == shear_force.len() &&
-             shear_force.len() == bending_moment.len());
-    let mut full_sql = "DO $$ BEGIN ".to_owned();
-    full_sql += &format!("DELETE FROM result_strength WHERE ship_id={ship_id};");
-    full_sql += " INSERT INTO result_strength (ship_id, index, mass_hull, \
-        mass_equipment, mass_ballast, mass_store, mass_cargo, \
-        mass_sum, displacement, total_force, shear_force, \
-        bending_moment) VALUES";
-    (0..mass_sum.len()).for_each(|i| {
-        full_sql += &format!(" ({ship_id}, {i}, {}, {}, {}, {}, {}),", 
-            mass_sum[i], displacement[i], total_force[i], shear_force[i], bending_moment[i]);
-    });
-    full_sql += &format!(" ({ship_id}, {}, 0, 0, 0, {}, {}),", 
-        mass_sum.len(), shear_force[mass_sum.len()], bending_moment[mass_sum.len()]);
-    full_sql.pop();
-    full_sql.push(';');
-    full_sql += " END$$;";
-    //   dbg!(&string);
-    api_server.fetch(&full_sql)?;
-    log::info!("send_strenght_data end");
-    Ok(())
-} */
 /// Запись данных расчета остойчивости в БД
 pub fn send_stability_data(
     api_server: &mut ApiServer,
