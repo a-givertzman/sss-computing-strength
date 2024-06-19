@@ -92,12 +92,10 @@ impl ITrim for Trim {
     fn value(&mut self) -> (f64, f64) {
         let dx = self.bounds.iter().map(|v| v.center()).collect::<Vec<_>>();
         let mass_pairs = dx.clone().into_iter().zip(self.mass.values()).collect::<Vec<_>>();
-        let (w_xg, w) = self.calc_s_trap(&mass_pairs);
-     //   dbg!(w_xg, w);
+        let (w_xg, w) = self.calc_s(&mass_pairs);
         let mut trim = 0.; // Дифферент
         let mut mean_draught = self.mean_draught;
         let (mut v_xc, mut volume) = (0., 0.);
-     //   dbg!(&mass_pairs, w_xg, w, trim, mean_draught);
         for _i in 0..30 {
             for _j in 0..30 {
                 let volume_values = Volume::new(
@@ -108,19 +106,17 @@ impl ITrim for Trim {
                     Rc::clone(&self.bounds),
                 ).values();
                 let volume_pairs = dx.clone().into_iter().zip(volume_values).collect::<Vec<_>>();
-           //     (v_xc, volume) = self.calc_s_trap(&volume_pairs);
-                (v_xc, volume) = self.calc_s_trap(&volume_pairs);
-                let delta_w = (w - volume/self.water_density)/w;              
-                if delta_w.abs() <= 0.000001 {
+                (v_xc, volume) = self.calc_s(&volume_pairs);
+                let delta_w = (w - volume*self.water_density)/w;              
+                if delta_w.abs() <= 0.0000000001 {
                     break;
                 }
                 mean_draught += self.mean_draught*delta_w;                
             }
             let delta_x = w_xg - v_xc;
-            if delta_x.abs() <= 0.000001 {
+            if delta_x.abs() <= 0.00000001 {
                 break;
             }     
-       //     dbg!(_i, mean_draught, delta_w, delta_x, trim);
             trim = trim + delta_x / 10.;
         }
         (trim, mean_draught)
