@@ -21,16 +21,16 @@ pub struct Volume {
 impl Volume {
     /// Основной конструктор. Аргументы:  
     /// - bounds: вектор разбиения на отрезки для эпюров
-    /// - center_waterline_shift: кривая отстояния центра тяжести ватерлинии по длине от миделя
-    /// - mean_draught: кривая средняй осадки
-    /// - displacement: класс водоизмещения судна
-    /// - trim: класс дифферента судна
+    /// - center_waterline_shift: отстояние центра тяжести ватерлинии по длине от миделя, м
+    /// - mean_draught: средняя осадка, м
+    /// - displacement: водоизмещение судна, м^3
+    /// - trim: дифферент судна, м
     pub fn new(    
-        center_waterline_shift: f64, // отстояние центра тяжести ватерлинии по длине от миделя
-        mean_draught: f64,           // средняя осадка
-        displacement: Rc<Displacement>,    // водоизмещение судна
-        trim: f64,//Trim,                    // дифферент судна
-        bounds: Rc<Bounds>,                // вектор разбиения на отрезки для эпюров
+        center_waterline_shift: f64, 
+        mean_draught: f64,          
+        displacement: Rc<Displacement>,   
+        trim: f64,
+        bounds: Rc<Bounds>,
     ) -> Self {
         Self {
             bounds,

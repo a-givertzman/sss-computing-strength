@@ -74,21 +74,25 @@ impl LeverDiagram {
     /// динамической остойчивости (13)
     fn calculate(&self) {
         // расчет диаграммы
-        let delta_y = self.mass.shift().y() - self.center_draught_shift.y();
-    //    dbg!(delta_y, self.metacentric_height.z_g_fix(), self.mean_draught);
-        let dso = (-90..=90)
+        let theta = |angle_deg: i32| {
+            let angle_deg = angle_deg as f64;
+            let angle_rad = angle_deg * std::f64::consts::PI / 180.;
+            let v1 = self.data.value(self.mean_draught, angle_deg);
+            let v2 = self.metacentric_height.z_g_fix() * angle_rad.sin();
+            let v3 = (self.mass.shift().y() - self.center_draught_shift.y()) * angle_rad.cos();
+            let value = v1 - v2 - v3;
+ //           log::info!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}");
+            (angle_deg, value)
+        };
+        let mut dso = (-90..=90)
             .map(|angle_deg| {
-                let angle_deg = angle_deg as f64;
-                let angle_rad = angle_deg * std::f64::consts::PI / 180.;
-                let v1 = self.data.value(self.mean_draught, angle_deg);
-                let v2 = self.metacentric_height.z_g_fix() * angle_rad.sin();
-                let v3 = delta_y.abs() * angle_rad.cos();
-                let value = v1 - v2 - v3;
-     //           log::info!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}");
-                (angle_deg, value)
+                theta(angle_deg)
             })
             .collect::<Vec<(f64, f64)>>();
-      //  dbg!(&dso);
+        // если крен на левый борт то переворачиваем диаграмму
+        if theta(0).1 > 0. {
+            dso = dso.into_iter().map(|(a, v)| (-a, -v) ).collect();
+        } 
         // нахождение максимума диаграммы
         let curve = Curve::new_catmull_rom(&dso);
         let mut angle = 45.;
@@ -170,7 +174,7 @@ impl LeverDiagram {
         );
         *self.diagram.borrow_mut() = Some(dso.iter().zip(ddo.iter()).map(|((a1, v1), (_, v2))| (*a1, *v1, *v2) ).collect::<Vec<_>>());
         *self.ddo.borrow_mut() = Some(ddo);
-        self.parameters.add(ParameterID::Roll, angle_zero*delta_y.signum());
+        self.parameters.add(ParameterID::Roll, angle_zero);
     }
 }
 ///

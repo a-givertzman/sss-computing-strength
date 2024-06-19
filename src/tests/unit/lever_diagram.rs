@@ -65,6 +65,7 @@ mod tests {
                 metacentric_height,
                 Rc::new(FakeParameters{}),
             );
+            lever_diagram.max_angles();
             unsafe {
                 LEVER_DIAGRAM.replace(lever_diagram);
             }

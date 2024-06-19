@@ -1,6 +1,6 @@
 //! Нагрузка на судно: постоянный и переменный груз. 
 use serde::{Deserialize, Serialize};
-use crate::{Bound, Position};
+use crate::{data::structs::loads::{CargoType, CompartmentType, LoadConstantType}, Bound, Position};
 mod tank;
 mod desk;
 mod mass;
@@ -12,16 +12,12 @@ pub use mass::*;
 pub use bulk::*;
 
 /// Тип груза
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
-//#[serde(untagged)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq,)]
 pub enum LoadingType {
-    #[serde(alias="lightship")]
-    Lightship,
-    #[serde(alias="ballast")]
+    Hull,
+    Equipment,
     Ballast,
-    #[serde(alias="store")]
     Store,
-    #[serde(alias="cargo")]
     Cargo,
 }
 ///
@@ -31,12 +27,41 @@ impl std::fmt::Display for LoadingType {
             f,
             "{}",
             match self {
-                LoadingType::Lightship => "Lightship",
+                LoadingType::Hull => "Hull",
+                LoadingType::Equipment => "Equipment",
                 LoadingType::Ballast => "Ballast",
                 LoadingType::Store => "Store",
                 LoadingType::Cargo => "Cargo",  
             },
         )
+    }
+}
+///
+impl From<CargoType> for LoadingType {
+    fn from(value: CargoType) -> Self {
+        match value {
+            CargoType::Store => LoadingType::Store,
+            CargoType::Cargo => LoadingType::Cargo,
+        }
+    }
+}
+///
+impl From<CompartmentType> for LoadingType {
+    fn from(value: CompartmentType) -> Self {
+        match value {
+            CompartmentType::Ballast => LoadingType::Ballast,
+            CompartmentType::Store => LoadingType::Store,
+            CompartmentType::Cargo => LoadingType::Cargo,
+        }
+    }
+}
+///
+impl From<LoadConstantType> for LoadingType {
+    fn from(value: LoadConstantType) -> Self {
+        match value {
+            LoadConstantType::Equipment => LoadingType::Equipment,
+            LoadConstantType::Hull => LoadingType::Hull,
+        }
     }
 }
 /// Абстрактный груз: контейнер, трюм или бак.
