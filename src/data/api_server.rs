@@ -340,7 +340,27 @@ pub fn send_stability_data(
     log::info!("send_stability_data end");
     Ok(())
 }
+/// Запись данных расчета плечей остойчивости в БД
+pub fn send_stability_diagram(
+    api_server: &mut ApiServer,
+    ship_id: usize,
+    data: Vec<(f64, f64, f64)>,
+) -> Result<(), error::Error> {
+    log::info!("send_stability_diagram begin");
 
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM stability_diagram WHERE ship_id={ship_id};");
+    full_sql += " INSERT INTO stability_diagram (ship_id, angle, value_dso, value_ddo) VALUES"; 
+    data.into_iter().for_each(|(angle, value_dso, value_ddo) | {
+        full_sql += &format!(" ({ship_id}, {angle}, {value_dso}, {value_ddo})");
+    });
+    full_sql.pop();
+    full_sql.push(';');
+    full_sql += " END$$;";
+    api_server.fetch(&full_sql)?;
+    log::info!("send_stability_diagram end");
+    Ok(())
+}
 /// Запись данных расчета остойчивости в БД
 pub fn send_parameters_data(
     api_server: &mut ApiServer,

@@ -29,9 +29,10 @@ mod tests {
             Rc::new(FakeLeverDiagram::new(
                 vec![0.],
                 1.,
+                vec![(0., 0., 0.)],
                 0.5,
                 1.,
-                vec![(30., 60.)],
+                vec![(0., 0.)],
             )),
         )
         .heel_lever(10.);

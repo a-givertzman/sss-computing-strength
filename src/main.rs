@@ -353,6 +353,8 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
         Rc::clone(&parameters),
     ));
+
+    send_stability_diagram(&mut api_server, ship_id, lever_diagram.diagram())?;
     // dbg!(stability.k()?);
     //dbg!(lever_diagram.dso().len());
     /*   lever_diagram
