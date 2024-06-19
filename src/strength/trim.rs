@@ -59,11 +59,11 @@ impl Trim {
         let mut xc = 0.;
         for i in 0..values.len()-1 {
             let x_i1 = values[i].0;
-            let x_i2 = values[i+1].0;
+        //    let x_i2 = values[i+1].0;
             let y_i1 = values[i].1/l; 
             let y_i2 = values[i+1].1/l;             
             let x_ci = x_i1 + (l / 3.) * ((2. * y_i2 + y_i1) / (y_i2 + y_i1));
-            let s_i = ((y_i2 + y_i1) / 2.) * (x_i2 - x_i1);
+            let s_i = ((y_i2 + y_i1) / 2.) * l;
             sum_s += s_i;
             xc += s_i * x_ci;
         }
@@ -93,6 +93,7 @@ impl ITrim for Trim {
         let dx = self.bounds.iter().map(|v| v.center()).collect::<Vec<_>>();
         let mass_pairs = dx.clone().into_iter().zip(self.mass.values()).collect::<Vec<_>>();
         let (w_xg, w) = self.calc_s_trap(&mass_pairs);
+     //   dbg!(w_xg, w);
         let mut trim = 0.; // Дифферент
         let mut mean_draught = self.mean_draught;
         let (mut v_xc, mut volume) = (0., 0.);
