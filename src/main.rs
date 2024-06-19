@@ -71,6 +71,7 @@ fn execute() -> Result<(), Error> {
     let mut elapsed = HashMap::new();
     let time = Instant::now();
 
+    let results: Rc<dyn IResults> = Rc::new(Results::new());
     let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
     let mut data = get_data(&mut api_server, ship_id)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
@@ -109,7 +110,7 @@ fn execute() -> Result<(), Error> {
     let mut load_variable: Vec<Rc<LoadMass>> = Vec::new();
 
     // Постоянная масса судна
-    let mut loads_const: Vec<Rc<dyn ILoadMass>> = Vec::new();
+    let mut loads_const: Vec<Rc<LoadMass>> = Vec::new();
     let shift_const = Position::new(
         data.const_mass_shift_x,
         data.const_mass_shift_y,
@@ -122,7 +123,7 @@ fn execute() -> Result<(), Error> {
             v.mass,
             bound_x,
             Some(shift_const.clone()),
-            LoadingType::Lightship,
+            LoadingType::from(v.load_constant_type),
         ));
      //   log::info!("\t Mass loads_const from load_constants:{:?} ", load);
         loads_const.push(load);
@@ -138,7 +139,7 @@ fn execute() -> Result<(), Error> {
             v.mass,
             bound_x,
             mass_shift.clone(),
-            v.loading_type,
+            LoadingType::from(v.loading_type),
         ));
       //  log::info!("\t Mass load_variable from cargoes:{:?} ", load);
         load_variable.push(load);
@@ -154,7 +155,7 @@ fn execute() -> Result<(), Error> {
             v.mass,
             bound_x,
             mass_shift.clone(),
-            v.loading_type,
+            LoadingType::from(v.loading_type),
         ));
        // log::info!("\t Mass load_variable from compartments src:{:?} trg:{:?}", v, load, );
         load_variable.push(load);
@@ -165,7 +166,7 @@ fn execute() -> Result<(), Error> {
                 bound_x,
                 mass_shift.clone(),
                 InertiaMoment::new(v.m_f_s_x.unwrap_or(0.), v.m_f_s_y.unwrap_or(0.)),
-                v.loading_type,
+                LoadingType::from(v.loading_type),
             ));
     //        log::info!("\t Mass tanks from compartments:{:?} ", tank);
             tanks.push(tank);
@@ -230,6 +231,7 @@ fn execute() -> Result<(), Error> {
         )),
         Rc::clone(&load_variable),
         Rc::clone(&bounds),
+        Rc::clone(&results),
         Rc::clone(&parameters),
     ));
     // Объемное водоизмещение (1)
@@ -255,7 +257,7 @@ fn execute() -> Result<(), Error> {
     parameters.add(ParameterID::DraughtMean, mean_draught);
     // Для расчета прочности дифферент находится подбором
     // как условие для схождения изгибающего момента в 0
-    let mut computer = Computer::new(
+    Computer::new(
         gravity_g,
         data.water_density,
         center_waterline_shift,
@@ -263,8 +265,9 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&mass),
         Rc::new(Displacement::new(frames)),
         Rc::clone(&bounds),
-    );
-    assert!(
+        Rc::clone(&results),
+    ).calculate();
+/*    assert!(
         computer.shear_force().len() == data.bounds.len() + 1,
         "shear_force.len {} == frame.len {} + 1",
         computer.shear_force().len(),
@@ -275,7 +278,7 @@ fn execute() -> Result<(), Error> {
         "bending_moment.len {} == frame.len {} + 1",
         computer.bending_moment().len(),
         data.bounds.len()
-    );
+    );*/
 
     /*    println!("shear_force:");
         computer.shear_force().iter().for_each(|v| println!("{v};"));
@@ -288,11 +291,7 @@ fn execute() -> Result<(), Error> {
     send_strenght_data(
         &mut api_server,
         ship_id,
-        &&computer.mass(),
-        &computer.displacement(),
-        &computer.total_force(),
-        &computer.shear_force(),
-        &computer.bending_moment(),
+        results.take_data(),
     )?;
 
     let flooding_angle = Curve::new_linear(&data.flooding_angle).value(mean_draught);
@@ -306,7 +305,7 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&parameters),
     ));
 
-    let trim = Trim::new(
+    let trim = stability::Trim::new(
         data.length_lbp,
         mean_draught,
         center_waterline_shift,
@@ -354,6 +353,8 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
         Rc::clone(&parameters),
     ));
+
+    send_stability_diagram(&mut api_server, ship_id, lever_diagram.diagram())?;
     // dbg!(stability.k()?);
     //dbg!(lever_diagram.dso().len());
     /*   lever_diagram

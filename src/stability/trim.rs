@@ -63,24 +63,28 @@ impl Trim {
         // Момент дифферентующий на 1 см осадки (4)
         let trim_moment = (self.mass.sum() * H) / (100. * self.ship_length);
         // Дифферент судна (5)
-        let value = self.mass.sum() * (self.mass.shift().x() - self.center_draught_shift.x())
+        let t = self.mass.sum() * (self.mass.shift().x() - self.center_draught_shift.x())
             / (100. * trim_moment);
         // Дифферент судна, градусы (5)
-        let trim_angle = (value/self.ship_length).atan()*180.0/PI;
+        let trim_angle = (t/self.ship_length).atan()*180.0/PI;    
+        // Осадка на носовом перпендикуляре длины L в ДП dн, м (6)
+        let draught_bow = self.mean_draught + (0.5 - self.center_waterline_shift/self.ship_length)*t;
+        // Осадка на кормовом перпендикуляре длины L в ДП dк, м (7)
+        let draught_stern = self.mean_draught - (0.5 + self.center_waterline_shift/self.ship_length)*t;
+        // Осадка на миделе в ДП, м (8)
+        let draught_mid = (draught_bow + draught_stern) / 2.;
+
         log::info!(
-            "\t Trim H:{H} mass:{} mass_shift_x:{} center_draught_x:{} M:{trim_moment} trim:{value}, trim_angle{trim_angle}",
+            "\t Trim H:{H} mass:{} mass_shift_x:{} center_draught_x:{} M:{trim_moment} trim:{t} 
+                trim_angle{trim_angle} draught_bow:{draught_bow} draught_stern:{draught_stern} draught_mid:{draught_mid}",
             self.mass.sum(),
             self.mass.shift().x(),
             self.center_draught_shift.x()
         );
-        let trim_angle = (value/self.ship_length).atan()*180.0/PI;
-        let draught_bow = self.mean_draught + (0.5 - self.center_waterline_shift/self.ship_length)*value;
-        let draught_stern = self.mean_draught - (0.5 + self.center_waterline_shift/self.ship_length)*value;
-        let draught_mid = (draught_bow + draught_stern) / 2.;
         self.parameters.add(ParameterID::MomentTrimPerCm, trim_moment);
         self.parameters.add(ParameterID::Trim, trim_angle);
         self.parameters.add(ParameterID::DraughtBow, draught_bow);
         self.parameters.add(ParameterID::DraughtStern, draught_stern);
-        value
+        t
     }
 }
