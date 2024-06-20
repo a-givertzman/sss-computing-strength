@@ -35,11 +35,17 @@ mod tests {
             Rc::new(Displacement::new(frames,)), 
             Rc::new(Bounds::from_n(20., 4)),
         ).value();
-        let target = 0.1956;
+        let target = (0.024, 0.29);
 
         assert!(
-            (result.0 - target).abs() < result.0.abs() * 0.01, //TODO
-            "\nresult: {:?}\ntarget: {:?}",
+            (result.0 - target.0).abs() < result.0.abs() * 0.01, 
+            "\ntrim: result: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
+        assert!(
+            (result.1 - target.1).abs() < result.1.abs() * 0.01, 
+            "\nmean_draught: result: {:?}\ntarget: {:?}",
             result,
             target
         );

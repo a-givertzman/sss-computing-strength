@@ -11,24 +11,25 @@ pub struct ShearForce {
 ///
 impl ShearForce {
     ///
-    pub fn new (total_force: impl ITotalForce + 'static) -> Self {
-        Self { total_force: Box::new(total_force) }
+    pub fn new(total_force: impl ITotalForce + 'static) -> Self {
+        Self {
+            total_force: Box::new(total_force),
+        }
     }
 }
 ///
 impl IShearForce for ShearForce {
     ///
     fn values(&mut self) -> Vec<f64> {
-        let result = self.total_force.values().sum_above();
-   //     log::info!("\t ShearForce result:{:?}", result);
- /*     // поправка
-        let last_value = result.last().expect("ShearForce error: no result values!");
-        let delta = *last_value/((result.len()-1) as f64);
-        result.iter_mut().enumerate().for_each(|(i, v)| *v -= delta*(i as f64) );
-        log::info!("\t ShearForce result_fixed:{:?}", result);
-
-        assert!(*result.last().expect("ShearForce error: no result values!") == 0., "ShearForce result.last {} == 0", result.last().expect("ShearForce error: no result values!"));
- */     result
+        let result = self
+            .total_force
+            .values()
+            .sum_above()
+            .into_iter()
+            .map(|v| -v)
+            .collect();
+        //     log::info!("\t ShearForce result:{:?}", result);
+        result
     }
 }
 
