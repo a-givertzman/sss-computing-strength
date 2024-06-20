@@ -182,9 +182,9 @@ impl Criterion {
             out_data.push(self.dso_lever_icing());
         }
         out_data.append(&mut self.dso_lever_max_angle());
-        if self.have_cargo {
+ //       if self.have_cargo {
             out_data.push(self.metacentric_height());
-        }
+    //    }
         if self.navigation_area == NavigationArea::R2Rsn
             || self.navigation_area == NavigationArea::R2Rsn45
             || self.metacentric_height.h_trans_fix().sqrt() / self.breadth > 0.08
