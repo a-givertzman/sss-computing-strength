@@ -90,11 +90,14 @@ impl LeverDiagram {
             })
             .collect::<Vec<(f64, f64)>>();
 
-       // dbg!(&dso);
+        // dbg!(&dso);
+        // знак статического угла крена
+        let mut angle_zero_signum = 1.;
         // если крен на левый борт то переворачиваем диаграмму
         if theta(0).1 > 0. {
             dso = dso.into_iter().map(|(a, v)| (-a, -v) ).collect();
             dso.sort_by(|(a1, _), (a2, _)| a1.partial_cmp(a2).expect("LeverDiagram calculate error: sort dso!") );
+            angle_zero_signum = -1.; // сохраняем знак угла
         //    dbg!("theta(0).1 > 0.", &dso);
         } 
         // нахождение максимума диаграммы
@@ -157,7 +160,7 @@ impl LeverDiagram {
         let angle_zero = *self
             .angle(0.)
             .first()
-            .unwrap_or(&0.);
+            .unwrap_or(&0.) * angle_zero_signum;
    //     dbg!(angle_zero);
         let ddo = (-90..=90)
                 .map(|angle_deg| {
