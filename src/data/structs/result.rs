@@ -71,6 +71,8 @@ pub struct ParsedShipData {
     pub const_mass_shift_z: f64,
     /// Минимальная осадка, м
     pub draught_min: f64,
+    /// Высота борта, м
+    pub moulded_depth: f64, 
     /// Коэффициент увеличения площади парусности несплощной
     /// поверхности при учете обледенения
     pub icing_coef_v_area_full: f64,
@@ -192,17 +194,29 @@ impl ParsedShipData {
         let bonjean_frame = bonjean_frame.data();        
         let frame_area = frame_area.data();
 
+        // Получение координаты шпангоута относительно миделя по его индексу
+        let frame_x = |index: i32| -> Result<f64, Error> {
+            Ok(*physical_frame.get(&index)
+            .ok_or(format!(
+                "compartments parse error: no physical_frame for index:{index}"
+            ))? - midship) 
+        }; 
         // Два варианта задания распределения по х - координата или физический шпангоут.
         // Если тип шпангоут, то находим и подставляем его координату
         // Координата шпангоута задана относительно кормы, считаем ее относительно центра
         let bound_x = |value: &f64, value_type: &str| -> Result<f64, Error> { 
             Ok(if value_type == "frame" {
-            //    TODO сделать пересчет из целого ингдекса в дробный
-                *physical_frame.get(&(*value as i32))
-                    .ok_or(format!(
-                        "compartments parse error: no physical_frame for value:{}",
-                        value
-                    ))? - midship
+                let last_frame_index = value.floor() as i32;
+                let next_frame_index = value.ceil() as i32;
+                if last_frame_index as f64 == *value {
+                    frame_x(last_frame_index)?
+                } else {
+                    let last_frame_x = frame_x(last_frame_index)?;
+                    let next_frame_x = frame_x(next_frame_index)?;
+                    let delta = next_frame_x - last_frame_x;
+                    let result = last_frame_x + (value - last_frame_index as f64)*delta;
+                    result
+                }
             } else {
                 *value - midship
             }) 
@@ -315,6 +329,7 @@ impl ParsedShipData {
                     bound_x(&load_constant.bound_x1, &load_constant.bound_type)?, 
                     bound_x(&load_constant.bound_x2, &load_constant.bound_type)?, 
                 ),
+                loading_type: load_constant.loading_type,
             });
         }
 
@@ -417,6 +432,10 @@ impl ParsedShipData {
             ))?.0.parse::<f64>()?,
             draught_min: ship_data.get("Draught min").ok_or(format!(
                 "ParsedShipData parse error: no draught_min for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            moulded_depth: ship_data.get("Moulded depth").ok_or(format!(
+                "ParsedShipData parse error: no moulded_depth for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
             icing_stab: ship_data.get("Type of icing").ok_or(format!(
@@ -578,8 +597,14 @@ impl ParsedShipData {
         }*/
         if self.draught_min <= 0. {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: value of volume must be positive {}",
+                "Error check ParsedShipData: value of draught_min must be positive {}",
                 self.draught_min
+            )));
+        }
+        if self.moulded_depth <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of moulded_depth must be positive {}",
+                self.moulded_depth
             )));
         }
         if self.icing_m_timber <= 0. {

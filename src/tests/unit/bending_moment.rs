@@ -16,7 +16,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = BendingMoment::new(Box::new(FakeShearForce::new(vec![
-            0.0, 5.0, 10., 15.0, 10.0, 5.0, 0.0, -5.0, -10.0, -15.0, -15.0, 0.0,
+            0.0, -5.0, -10., -15.0, -10.0, -5.0, 0.0, 5.0, 10.0, 15.0, 15.0, 0.0,
         ])), 2.)
         .values();
         let target = Vec::from([0.0, 5.0, 20.0, 45.0, 70.0, 85.0, 90.0, 85.0, 70.0, 45.0, 15.0, 0.0]);
