@@ -432,7 +432,7 @@ fn execute() -> Result<(), Error> {
         flooding_angle,
         data.length_lbp,
         data.width,
-        mean_draught,
+        data.moulded_depth,
         Curve::new_linear(&data.h_subdivision).value(mean_draught),
         Rc::new(Wind::new(
             p_v,

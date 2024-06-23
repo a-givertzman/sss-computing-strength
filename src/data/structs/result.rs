@@ -71,6 +71,8 @@ pub struct ParsedShipData {
     pub const_mass_shift_z: f64,
     /// Минимальная осадка, м
     pub draught_min: f64,
+    /// Высота борта, м
+    pub moulded_depth: f64, 
     /// Коэффициент увеличения площади парусности несплощной
     /// поверхности при учете обледенения
     pub icing_coef_v_area_full: f64,
@@ -432,6 +434,10 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no draught_min for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
+            moulded_depth: ship_data.get("Moulded depth").ok_or(format!(
+                "ParsedShipData parse error: no moulded_depth for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
             icing_stab: ship_data.get("Type of icing").ok_or(format!(
                 "ParsedShipData parse error: no icing_stab for ship id:{}",
                 ship_id
@@ -591,8 +597,14 @@ impl ParsedShipData {
         }*/
         if self.draught_min <= 0. {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: value of volume must be positive {}",
+                "Error check ParsedShipData: value of draught_min must be positive {}",
                 self.draught_min
+            )));
+        }
+        if self.moulded_depth <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: value of moulded_depth must be positive {}",
+                self.moulded_depth
             )));
         }
         if self.icing_m_timber <= 0. {
