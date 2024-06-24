@@ -393,7 +393,7 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no length_loa for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
-            width: ship_data.get("Ship hull width").ok_or(format!(
+            width: ship_data.get("Hull width").ok_or(format!(
                 "ParsedShipData parse error: no width for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
