@@ -827,6 +827,12 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check LoadConstantArray: index of load_constant must be contained in frames, index:{}", index)));
         }*/
+        if self.compartments.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check compartments: number of compartments: {}",
+                self.compartments.len()
+            )));
+        }
         if let Some(s) = self.compartments.iter().find(|s| s.mass < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: mass of compartment must be greater or equal to 0, {}",
@@ -860,6 +866,13 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: compartment center out of bound error! {}", s )));
         }
+        if self.load_constants.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check load_constants: number of load_constants: {}",
+                self.load_constants.len()
+            )));
+        }
+
  /*       if let Some(tank) = self.tanks.iter().find(|t| t.density <= 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: density of liquid must be greater or equal to 0 {}",

@@ -82,10 +82,11 @@ impl Trim {
             sum_s += y_i;
             xc += y_i * x_i;
         }
-        xc = if sum_s > 0. {
-            xc / sum_s
+        if sum_s > 0. {
+            xc /= sum_s;
         } else {
-            0.
+            xc = 0.;
+            sum_s = 0.;
         };
         (xc, sum_s)
     }
@@ -115,7 +116,7 @@ impl ITrim for Trim {
                 if delta_w.abs() <= 0.0000000001 {
                     break;
                 }
-                mean_draught += self.mean_draught*delta_w;                
+                mean_draught += mean_draught*delta_w;                
             }
             let delta_x = w_xg - v_xc;
             if delta_x.abs() <= 0.00000001 {
