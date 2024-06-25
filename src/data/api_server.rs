@@ -180,48 +180,62 @@ pub fn get_data(
         "SELECT frame_index, draft, area FROM frame_area WHERE ship_id={};",
         ship_id
     ))?)?;
-    let cargo = LoadCargoArray::parse(&api_server.fetch(
-        &format!(
-            "SELECT name, mass, bound_x1, bound_x2, bound_type, bound_y1, bound_y2, bound_z1, bound_z2, \
-            mass_shift_x, mass_shift_y, mass_shift_z, horizontal_area, horizontal_area_shift_x, \
-            horizontal_area_shift_y, vertical_area, vertical_area_shift_x, vertical_area_shift_y, \
-            vertical_area_shift_z, loading_type::TEXT FROM cargo WHERE ship_id={ship_id};"
+    let cargo = LoadCargoArray::parse(&api_server.fetch(&format!(
+        "SELECT name, \
+                mass, \
+                bound_x1, \
+                bound_x2, \
+                bound_y1, \
+                bound_y2, \
+                bound_z1, \
+                bound_z2, \
+                mass_shift_x, \
+                mass_shift_y, \
+                mass_shift_z, \
+                horizontal_area, \
+                horizontal_area_shift_x, \
+                horizontal_area_shift_y, \
+                vertical_area, \
+                vertical_area_shift_x, \
+                vertical_area_shift_y, \
+                vertical_area_shift_z, \
+                loading_type::TEXT \
+            FROM cargo WHERE ship_id={ship_id};"
         ),
     )?)?;
     let compartment = CompartmentArray::parse(&api_server.fetch(&format!(
         "SELECT space_id, \
-                    name, \
-                    mass, \
-                    density, \
-                    volume, \
-                    bound_x1, \
-                    bound_x2, \
-                    bound_type, \
-                    mass_shift_x, \
-                    mass_shift_y, \
-                    mass_shift_z, \
-                    m_f_s_y, \
-                    m_f_s_x, \
-                    loading_type::TEXT \
-                FROM compartment WHERE ship_id={};",
-        ship_id
+                name, \
+                mass, \
+                density, \
+                volume, \
+                bound_x1, \
+                bound_x2, \
+                mass_shift_x, \
+                mass_shift_y, \
+                mass_shift_z, \
+                m_f_s_y, \
+                m_f_s_x, \
+                loading_type::TEXT, \
+                physical_type::TEXT \
+            FROM compartment WHERE ship_id={ship_id} AND active=TRUE AND mass IS NOT NULL;"
     ))?)?;
     let load_constant = LoadConstantArray::parse(&api_server.fetch(&format!(
-        "SELECT mass, bound_x1, bound_x2, bound_type, loading_type::TEXT FROM load_constant WHERE ship_id={};",
+        "SELECT mass, bound_x1, bound_x2, loading_type::TEXT FROM load_constant WHERE ship_id={};",
         ship_id
     ))?)?;
-    let area_h_str = HStrAreaDataArray::parse(&api_server.fetch(
-        &format!("SELECT name, value, bound_x1, bound_x2, bound_type FROM horizontal_area_strength WHERE ship_id={};", ship_id)
+    let area_h_str = HStrAreaArray::parse(&api_server.fetch(
+        &format!("SELECT name, value, bound_x1, bound_x2, FROM horizontal_area_strength WHERE ship_id={};", ship_id)
     )?)?;
     //  dbg!(&area_h_str);
     log::info!("input_api_server area_h_str read ok");
-    let area_h_stab = HStabAreaDataArray::parse(&api_server.fetch(
+    let area_h_stab = HStabAreaArray::parse(&api_server.fetch(
         &format!("SELECT name, value, shift_x, shift_y, shift_z FROM horizontal_area_stability WHERE ship_id={};", ship_id)
     )?)?;
     //  dbg!(&area_h_stab);
     log::info!("input_api_server area_h_stab read ok");
-    let area_v = VerticalAreaDataArray::parse(&api_server.fetch(
-        &format!("SELECT name, value, shift_z, bound_x1, bound_x2, bound_type FROM vertical_area WHERE ship_id={};", ship_id)
+    let area_v = VerticalAreaArray::parse(&api_server.fetch(
+        &format!("SELECT name, value, shift_z, bound_x1, bound_x2 FROM vertical_area WHERE ship_id={};", ship_id)
     )?)?;
     //  dbg!(&area_v);
     log::info!("input_api_server vertical_area read ok");

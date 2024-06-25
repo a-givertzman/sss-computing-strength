@@ -118,7 +118,7 @@ fn execute() -> Result<(), Error> {
     );
 
     data.load_constants.iter().for_each(|v| {
-        let bound_x = Bound::from(v.bound_x);
+        let bound_x = Bound::new(v.bound_x1, v.bound_x2);
         let load = Rc::new(LoadMass::new(
             v.mass,
             bound_x,
@@ -146,13 +146,17 @@ fn execute() -> Result<(), Error> {
     });
 
     data.compartments.iter().for_each(|v| {
-        let mass_shift = v
-            .mass_shift
-            .as_ref()
-            .map(|mass_shift| Position::new(mass_shift.0, mass_shift.1, mass_shift.2));
-        let bound_x = Bound::from(v.bound_x);
+        let mass_shift = if v.mass_shift_x.is_some() {
+            Some(Position::new(
+            v.mass_shift_x.expect("CompartmentData error: no mass_shift_x!"),
+            v.mass_shift_y.expect("CompartmentData error: no mass_shift_y!"),
+            v.mass_shift_z.expect("CompartmentData error: no mass_shift_z!"),
+        ))}  else {
+            None
+        };
+        let bound_x = Bound::new(v.bound_x1, v.bound_x2);
         let load = Rc::new(LoadMass::new(
-            v.mass,
+            v.mass.expect("CompartmentData error: no mass!"),
             bound_x,
             mass_shift.clone(),
             LoadingType::from(v.loading_type),
@@ -181,7 +185,7 @@ fn execute() -> Result<(), Error> {
     let icing_area_h_str = data
         .area_h_str
         .iter()
-        .map(|v| HAreaStrength::new(v.value, Bound::from(v.bound_x)))
+        .map(|v| HAreaStrength::new(v.value, Bound::new(v.bound_x1, v.bound_x2)))
         .collect();
     let icing_area_h_stab = data
         .area_h_stab
@@ -191,7 +195,7 @@ fn execute() -> Result<(), Error> {
     let icing_area_v = data
         .area_v
         .iter()
-        .map(|v| VerticalArea::new(v.value, v.shift_z, Bound::from(v.bound_x)))
+        .map(|v| VerticalArea::new(v.value, v.shift_z, Bound::new(v.bound_x1, v.bound_x2)))
         .collect::<Vec<_>>();
 
     let area_strength: Rc<dyn crate::strength::IArea> = Rc::new(crate::strength::Area::new(

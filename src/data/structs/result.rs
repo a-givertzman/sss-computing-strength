@@ -1,7 +1,7 @@
 //! Структуры для преобразования данных из формата данных DB
 //! в формат пригодный для создания объектов.
 
-use loads::{CompartmentArray, LoadCargoArray, LoadConstantArray, ParsedCargoData, ParsedCompartmentData, ParsedLoadConstantData};
+use loads::{CompartmentArray, CompartmentData, LoadCargoArray, LoadConstantArray, LoadConstantData, ParsedCargoData};
 
 use crate::error::Error;
 
@@ -123,15 +123,15 @@ pub struct ParsedShipData {
     /// Нагрузка судна без жидких грузов   
     pub cargoes: Vec<ParsedCargoData>,
     /// Нагрузка судна: цистерны и трюмы   
-    pub compartments: Vec<ParsedCompartmentData>,
+    pub compartments: Vec<CompartmentData>,
     /// Постоянная нагрузка на судно
-    pub load_constants: Vec<ParsedLoadConstantData>,
+    pub load_constants: Vec<LoadConstantData>,
     /// Площадь горизонтальных поверхностей для остойчивости
-    pub area_h_stab: Vec<HStabAreaData>,
+    pub area_h_stab: Vec<HStabArea>,
     /// Площадь горизонтальных поверхностей для прочности
-    pub area_h_str: Vec<ParsedHStrArea>,
+    pub area_h_str: Vec<HStrArea>,
     /// Площадь поверхности парусности
-    pub area_v: Vec<ParsedVerticalArea>,
+    pub area_v: Vec<VerticalArea>,
 }
 ///
 impl ParsedShipData {
@@ -169,9 +169,9 @@ impl ParsedShipData {
         cargo_src: LoadCargoArray,
         compartments_src: CompartmentArray,
         load_constant_src: LoadConstantArray,
-        area_h_stab: HStabAreaDataArray,
-        area_h_str: HStrAreaDataArray,
-        area_v_src: VerticalAreaDataArray,
+        area_h_stab: HStabAreaArray,
+        area_h_str: HStrAreaArray,
+        area_v_src: VerticalAreaArray,
     ) -> Result<Self, Error> {
         log::info!("result parse begin");
         let ship_data = ship_parameters.data();
@@ -290,84 +290,6 @@ impl ParsedShipData {
                 loading_type: cargo.loading_type,
             });
         }
-
-        let mut compartments = Vec::new();
-        for compartment in compartments_src.data() {
-            compartments.push(ParsedCompartmentData {
-                name: compartment.name,                
-                mass: compartment.mass.unwrap_or(0.),
-                density: compartment.density,
-                volume: compartment.volume,
-                bound_x: ( 
-                    bound_x(&compartment.bound_x1, &compartment.bound_type)?, 
-                    bound_x(&compartment.bound_x2, &compartment.bound_type)?, 
-                ),
-                bound_y: None,
-                bound_z: None,
-                mass_shift: if compartment.mass_shift_x.is_some() && 
-                                compartment.mass_shift_y.is_some() &&
-                                compartment.mass_shift_z.is_some() { Some((
-                                        compartment.mass_shift_x.expect("ParsedShipData parse error: no mass_shift_x"),
-                                        compartment.mass_shift_y.expect("ParsedShipData parse error: no mass_shift_y"),
-                                        compartment.mass_shift_z.expect("ParsedShipData parse error: no mass_shift_z"),
-                ))} else {
-                    None
-                },
-                m_f_s_y: compartment.m_f_s_y,
-                m_f_s_x: compartment.m_f_s_x,
-                windage_area:  None,
-                windage_shift: None,
-                loading_type: compartment.loading_type,
-            });
-        }
-
-        let mut load_constants = Vec::new();
-        for load_constant in load_constant_src.data() {
-            load_constants.push(ParsedLoadConstantData {
-                mass: load_constant.mass,
-                bound_x: ( 
-                    bound_x(&load_constant.bound_x1, &load_constant.bound_type)?, 
-                    bound_x(&load_constant.bound_x2, &load_constant.bound_type)?, 
-                ),
-                loading_type: load_constant.loading_type,
-            });
-        }
-
-        let area_h_str = area_h_str.data().iter().map(|src_data| {
-            Ok(ParsedHStrArea {
-                value: src_data.value,
-                bound_x: ( 
-                    bound_x(&src_data.bound_x1, &src_data.bound_type)?, 
-                    bound_x(&src_data.bound_x2, &src_data.bound_type)?, 
-                ),
-            }) 
-        }).collect::<Result<Vec<ParsedHStrArea>, Error>>()?;
-
-        let area_v = area_v_src.data().iter().map(|src_data| {
-            // Два варианта задания распределения по х - координата или физический шпангоут.
-            // Если тип шпангоут, то находим и подставляем его координату
-            // Координата шпангоута задана относительно кормы, считаем ее относительно центра
-            let bound_x = |value: &f64, value_type: &str| -> Result<f64, Error> { 
-                Ok(if value_type == "frame" {
-                    *physical_frame.get(&(*value as i32))
-                        .ok_or(format!(
-                            "compartments parse error: no physical_frame for area:{}",
-                            src_data
-                        ))? - midship
-                } else {
-                    *value 
-                }) 
-            };
-
-            Ok(ParsedVerticalArea {
-                value: src_data.value,
-                shift_z: src_data.shift_z,
-                bound_x: ( 
-                    bound_x(&src_data.bound_x1, &src_data.bound_type)?, 
-                    bound_x(&src_data.bound_x2, &src_data.bound_type)?, 
-                ),
-            }) 
-        }).collect::<Result<Vec<ParsedVerticalArea>, Error>>()?;
 
         let icing = icing.data();
 
@@ -506,11 +428,11 @@ impl ParsedShipData {
             delta_windage_moment_z: delta_windage_moment.z(),
             frame_area: parsed_frame_area,
             cargoes,
-            compartments,
-            load_constants,
+            compartments: compartments_src.data(),
+            load_constants: load_constant_src.data(),
             area_h_stab: area_h_stab.data(),
-            area_h_str,
-            area_v,
+            area_h_str: area_h_str.data(),
+            area_v: area_v_src.data(),
         }
         .check()
     }
@@ -833,7 +755,7 @@ impl ParsedShipData {
                 self.compartments.len()
             )));
         }
-        if let Some(s) = self.compartments.iter().find(|s| s.mass < 0.) {
+        if let Some(s) = self.compartments.iter().find(|s| s.mass.unwrap() <= 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: mass of compartment must be greater or equal to 0, {}",
                 s
@@ -843,9 +765,7 @@ impl ParsedShipData {
             .compartments
             .iter()
             .find(|s| {
-                s.bound_x.0 >= s.bound_x.1 || 
-                (s.bound_y.is_some() && s.bound_y.unwrap().0 >= s.bound_y.unwrap().1) || 
-                (s.bound_z.is_some() && s.bound_z.unwrap().0 >= s.bound_z.unwrap().1)
+                s.bound_x1 >= s.bound_x2 
             }) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: compartment bound error! {}", s )));
@@ -854,13 +774,9 @@ impl ParsedShipData {
         .compartments
         .iter()
         .find(|s| { 
-            s.mass > 0. && s.mass_shift.is_some() && (
-                s.bound_x.0 >= s.mass_shift.unwrap().0 ||
-                s.mass_shift.unwrap().0 >= s.bound_x.1 ||
-                (s.bound_y.is_some() && s.bound_y.unwrap().0 >= s.mass_shift.unwrap().1 )||
-                (s.bound_y.is_some() && s.mass_shift.unwrap().1 >= s.bound_y.unwrap().1) ||
-                (s.bound_z.is_some() && s.bound_z.unwrap().0 >= s.mass_shift.unwrap().2) ||
-                (s.bound_z.is_some() && s.mass_shift.unwrap().2 >= s.bound_z.unwrap().1) 
+            s.mass.unwrap() > 0. && s.mass_shift_x.is_some() && (
+                s.bound_x1 >= s.mass_shift_x.unwrap() ||
+                s.mass_shift_x.unwrap() >= s.bound_x2
             )
         }) {
             return Err(Error::Parameter(format!(
@@ -924,7 +840,7 @@ impl ParsedShipData {
                 area
             )));
         }          
-        if let Some(area) = self.area_h_str.iter().find(|f| f.bound_x.1 < f.bound_x.0) {
+        if let Some(area) = self.area_h_str.iter().find(|f| f.bound_x1 < f.bound_x2) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: value of area_h must be greater or equal to 0, {}",
                 area

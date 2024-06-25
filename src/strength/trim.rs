@@ -102,6 +102,7 @@ impl ITrim for Trim {
         let mut mean_draught = self.mean_draught;
         let (mut v_xc, mut volume) = (0., 0.);
         for _i in 0..30 {
+            mean_draught = self.mean_draught;
             for _j in 0..30 {
                 let volume_values = Volume::new(
                     self.center_waterline_shift,
@@ -116,7 +117,9 @@ impl ITrim for Trim {
                 if delta_w.abs() <= 0.0000000001 {
                     break;
                 }
-                mean_draught += mean_draught*delta_w;                
+                let delta_w = (delta_w.abs().sqrt() - 1.)*delta_w.signum()*0.1;
+                dbg!(_j, trim, mean_draught, v_xc, volume, w, delta_w, );
+                mean_draught += self.mean_draught.max(mean_draught)*delta_w;                
             }
             let delta_x = w_xg - v_xc;
             if delta_x.abs() <= 0.00000001 {

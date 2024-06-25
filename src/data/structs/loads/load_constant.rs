@@ -28,12 +28,9 @@ impl std::fmt::Display for LoadConstantType {
 pub struct LoadConstantData {
     /// Масса на шпацию
     pub mass: f64,
-    /// Диапазон по длинне
+    /// Диапазон по длинне, м
     pub bound_x1: f64,
     pub bound_x2: f64,
-    /// Тип задания диапазона 
-    /// (физ. шпангоуты или метры)
-    pub bound_type: String,  
     /// Тип груза, приходящегося на шпацию
     pub loading_type: LoadConstantType,
 }
@@ -42,11 +39,10 @@ impl std::fmt::Display for LoadConstantData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadConstantData(mass:{}, bound_x1:{}, bound_x2:{}, bound_type:{}, type:{})",
+            "LoadConstantData(mass:{}, bound_x1:{}, bound_x2:{}, type:{})",
             self.mass,            
             self.bound_x1,
             self.bound_x2,
-            self.bound_type,
             self.loading_type,
         )
     }
@@ -60,13 +56,4 @@ impl LoadConstantArray {
         self.data
     }
 }
-/// Груз
-#[derive(Debug)]
-pub struct ParsedLoadConstantData {
-    /// масса, т
-    pub mass: f64,
-    /// Границы груза
-    pub bound_x: (f64, f64),
-    /// Границы груза
-    pub loading_type: LoadConstantType,
-}
+

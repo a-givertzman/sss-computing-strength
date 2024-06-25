@@ -40,14 +40,14 @@ mod tests {
         assert!(
             (result.0 - target.0).abs() < result.0.abs() * 0.01, 
             "\ntrim: result: {:?}\ntarget: {:?}",
-            result,
-            target
+            result.0,
+            target.0
         );
         assert!(
             (result.1 - target.1).abs() < result.1.abs() * 0.01, 
             "\nmean_draught: result: {:?}\ntarget: {:?}",
-            result,
-            target
+            result.1,
+            target.1
         );
 
         test_duration.exit();

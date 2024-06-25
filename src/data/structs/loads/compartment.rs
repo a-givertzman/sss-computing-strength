@@ -3,7 +3,7 @@ use crate::data::structs::DataArray;
 use serde::{Deserialize, Serialize};
 
 
-/// Тип груза
+/// Тип элементов погрузки судна
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
 pub enum CompartmentType {
     #[serde(alias="ballast")]
@@ -27,6 +27,30 @@ impl std::fmt::Display for CompartmentType {
         )
     }
 }
+/// Физический тип груза судна
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+pub enum PhysicalType {
+    #[serde(alias="bulk")]
+    Bulk,
+    #[serde(alias="liquid")]
+    Liquid,
+    #[serde(alias="solid")]
+    Solid,
+}
+///
+impl std::fmt::Display for PhysicalType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                PhysicalType::Bulk => "Bulk",
+                PhysicalType::Liquid => "Liquid", 
+                PhysicalType::Solid => "Solid", 
+            },
+        )
+    }
+}
 /// Нагрузка судна: цистерны и трюмы  
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CompartmentData {
@@ -40,12 +64,9 @@ pub struct CompartmentData {
     pub density: Option<f64>,
     /// Объем m^3
     pub volume: Option<f64>,
-    /// Диапазон по длинне
+    /// Диапазон по длинне, м
     pub bound_x1: f64,
     pub bound_x2: f64,
-    /// Тип задания диапазона
-    /// (физ. шпангоуты или метры)
-    pub bound_type: String,
     /// Отстояние центра величины, м
     pub mass_shift_x: Option<f64>,
     pub mass_shift_y: Option<f64>,
@@ -53,8 +74,10 @@ pub struct CompartmentData {
     /// Момент инерции площади ВЛ, м4
     pub m_f_s_y: Option<f64>,
     pub m_f_s_x: Option<f64>,
-    /// Тип груза
+    /// Тип элементов погрузки судна
     pub loading_type: CompartmentType,
+    /// Физический тип груза судна
+    pub physical_type: PhysicalType,
 }
 ///
 impl std::fmt::Display for CompartmentData {
@@ -62,7 +85,7 @@ impl std::fmt::Display for CompartmentData {
         write!(
             f,
             "CompartmentData(space_id:{} name:{} mass:{} density:{} volume:{} bound:({}, {}) \
-             mass_shift:({}, {}, {}) m_f_s_y:{} m_f_s_x:{} loading_type:{})",
+             mass_shift:({}, {}, {}) m_f_s_y:{} m_f_s_x:{} loading_type:{} physical_type:{})",
             self.space_id,
             self.name,
             self.mass.unwrap_or(0.),
@@ -76,6 +99,7 @@ impl std::fmt::Display for CompartmentData {
             self.m_f_s_y.unwrap_or(0.),
             self.m_f_s_x.unwrap_or(0.),
             self.loading_type,
+            self.physical_type,
         )
     }
 }
@@ -88,6 +112,7 @@ impl CompartmentArray {
         self.data
     }
 }
+/*
 /// Груз
 #[derive(Debug)]
 pub struct ParsedCompartmentData {
@@ -113,8 +138,10 @@ pub struct ParsedCompartmentData {
     pub windage_area: Option<f64>,
     /// Центр парусности
     pub windage_shift: Option<(f64, f64)>,
-    /// Тип груза
+    /// Тип элементов погрузки судна
     pub loading_type: CompartmentType,
+    /// Физический тип груза судна
+    pub physical_type: PhysicalType,
 }
 ///
 impl std::fmt::Display for ParsedCompartmentData {
@@ -123,7 +150,7 @@ impl std::fmt::Display for ParsedCompartmentData {
             f,
             "CompartmentData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} 
                 mass_shift:({} {} {}) m_f_s_y:{:?}, m_f_s_x:{:?} 
-                windage_area:{} windage_shift:(x:{}, z:{}) type:{})",
+                windage_area:{} windage_shift:(x:{}, z:{}) loading_type:{} physical_type:{})",
             self.name,
             self.mass,
             self.bound_x,
@@ -138,6 +165,8 @@ impl std::fmt::Display for ParsedCompartmentData {
             self.windage_shift.unwrap_or((0.,0.)).0,
             self.windage_shift.unwrap_or((0.,0.)).1,
             self.loading_type,
+            self.physical_type,
         )
     }
 }
+*/

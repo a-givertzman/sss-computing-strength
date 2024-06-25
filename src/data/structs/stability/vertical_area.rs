@@ -7,56 +7,33 @@ use super::DataArray;
 
 /// Площадь обледенения
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct VerticalAreaData {
+pub struct VerticalArea {
     /// Название 
     pub name: String, 
     /// Значение площади, м^2
     pub value: f64,
     /// Смещение центра по оси Z
     pub shift_z: f64,  
-    /// Ограничение по оси Х
+    /// Ограничение по оси Х, м
     pub bound_x1: f64,
     pub bound_x2: f64, 
-    /// Тип ограничения, значение в метрах или номера
-    /// физических шпангоутов
-    pub bound_type: String,
 }
 ///
-impl std::fmt::Display for VerticalAreaData {
+impl std::fmt::Display for VerticalArea {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "VerticalAreaData(avalue:{}, shift_z:{:?} bound:({}, {}), bound_type:{})",
-            self.value, self.shift_z, self.bound_x1, self.bound_x2, self.bound_type,
+            "VerticalArea(avalue:{}, shift_z:{:?} bound:({}, {}))",
+            self.value, self.shift_z, self.bound_x1, self.bound_x2
         )
     }
 }
 ///
-pub type VerticalAreaDataArray = DataArray<VerticalAreaData>;
+pub type VerticalAreaArray = DataArray<VerticalArea>;
 ///
-impl VerticalAreaDataArray {
+impl VerticalAreaArray {
     /// Преобразование данных в массив
-    pub fn data(self) -> Vec<VerticalAreaData> {
+    pub fn data(self) -> Vec<VerticalArea> {
         self.data
     }  
-}
-/// Площадь обледенения
-#[derive(Debug)]
-pub struct ParsedVerticalArea {
-    /// Значение площади, м^2
-    pub value: f64,
-    /// Смещение центра по оси Z
-    pub shift_z: f64,    
-    /// Ограничение по оси Х
-    pub bound_x: (f64, f64),
-}
-///
-impl std::fmt::Display for ParsedVerticalArea {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "ParsedVerticalArea(area_value:{}, shift_z:{} bound:({}, {}))",
-            self.value, self.shift_z, self.bound_x.0, self.bound_x.1,
-        )
-    }
 }
