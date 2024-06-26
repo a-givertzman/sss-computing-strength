@@ -96,6 +96,8 @@ pub struct ParsedShipData {
     pub waterline_length: Vec<(f64, f64)>,
     /// Ширина корпуса судна по ватерлинии
     pub waterline_breadth: Vec<(f64, f64)>,
+    /// Площадь ватерлинии
+    pub waterline_area: Vec<(f64, f64)>,
     /// Отстояние по вертикали центра площади проекции подводной части корпуса
     pub volume_shift: Vec<(f64, f64)>,
     /// кривая продольного метацентрического радиуса
@@ -151,6 +153,7 @@ impl ParsedShipData {
         center_waterline: CenterWaterlineArray,
         waterline_length: WaterlineLengthArray,
         waterline_breadth: WaterlineBreadthArray,
+        waterline_area: WaterlineAreaArray,
         volume_shift: VolumeShiftArray,
         rad_long: RadLongDataArray,
         rad_trans: RadTransDataArray,
@@ -412,6 +415,7 @@ impl ParsedShipData {
             center_waterline: center_waterline.data(),
             waterline_length: waterline_length.data(),
             waterline_breadth: waterline_breadth.data(),
+            waterline_area: waterline_area.data(),
             volume_shift: volume_shift.data(),
             rad_long: rad_long.data(),
             rad_trans: rad_trans.data(),
@@ -815,7 +819,22 @@ impl ParsedShipData {
         {
             return Err(Error::Parameter(format!("Error check ParsedShipData: number of free_surf_inertia's points must be {}", tank)));
         }
-  */      log::info!("result parse ok");
+  */    
+        if self.waterline_length.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check waterline_length"
+            )));
+        }
+        if self.waterline_breadth.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check waterline_breadth"
+            )));
+        }
+        if self.waterline_area.len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check waterline_area"
+            )));
+        }
         if self.area_h_stab.len() <= 1 {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: number of area_h_stab's points {}",

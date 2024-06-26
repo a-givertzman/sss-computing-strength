@@ -256,6 +256,10 @@ fn execute() -> Result<(), Error> {
     parameters.add(ParameterID::MetacentricTransRad, rad_trans);
     // Отстояние центра тяжести ватерлинии по длине от миделя
     let center_waterline_shift = Curve::new_linear(&data.center_waterline).value(volume);
+    // Площадь ватерлинии
+    let area_wl = Curve::new_linear(&data.waterline_area).value(volume);
+    // Число тонн на 1 см осадки 
+    parameters.add(ParameterID::TonesPerCm, 0.01*area_wl*data.water_density);
     // Средняя осадка
     let mean_draught = Curve::new_linear(&data.mean_draught).value(volume);
     parameters.add(ParameterID::DraughtMean, mean_draught);
@@ -301,7 +305,9 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&mass), // все грузы судна
         Rc::clone(&parameters),
     ));
-
+    // Момент кренящий на 1 градус MH1deg, т∙м
+    parameters.add(ParameterID::MomentRollPerDeg, mass.sum()*metacentric_height.h_trans_fix()*(std::f64::consts::PI/180.).sin());
+    // Дифферент для остойчивости
     let trim = stability::Trim::new(
         data.length_lbp,
         mean_draught,
@@ -312,7 +318,6 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&parameters),
     )
     .value();
-
     // Длинна по ватерлинии при текущей осадке
     let length_wl = Curve::new_linear(&data.waterline_length).value(mean_draught);
     // Ширина по ватерлинии при текущей осадке

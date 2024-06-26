@@ -124,6 +124,10 @@ pub fn get_data(
         "SELECT key, value FROM waterline_breadth WHERE ship_id={};",
         ship_id
     ))?)?;
+    let waterline_area = WaterlineAreaArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM waterline_area WHERE ship_id={};",
+        ship_id
+    ))?)?;
     let volume_shift = VolumeShiftArray::parse(&api_server.fetch(&format!(
         "SELECT key, value FROM volume_shift WHERE ship_id={};",
         ship_id
@@ -254,6 +258,7 @@ pub fn get_data(
         center_waterline,
         waterline_length,
         waterline_breadth,
+        waterline_area,
         volume_shift,
         rad_long,
         rad_trans,
