@@ -116,15 +116,15 @@ impl ITrim for Trim {
                 let delta_w = (w - volume*self.water_density)/w;              
                 if delta_w.abs() <= 0.0000000001 {
                     break;
-                }
-                let delta_w = (delta_w.abs().sqrt() - 1.)*delta_w.signum()*0.1;
-                dbg!(_j, trim, mean_draught, v_xc, volume, w, delta_w, );
-                mean_draught += self.mean_draught.max(mean_draught)*delta_w;                
+                }         
+                mean_draught = 0.001_f64.max(mean_draught + mean_draught*delta_w);   
+//                dbg!(_j, trim, mean_draught, v_xc, volume*self.water_density, w, delta_w, );             
             }
             let delta_x = w_xg - v_xc;
+//            dbg!(_i, trim, mean_draught, v_xc, w_xg, w, delta_x, );
             if delta_x.abs() <= 0.00000001 {
                 break;
-            }     
+            }                 
             trim = trim + delta_x / 10.;
         }
         (trim, mean_draught)
