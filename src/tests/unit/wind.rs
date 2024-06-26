@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{mass::*, math::*, stability::wind::*, windage::FakeWindage};
+    use crate::{mass::*, math::*, stability::wind::*, windage::FakeWindage, Parameters};
 
     #[test]
     fn wind() {
@@ -27,6 +27,7 @@ mod tests {
                 Position::new(0., 0., 0.),
                 Position::new(0., 0., 0.,), 
             )),
+            Rc::new(Parameters::new()),
         )
         .arm_wind_dynamic();
         let target = 1.5;

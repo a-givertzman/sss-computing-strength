@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use crate::{IMass, ILeverDiagram};
+use crate::{ILeverDiagram, IMass, IParameters, ParameterID};
 
 /// Расчет угла крена на циркуляции
 pub struct Circulation {
@@ -16,6 +16,8 @@ pub struct Circulation {
     mass: Rc<dyn IMass>,
     /// Диаграмма плеч статической и динамической остойчивости
     lever_diagram: Rc<dyn ILeverDiagram>,
+    /// Набор результатов расчетов для записи в БД
+    parameters: Rc<dyn IParameters>, 
 }
 /// 
 impl Circulation {
@@ -25,12 +27,14 @@ impl Circulation {
     /// * d - Осадка судна d
     /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     /// * lever_diagram - Диаграмма плеч статической и динамической остойчивости
+    /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         v_0: f64,
         l_wl: f64,
         d: f64,
         mass: Rc<dyn IMass>,
         lever_diagram: Rc<dyn ILeverDiagram>,
+        parameters: Rc<dyn IParameters>,
     ) -> Self {
         assert!(l_wl > 0., "l_wl {l_wl} > 0.");
         assert!(d > 0., "d {d} > 0.");
@@ -40,6 +44,7 @@ impl Circulation {
             d,
             mass,
             lever_diagram, 
+            parameters,
         }
     }
     /// Плечо кренящего момента на циркуляции при скорости v, m/s
@@ -59,6 +64,7 @@ impl ICirculation for Circulation {
         // Угол соответствующий плечу кренящего момента
         let angle = self.lever_diagram.angle(self.heel_lever(self.v_0)).first().copied();
         log::info!("Circulation angle {:?} ", angle);
+        self.parameters.add(ParameterID::VesselSpeed, self.v_0);
         angle
     }
     /// Максимальная скорость при заданном угле крена
@@ -75,6 +81,7 @@ impl ICirculation for Circulation {
             current_vel = delta_vel*delta_angle.signum();
             delta_vel /= 2.;
         }
+        self.parameters.add(ParameterID::VesselSpeed, current_vel);
         current_vel
     }
 }

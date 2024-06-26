@@ -294,8 +294,12 @@ fn execute() -> Result<(), Error> {
         ship_id,
         results.take_data(),
     )?;
-
+    // Угол заливания отверстий
     let flooding_angle = Curve::new_linear(&data.flooding_angle).value(mean_draught);
+    parameters.add(ParameterID::AngleOfDownFlooding, flooding_angle);
+    // Угол входа в воду кромки палубы  
+    let entry_angle = Curve::new_linear(&data.entry_angle).value(mean_draught);
+    parameters.add(ParameterID::OpenDeckEdgeImmersionAngle, entry_angle);
 
     let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
         center_draught_shift.clone(), // отстояние центра величины погруженной части судна
@@ -375,19 +379,24 @@ fn execute() -> Result<(), Error> {
         .get_area(&data.navigation_area)
         .expect("main error no area data!");
 
-    let windage: Rc<dyn IWindage> = Rc::new(Windage::new(
-        Rc::clone(&icing_stab),
-        Rc::clone(&area_stability),
-        Curve::new_linear(&data.delta_windage_area).value(mean_draught),
-        Moment::new(
-            Curve::new_linear(&data.delta_windage_moment_x).value(mean_draught),
-            0.,
-            Curve::new_linear(&data.delta_windage_moment_z).value(mean_draught),
-        ),
-        volume_shift,
+    let wind: Rc<dyn IWind> = Rc::new(Wind::new(
+        p_v, 
+        m, 
+        Rc::new(Windage::new(
+            Rc::clone(&icing_stab),
+            Rc::clone(&area_stability),
+            Curve::new_linear(&data.delta_windage_area).value(mean_draught),
+            Moment::new(
+                Curve::new_linear(&data.delta_windage_moment_x).value(mean_draught),
+                0.,
+                Curve::new_linear(&data.delta_windage_moment_z).value(mean_draught),
+            ),
+            volume_shift,
+        )), 
+        gravity_g, 
+        Rc::clone(&mass), 
+        Rc::clone(&parameters),
     ));
-
-    let wind = Wind::new(p_v, m, Rc::clone(&windage), gravity_g, Rc::clone(&mass));
 
     let roll_period: Rc<dyn IRollingPeriod> = Rc::new(RollingPeriod::new(
         length_wl,
@@ -420,16 +429,10 @@ fn execute() -> Result<(), Error> {
         // Амплитуда качки судна с круглой скулой (2.1.5)
         Rc::clone(&roll_amplitude),
         // Расчет плеча кренящего момента от давления ветра
-        Box::new(wind),
+        Rc::clone(&wind),
+        Rc::clone(&parameters),
     );
     // dbg!(stability.k()?);
-    /* // TODO: Давление ветра + добавка на порывистость ветра для
-    // контейнеровоза/или судна перевозящего палубный груз контейнеров
-    // неограниченного района плавания
-    let (p_v, m) = data
-        .navigation_area_param
-        .get_area(&NavigationArea::Unlimited)
-        .expect("main error no area data!");*/
     // Критерии остойчивости
     let mut criterion = Criterion::new(
         data.ship_type,
@@ -443,13 +446,7 @@ fn execute() -> Result<(), Error> {
         data.width,
         data.moulded_depth,
         Curve::new_linear(&data.h_subdivision).value(mean_draught),
-        Rc::new(Wind::new(
-            p_v,
-            m,
-            Rc::clone(&windage),
-            gravity_g,
-            Rc::clone(&mass),
-        )),
+        Rc::clone(&wind),
         Rc::clone(&lever_diagram),
         Rc::new(stability),
         Rc::clone(&metacentric_height),
@@ -459,7 +456,6 @@ fn execute() -> Result<(), Error> {
             Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())),
             Rc::clone(&roll_amplitude),
             Rc::clone(&metacentric_height),
-            Rc::clone(&roll_period),
         )),
         Rc::new(Circulation::new(
             data.velocity,
@@ -467,12 +463,14 @@ fn execute() -> Result<(), Error> {
             mean_draught,
             Rc::clone(&mass),
             Rc::clone(&lever_diagram),
+            Rc::clone(&parameters),
         )),
         Box::new(Grain::new(
             flooding_angle,
             Rc::clone(&bulk),
             Rc::clone(&mass),
             Rc::clone(&lever_diagram),
+            Rc::clone(&parameters),
         )),
     );
 
