@@ -753,12 +753,12 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check LoadConstantArray: index of load_constant must be contained in frames, index:{}", index)));
         }*/
-        if self.compartments.len() <= 1 {
+    /*    if self.compartments.len() < 1 {
             return Err(Error::Parameter(format!(
                 "Error check compartments: number of compartments: {}",
                 self.compartments.len()
             )));
-        }
+        }*/
         if let Some(s) = self.compartments.iter().find(|s| s.mass.unwrap() <= 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: mass of compartment must be greater or equal to 0, {}",
@@ -786,7 +786,7 @@ impl ParsedShipData {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: compartment center out of bound error! {}", s )));
         }
-        if self.load_constants.len() <= 1 {
+        if self.load_constants.len() < 1 {
             return Err(Error::Parameter(format!(
                 "Error check load_constants: number of load_constants: {}",
                 self.load_constants.len()
@@ -837,43 +837,43 @@ impl ParsedShipData {
         }
         if self.area_h_stab.len() <= 1 {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: number of area_h_stab's points {}",
+                "Error check area_h_stab: number of area_h_stab's points {}",
                 self.area_h_stab.len()
             )));
         }
         if let Some(area) = self.area_h_stab.iter().find(|f| f.value < 0.) {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: value of area_h_stab must be greater or equal to 0, {}",
+                "Error check area_h_stab: value of area_h_stab must be greater or equal to 0, {}",
                 area
             )));
         }    
         if self.area_h_str.len() <= 1 {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: number of area_h's points {}",
+                "Error check area_h_str: number of points {}",
                 self.area_h_str.len()
             )));
         }
         if let Some(area) = self.area_h_str.iter().find(|f| f.value < 0.) {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: value of area_h must be greater or equal to 0, {}",
+                "Error check area_h_str: value of area_h_str must be greater or equal to 0, {}",
                 area
             )));
         }          
-        if let Some(area) = self.area_h_str.iter().find(|f| f.bound_x1 < f.bound_x2) {
+        if let Some(area) = self.area_h_str.iter().find(|f| f.bound_x1 >= f.bound_x2) {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: value of area_h must be greater or equal to 0, {}",
+                "Error check area_h_str: f.bound_x1 >= f.bound_x2 {}",
                 area
             )));
         }      
         if self.area_v.len() <= 1 {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: number of area_v's points {}",
+                "Error check area_v: number of points {}",
                 self.area_v.len()
             )));
         }
         if let Some(area) = self.area_v.iter().find(|f| f.value < 0.) {
             return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: value of area_v must be greater or equal to 0, {}",
+                "Error check area_v: value of area_v must be greater or equal to 0, {}",
                 area
             )));
         } 

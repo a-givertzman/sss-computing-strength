@@ -222,14 +222,14 @@ pub fn get_data(
                 m_f_s_x, \
                 loading_type::TEXT, \
                 physical_type::TEXT \
-            FROM compartment WHERE ship_id={ship_id} AND active=TRUE AND mass IS NOT NULL;"
+            FROM compartment WHERE ship_id={ship_id} AND active=TRUE AND mass>0;"
     ))?)?;
     let load_constant = LoadConstantArray::parse(&api_server.fetch(&format!(
         "SELECT mass, bound_x1, bound_x2, loading_type::TEXT FROM load_constant WHERE ship_id={};",
         ship_id
     ))?)?;
     let area_h_str = HStrAreaArray::parse(&api_server.fetch(
-        &format!("SELECT name, value, bound_x1, bound_x2, FROM horizontal_area_strength WHERE ship_id={};", ship_id)
+        &format!("SELECT name, value, bound_x1, bound_x2 FROM horizontal_area_strength WHERE ship_id={};", ship_id)
     )?)?;
     //  dbg!(&area_h_str);
     log::info!("input_api_server area_h_str read ok");

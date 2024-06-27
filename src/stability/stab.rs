@@ -57,11 +57,9 @@ impl IStability for Stability {
                 "Stability calculate error: no angle for l_w1".to_owned(),
             ))?;
         let sunset_angle = *self
-        .lever_diagram
-        .angle(0.)
-        .get(1).ok_or(Error::Calculate(
-            "Stability calculate error: no sunset_angle".to_owned(), 
-        ))?;
+            .lever_diagram
+            .angle(0.)
+            .get(1).unwrap_or(&90.);
         let theta_w2: f64 = 50.;
         let theta_f = self.flooding_angle;
         let l_w2_angles = self.lever_diagram.angle(l_w2);

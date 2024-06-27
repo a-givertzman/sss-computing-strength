@@ -101,9 +101,9 @@ impl ITrim for Trim {
         let mut trim = 0.; // Дифферент
         let mut mean_draught = self.mean_draught;
         let (mut v_xc, mut volume) = (0., 0.);
-        for _i in 0..30 {
+        for _i in 0..50 {
             mean_draught = self.mean_draught;
-            for _j in 0..30 {
+            for _j in 0..50 {
                 let volume_values = Volume::new(
                     self.center_waterline_shift,
                     mean_draught,
@@ -114,7 +114,7 @@ impl ITrim for Trim {
                 let volume_pairs = dx.clone().into_iter().zip(volume_values).collect::<Vec<_>>();
                 (v_xc, volume) = self.calc_s(&volume_pairs);
                 let delta_w = (w - volume*self.water_density)/w;              
-                if delta_w.abs() <= 0.0000000001 {
+                if delta_w.abs() <= 0.000000001 {
                     break;
                 }         
                 mean_draught = 0.001_f64.max(mean_draught + mean_draught*delta_w);   
@@ -122,7 +122,7 @@ impl ITrim for Trim {
             }
             let delta_x = w_xg - v_xc;
 //            dbg!(_i, trim, mean_draught, v_xc, w_xg, w, delta_x, );
-            if delta_x.abs() <= 0.00000001 {
+            if delta_x.abs() <= 0.000000001 {
                 break;
             }                 
             trim = trim + delta_x / 10.;
