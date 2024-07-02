@@ -2,7 +2,7 @@
 
 mod tests {
     use crate::{
-        icing::{FakeIcingStab, IIcingMass, IcingMass},
+        icing::{FakeIcingStab, IIcingMoment, IcingMoment},
         Moment,
     };
 
@@ -12,12 +12,12 @@ mod tests {
 
     static INIT: Once = Once::new();
 
-    unsafe impl Sync for IcingMass {} //for static
-    static mut ICING: Option<IcingMass> = None;
+    unsafe impl Sync for IcingMoment {} //for static
+    static mut ICING: Option<IcingMoment> = None;
 
     fn init_once() {
         INIT.call_once(|| unsafe {
-            ICING.replace(IcingMass::new(
+            ICING.replace(IcingMoment::new(
                 Rc::new(FakeIcingStab::new(0.03, 0.04, 0.015, 0.1, 0.05, 0.2, true)),
                 Rc::new(crate::strength::FakeArea::new(50., 50., 50.)),
                 Rc::new(crate::stability::FakeArea::new(
@@ -41,7 +41,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = unsafe { ICING.clone().unwrap().mass(None) };
-        let target =  50.*0.03 + 50.*0.04 + 50.*1.05*0.015;
+        let target =  50.*0.03 + 50.*(0.04 - 0.03) + 50.*1.05*0.015;
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",

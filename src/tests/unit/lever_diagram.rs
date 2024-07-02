@@ -9,7 +9,7 @@ mod tests {
     use crate::{
         math::*,
         stability::{lever_diagram::*, metacentric_height::*},
-        FakeMass, FakeParameters,
+        FakeShipMoment, FakeParameters,
     };
 
     static INIT: Once = Once::new();
@@ -19,7 +19,7 @@ mod tests {
 
     fn init_once() {
         INIT.call_once(|| {
-            let mass = Rc::new(FakeMass::new(
+            let mass = Rc::new(FakeShipMoment::new(
                 1000.0,
                 vec![0.],
                 Position::new(0., 2., 0.),

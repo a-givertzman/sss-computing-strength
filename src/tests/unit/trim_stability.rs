@@ -6,7 +6,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{mass::*, math::*, stability::{metacentric_height::*, trim::*}, FakeParameters};
+    use crate::{moment::*, math::*, stability::{metacentric_height::*, trim::*}, FakeParameters};
 
     #[test]
     fn trim() {

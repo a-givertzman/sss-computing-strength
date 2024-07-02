@@ -1,7 +1,7 @@
 //! Структуры для преобразования данных из формата данных DB
 //! в формат пригодный для создания объектов.
 
-use loads::{CompartmentArray, CompartmentData, LoadCargoArray, LoadConstantArray, LoadConstantData, ParsedCargoData};
+use loads::{CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData};
 
 use crate::error::Error;
 
@@ -20,6 +20,8 @@ pub struct ParsedShipData {
     pub navigation_area_param: NavigationAreaArray,
     /// Тип обледенения
     pub icing_stab: String,
+    /// Тип обледенения палубного груза - леса
+    pub icing_timber_stab: String,
     /// Масса льда на квадратный метр площади горизонтальной поверхности
     /// палубного лесного груза
     pub icing_m_timber: f64,
@@ -35,6 +37,8 @@ pub struct ParsedShipData {
     /// Масса льда на квадратный метр площади горизонтальной  
     /// поверхности при учете частичного обледенения
     pub icing_m_h_half: f64,
+    /// Cтепень намокания палубного лесного груза, %
+    pub wetting_timber: f64,
     /// Безразмерный множитель Х_1 для расчета качки, Табл. 2.1.5.1-1
     pub multipler_x1: MultiplerX1Array,
     /// Безразмерный множитель Х_2 для расчета качки, Табл. 2.1.5.1-2
@@ -123,7 +127,7 @@ pub struct ParsedShipData {
     /// Погруженная площадь шпангоута
     pub frame_area: Vec<ParsedFrameData>,
     /// Нагрузка судна без жидких грузов   
-    pub cargoes: Vec<ParsedCargoData>,
+    pub cargoes: Vec<LoadCargo>,
     /// Нагрузка судна: цистерны и трюмы   
     pub compartments: Vec<CompartmentData>,
     /// Постоянная нагрузка на судно
@@ -132,8 +136,10 @@ pub struct ParsedShipData {
     pub area_h_stab: Vec<HStabArea>,
     /// Площадь горизонтальных поверхностей для прочности
     pub area_h_str: Vec<HStrArea>,
-    /// Площадь поверхности парусности
-    pub area_v: Vec<VerticalArea>,
+    /// Площадь и моменты поверхности парусности для остойчивости
+    pub area_v_stab: stability::VerticalAreaArray,
+    /// Площадь поверхности парусности для прочности
+    pub area_v_str: Vec<strength::VerticalArea>,
 }
 ///
 impl ParsedShipData {
@@ -174,61 +180,18 @@ impl ParsedShipData {
         load_constant_src: LoadConstantArray,
         area_h_stab: HStabAreaArray,
         area_h_str: HStrAreaArray,
-        area_v_src: VerticalAreaArray,
+        area_v_stab: stability::VerticalAreaArray,
+        area_v_str: strength::VerticalAreaArray,
     ) -> Result<Self, Error> {
         log::info!("result parse begin");
         let ship_data = ship_parameters.data();
-        let length_lbp = ship_data.get("LBP").ok_or(format!(
-            "ParsedShipData parse error: no length for ship id:{}",
-            ship_id
-        ))?.0.parse::<f64>()?;
-        if length_lbp <= 0. {
-            return Err(Error::Parameter("Ship length parse error: ship_length <= 0.".to_owned()));
-        }
-        let midship = ship_data.get("X midship from Fr0").ok_or(format!(
-            "ParsedShipData parse error: no midship for ship id:{}",
-            ship_id
-        ))?.0.parse::<f64>()?;
-        if midship <= 0. || midship >= length_lbp {
-            return Err(Error::Parameter("Ship length parse error: midship <= 0. || midship >= ship_length".to_owned()));
-        }
 
-        let physical_frame = physical_frame.data();
         let bonjean_frame = bonjean_frame.data();        
         let frame_area = frame_area.data();
-
-        // Получение координаты шпангоута относительно миделя по его индексу
-        let frame_x = |index: i32| -> Result<f64, Error> {
-            Ok(*physical_frame.get(&index)
-            .ok_or(format!(
-                "compartments parse error: no physical_frame for index:{index}"
-            ))? - midship) 
-        }; 
-        // Два варианта задания распределения по х - координата или физический шпангоут.
-        // Если тип шпангоут, то находим и подставляем его координату
-        // Координата шпангоута задана относительно кормы, считаем ее относительно центра
-        let bound_x = |value: &f64, value_type: &str| -> Result<f64, Error> { 
-            Ok(if value_type == "frame" {
-                let last_frame_index = value.floor() as i32;
-                let next_frame_index = value.ceil() as i32;
-                if last_frame_index as f64 == *value {
-                    frame_x(last_frame_index)?
-                } else {
-                    let last_frame_x = frame_x(last_frame_index)?;
-                    let next_frame_x = frame_x(next_frame_index)?;
-                    let delta = next_frame_x - last_frame_x;
-                    let result = last_frame_x + (value - last_frame_index as f64)*delta;
-                    result
-                }
-            } else {
-                *value - midship
-            }) 
-        };
-
         let mut parsed_frame_area = Vec::new();        
         for (index, x) in bonjean_frame {
             parsed_frame_area.push(ParsedFrameData {
-                x: x - midship,
+                x,
                 immersion_area: frame_area.get(&index).ok_or(format!(
                     "ParsedShipData parse error: no immersion_area for frame index:{}",
                     index
@@ -237,7 +200,7 @@ impl ParsedShipData {
         }
         parsed_frame_area.sort_by(|a, b| a.x.partial_cmp(&b.x).expect("result parsed_frame_area cpm error!"));
         
-
+/*
         let mut cargoes = Vec::new();
         for cargo in cargo_src.data() {
             cargoes.push(ParsedCargoData {
@@ -293,7 +256,7 @@ impl ParsedShipData {
                 loading_type: cargo.loading_type,
             });
         }
-
+*/
         let icing = icing.data();
 
         log::info!("result parse ok");
@@ -313,8 +276,11 @@ impl ParsedShipData {
             multipler_s,
             coefficient_k,
             coefficient_k_theta,
-            length_lbp,
-            length_loa: ship_data.get("LBP").ok_or(format!(
+            length_lbp: ship_data.get("LBP").ok_or(format!(
+                "ParsedShipData parse error: no length for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
+            length_loa: ship_data.get("L.O.A").ok_or(format!(
                 "ParsedShipData parse error: no length_loa for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
@@ -322,7 +288,10 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no width for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
-            midship,
+            midship: ship_data.get("X midship from Fr0").ok_or(format!(
+                "ParsedShipData parse error: no midship for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
             velocity: ship_data.get("Ship operating speed").ok_or(format!(
                 "ParsedShipData parse error: no velocity for ship id:{}",
                 ship_id
@@ -367,6 +336,10 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no icing_stab for ship id:{}",
                 ship_id
             ))?.0.clone(),
+            icing_timber_stab: ship_data.get("Type of icing timber").ok_or(format!(
+                "ParsedShipData parse error: no icing_timber_stab for ship id:{}",
+                ship_id
+            ))?.0.clone(),
             icing_m_timber: *icing.get("icing_m_timber").ok_or(format!(
                 "ParsedShipData parse error: no icing_m_timber for ship id:{}",
                 ship_id
@@ -387,6 +360,10 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no icing_m_h_half for ship id:{}",
                 ship_id
             ))?,
+            wetting_timber: ship_data.get("Wetting of deck timber").ok_or(format!(
+                "ParsedShipData parse error: no wetting_timber for ship id:{}",
+                ship_id
+            ))?.0.parse::<f64>()?,
             icing_coef_v_area_full: *icing.get("icing_coef_v_area_full").ok_or(format!(
                 "ParsedShipData parse error: no icing_coef_v_area_full for ship id:{}",
                 ship_id
@@ -431,12 +408,13 @@ impl ParsedShipData {
             delta_windage_moment_x: delta_windage_moment.x(),
             delta_windage_moment_z: delta_windage_moment.z(),
             frame_area: parsed_frame_area,
-            cargoes,
+            cargoes: cargo_src.data(),
             compartments: compartments_src.data(),
             load_constants: load_constant_src.data(),
             area_h_stab: area_h_stab.data(),
             area_h_str: area_h_str.data(),
-            area_v: area_v_src.data(),
+            area_v_stab,
+            area_v_str: area_v_str.data(),
         }
         .check()
     }
@@ -865,18 +843,30 @@ impl ParsedShipData {
                 area
             )));
         }      
-        if self.area_v.len() <= 1 {
+        if self.area_v_str.len() <= 1 {
             return Err(Error::Parameter(format!(
-                "Error check area_v: number of points {}",
-                self.area_v.len()
+                "Error check area_v_str: number of points {}",
+                self.area_v_str.len()
             )));
         }
-        if let Some(area) = self.area_v.iter().find(|f| f.value < 0.) {
+        if let Some(area) = self.area_v_str.iter().find(|f| f.value < 0.) {
             return Err(Error::Parameter(format!(
-                "Error check area_v: value of area_v must be greater or equal to 0, {}",
+                "Error check area_v_str: value of area_v must be greater or equal to 0, {}",
                 area
             )));
-        } 
+        }
+        if self.area_v_stab.area().len() <= 1 {
+            return Err(Error::Parameter(format!(
+                "Error check area_v_stab.area(): number of points {}",
+                self.area_v_stab.area().len() 
+            )));
+        }
+        if let Some(v) = self.area_v_stab.area().iter().find(|(d, a)| *a < 0. || *d < 0. ) {
+            return Err(Error::Parameter(format!(
+                "Error check area_v_stab: draught:{},  area:{}",
+                v.0, v.1
+            )));
+        }  
         Ok(self)
     }
 }

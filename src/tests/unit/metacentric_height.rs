@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{mass::FakeMass, math::Position, stability::metacentric_height::MetacentricHeight, FakeParameters, IMetacentricHeight};
+    use crate::{moment::FakeMass, math::Position, stability::metacentric_height::MetacentricHeight, FakeParameters, IMetacentricHeight};
 
     static INIT: Once = Once::new();
 

@@ -8,23 +8,22 @@ use super::DataArray;
 /// Площадь обледенения
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct VerticalArea {
-    /// Название 
-    pub name: String, 
+    /// Осадка, м 
+    pub draught: f64,
     /// Значение площади, м^2
-    pub value: f64,
-    /// Смещение центра по оси Z
-    pub shift_z: f64,  
-    /// Ограничение по оси Х, м
-    pub bound_x1: f64,
-    pub bound_x2: f64, 
+    pub area: f64,
+    /// Статический момент площади парусности по оси X, m^3
+    pub moment_x: f64,  
+    /// Статический момент площади парусности по оси Z, m^3
+    pub moment_z: f64,
 }
 ///
 impl std::fmt::Display for VerticalArea {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "VerticalArea(avalue:{}, shift_z:{:?} bound:({}, {}))",
-            self.value, self.shift_z, self.bound_x1, self.bound_x2
+            "VerticalArea(draught:{}, area:{:?} moment_x:{}, moment_z:{})",
+            self.draught, self.area, self.moment_x, self.moment_z,
         )
     }
 }
@@ -32,8 +31,16 @@ impl std::fmt::Display for VerticalArea {
 pub type VerticalAreaArray = DataArray<VerticalArea>;
 ///
 impl VerticalAreaArray {
-    /// Преобразование данных в массив
-    pub fn data(self) -> Vec<VerticalArea> {
-        self.data
+    /// Преобразование данных в массив пар (осадкаб площадь)
+    pub fn area(&self) -> Vec<(f64, f64)> {
+        self.data.iter().map(|v| (v.draught, v.area)).collect()
     }  
+    /// Преобразование данных в массив пар (осадка, moment_x)
+    pub fn moment_x(&self) -> Vec<(f64, f64)> {
+        self.data.iter().map(|v| (v.draught, v.moment_x)).collect()
+    } 
+    /// Преобразование данных в массив пар (осадка, moment_z)
+    pub fn moment_z(&self) -> Vec<(f64, f64)> {
+        self.data.iter().map(|v| (v.draught, v.moment_z)).collect()
+    } 
 }

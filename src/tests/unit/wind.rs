@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{mass::*, math::*, stability::wind::*, windage::FakeWindage, Parameters};
+    use crate::{moment::*, math::*, stability::wind::*, windage::FakeWindage, Parameters};
 
     #[test]
     fn wind() {

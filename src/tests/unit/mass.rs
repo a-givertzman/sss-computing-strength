@@ -1,10 +1,11 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::icing::FakeIcing;
+    use crate::icing::FakeIcingMoment;
     use crate::math::Bounds;
     use crate::math::position::Position;
-    use crate::{load::*, mass::*, Bound, FakeParameters, FakeResults, Moment};
+    use crate::wetting_mass::FakeWettingMass;
+    use crate::{load::*, moment::*, Bound, FakeParameters, FakeResults, Moment};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
@@ -43,7 +44,8 @@ mod tests {
                 MASS.replace(Mass::new(
                     loads_const,
                     Position::new(0., 0., 0.),
-                    Rc::new(FakeIcing::new(0., Moment::new(0., 0., 0.,),)),
+                    Rc::new(FakeIcingMoment::new(0., Moment::new(0., 0., 0.,),)),
+                    Rc::new(FakeWettingMass::new(0., Moment::new(0., 0., 0.,),)),
                     loads_cargo,
                     Rc::new(Bounds::from_n(20., 4)),
                     Rc::new(FakeResults{}),

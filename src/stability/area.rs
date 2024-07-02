@@ -4,36 +4,54 @@
 use std::rc::Rc;
 
 use crate::{
-    area::{HAreaStability, VerticalArea},
-    IDesk, Moment, Position,
+    area::HAreaStability, Bound, IDesk, Moment, Position
 };
 
 /// Момент площади горизонтальных поверхностей и
 /// площади парусности судна
 #[derive(Clone)]
 pub struct Area {
-    /// Площадь парусности корпуса судна
-    area_const_v: Vec<VerticalArea>,
+    /// Площадь парусности корпуса судна для текущей осадки
+    av_cs_dmin1: f64,
+    /// Cтатический момент площади парусности сплошных
+    /// поверхностей для текущей осадки, относительно миделя и относительно ОП
+    mvx_cs_dmin1: f64,
+    mvz_cs_dmin1: f64,
     /// Площадь горизонтальных поверхностей корпуса судна
     area_const_h: Vec<HAreaStability>,
     /// Все палубные грузы судна
     desk_cargo: Rc<Vec<Rc<dyn IDesk>>>,
+    /// Ограничение по оси Х для площади обледенения палубного груза - леса
+    timber_icing_x: Option<Bound>,
+    /// Коэффициент массы для обледенения палубного груза - леса
+    timber_icing_y: f64,
 }
 ///
 impl Area {
-    /// Аргументы конструктора:  
-    /// * area_const_v - Площадь парусности корпуса судна
+    /// * av_cs - Площадь парусности корпуса судна для текущей осадки
+    /// * mvx_cs, mvz_cs - Cтатический момент площади парусности сплошных
+    /// поверхностей для текущей осадки, относительно миделя и относительно ОП
     /// * area_const_h - Площадь горизонтальных поверхностей корпуса судна
     /// * desk_cargo - Все палубные грузы судна
+    /// * timber_icing_x - Ограничение по оси Х для площади обледенения палубного груза - леса
+    /// * timber_icing_y - Ограничение по оси Y для площади обледенения палубного груза - леса
     pub fn new(
-        area_const_v: Vec<VerticalArea>,
+        av_cs_dmin1: f64,
+        mvx_cs_dmin1: f64,
+        mvz_cs_dmin1: f64,
         area_const_h: Vec<HAreaStability>,
         desk_cargo: Rc<Vec<Rc<dyn IDesk>>>,
+        timber_icing_x: Option<Bound>,
+        timber_icing_y: f64,
     ) -> Self {
         Self {
-            area_const_v,
+            av_cs_dmin1,
+            mvx_cs_dmin1,
+            mvz_cs_dmin1,
             area_const_h,
             desk_cargo,
+            timber_icing_x,
+            timber_icing_y,
         }
     }
 }
@@ -41,7 +59,7 @@ impl Area {
 impl IArea for Area {
     /// Площадь парусности
     fn area_v(&self) -> f64 {
-        self.area_const_v.iter().map(|v| v.value(None)).sum::<f64>()
+        self.av_cs_dmin1
             + self
                 .desk_cargo
                 .iter()
@@ -50,8 +68,7 @@ impl IArea for Area {
     }
     /// Момент площади парусности
     fn moment_v(&self) -> Moment {
-        self.area_const_v.iter().map(|v| v.moment()).sum::<Moment>()
-            + self
+        Moment::new(self.mvx_cs_dmin1, 0., self.mvz_cs_dmin1) + self
                 .desk_cargo
                 .iter()
                 .map(|v| v.windage_moment())
@@ -63,7 +80,7 @@ impl IArea for Area {
             + self
                 .desk_cargo
                 .iter()
-                .map(|v| Moment::new(0., 0., v.horizontal_area(None) * v.height()))
+                .map(|v| Moment::from_pos(v.shift(), v.horizontal_area(None, None)))
                 .sum::<Moment>()
     }
     /// Момент площади горизонтальных поверхностей палубного груза - леса
@@ -75,10 +92,10 @@ impl IArea for Area {
                 Moment::from_pos(
                     Position::new(
                         v.shift().x(),
-                        v.shift().y(),
+                        v.shift().y() ,
                         v.shift().z() + v.height() / 2.,
                     ),
-                    v.horizontal_area(None),
+                    v.horizontal_area(self.timber_icing_x, None),
                 )
             })
             .sum::<Moment>()
