@@ -199,6 +199,7 @@ fn execute() -> Result<(), Error> {
     let loads_const = Rc::new(loads_const);
     let desks = Rc::new(desks);
     let load_variable = Rc::new(load_variable);
+    let load_timber = Rc::new(load_timber);
     let bulks = Rc::new(bulks);
 
     let icing_area_h_str = data
@@ -250,14 +251,14 @@ fn execute() -> Result<(), Error> {
 
         // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
         let ship_mass: Rc<dyn strength::IMass> = Rc::new(strength::Mass::new(
-            loads_const,
+            Rc::clone(&loads_const),
             Rc::new(strength::IcingMass::new(
                 Rc::clone(&icing_stab),
                 Rc::clone(&area_strength),
             )),
             Rc::new(WettingMass::new(
                 data.wetting_timber,
-                Rc::new(load_timber),
+                Rc::clone(&load_timber),
             )),
             Rc::clone(&load_variable),
             Rc::clone(&bounds),
@@ -277,11 +278,13 @@ fn execute() -> Result<(), Error> {
             Curve::new_linear(&data.area_v_stab.moment_z()).value(mean_draught),
             icing_area_h_stab,
             Rc::clone(&desks),
+            timber_icing_x,
+            timber_icing_y,
         ));
     // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     let ship_moment: Rc<dyn stability::IShipMoment> = Rc::new(stability::ShipMoment::new(
         Rc::clone(&ship_mass),
-        loads_const,
+        Rc::clone(&loads_const),
         shift_const,
         Rc::new(stability::IcingMoment::new(
             Rc::clone(&icing_stab),
@@ -289,7 +292,7 @@ fn execute() -> Result<(), Error> {
         )),
         Rc::new(WettingMoment::new(
             data.wetting_timber,
-            Rc::new(load_timber),
+            Rc::clone(&load_timber),
         )),
         Rc::clone(&load_variable),
         Rc::clone(&results),
