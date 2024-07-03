@@ -30,12 +30,9 @@ pub struct LoadCargoData {
     pub name: String,
     /// Общая масса, т
     pub mass: Option<f64>,
-    /// Диапазон по длинне
+    /// Диапазон по длинне, м
     pub bound_x1: f64,
     pub bound_x2: f64,
-    /// Тип задания диапазона по длинне
-    /// (физ. шпангоуты или метры)
-    pub bound_type: String,  
     /// Диапазон по ширине
     pub bound_y1: Option<f64>,
     pub bound_y2: Option<f64>,
@@ -67,14 +64,13 @@ impl std::fmt::Display for LoadCargoData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadCargoData(name:{} mass:{} bound_x:({}, {}) bound_x_type:{} bound_y:({}, {}) bound_z:({}, {}) 
+            "LoadCargoData(name:{} mass:{} bound_x:({}, {}) bound_y:({}, {}) bound_z:({}, {}) 
             mass_shift:({}, {}, {}) horizontal_area:{} horizontal_area_shift:({}, {}, {})
             vertical_area:{} vertical_area_shift_y:({}, {}, {}) loading_type:{})",
             self.name,
             self.mass.unwrap_or(0.),
             self.bound_x1,
             self.bound_x2,
-            self.bound_type,
             self.bound_y1.unwrap_or(0.),
             self.bound_y2.unwrap_or(0.),
             self.bound_z1.unwrap_or(0.),

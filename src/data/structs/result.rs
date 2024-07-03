@@ -243,10 +243,7 @@ impl ParsedShipData {
             cargoes.push(ParsedCargoData {
                 name: cargo.name,                
                 mass: cargo.mass.unwrap_or(0.),
-                bound_x: ( 
-                    bound_x(&cargo.bound_x1, &cargo.bound_type)?, 
-                    bound_x(&cargo.bound_x2, &cargo.bound_type)?, 
-                ),
+                bound_x: ( cargo.bound_x1, cargo.bound_x2 ),
                 bound_y: if cargo.bound_y1.is_some() && 
                             cargo.bound_y2.is_some() { Some(( 
                                 cargo.bound_y1.expect("ParsedShipData parse error: no bound_y1"),
