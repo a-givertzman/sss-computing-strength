@@ -352,7 +352,7 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no const_mass_shift_z for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
-            draught_min: ship_data.get("Draught min").ok_or(format!(
+            draught_min: ship_data.get("Minimum draft").ok_or(format!(
                 "ParsedShipData parse error: no draught_min for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
