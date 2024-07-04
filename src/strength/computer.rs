@@ -69,19 +69,16 @@ impl Computer {
         let mut total_force_values;
         let shear_force_values;
         let bending_moment_values;
-        let (trim, mean_draught) = Trim::new(
+        let mut volume = Volume::new(
+            Rc::clone(&self.displacement),
+            Trim::new(
                 self.water_density,  
                 self.center_waterline_shift,
                 self.mean_draught,
                 Rc::clone(&self.mass),
                 Rc::clone(&self.displacement),
                 Rc::clone(&self.bounds),
-            ).value();
-        let mut volume = Volume::new(
-            self.center_waterline_shift,
-            mean_draught,
-            Rc::clone(&self.displacement),
-            trim,
+            ),
             Rc::clone(&self.bounds),
         );
         displacement_values = volume.values();

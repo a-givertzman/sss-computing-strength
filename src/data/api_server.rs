@@ -184,6 +184,10 @@ pub fn get_data(
         "SELECT frame_index, draft, area FROM frame_area WHERE ship_id={};",
         ship_id
     ))?)?;
+    let draft_mark = DraftMarkDataArray::parse(&api_server.fetch(&format!(
+        "SELECT name, x, y, z FROM draft_mark WHERE ship_id={};",
+        ship_id
+    ))?)?;
     let cargo = LoadCargoArray::parse(&api_server.fetch(&format!(
         "SELECT name, \
                 mass, \
@@ -273,6 +277,7 @@ pub fn get_data(
         physical_frame,
         bonjean_frame,
         frame_area,
+        draft_mark,
         cargo,
         compartment,
         load_constant,

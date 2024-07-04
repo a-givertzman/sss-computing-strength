@@ -1,5 +1,6 @@
 //! Дифферент. Угол наклона корпуса судна в продольной плоскости.
 use crate::stability::metacentric_height::IMetacentricHeight;
+use std::cell::RefCell;
 use std::f64::consts::PI;
 use std::rc::Rc;
 
@@ -24,6 +25,10 @@ pub struct Trim {
     mass: Rc<dyn IMass>,
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>, 
+    /// Осадка на миделе в ДП, м
+    draught_mid: Option<f64>,
+    /// Изменение осадки
+    delta_draught: Option<f64>,
 }
 ///
 impl Trim {
@@ -53,11 +58,23 @@ impl Trim {
             metacentric_height,
             mass,
             parameters,
+            draught_mid: None,
+            delta_draught: None,
         }
     }
     /// Значение дифферента, коэффициент используемый при вычислении осадки носа и кормы
     #[allow(non_snake_case)]
-    pub fn value(&mut self) -> f64 {
+    pub fn value(&mut self, pos_x: f64) -> f64 {
+        if self.draught_mid.is_none() {
+            self.calculate();
+        }        
+        self.draught_mid.expect("stability::Trim value error: no draught_mid!")
+            + self.delta_draught.expect("stability::Trim value error: no draught_mid!") 
+            * pos_x
+    }
+    /// Значение дифферента, коэффициент используемый при вычислении осадки носа и кормы
+    #[allow(non_snake_case)]
+    fn calculate(&mut self) {
         // Продольная исправленная метацентрическая высота (3)
         let H = self.metacentric_height.h_long_fix();
         // Момент дифферентующий на 1 см осадки (4)
@@ -73,10 +90,12 @@ impl Trim {
         let draught_stern = self.mean_draught - (0.5 + self.center_waterline_shift/self.ship_length)*t;
         // Осадка на миделе в ДП, м (8)
         let draught_mid = (draught_bow + draught_stern) / 2.;
-
+        // Изменение осадки
+        let delta_draught = (draught_stern - draught_bow) / self.ship_length;
         log::info!(
             "\t Trim H:{H} mass:{} mass_shift_x:{} center_draught_x:{} M:{trim_moment} trim:{t} 
-                trim_angle{trim_angle} draught_bow:{draught_bow} draught_stern:{draught_stern} draught_mid:{draught_mid}",
+                trim_angle{trim_angle} draught_bow:{draught_bow} draught_stern:{draught_stern} 
+                draught_mid:{draught_mid} delta_draught:{delta_draught}",
             self.mass.sum(),
             self.mass.shift().x(),
             self.center_draught_shift.x()
@@ -85,6 +104,7 @@ impl Trim {
         self.parameters.add(ParameterID::Trim, trim_angle);
         self.parameters.add(ParameterID::DraughtBow, draught_bow);
         self.parameters.add(ParameterID::DraughtStern, draught_stern);
-        t
+        self.draught_mid = Some(draught_mid);
+        self.delta_draught = Some(delta_draught);
     }
 }

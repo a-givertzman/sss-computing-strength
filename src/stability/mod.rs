@@ -14,6 +14,7 @@ pub(crate) mod grain;
 pub(crate) mod criterion;
 pub(crate) mod trim;
 pub(crate) mod parameters;
+pub(crate) mod draft_mark;
 
 pub use metacentric_height::*;
 pub use rolling_amplitude::*;
@@ -28,3 +29,4 @@ pub use grain::*;
 pub use criterion::*;
 pub use trim::*;
 pub use parameters::*;
+pub use draft_mark::*;

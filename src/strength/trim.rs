@@ -1,6 +1,6 @@
 //! Класс для расчета дифферента и средней осадки в расчете прочности
 
-use crate::{mass::IMass, math::Bounds, IVolume};
+use crate::{mass::IMass, math::Bounds, trim::ITrim, IVolume};
 
 use super::{
     displacement::Displacement,
@@ -11,6 +11,8 @@ use std::rc::Rc;
 /// Класс для расчета дифферента и средней осадки в расчете прочности метором перебора
 /// Используются только эпюра масс и Бонжан. Данные по остойчивости не используются.
 pub struct Trim {
+    /// длинна судна
+    ship_length: f64,
     /// Плотность воды
     water_density: f64,
     /// Отстояние центра величины погруженной части судна
@@ -23,10 +25,15 @@ pub struct Trim {
     displacement: Rc<Displacement>,
     /// Вектор разбиения судна на отрезки
     bounds: Rc<Bounds>,
+    /// Осадка на миделе в ДП, м
+    draught_mid: Option<f64>,
+    /// Изменение осадки
+    delta_draught: Option<f64>,
 }
 ///
 impl Trim {
     /// Основной конструктор
+    /// * ship_length - длинна судна
     /// * water_density - Плотность воды
     /// * center_waterline_shift - Отстояние центра величины погруженной части судна
     /// * mean_draught - Средняя осадка
@@ -34,6 +41,7 @@ impl Trim {
     /// * displacement - Распределение осадки
     /// * bounds - Вектор разбиения судна на отрезки
     pub fn new(
+        ship_length: f64, 
         water_density: f64,   
         center_waterline_shift: f64,
         mean_draught: f64,
@@ -42,12 +50,15 @@ impl Trim {
         bounds: Rc<Bounds>, 
     ) -> Self {
         Self {
+            ship_length,
             water_density,
             center_waterline_shift,
             mean_draught,
             mass,
             displacement,
             bounds,
+            draught_mid: None,
+            delta_draught: None,
         }
     }
     /// Вычисление суммы площади и смещения центра методом трапеций
@@ -90,11 +101,8 @@ impl Trim {
         };
         (xc, sum_s)
     }
-}
-/// 
-impl ITrim for Trim {
     /// Вычисление дифферента и средней осадки перебором
-    fn value(&mut self) -> (f64, f64) {
+    fn calculate(&mut self) {
         let dx = self.bounds.iter().map(|v| v.center()).collect::<Vec<_>>();
         let mass_pairs = dx.clone().into_iter().zip(self.mass.values()).collect::<Vec<_>>();
         let (w_xg, w) = self.calc_s(&mass_pairs);
@@ -104,11 +112,17 @@ impl ITrim for Trim {
         for _i in 0..50 {
             mean_draught = self.mean_draught;
             for _j in 0..50 {
+                // Осадка на носовом перпендикуляре длины L в ДП dн, м (6)
+                let draught_bow = mean_draught + (0.5 - self.center_waterline_shift/self.ship_length)*trim;
+                // Осадка на кормовом перпендикуляре длины L в ДП dк, м (7)
+                let draught_stern = mean_draught - (0.5 + self.center_waterline_shift/self.ship_length)*trim;
+                // Осадка на миделе в ДП, м (8)
+                let draught_mid = (draught_bow + draught_stern) / 2.;
+                // Изменение осадки
+                let delta_draught = (draught_stern - draught_bow) / self.ship_length;
                 let volume_values = Volume::new(
-                    self.center_waterline_shift,
-                    mean_draught,
                     Rc::clone(&self.displacement),
-                    trim,
+                    Box::new(FakeTrim::new()),
                     Rc::clone(&self.bounds),
                 ).values();
                 let volume_pairs = dx.clone().into_iter().zip(volume_values).collect::<Vec<_>>();
@@ -127,32 +141,28 @@ impl ITrim for Trim {
             }                 
             trim = trim + delta_x / 10.;
         }
-        (trim, mean_draught)
+        // Осадка на носовом перпендикуляре длины L в ДП dн, м (6)
+        let draught_bow = mean_draught + (0.5 - self.center_waterline_shift/self.ship_length)*trim;
+        // Осадка на кормовом перпендикуляре длины L в ДП dк, м (7)
+        let draught_stern = mean_draught - (0.5 + self.center_waterline_shift/self.ship_length)*trim;
+        // Осадка на миделе в ДП, м (8)
+        let draught_mid = (draught_bow + draught_stern) / 2.;
+        // Изменение осадки
+        let delta_draught = (draught_stern - draught_bow) / self.ship_length;
+        //
+        self.draught_mid = Some(draught_mid);
+        self.delta_draught = Some(delta_draught);
     }
 }
-
-#[doc(hidden)]
-pub trait ITrim {
-    /// Вычисление дифферента перебором
-    fn value(&mut self) -> (f64, f64);
-}
-// заглушка для тестирования
-#[doc(hidden)]
-pub struct FakeTrim {
-    trim: f64,
-    mean_draught: f64,
-}
-#[doc(hidden)]
-#[allow(dead_code)]
-impl FakeTrim {
-    pub fn new(trim: f64, mean_draught: f64,) -> Self {
-        Self { trim, mean_draught }
+/// 
+impl ITrim for Trim {
+    /// Вычисление дифферента и средней осадки перебором
+    fn value(&mut self, pos_x: f64) -> f64 {
+        if self.draught_mid.is_none() {
+            self.calculate();
+        }        
+        self.draught_mid.expect("strength::Trim value error: no draught_mid!")
+            + self.delta_draught.expect("strength::Trim value error: no draught_mid!") 
+            * pos_x
     }
 }
-#[doc(hidden)]
-impl ITrim for FakeTrim {
-    fn value(&mut self) -> (f64, f64) {
-        (self.trim, self.mean_draught)
-    }
-}
-

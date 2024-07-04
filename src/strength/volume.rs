@@ -1,6 +1,6 @@
 //! Распределение объема вытесненной воды по шпациям
 use std::rc::Rc;
-use crate::math::Bounds;
+use crate::{draught::IDraught, math::Bounds};
 use super::displacement::Displacement;
 
 ///
@@ -8,36 +8,26 @@ use super::displacement::Displacement;
 pub struct Volume {
     /// вектор разбиения на отрезки для эпюров
     bounds: Rc<Bounds>,
-    /// отстояние центра тяжести ватерлинии по длине от миделя
-    center_waterline_shift: f64,
-    /// средняя осадка
-    mean_draught: f64,
     /// водоизмещение судна
     displacement: Rc<Displacement>,
-    /// дифферент судна
-    trim: f64,//Trim,
+    /// Осадка судна
+    draught: Box<dyn IDraught>,
 }
 ///
 impl Volume {
     /// Основной конструктор. Аргументы:  
-    /// - bounds: вектор разбиения на отрезки для эпюров
-    /// - center_waterline_shift: отстояние центра тяжести ватерлинии по длине от миделя, м
-    /// - mean_draught: средняя осадка, м
-    /// - displacement: водоизмещение судна, м^3
-    /// - trim: дифферент судна, м
-    pub fn new(    
-        center_waterline_shift: f64, 
-        mean_draught: f64,          
+    /// * bounds - Вектор разбиения на отрезки для эпюров
+    /// * displacement - Водоизмещение судна, м^3
+    /// * draught - Осадка судна
+    pub fn new(  
         displacement: Rc<Displacement>,   
-        trim: f64,
+        draught: Box<dyn IDraught>,
         bounds: Rc<Bounds>,
     ) -> Self {
         Self {
             bounds,
-            center_waterline_shift,
-            mean_draught,
+            draught,            
             displacement,
-            trim,
         }
     }
 }
@@ -45,28 +35,14 @@ impl Volume {
 impl IVolume for Volume {
     /// Распределение объема вытесненной воды по шпациям
     fn values(&mut self) -> Vec<f64> {
-        // длинна судна
-        let ship_length = self.bounds.length();
-        // дифферент судна
-        let trim = self.trim;//.value();
-        //отстояние центра тяжести ватерлинии по длине от миделя
-        let x_f = self.center_waterline_shift;
-        //средняя осадка
-        let d = self.mean_draught;
-        //осадка на носовом перпендикуляре (6)
-        let stern_draught = d + (0.5 - x_f/ship_length) * trim;
-        //осадка на кормовом перпендикуляре (7)
-        let bow_draught = d - (0.5 + x_f/ship_length) * trim;
-        //изменение осадки
-        let delta_draught = (stern_draught - bow_draught) / self.bounds.length();
         let result: Vec<f64> = self
             .bounds
             .iter()
             .map(|v| {
                 self.displacement.value(
                     *v,
-                    d + delta_draught * v.start(),
-                    d + delta_draught * v.end(),
+                    self.draught.value(v.start()),
+                    self.draught.value(v.end()),
                 )
             })
             .collect();

@@ -26,6 +26,8 @@ mod math;
 mod stability;
 mod strength;
 mod tests;
+mod trim;
+mod draught;
 
 fn main() {
     //    std::env::set_var("RUST_LOG", "info");
