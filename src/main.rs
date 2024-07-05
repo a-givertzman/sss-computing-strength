@@ -12,8 +12,10 @@ use crate::{
     windage::{IWindage, Windage},
 };
 use data::api_server::*;
+use draught::Draught;
 pub use error::Error;
 use log::info;
+use trim::ITrim;
 use std::{collections::HashMap, io, rc::Rc, time::Instant};
 
 mod area;
@@ -270,6 +272,7 @@ fn execute() -> Result<(), Error> {
     Computer::new(
         gravity_g,
         data.water_density,
+        data.length_lbp,
         center_waterline_shift,
         mean_draught,
         Rc::clone(&mass),
@@ -313,17 +316,6 @@ fn execute() -> Result<(), Error> {
     ));
     // Момент кренящий на 1 градус MH1deg, т∙м
     parameters.add(ParameterID::MomentRollPerDeg, mass.sum()*metacentric_height.h_trans_fix()*(std::f64::consts::PI/180.).sin());
-    // Дифферент для остойчивости
-    let trim = stability::Trim::new(
-        data.length_lbp,
-        mean_draught,
-        center_waterline_shift,
-        center_draught_shift.clone(),        
-        Rc::clone(&metacentric_height),
-        Rc::clone(&mass),
-        Rc::clone(&parameters),
-    )
-    .value();
     // Длинна по ватерлинии при текущей осадке
     let length_wl = Curve::new_linear(&data.waterline_length).value(mean_draught);
     // Ширина по ватерлинии при текущей осадке
@@ -351,7 +343,7 @@ fn execute() -> Result<(), Error> {
             vector.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
         });
     }
-
+    // Диаграмма плечей остойчивости
     let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
         Rc::clone(&mass),
         center_draught_shift.clone(),
@@ -361,7 +353,6 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
         Rc::clone(&parameters),
     ));
-
     send_stability_diagram(&mut api_server, ship_id, lever_diagram.diagram())?;
     // dbg!(stability.k()?);
     //dbg!(lever_diagram.dso().len());
@@ -374,6 +365,28 @@ fn execute() -> Result<(), Error> {
             .iter()
             .for_each(|(k, v)| println!("{k} {v};"));
     */
+    // Марки заглубления
+    let mut draft_mark = DraftMark::new(
+        Box::new(Draught::new(
+            data.length_lbp, 
+            mean_draught, 
+            center_waterline_shift, 
+                // Дифферент для остойчивости
+            Box::new(stability::Trim::new(
+                data.length_lbp,
+                mean_draught,
+                center_waterline_shift,
+                center_draught_shift.clone(),        
+                Rc::clone(&metacentric_height),
+                Rc::clone(&mass),
+                Rc::clone(&parameters),
+            )),
+            None,
+        )), 
+        Rc::clone(&lever_diagram),
+        data.draft_mark.data(),
+    );
+    send_draft_mark(&mut api_server, ship_id, draft_mark.calculate())?;
     // Предполагаемое давление ветра +
     // Добавка на порывистость ветра
     let (p_v, m) = data

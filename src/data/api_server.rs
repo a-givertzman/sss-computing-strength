@@ -331,7 +331,6 @@ pub fn send_stability_data(
     data: Vec<CriterionData>,
 ) -> Result<(), error::Error> {
     log::info!("send_stability_data begin");
-
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM result_stability WHERE ship_id={ship_id};");
     data.into_iter().for_each(|v| {
@@ -354,7 +353,6 @@ pub fn send_stability_diagram(
     data: Vec<(f64, f64, f64)>,
 ) -> Result<(), error::Error> {
     log::info!("send_stability_diagram begin");
-
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM stability_diagram WHERE ship_id={ship_id};");
     full_sql += " INSERT INTO stability_diagram (ship_id, angle, value_dso, value_ddo) VALUES"; 
@@ -375,7 +373,6 @@ pub fn send_parameters_data(
     data: Vec<(usize, f64)>,
 ) -> Result<(), error::Error> {
     log::info!("send_parameters_data begin");
-
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM parameter_data WHERE ship_id={ship_id};");
     if data.len() > 0 {
@@ -391,7 +388,29 @@ pub fn send_parameters_data(
     log::info!("send_parameters_data end");
     Ok(())
 }
-
+/// Запись данных расчета расчет уровня заглубления 
+/// для координат отметок заглубления на корпусе судна
+pub fn send_draft_mark(
+    api_server: &mut ApiServer,
+    ship_id: usize,
+    data: Vec<(String, (f64, f64, f64))>,
+) -> Result<(), error::Error> {
+    log::info!("send_draft_mark begin");
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM draft_mark_result WHERE ship_id={ship_id};");
+    if data.len() > 0 {
+        full_sql += " INSERT INTO draft_mark_result (ship_id, name, x, y, draft_value) VALUES";
+        data.into_iter().for_each(|(name, (x, y, draft_value))| {
+            full_sql += &format!(" ({ship_id}, '{name}', {x}, {y}, {draft_value}),");
+        });
+        full_sql.pop();
+        full_sql.push(';');
+    }
+    full_sql += " END$$;";
+    api_server.fetch(&full_sql)?;
+    log::info!("send_parameters_data end");
+    Ok(())
+}
 
 /*
 /// Чтение данных из БД. Функция читает данные за несколько запросов,

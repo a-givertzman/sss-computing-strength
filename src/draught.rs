@@ -15,7 +15,7 @@ pub struct Draught {
     /// Дифферент судна
     trim: Box<dyn ITrim>,     
     /// Набор результатов расчетов для записи в БД
-    parameters: Rc<dyn IParameters>, 
+    parameters: Option<Rc<dyn IParameters>>, 
     /// Осадка на миделе в ДП, м
     draught_mid: Option<f64>,
     /// Изменение осадки
@@ -34,7 +34,7 @@ impl Draught {
         mean_draught: f64,        
         center_waterline_shift: f64,    
         trim: Box<dyn ITrim>,               
-        parameters: Rc<dyn IParameters>, 
+        parameters: Option<Rc<dyn IParameters>>, 
     ) -> Self {
         assert!(ship_length > 0., "ship_length {ship_length} > 0.");
         Self {
@@ -47,16 +47,6 @@ impl Draught {
             delta_draught: None,
         }
     }
-    /// Значение осадки в точке
-    #[allow(non_snake_case)]
-    pub fn value(&mut self, pos_x: f64) -> f64 {
-        if self.draught_mid.is_none() {
-            self.calculate();
-        }        
-        self.draught_mid.expect("Draught value error: no draught_mid!")
-            + self.delta_draught.expect("Draught value error: no draught_mid!") 
-            * pos_x
-    }
     /// Вычисление осадки на миделе и изменения осадки
     #[allow(non_snake_case)]
     fn calculate(&mut self) {
@@ -67,11 +57,26 @@ impl Draught {
         // Осадка на миделе в ДП, м (8)
         let draught_mid = (draught_bow + draught_stern) / 2.;
         // Изменение осадки
-        let delta_draught = (draught_stern - draught_bow) / self.ship_length;
-        self.parameters.add(ParameterID::DraughtBow, draught_bow);
-        self.parameters.add(ParameterID::DraughtStern, draught_stern);
+        let delta_draught = (draught_bow - draught_stern) / self.ship_length;
+        if let Some(parameters) = &self.parameters {
+            parameters.add(ParameterID::DraughtBow, draught_bow);
+            parameters.add(ParameterID::DraughtStern, draught_stern);
+        }
         self.draught_mid = Some(draught_mid);
         self.delta_draught = Some(delta_draught);
+    }
+}
+///
+impl IDraught for Draught {
+    /// Значение осадки в точке
+    #[allow(non_snake_case)]
+    fn value(&mut self, pos_x: f64) -> f64 {
+        if self.draught_mid.is_none() {
+            self.calculate();
+        }        
+        self.draught_mid.expect("Draught value error: no draught_mid!")
+            + self.delta_draught.expect("Draught value error: no draught_mid!") 
+            * pos_x
     }
 }
 ///
