@@ -6,41 +6,41 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{mass::*, math::*, stability::{metacentric_height::*, trim::*}, FakeParameters};
+    use crate::{mass::*, math::*, stability::{metacentric_height::*, trim::*}, trim::{FakeTrim, ITrim}, FakeParameters};
 
     #[test]
-    fn trim() {
+    fn trim_stability() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
         let self_id = "test Trim";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
-
+        let ship_length = 118.39;
         let result = Trim::new(
-            118.39,
-            2.4,
-            1.,
-            Position::new(-0.194609657, 0., 0.735524704),
+            ship_length,
+            1.6562565987303715,
+            -0.862,
+            Position::new(-0.27987870364183104, 0., 0.843131172736385),
             Rc::new(FakeMetacentricHeight::new(
-                696.702572991,
-                    100.,
-                    100.,
-                    100.,
+                616.8739594823264,
+                4.994720390444311,
+                    4.976147740632071,
+                    5.090317945969997,
             )),
             Rc::new(FakeMass::new(
-                2044.10,
+                2354.10,
                 vec![0.],
-                Position::new(1.05, 0., 5.32),
-                Position::new(0., 0., 0.,), 
+                Position::new(-3.5246225404891716, -0.027481947482526296, 5.074054011246347),
+                Position::new(-8298.253586934854, -64.702579255814, 11946.183290674426), 
             )),
             Rc::new(FakeParameters{}),
         )
         .value();
-        let target = 0.2115;
+        let target = FakeTrim::from_angle(-0.3013717957692749, ship_length).value();
 
         assert!(
-            (result - target).abs() < result.abs() * 0.01, //TODO
+            (result - target).abs() < result.abs() * 0.001, //TODO
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target

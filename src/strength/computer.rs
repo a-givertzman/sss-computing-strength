@@ -1,13 +1,13 @@
 //! Класс для расчета прочности
 
-use crate::{mass::IMass, math::Bounds, IResults, ITotalForce, IVolume};
+use crate::{draught::Draught, mass::IMass, math::Bounds, IResults, ITotalForce, IVolume};
 
 use super::{
     bending_moment::BendingMoment,
     displacement::Displacement,
     shear_force::{IShearForce, ShearForce},
     total_force::TotalForce,
-    volume::Volume, Trim, ITrim,
+    volume::Volume, Trim,
 };
 use std::rc::Rc;
 
@@ -17,6 +17,8 @@ pub struct Computer {
     gravity_g: f64,
     /// Плотность воды
     water_density: f64,
+    /// Длинна судна
+    ship_length: f64,
     /// Отстояние центра величины погруженной части судна
     center_waterline_shift: f64,
     /// Средняя осадка
@@ -35,6 +37,7 @@ impl Computer {
     /// Основной конструктор  
     /// * gravity_g - Ускорение свободного падения  
     /// * water_density - Плотность воды  
+    /// * ship_length - длинна судна
     /// * center_waterline_shift - Отстояние центра величины погруженной части судна  
     /// * mean_draught - Средняя осадка
     /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.  
@@ -43,7 +46,8 @@ impl Computer {
     /// * results - Набор результатов расчетов для записи в БД  
     pub fn new(
         gravity_g: f64,                 
-        water_density: f64,             
+        water_density: f64,   
+        ship_length: f64,           
         center_waterline_shift: f64,    
         mean_draught: f64,              
         mass: Rc<dyn IMass>, 
@@ -54,6 +58,7 @@ impl Computer {
         Self {
             gravity_g,
             water_density,
+            ship_length,
             center_waterline_shift,
             mean_draught,
             mass,
@@ -71,14 +76,21 @@ impl Computer {
         let bending_moment_values;
         let mut volume = Volume::new(
             Rc::clone(&self.displacement),
-            Trim::new(
+            Box::new(Draught::new(
+                self.ship_length,
                 self.water_density,  
                 self.center_waterline_shift,
-                self.mean_draught,
-                Rc::clone(&self.mass),
-                Rc::clone(&self.displacement),
-                Rc::clone(&self.bounds),
-            ),
+                Box::new(Trim::new(
+                    self.ship_length, 
+                    self.water_density,   
+                    self.center_waterline_shift,
+                    self.mean_draught,
+                    Rc::clone(&self.mass),
+                    Rc::clone(&self.displacement),
+                    Rc::clone(&self.bounds),
+                )),
+                None,
+            )),
             Rc::clone(&self.bounds),
         );
         displacement_values = volume.values();

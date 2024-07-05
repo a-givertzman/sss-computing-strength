@@ -3,10 +3,10 @@
 mod tests {
 
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-    use std::{rc::Rc, time::Duration};
+    use std::{f64::consts::PI, rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{mass::*, math::*, stability::{metacentric_height::*, trim::*}, FakeParameters};
+    use crate::{draught::{Draught, IDraught}, mass::*, math::*, stability::{metacentric_height::*, trim::*}, trim::FakeTrim, FakeParameters};
 
     #[test]
     fn draught() {
@@ -16,31 +16,19 @@ mod tests {
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
-
+        let ship_length = 118.39;
         let result = Draught::new(
-            118.39,
-            2.4,
-            1.,
-            Position::new(-0.194609657, 0., 0.735524704),
-            Rc::new(FakeMetacentricHeight::new(
-                696.702572991,
-                    100.,
-                    100.,
-                    100.,
-            )),
-            Rc::new(FakeMass::new(
-                2044.10,
-                vec![0.],
-                Position::new(1.05, 0., 5.32),
-                Position::new(0., 0., 0.,), 
-            )),
-            Rc::new(FakeParameters{}),
+            ship_length,
+            1.6562565987303715,
+            -0.862,
+            Box::new(FakeTrim::from_angle(-0.3013717957692749, ship_length)),
+            None,
         )
-        .value();
-        let target = 0.2115;
+        .value(59.194);
+        let target = 1.34;
 
         assert!(
-            (result - target).abs() < result.abs() * 0.01, //TODO
+            (result - target).abs() < result.abs() * 0.001, //TODO
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
