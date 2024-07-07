@@ -5,7 +5,7 @@ mod tests {
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, stability::acceleration::*, FakeMetacentricHeight, FakeRollingAmplitude, FakeRollingPeriod};
+    use crate::{math::*, stability::acceleration::*, FakeMetacentricHeight, FakeRollingAmplitude};
 
     #[test]
     fn acceleration() {

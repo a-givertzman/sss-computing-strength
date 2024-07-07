@@ -383,8 +383,8 @@ fn execute() -> Result<(), Error> {
             )),
             None,
         )), 
-        Rc::clone(&lever_diagram),
         data.draft_mark.data(),
+        Rc::clone(&parameters),
     );
     send_draft_mark(&mut api_server, ship_id, draft_mark.calculate())?;
     // Предполагаемое давление ветра +

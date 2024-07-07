@@ -95,7 +95,7 @@ pub struct FakeDraught {
 #[allow(dead_code)]
 impl FakeDraught {
     pub fn new(draught_mid: f64, delta_draught: f64,) -> Self {
-        Self { draught_mid,delta_draught }
+        Self { draught_mid, delta_draught }
     }
 }
 #[doc(hidden)]

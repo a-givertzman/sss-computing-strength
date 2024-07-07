@@ -3,10 +3,10 @@
 mod tests {
 
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-    use std::{f64::consts::PI, rc::Rc, time::Duration};
+    use std::time::Duration;
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{draught::{Draught, IDraught}, mass::*, math::*, stability::{metacentric_height::*, trim::*}, trim::FakeTrim, FakeParameters};
+    use crate::{draught::{Draught, IDraught}, trim::FakeTrim};
 
     #[test]
     fn draught() {
