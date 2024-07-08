@@ -28,6 +28,7 @@ pub enum CriterionID {
     AreaLcGrainDisplacement = 16,
     MinMetacentricHeightSubdivIndex = 17,
 }
+#[derive(Clone, Debug)]
 /// Результат проверки критерия
 pub struct CriterionData {
     /// id критерия

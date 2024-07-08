@@ -3,7 +3,7 @@
 use std::{cell::RefCell, collections::HashMap};
 
 ///
-#[derive(Hash, Eq, PartialEq)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub enum ParameterID {
     CenterMassZFix = 1,
     Displacement = 2,
@@ -57,6 +57,7 @@ pub enum ParameterID {
     VesselSpeed = 50,
 }
 /// Набор результатов расчетов для записи в БД
+#[derive(Clone, Debug)]
 pub struct Parameters {
     data: RefCell<HashMap<ParameterID, f64>>,
 } 
