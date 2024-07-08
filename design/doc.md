@@ -20,3 +20,11 @@ a = 1.3
 def funcrion():
     gsdhsgg
 ```
+
+
+```rust
+let a = 1.3
+fn funcrion(v: f64) -> f64 {
+    v
+}
+```
