@@ -28,5 +28,3 @@ fn funcrion(v: f64) -> f64 {
     v
 }
 ```
-
-[doc content](./doc1.md)
