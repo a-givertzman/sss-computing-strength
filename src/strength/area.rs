@@ -61,7 +61,7 @@ impl IArea for Area {
             + self
                 .loads_cargo
                 .iter()
-                .filter(|v| !v.is_timber())
+      //          .filter(|v| !v.is_timber())
                 .map(|v| v.horizontal_area(bound))
                 .sum::<f64>()
     }
