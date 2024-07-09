@@ -21,7 +21,7 @@ pub struct Area {
     /// Ограничение по оси Х для площади обледенения палубного груза - леса
     timber_icing_x: Option<Bound>,
     /// Коэффициент массы для обледенения палубного груза - леса
-    timber_icing_y: f64,
+    timber_icing_y: Option<Bound>,
 }
 ///
 impl Area {
@@ -36,7 +36,7 @@ impl Area {
         area_const_h: Vec<HAreaStrength>,
         loads_cargo: Rc<Vec<Rc<dyn IDesk>>>,
         timber_icing_x: Option<Bound>,
-        timber_icing_y: f64,
+        timber_icing_y: Option<Bound>,
     ) -> Self {
         Self {
             area_const_v,
@@ -81,7 +81,7 @@ impl IArea for Area {
         self.loads_cargo
             .iter()
             .filter(|v| v.is_timber())
-            .map(|v| v.horizontal_area(bound_x, None)*self.timber_icing_y )
+            .map(|v| v.horizontal_area(bound_x, self.timber_icing_y) )
             .sum::<f64>()
     }
 }

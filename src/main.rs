@@ -220,10 +220,11 @@ fn execute() -> Result<(), Error> {
 
     // Ограничения для площади обледенения палубного груза - леса
     let (timber_icing_x, timber_icing_y) = match data.icing_timber_stab.trim().to_lowercase().as_str() {
-//        "full" => (None, 1.),
-        "half" => (None, 0.5),
-        "bow" => (Some(Bound::new(data.length_lbp/6., data.length_lbp/2.)), 1.0),
-        _ => (None, 1.),        
+//        "full" => (None, None),
+        "half_left" => (None, Some(Bound::new(-data.width/2., 0.))),
+        "half_right" => (None, Some(Bound::new(0., data.width/2.))),
+        "bow" => (Some(Bound::new(data.length_lbp/6., data.length_lbp/2.)), None),
+        _ => (None, None),        
     };
 
     let area_strength: Rc<dyn crate::strength::IArea> = Rc::new(crate::strength::Area::new(

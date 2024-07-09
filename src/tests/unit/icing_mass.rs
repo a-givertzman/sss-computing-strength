@@ -2,8 +2,7 @@
 
 mod tests {
     use crate::{
-        icing::{FakeIcingStab, IIcingMoment, IcingMoment},
-        Moment,
+        icing_stab::FakeIcingStab, IcingMoment, Moment
     };
 
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
@@ -19,7 +18,6 @@ mod tests {
         INIT.call_once(|| unsafe {
             ICING.replace(IcingMoment::new(
                 Rc::new(FakeIcingStab::new(0.03, 0.04, 0.015, 0.1, 0.05, 0.2, true)),
-                Rc::new(crate::strength::FakeArea::new(50., 50., 50.)),
                 Rc::new(crate::stability::FakeArea::new(
                     50.,
                     Moment::new(0., 0., 100.),

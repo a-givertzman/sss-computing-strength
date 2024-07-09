@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, stability::circulation::*, FakeLeverDiagram, FakeShipMoment, Parameters};
+    use crate::{math::*, stability::circulation::*, FakeLeverDiagram, FakeMass, FakeShipMoment, Parameters};
 
     #[test]
     fn circulation() {
@@ -20,9 +20,11 @@ mod tests {
             10.,
             40.,
             4.,
-            Rc::new(FakeShipMoment::new(
+            Rc::new(FakeMass::new(
                 1000.,
                 vec![1000.],
+            )),
+            Rc::new(FakeShipMoment::new(
                 Position::new(0., 0., 0.),
                 Moment::new(0., 0., 0.),
             )),

@@ -23,8 +23,8 @@ pub struct Area {
     desk_cargo: Rc<Vec<Rc<dyn IDesk>>>,
     /// Ограничение по оси Х для площади обледенения палубного груза - леса
     timber_icing_x: Option<Bound>,
-    /// Коэффициент массы для обледенения палубного груза - леса
-    timber_icing_y: f64,
+    /// Ограничение по оси Y для площади обледенения палубного груза - леса
+    timber_icing_y: Option<Bound>,
 }
 ///
 impl Area {
@@ -42,7 +42,7 @@ impl Area {
         area_const_h: Vec<HAreaStability>,
         desk_cargo: Rc<Vec<Rc<dyn IDesk>>>,
         timber_icing_x: Option<Bound>,
-        timber_icing_y: f64,
+        timber_icing_y: Option<Bound>,
     ) -> Self {
         Self {
             av_cs_dmin1,
@@ -95,7 +95,7 @@ impl IArea for Area {
                         v.shift().y(),
                         v.shift().z() + v.height(),
                     ),
-                    v.horizontal_area(None),
+                    v.horizontal_area(self.timber_icing_x, self.timber_icing_y),
                 )
             })
             .sum::<Moment>()
@@ -113,7 +113,7 @@ impl IArea for Area {
                         v.shift().y(),
                         v.height(),
                     ),
-                    v.horizontal_area(self.timber_icing_x, None),
+                    v.horizontal_area(self.timber_icing_x, self.timber_icing_y),
                 )
             })
             .sum::<Moment>()
