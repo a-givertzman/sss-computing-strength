@@ -92,8 +92,26 @@ impl IArea for Area {
                 Moment::from_pos(
                     Position::new(
                         v.shift().x(),
-                        v.shift().y() ,
-                        v.shift().z() + v.height() / 2.,
+                        v.shift().y(),
+                        v.shift().z() + v.height(),
+                    ),
+                    v.horizontal_area(None),
+                )
+            })
+            .sum::<Moment>()
+    }
+    /// Изменение момента площади горизонтальных поверхностей палубного груза - леса
+    /// относительно палубы
+    fn delta_moment_timber_h(&self) -> Moment {
+        self.desk_cargo
+            .iter()
+            .filter(|v| v.is_timber())
+            .map(|v| {
+                Moment::from_pos(
+                    Position::new(
+                        v.shift().x(),
+                        v.shift().y(),
+                        v.height(),
                     ),
                     v.horizontal_area(self.timber_icing_x, None),
                 )
@@ -111,6 +129,9 @@ pub trait IArea {
     fn moment_h(&self) -> Moment;
     /// Момент площади горизонтальных поверхностей палубного груза - леса
     fn moment_timber_h(&self) -> Moment;
+    /// Изменение момента площади горизонтальных поверхностей палубного груза - леса
+    /// относительно палубы
+    fn delta_moment_timber_h(&self) -> Moment;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -119,16 +140,24 @@ pub struct FakeArea {
     moment_v: Moment,
     moment_h: Moment,
     moment_timber_h: Moment,
+    delta_moment_timber_h: Moment,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeArea {
-    pub fn new(area_v: f64, moment_v: Moment, moment_h: Moment, moment_timber_h: Moment) -> Self {
+    pub fn new(
+        area_v: f64,
+        moment_v: Moment,
+        moment_h: Moment,
+        moment_timber_h: Moment,
+        delta_moment_timber_h: Moment,
+    ) -> Self {
         Self {
             area_v,
             moment_v,
             moment_h,
             moment_timber_h,
+            delta_moment_timber_h,
         }
     }
 }
@@ -149,5 +178,10 @@ impl IArea for FakeArea {
     /// Момент площади горизонтальных поверхностей палубного груза - леса
     fn moment_timber_h(&self) -> Moment {
         self.moment_timber_h.clone()
+    }
+    /// Изменение момента площади горизонтальных поверхностей палубного груза - леса
+    /// относительно палубы
+    fn delta_moment_timber_h(&self) -> Moment {
+        self.delta_moment_timber_h.clone()
     }
 }

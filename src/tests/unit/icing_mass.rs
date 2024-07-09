@@ -23,8 +23,9 @@ mod tests {
                 Rc::new(crate::stability::FakeArea::new(
                     50.,
                     Moment::new(0., 0., 100.),
-                    Moment::new(0., 0., 400.),
-                    Moment::new(0., 0., 200.),     
+                    Moment::new(0., 0., 200.),
+                    Moment::new(0., 0., 300.),     
+                    Moment::new(0., 0., 100.),  
                 )),
             ));
         })
@@ -41,7 +42,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = unsafe { ICING.clone().unwrap().mass(None) };
-        let target =  50.*0.03 + 50.*(0.04 - 0.03) + 50.*1.05*0.015;
+        let target =  50.*0.04 + 50.*1.05*0.015;
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",
@@ -63,7 +64,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = unsafe { ICING.clone().unwrap().moment() };
-        let target = Moment::new(0., 0., 400.*0.03+200.*0.01+100.*1.05*0.015);
+        let target = Moment::new(0., 0., 200.*0.03+300.*0.01+100.*0.04+100.*1.05*0.015);
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",

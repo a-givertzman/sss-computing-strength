@@ -206,10 +206,7 @@ impl ParsedShipData {
             cargoes.push(ParsedCargoData {
                 name: cargo.name,                
                 mass: cargo.mass.unwrap_or(0.),
-                bound_x: ( 
-                    bound_x(&cargo.bound_x1, &cargo.bound_type)?, 
-                    bound_x(&cargo.bound_x2, &cargo.bound_type)?, 
-                ),
+                bound_x: ( cargo.bound_x1, cargo.bound_x2 ),
                 bound_y: if cargo.bound_y1.is_some() && 
                             cargo.bound_y2.is_some() { Some(( 
                                 cargo.bound_y1.expect("ParsedShipData parse error: no bound_y1"),
@@ -324,7 +321,7 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no const_mass_shift_z for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
-            draught_min: ship_data.get("Draught min").ok_or(format!(
+            draught_min: ship_data.get("Minimum draft").ok_or(format!(
                 "ParsedShipData parse error: no draught_min for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,

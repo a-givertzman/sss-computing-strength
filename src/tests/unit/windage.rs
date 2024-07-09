@@ -30,6 +30,7 @@ mod tests {
                         Moment::from_pos(Position::new(0., 0., 4.,), 1000.),
                         Moment::from_pos(Position::new(0., 0., 2.,), 500.),
                         Moment::from_pos(Position::new(0., 0., 4.,), 500.),
+                        Moment::from_pos(Position::new(0., 0., 2.,), 500.),
                     )),
                     500.,
                     Moment::from_pos(Position::new(0., 0., 1.,), 500.),
