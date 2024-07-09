@@ -65,3 +65,10 @@ impl Bounds {
         self.values.first().expect("Bounds delta error: no values!").length()
     }
 }
+//
+impl<I, O> CalcEval<I, O> for Bounds<I, O> {
+    fn eval(&mut self, context: Rc<RefCell<CalcContext>>) -> O {
+        DisplayState::eval(self, context)
+    }
+}
+

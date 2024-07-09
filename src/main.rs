@@ -11,7 +11,7 @@ use crate::{
     strength::*,
     windage::{IWindage, Windage},
 };
-use context::CalcContext;
+use context::{CalcContext, DisplaySrc, DisplayState};
 use data::api_server::*;
 pub use error::Error;
 use log::info;
@@ -74,12 +74,12 @@ fn execute() -> Result<(), Error> {
  
     let time = Instant::now();
 
- 
+
     // ускорение свободного падения
-    let gravity_g = 9.81;
+    context.borrow_mut().gravity_g = Some(9.81);
 
      // вектор разбиения судна на отрезки
-     let bounds = Rc::new(Bounds::from_frames(&data.bounds));
+     let bounds = Rc::new(Bounds::from_frames(&context.data.bounds));
  
      let mut tanks: Vec<Rc<dyn ITank>> = Vec::new();
      let mut desks: Vec<Rc<dyn IDesk>> = Vec::new();
@@ -924,17 +924,7 @@ fn execute() -> Result<(), Error> {
 fn prepare_context(host: String, port: String, ship_id: usize) -> Result<CalcContext, Error> {
     let mut api_server =
         ApiServer::new("sss-computing".to_owned(), host.to_owned(), port.to_owned());
-    let results: Rc<dyn IResults> = Rc::new(Results::new());
-    let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
-    let data = get_data(&mut api_server, ship_id)?;
-    Ok(CalcContext::new(
-        data,
-        context::calc_context::Results::new(
-            Vec::new(), 
-            results,
-            parameters,
-        )
-    ))
+    Ok(CalcContext::new(get_data(&mut api_server, ship_id)?))
 }
 /*
 /// Чтение данных из стандартного потока ввода

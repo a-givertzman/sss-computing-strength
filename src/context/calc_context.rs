@@ -4,46 +4,32 @@ use crate::{data::structs::ParsedShipData, Bounds, CriterionData, IBulk, IDesk, 
 ///
 /// 
 pub struct CalcContext {
-    pub src: ParsedShipData,
-    pub prep: Prepared, 
-    pub results: Results,
+    pub data: ParsedShipData,
+    pub gravity_g: Option<f64>,
+    pub bounds: Option<Rc<Bounds>>,
+    pub tanks: Option<Rc<Vec<Rc<dyn ITank>>>>,
+    pub desks: Option<Rc<Vec<Rc<dyn IDesk>>>>,
+    pub bulk: Option<Rc<Vec<Rc<dyn IBulk>>>>,
+    pub load_variable: Option<Rc<Vec<Rc<LoadMass>>>>,
+    pub strength_results: Option<Rc<dyn IResults>>,  
+    pub parameters: Option<Rc<dyn IParameters>>,      
+    pub criterion: Option<Vec<CriterionData>>,
 }
 //
 //
 impl CalcContext {
-    pub fn new(src: ParsedShipData, results: Results) -> Self {
-        Self { src, results }
-    }
-}
-///
-#[derive(Clone)]
-pub struct Prepared {
-    pub gravity_g: f64,
-    pub bounds: Rc<Bounds>,
-    pub tanks: Rc<Vec<Rc<dyn ITank>>>,
-    pub desks: Rc<Vec<Rc<dyn IDesk>>>,
-    pub bulk: Rc<Vec<Rc<dyn IBulk>>>,
-    pub load_variable: Rc<Vec<Rc<LoadMass>>>,
-}
-/// 
-#[derive(Clone)]
-pub struct Results {
-    pub criterion: Vec<CriterionData>,
-    pub results: Rc<dyn IResults>,
-    pub parameters: Rc<dyn IParameters>
-}
-//
-//
-impl Results {
-    pub fn new(
-        criterion: Vec<CriterionData>,
-        results: Rc<dyn IResults>,
-        parameters: Rc<dyn IParameters>,
-    ) -> Self {
-        Self {
-            criterion,
-            results,
-            parameters,
+    pub fn new(data: ParsedShipData) -> Self {
+        Self { 
+            data, 
+            gravity_g: None,
+            bounds: None,
+            tanks: None,
+            desks: None,
+            bulk: None,
+            load_variable: None,
+            strength_results: None,
+            parameters: None,            
+            criterion: None,
         }
     }
 }
