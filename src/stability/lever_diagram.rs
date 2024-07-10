@@ -1,6 +1,6 @@
 //! Диаграмма плеч статической и динамической остойчивости.
 use crate::{
-    math::{Curve, Curve2D, ICurve, ICurve2D}, IMass, IParameters, ParameterID, Position
+    math::{Curve, Curve2D, ICurve, ICurve2D}, IShipMoment, IParameters, ParameterID, Position
 };
 
 use super::metacentric_height::IMetacentricHeight;
@@ -13,7 +13,7 @@ type RcOpt<T> = Rc<RefCell<Option<T>>>;
 #[derive(Clone)]
 pub struct LeverDiagram {
     /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
-    mass: Rc<dyn IMass>,
+    ship_moment: Rc<dyn IShipMoment>,
     /// Отстояние центра величины погруженной части судна
     center_draught_shift: Position,
     /// Кривая плечей остойчивости формы для разных осадок
@@ -40,14 +40,14 @@ pub struct LeverDiagram {
 ///
 impl LeverDiagram {
     /// Основной конструктор.
-    /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+    /// * ship_moment - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     /// * center_draught_shift - Отстояние центра величины погруженной части судна
     /// * data - Кривая плечей остойчивости формы для разных осадок
     /// * mean_draught - Средняя осадка
     /// * metacentric_height - Продольная и поперечная исправленная метацентрическая высота.
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
-        mass: Rc<dyn IMass>,
+        ship_moment: Rc<dyn IShipMoment>,
         center_draught_shift: Position,
         data: Curve2D,
         mean_draught: f64,
@@ -55,7 +55,7 @@ impl LeverDiagram {
         parameters: Rc<dyn IParameters>, 
     ) -> Self {
         Self {
-            mass,
+            ship_moment,
             center_draught_shift,
             data,
             mean_draught,
@@ -79,7 +79,7 @@ impl LeverDiagram {
             let angle_rad = angle_deg * std::f64::consts::PI / 180.;
             let v1 = self.data.value(self.mean_draught, angle_deg);
             let v2 = self.metacentric_height.z_g_fix() * angle_rad.sin();
-            let v3 = (self.mass.shift().y() - self.center_draught_shift.y()) * angle_rad.cos();
+            let v3 = (self.ship_moment.shift().y() - self.center_draught_shift.y()) * angle_rad.cos();
             let value = v1 - v2 - v3;
  //           log::info!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}");
             (angle_deg, value)
@@ -160,7 +160,7 @@ impl LeverDiagram {
         let angle_zero = *self
             .angle(0.)
             .first()
-            .unwrap_or(&0.) * angle_zero_signum;
+            .unwrap_or(&0.);
    //     dbg!(angle_zero);
         let ddo = (-90..=90)
                 .map(|angle_deg| {
@@ -180,7 +180,7 @@ impl LeverDiagram {
         *self.diagram.borrow_mut() = Some(dso.iter().zip(ddo.iter()).map(|((a1, v1), (_, v2))| (*a1, *v1, *v2) ).collect::<Vec<_>>());
     //    dbg!(&self.diagram.clone());
         *self.ddo.borrow_mut() = Some(ddo);
-        self.parameters.add(ParameterID::Roll, angle_zero);
+        self.parameters.add(ParameterID::Roll, angle_zero * angle_zero_signum);
     }
 }
 ///
@@ -348,15 +348,15 @@ impl FakeLeverDiagram {
 }
 #[doc(hidden)]
 impl ILeverDiagram for FakeLeverDiagram {
-    /// Углы крена судна соответствующие плечу кренящего момента
+    /// Углы крена судна соответствующие плечу кренящего момента, градусы
     fn angle(&self, _: f64) -> Vec<f64> {
         self.angle.clone()
     }
-    /// Плечо кренящего момента соответствующие углу крена судна (angle >= 0. && angle <= 90.)
+    /// Плечо кренящего момента соответствующие углу крена судна (angle >= 0. && angle <= 90.), м
     fn lever_moment(&self, _: f64) -> f64 {
         self.lever_moment
     }
-    /// Площадь под положительной частью диаграммы статической остойчивости
+    /// Площадь под положительной частью диаграммы статической остойчивости, м*rad
     fn dso_area(&self, angle1: f64, angle2: f64) -> f64 {
         assert!(
             angle1 < angle2,
@@ -364,7 +364,7 @@ impl ILeverDiagram for FakeLeverDiagram {
         );
         self.dso_area
     }
-    /// Максимальное плечо диаграммы статической остойчивости в диапазонеб (м)
+    /// Максимальное плечо диаграммы статической остойчивости в диапазоне, м
     fn dso_lever_max(&self, angle1: f64, angle2: f64) -> f64 {
         assert!(
             angle1 < angle2,

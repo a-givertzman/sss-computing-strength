@@ -31,6 +31,7 @@ pub type FloodingAngleDataArray = DataArray<Pair>;
 pub type EntryAngleDataArray = DataArray<Pair>;
 pub type WaterlineLengthArray = DataArray<Pair>;
 pub type WaterlineBreadthArray = DataArray<Pair>;
+pub type WaterlineAreaArray = DataArray<Pair>;
 pub type VolumeShiftArray = DataArray<Pair>;
 pub type DeltaWindageAreaDataArray = DataArray<Pair>;
 

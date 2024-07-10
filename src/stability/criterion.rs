@@ -13,8 +13,8 @@ pub enum CriterionID {
     Wheather = 1,
     WindStaticHeel = 2,
     AreaLC0_30 = 3,
-    AreaLc0Thetalmax = 4,
-    AreaLC0_40 = 5,
+    AreaLC0_40 = 4,
+    AreaLc0Thetalmax = 5,
     AreaLC30_40 = 6,
     MaximumLC = 7,
     MaximumLcTimber = 8,
@@ -261,7 +261,7 @@ impl Criterion {
     }
     /// Максимум диаграммы статической остойчивости
     pub fn dso_lever(&self) -> CriterionData {
-        let curve = Curve::new_linear(&vec![(105., 0.25), (80., 0.20)]);
+        let curve = Curve::new_linear(&vec![(105., 0.20), (80., 0.25)]);
         CriterionData::new_result(
             CriterionID::MaximumLC,
             self.lever_diagram.dso_lever_max(30., 90.),

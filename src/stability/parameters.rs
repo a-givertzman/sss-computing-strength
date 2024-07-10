@@ -37,6 +37,24 @@ pub enum ParameterID {
     MassIcing = 30, 
     MassWetting = 31, 
     CenterMassX = 32,
+    WindPressure = 33,
+    WindageArea = 34,  
+    WindageAreaLever = 35,
+    StaticWindageHeelingLever = 36,
+    DynamicWindageHeelingLever = 37,
+    StaticWindageHeelingAngle = 38,
+    DynamicWindageHeelingAngle = 39,
+    HeelingAngleOfSecondPointOfIntersectionWith = 40,
+    RollAmplitude = 41,
+    RollPeriod = 42,
+    AreaA = 43,
+    AreaB = 44,
+    OpenDeckEdgeImmersionAngle = 45,
+    AngleOfDownFlooding = 46,
+    SunsetAngle = 47,
+    HeelingMomentDueToTheTransverseShiftOfGrain = 48,
+    HeelingAngleWithMaximumDifference = 49,
+    VesselSpeed = 50,
 }
 /// Набор результатов расчетов для записи в БД
 pub struct Parameters {
@@ -56,6 +74,10 @@ impl IParameters for Parameters {
         self.data.borrow_mut().insert(id, value);
     }
     ///
+    fn get(&self, id: ParameterID) -> Option<f64> {
+        self.data.borrow().get(&id).copied()
+    }
+    ///
     fn take_data(&self) -> Vec<(usize, f64)> {
         self.data.take().into_iter().map(|(k, v)| (k as usize, v)).collect()
     }
@@ -64,6 +86,8 @@ impl IParameters for Parameters {
 pub trait IParameters {
     ///
     fn add(&self, id: ParameterID, value: f64);
+    ///
+    fn get(&self, id: ParameterID) -> Option<f64>;
     ///
     fn take_data(&self) -> Vec<(usize, f64)>;
 }
@@ -75,6 +99,8 @@ pub struct FakeParameters;
 impl IParameters for FakeParameters {
     ///
     fn add(&self, _: ParameterID, _: f64) { }
+    ///
+    fn get(&self, _: ParameterID) -> Option<f64> {None}
     ///
     fn take_data(&self) -> Vec<(usize, f64)> {
         Vec::new()

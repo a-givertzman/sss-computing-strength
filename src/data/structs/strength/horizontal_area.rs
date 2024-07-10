@@ -10,52 +10,32 @@ use crate::data::structs::DataArray;
 /// корпуса судна для расчета прочности. Дополнительно содержат
 /// данные по распределению по длинне.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct HStrAreaData {
+pub struct HStrArea {
     /// Название 
     pub name: String, 
     /// Значение площади, м^2
     pub value: f64,
-    /// Ограничение по оси Х
+    /// Ограничение по оси Х, м
     pub bound_x1: f64,
     pub bound_x2: f64, 
-    /// Тип ограничения, значение в метрах или номера
-    /// физических шпангоутов
-    pub bound_type: String,
 }
 ///
-impl std::fmt::Display for HStrAreaData {
+impl std::fmt::Display for HStrArea {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "HStrAreaData(value:{} bound:({}, {}), bound_type:{})",
-            self.value, self.bound_x1, self.bound_x2, self.bound_type,
+            "HStrArea(value:{} bound:({}, {}))",
+            self.value, self.bound_x1, self.bound_x2
         )
     }
 }
 ///
-pub type HStrAreaDataArray = DataArray<HStrAreaData>;
+pub type HStrAreaArray = DataArray<HStrArea>;
 ///
-impl HStrAreaDataArray {
+impl HStrAreaArray {
     /// Преобразование данных в массив
-    pub fn data(self) -> Vec<HStrAreaData> {
+    pub fn data(self) -> Vec<HStrArea> {
         self.data
     }  
 }
-/// Площадь обледенения
-#[derive(Debug)]
-pub struct ParsedHStrArea {
-    /// Значение площади, м^2
-    pub value: f64,  
-    /// Ограничение по оси Х
-    pub bound_x: (f64, f64),
-}
-///
-impl std::fmt::Display for ParsedHStrArea {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "ParsedHStrArea(area_value:{} bound:({}, {}))",
-            self.value, self.bound_x.0, self.bound_x.1,
-        )
-    }
-}
+

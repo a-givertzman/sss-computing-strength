@@ -34,7 +34,7 @@ mod tests {
             Curve::new_linear(&vec![(0., 1.), (1., 1.)]),
             Curve::new_linear(&vec![(0., 0.1), (10., 0.1)]),
             Rc::new(FakeRollingPeriod::new(5., 1.)),
-        ).calculate();
+        ).calculate().1;
 
         let target = 8.41378;
         assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);

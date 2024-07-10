@@ -1,5 +1,3 @@
-use serde::{Deserialize, Serialize};
-
 pub mod load_constant;
 pub mod compartment;
 pub mod cargo;

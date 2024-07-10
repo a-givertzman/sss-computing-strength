@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{icing::FakeIcingStab, math::*, windage::*};
+    use crate::{icing_stab::FakeIcingStab, math::*, windage::*};
 
     static INIT: Once = Once::new();
 
@@ -30,6 +30,7 @@ mod tests {
                         Moment::from_pos(Position::new(0., 0., 4.,), 1000.),
                         Moment::from_pos(Position::new(0., 0., 2.,), 500.),
                         Moment::from_pos(Position::new(0., 0., 4.,), 500.),
+                        Moment::from_pos(Position::new(0., 0., 2.,), 500.),
                     )),
                     500.,
                     Moment::from_pos(Position::new(0., 0., 1.,), 500.),
