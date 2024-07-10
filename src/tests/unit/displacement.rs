@@ -1,11 +1,11 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{
+    use crate::strength::{
         displacement::*,
         frame::Frame,
-        math::{bound::Bound, curve::Curve},
     };
+    use crate::math::{bound::Bound, curve::Curve};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::time::Duration;
     use testing::stuff::max_test_duration::TestDuration;
@@ -20,11 +20,11 @@ mod tests {
         test_duration.run().unwrap();
 
         let frames = vec![
-            Frame::new(-10., Curve::new(&vec![(0., 0.), (10., 0.)])),
-            Frame::new(10., Curve::new(&vec![(0., 0.), (10., 40.)])),
+            Frame::new(-10., Curve::new_linear(&vec![(0., 0.), (10., 0.)])),
+            Frame::new(10., Curve::new_linear(&vec![(0., 0.), (10., 40.)])),
         ];
 
-        let result = Displacement::new(frames,).value(Bound::new(-10., 0.), 10.);
+        let result = Displacement::new(frames,).value(Bound::new(-10., 0.), 10., 10.);
         let target = 100.;
         assert!(
             result == target,

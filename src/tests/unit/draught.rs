@@ -1,12 +1,14 @@
 #[cfg(test)]
 
 mod tests {
+
+    use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::time::Duration;
-    use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    
+
+    use crate::{draught::{Draught, IDraught}, trim::FakeTrim};
+
     #[test]
-    #[ignore = "TODO"]
     fn draught() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
@@ -14,63 +16,24 @@ mod tests {
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
-
-/*      TODO 
-        let ship_length = 20.;
-
-         // отстояние центра величины погруженной части судна
-        let center_shift = PosShift::new(
-            Curve::new(vec![(0., 1.), (10., 1.)]),
-            Curve::new(vec![(0., 0.), (10., 0.)]),
-            Curve::new(vec![(0., 0.), (10., 0.)]),
-        );
-        // поперечный метацентрические радиус
-        let rad_long = Curve::new(vec![(0., 0.), (10., 1.)]);
-
-        // отстояние центра тяжести ватерлинии по длине от миделя
-        let center_waterline = Curve::new(vec![(0., 0.), (10., 1.)]);
-
-        // средняя осадка
-        let mean_draught = Curve::new(vec![(0., 0.), (1000., 1.), (10000., 10.)]);
-
-        let bounds = vec![Bound::new(-10., 10.)];
-        let mass = Mass::new(
-            vec![Rc::new(Box::new(LoadSpace::new(
-                Bound::new(-10., 10.),
-                Position::new(0., 0., 0.),
-                10.,
-            )))],
-            bounds.clone(),
-        );
-
-        let frames = vec![
-            Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-            Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-            Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-        ];
-
-
+        let ship_length = 118.39;
         let result = Draught::new(
-            
-            
-            
-            Trim::new(
-                1., // плотность окружающей воды
-                mass,         // все грузы судна
-                ship_length,   // длинна судна
-                center_shift,  // отстояние центра величины погруженной части судна
-                rad_long,     // продольный метацентрические радиус
-            ),
-            Displacement::new(frames, ship_length),
             ship_length,
-            bounds,
-            center_waterline,
-            mean_draught,
-        ).values();
+            1.6562565987303715,
+            -0.862,
+            Box::new(FakeTrim::from_angle(-0.3013717957692749, ship_length)),
+            None,
+        )
+        .value(59.194);
+        let target = 1.34;
 
-        let target = vec![1.];
-        assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
-*/
+        assert!(
+            (result - target).abs() < result.abs() * 0.001, //TODO
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
+
         test_duration.exit();
     }
 }

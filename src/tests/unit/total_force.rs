@@ -1,15 +1,12 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{
-        draught::FakeDraught,
-        mass::FakeMass,
-        math::{position::Position, vec::vec::MultipleSingle},
-        total_force::{ITotalForce, TotalForce},
-    };
+
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
+
+    use crate::{math::*, strength::{total_force::*, volume::*}, FakeMass};
 
     #[test]
     fn total_force() {
@@ -25,10 +22,9 @@ mod tests {
             Rc::new(FakeMass::new(
                 30.,
                 vec![20.; 10],
-                Position::new(0., 0., 0.),
-                0.,
             )),
-            FakeDraught::new(vec![5., 25., 25., 25., 25., 25., 25., 25., 15., 5.]),
+            1.0,
+            FakeVolume::new(vec![5., 25., 25., 25., 25., 25., 25., 25., 15., 5.]),
             gravity_g,
         )
         .values();

@@ -1,13 +1,11 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{
-        shear_force::{IShearForce, ShearForce},
-        total_force::FakeTotalForce,
-    };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::time::Duration;
     use testing::stuff::max_test_duration::TestDuration;
+
+    use crate::strength::{shear_force::*, total_force::*};
 
     #[test]
     fn shear_force() {
@@ -23,7 +21,7 @@ mod tests {
         ]))
         .values();
         let target = Vec::from([
-            0.0, 15.0, 10.0, 5.0, 0.0, -5.0, -10.0, -15.0, -20.0, -15.0, 0.0,
+            0.0, -15.0, -10.0, -5.0, -0.0, 5.0, 10.0, 15.0, 20.0, 15.0, 0.0,
         ]);
 
         assert!(

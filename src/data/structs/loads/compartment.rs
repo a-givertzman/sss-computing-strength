@@ -1,0 +1,117 @@
+//! Промежуточные структуры для serde_json для парсинга данных груза
+use crate::data::structs::DataArray;
+use serde::{Deserialize, Serialize};
+
+
+/// Тип элементов погрузки судна
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+pub enum CompartmentType {
+    #[serde(alias="ballast")]
+    Ballast,
+    #[serde(alias="store")]
+    Store,
+    #[serde(alias="cargo")]
+    Cargo,
+}
+///
+impl std::fmt::Display for CompartmentType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                CompartmentType::Ballast => "Ballast",
+                CompartmentType::Store => "Store", 
+                CompartmentType::Cargo => "Cargo", 
+            },
+        )
+    }
+}
+/// Физический тип груза судна
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+pub enum PhysicalType {
+    #[serde(alias="bulk")]
+    Bulk,
+    #[serde(alias="liquid")]
+    Liquid,
+    #[serde(alias="solid")]
+    Solid,
+}
+///
+impl std::fmt::Display for PhysicalType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                PhysicalType::Bulk => "Bulk",
+                PhysicalType::Liquid => "Liquid", 
+                PhysicalType::Solid => "Solid", 
+            },
+        )
+    }
+}
+/// Нагрузка судна: цистерны и трюмы  
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct CompartmentData {
+    /// ID груза
+    pub space_id: usize,
+    /// Имя груза
+    pub name: String,
+    /// Общая масса, т
+    pub mass: Option<f64>,
+    /// Плотность t/m^3
+    pub density: Option<f64>,
+    /// Объем m^3
+    pub volume: Option<f64>,
+    /// Диапазон по длинне, м
+    pub bound_x1: f64,
+    pub bound_x2: f64,
+    /// Отстояние центра величины, м
+    pub mass_shift_x: Option<f64>,
+    pub mass_shift_y: Option<f64>,
+    pub mass_shift_z: Option<f64>,
+    /// Момент инерции площади ВЛ, м4
+    pub m_f_s_y: Option<f64>,
+    pub m_f_s_x: Option<f64>,
+    /// Кренящий момент от смещения сыпучего груза, м4
+    pub grain_moment: Option<f64>,
+    /// Тип элементов погрузки судна
+    pub loading_type: CompartmentType,
+    /// Физический тип груза судна
+    pub physical_type: PhysicalType,
+}
+///
+impl std::fmt::Display for CompartmentData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "CompartmentData(space_id:{} name:{} mass:{} density:{} volume:{} bound:({}, {}) \
+             mass_shift:({}, {}, {}) m_f_s_y:{} m_f_s_x:{} grain_moment:{} loading_type:{} physical_type:{})",
+            self.space_id,
+            self.name,
+            self.mass.unwrap_or(0.),
+            self.density.unwrap_or(0.),
+            self.volume.unwrap_or(0.),
+            self.bound_x1,
+            self.bound_x2,
+            self.mass_shift_x.unwrap_or(0.),
+            self.mass_shift_y.unwrap_or(0.),
+            self.mass_shift_z.unwrap_or(0.),
+            self.m_f_s_y.unwrap_or(0.),
+            self.m_f_s_x.unwrap_or(0.),
+            self.grain_moment.unwrap_or(0.),
+            self.loading_type,
+            self.physical_type,
+        )
+    }
+}
+/// Массив данных по грузам
+pub type CompartmentArray = DataArray<CompartmentData>;
+///
+impl CompartmentArray {
+    ///
+    pub fn data(self) -> Vec<CompartmentData> {
+        self.data
+    }
+}
