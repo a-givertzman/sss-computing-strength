@@ -1,15 +1,28 @@
 //! Поправка к продольной метацентрической высоте на  
 //! влияние свободной поверхности жидкости в цистернах 
+use std::ops::Add;
+
 use crate::math::FreeSurfaceMoment;
 
 /// Поправка к продольной метацентрической высоте на  
 /// влияние свободной поверхности жидкости в цистернах 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct DeltaMH {
     /// Продольная составляющая
     pub long: f64, 
     /// Поперечная составляющая
     pub trans: f64,
+}
+
+impl Add for DeltaMH {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            long: self.long + rhs.long,
+            trans: self.trans + rhs.trans,
+        }
+    }
 }
 
 impl DeltaMH {

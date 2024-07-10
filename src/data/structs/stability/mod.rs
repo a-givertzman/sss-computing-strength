@@ -9,6 +9,7 @@ pub mod vertical_area;
 pub mod ship_type;
 pub mod navigation_area;
 pub mod icing;
+pub mod draft_mark;
 
 pub use horizontal_area::*;
 pub use pantocaren::*;
@@ -17,6 +18,7 @@ pub use vertical_area::*;
 pub use ship_type::*;
 pub use navigation_area::*;
 pub use icing::*;
+pub use draft_mark::*;
 
 ///
 use super::{DataArray, Pair};

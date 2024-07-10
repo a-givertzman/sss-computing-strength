@@ -1,7 +1,7 @@
 //! Исправленная метацентрическая высота
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{mass::IMass, math::*, ITank};
+use crate::{math::*, IMass, IParameters, IShipMoment, ITank, LoadingType, ParameterID, Parameters};
 /// Продольная и поперечная исправленная метацентрическая высота.
 #[derive(Clone)]
 pub struct MetacentricHeight {
@@ -15,6 +15,10 @@ pub struct MetacentricHeight {
     tanks: Vec<Rc<dyn ITank>>,
     /// Все грузы судна
     mass: Rc<dyn IMass>,
+    /// Момент массы судна
+    moment: Rc<dyn IShipMoment>,
+    /// Набор результатов расчетов для записи в БД
+    parameters: Rc<dyn IParameters>,
     /// Поперечная метацентрическая высота без учета поправки   
     /// на свободные поверхности жидких грузов
     h_trans_0: Rc<RefCell<Option<f64>>>,
@@ -33,12 +37,16 @@ impl  MetacentricHeight {
     /// * rad_trans - Поперечный метацентрические радиус
     /// * tanks - Все жидкие грузы судна
     /// * mass - Все грузы судна
+    /// * moment - Момент массы судна
+    /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         center_draught_shift: Position, 
         rad_long: f64,                 
         rad_trans: f64,                
         tanks: Vec<Rc<dyn ITank>>,
-        mass: Rc<dyn IMass>,           
+        mass: Rc<dyn IMass>,    
+        moment: Rc<dyn IShipMoment>,
+        parameters: Rc<dyn IParameters>       
     ) -> Self {
         Self {
             center_draught_shift,
@@ -46,6 +54,8 @@ impl  MetacentricHeight {
             rad_trans,
             tanks,
             mass,
+            moment,
+            parameters,
             h_long_fix: Rc::new(RefCell::new(None)),
             h_trans_0: Rc::new(RefCell::new(None)),
             h_trans_fix: Rc::new(RefCell::new(None)),
@@ -58,34 +68,53 @@ impl  MetacentricHeight {
         // Аппликата продольного метацентра (2)
         let Z_m = self.center_draught_shift.z() + self.rad_long;
         // Поправка к продольной метацентрической высоте на влияние
-        // свободной поверхности жидкости в цистернах (2)
-        let moment_surface = self
+        // свободной поверхности жидкости в цистернах балласта и запасов (2)
+        let delta_m_h_ballast = DeltaMH::from_moment(self
         .tanks
         .iter()
+        .filter(|v| v.load_type() == LoadingType::Ballast )
         .map(|c| c.moment_surface())
-        .sum::<FreeSurfaceMoment>();
-        let delta_m_h = DeltaMH::from_moment(moment_surface, self.mass.sum());
-        //let delta_m_h = self.mass.delta_m_h();
+        .sum::<FreeSurfaceMoment>(), self.mass.sum());
+        let delta_m_h_store = DeltaMH::from_moment(self
+        .tanks
+        .iter()
+        .filter(|v| v.load_type() != LoadingType::Ballast )
+        .map(|c| c.moment_surface())
+        .sum::<FreeSurfaceMoment>(), self.mass.sum());
+        let delta_m_h = delta_m_h_ballast + delta_m_h_store;
         // Продольная метацентрическая высота без учета влияния
         // поправки на влияние свободной поверхности (3)
-        let h_long_0 = Z_m - self.mass.shift().z();
+        let h_long_0 = Z_m - self.moment.shift().z();
         // Продольная исправленная метацентрическая высота (3)
         let h_long_fix = h_long_0 - delta_m_h.long();
         // Аппликата поперечного метацентра (8)
         let z_m = self.center_draught_shift.z() + self.rad_trans; //
-                                                                  // Поперечная метацентрическая высота без учета влияния
-                                                                  // поправки на влияние свободной поверхности (9)
-        let h_trans_0 = z_m - self.mass.shift().z();
+        // Поперечная метацентрическая высота без учета влияния
+        // поправки на влияние свободной поверхности (9)
+        let h_trans_0 = z_m - self.moment.shift().z();
         // Поперечная исправленная метацентрическая высота (9)
         let h_trans_fix = h_trans_0 - delta_m_h.trans();
         // Исправленное отстояние центра масс судна по высоте (10)
-        let z_g_fix: f64 = self.mass.shift().z() + delta_m_h.trans();
-        log::info!("\t MetacentricHeight mass:{} center_draught:{} rad_trans:{} rad_long:{} Z_m:{Z_m} H_0:{h_long_0} H:{h_long_fix} z_m:{z_m} h_0:{h_trans_0} h:{h_trans_fix} z_g_fix:{z_g_fix}", 
-        self.mass.sum(), self.center_draught_shift, self.rad_trans, self.rad_long );
+        let z_g_fix: f64 = self.moment.shift().z() + delta_m_h.trans();
+        log::info!("\t MetacentricHeight mass:{} shift_z:{}center_draught:{} rad_trans:{} rad_long:{} delta_m_h_ballast:{} delta_m_h_store:{} Z_m:{Z_m} H_0:{h_long_0} H:{h_long_fix} z_m:{z_m} h_0:{h_trans_0} h:{h_trans_fix} z_g_fix:{z_g_fix}", 
+            self.mass.sum(), self.moment.shift().z(), self.center_draught_shift, self.rad_trans, self.rad_long, delta_m_h_ballast.trans, delta_m_h_store.trans() );
         *self.h_long_fix.borrow_mut() = Some(h_long_fix);
         *self.h_trans_0.borrow_mut() = Some(h_trans_0);
         *self.h_trans_fix.borrow_mut() = Some(h_trans_fix);
         *self.z_g_fix.borrow_mut() = Some(z_g_fix);
+        self.parameters.add(ParameterID::CenterMassZFix, z_g_fix);
+        self.parameters.add(ParameterID::MetacentricLongRadZ, Z_m);
+        self.parameters.add(ParameterID::MetacentricTransRadZ, z_m);
+        self.parameters.add(ParameterID::MetacentricTransBallast, delta_m_h_ballast.trans());
+        self.parameters.add(ParameterID::MetacentricLongBallast, delta_m_h_ballast.long());
+        self.parameters.add(ParameterID::MetacentricTransStore, delta_m_h_store.trans());
+        self.parameters.add(ParameterID::MetacentricLongStore, delta_m_h_store.long());
+        self.parameters.add(ParameterID::MetacentricTransRad, self.rad_trans);
+        self.parameters.add(ParameterID::MetacentricLongRad, self.rad_long);
+        self.parameters.add(ParameterID::MetacentricTransHeight, h_trans_0);
+        self.parameters.add(ParameterID::MetacentricTransHeightFix, h_trans_fix);
+        self.parameters.add(ParameterID::MetacentricLongHeight, h_long_0);
+        self.parameters.add(ParameterID::MetacentricLongHeightFix, h_long_fix);
     }
 }
 ///

@@ -43,7 +43,7 @@ impl FrameAreaDataArray {
 /// Шпангоут
 #[derive(Debug, PartialEq, PartialOrd)]
 pub struct ParsedFrameData {
-    /// Координата по х относительно кормы
+    /// Координата по х относительно миделя
     pub x: f64,
     /// кривая погружаемой площади
     pub immersion_area: Vec<(f64, f64)>,

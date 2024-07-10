@@ -1,7 +1,7 @@
 //! Критерий крена от смещения зерна
 
 use std::{f64::consts::PI, rc::Rc};
-use crate::{ILeverDiagram, IBulk, IMass};
+use crate::{IBulk, ILeverDiagram, IMass, IParameters, ParameterID};
 
 /// Критерий крена от смещения зерна
 pub struct Grain {
@@ -13,6 +13,8 @@ pub struct Grain {
     mass: Rc<dyn IMass>,  
     /// Диаграмма плеч статической и динамической остойчивости
     lever_diagram: Rc<dyn ILeverDiagram>, 
+    /// Набор результатов расчетов для записи в БД
+    parameters: Rc<dyn IParameters>, 
     /// Угол крена от смещения зерна
     angle: Option<(f64, f64)>,   
     /// Остаточная площадь между кривой кренящих и
@@ -26,19 +28,22 @@ impl Grain {
     /// * loads_bulk - Все навалочные смещаемые грузы судна
     /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     /// * lever_diagram - Диаграмма плеч статической и динамической остойчивости
+    /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         flooding_angle: f64, 
         loads_bulk: Rc<Vec<Rc<dyn IBulk>>>,
         mass: Rc<dyn IMass>,  
         lever_diagram: Rc<dyn ILeverDiagram>, 
+        parameters: Rc<dyn IParameters>,
     ) -> Self {
         Self {
             flooding_angle,
             loads_bulk,
             mass,
             lever_diagram,
+            parameters,
             angle: None,
-            area: None,
+            area: None,            
         }
     }
     /// Расчет угла крена и остаточной площади между кривой кренящих и
@@ -97,6 +102,8 @@ impl Grain {
         self.area = Some(result_area);
         log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} first_angle:{first_angle} angle_delta_max:{angle_delta_max}
             second_angle:{second_angle} dso_area:{dso_area} grain_area:{grain_area} result_area:{result_area}");
+        self.parameters.add(ParameterID::HeelingMomentDueToTheTransverseShiftOfGrain, m_grain);
+        self.parameters.add(ParameterID::HeelingAngleWithMaximumDifference, angle_delta_max);
     }
 
 }

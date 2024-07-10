@@ -1,7 +1,8 @@
 //! Результирующая нагрузка на шпацию
 use std::rc::Rc;
 
-use crate::{mass::*, math::*};
+use crate::math::*;
+use super::mass::*;
 use super::volume::IVolume;
 
 /// Результирующая нагрузка на шпацию, сумма сил

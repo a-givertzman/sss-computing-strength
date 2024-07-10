@@ -8,12 +8,13 @@ use crate::{
     IStability, IWind,
 };
 ///
-enum CriterionID {
+#[derive(Hash, Eq, PartialEq)]
+pub enum CriterionID {
     Wheather = 1,
     WindStaticHeel = 2,
     AreaLC0_30 = 3,
-    AreaLc0Thetalmax = 4,
-    AreaLC0_40 = 5,
+    AreaLC0_40 = 4,
+    AreaLc0Thetalmax = 5,
     AreaLC30_40 = 6,
     MaximumLC = 7,
     MaximumLcTimber = 8,
@@ -26,30 +27,6 @@ enum CriterionID {
     HeelGrainDisplacement = 15,
     AreaLcGrainDisplacement = 16,
     MinMetacentricHeightSubdivIndex = 17,
-}
-///
-impl From<CriterionID> for usize {
-    fn from(criterion_id: CriterionID) -> Self {
-        match criterion_id {
-            CriterionID::Wheather => 1,
-            CriterionID::WindStaticHeel => 2,
-            CriterionID::AreaLC0_30 => 3,
-            CriterionID::AreaLc0Thetalmax => 4,
-            CriterionID::AreaLC0_40 => 5,
-            CriterionID::AreaLC30_40 => 6,
-            CriterionID::MaximumLC => 7,
-            CriterionID::MaximumLcTimber => 8,
-            CriterionID::MaximumLcIcing => 9,
-            CriterionID::HeelMaximumLC => 10,
-            CriterionID::HeelFirstMaximumLC => 11,
-            CriterionID::MinMetacentricHight => 12,
-            CriterionID::Acceleration => 13,
-            CriterionID::HeelTurning => 14,
-            CriterionID::HeelGrainDisplacement => 15,
-            CriterionID::AreaLcGrainDisplacement => 16,
-            CriterionID::MinMetacentricHeightSubdivIndex => 17,
-        }
-    }
 }
 /// Результат проверки критерия
 pub struct CriterionData {
@@ -67,7 +44,7 @@ impl CriterionData {
     /// Конструктор при наличии результата
     pub fn new_result(criterion_id: CriterionID, result: f64, target: f64) -> Self {
         Self {
-            criterion_id: criterion_id.into(),
+            criterion_id: criterion_id as usize,
             result,
             target,
             error_message: None,
@@ -76,7 +53,7 @@ impl CriterionData {
     /// Конструктор при наличии ошибке расчета
     pub fn new_error(criterion_id: CriterionID, error_message: String) -> Self {
         Self {
-            criterion_id: criterion_id.into(),
+            criterion_id: criterion_id as usize,
             result: 0.,
             target: 0.,
             error_message: Some(error_message),
@@ -103,8 +80,8 @@ pub struct Criterion {
     ship_length: f64,
     /// Ширина судна
     breadth: f64,
-    /// Средняя осадка
-    mean_draught: f64,
+    /// Высота борта, м
+    moulded_depth: f64, 
     /// Минимальная допустимая метацентрическая высота деления на отсеки
     h_subdivision: f64,
     /// Статический угол крена от действия постоянного ветра.
@@ -129,7 +106,7 @@ impl Criterion {
     /// Главный конструктор:
     /// * ship_type - Тип судна
     /// * breadth - Ширина судна
-    /// * mean_draught - Средняя осадка
+    /// * moulded_depth - Высота борта, м
     /// * h_subdivision - Минимальная допустимая метацентрическая высота деления на отсеки
     /// * navigation_area - Район плавания судна
     /// * have_timber - Признак наличия леса
@@ -155,7 +132,7 @@ impl Criterion {
         flooding_angle: f64,
         ship_length: f64,
         breadth: f64,
-        mean_draught: f64,
+        moulded_depth: f64, 
         h_subdivision: f64,
         wind: Rc<dyn IWind>,
         lever_diagram: Rc<dyn ILeverDiagram>,
@@ -165,7 +142,7 @@ impl Criterion {
         circulation: Rc<dyn ICirculation>,
         grain: Box<dyn IGrain>,
     ) -> Self {
-        assert!(mean_draught > 0., "mean_draught {mean_draught} > 0.");
+        assert!(moulded_depth > 0., "moulded_depth {moulded_depth} > 0.");
         Self {
             ship_type,
             navigation_area,
@@ -176,7 +153,7 @@ impl Criterion {
             flooding_angle,
             ship_length,
             breadth,
-            mean_draught,
+            moulded_depth,
             h_subdivision,
             wind,
             stability,
@@ -205,13 +182,13 @@ impl Criterion {
             out_data.push(self.dso_lever_icing());
         }
         out_data.append(&mut self.dso_lever_max_angle());
-        if self.have_cargo {
+ //       if self.have_cargo {
             out_data.push(self.metacentric_height());
-        }
+    //    }
         if self.navigation_area == NavigationArea::R2Rsn
             || self.navigation_area == NavigationArea::R2Rsn45
             || self.metacentric_height.h_trans_fix().sqrt() / self.breadth > 0.08
-            || self.breadth / self.mean_draught > 2.5
+            || self.breadth / self.moulded_depth > 2.5
         {
             out_data.push(self.accelleration());
         }
@@ -284,7 +261,7 @@ impl Criterion {
     }
     /// Максимум диаграммы статической остойчивости
     pub fn dso_lever(&self) -> CriterionData {
-        let curve = Curve::new_linear(&vec![(105., 0.25), (80., 0.20)]);
+        let curve = Curve::new_linear(&vec![(105., 0.20), (80., 0.25)]);
         CriterionData::new_result(
             CriterionID::MaximumLC,
             self.lever_diagram.dso_lever_max(30., 90.),
@@ -311,7 +288,7 @@ impl Criterion {
     pub fn dso_lever_max_angle(&self) -> Vec<CriterionData> {
         let mut result = Vec::new();
         let angles = self.lever_diagram.max_angles();
-        let b_div_d = self.breadth / self.mean_draught;
+        let b_div_d = self.breadth / self.moulded_depth;
         let mut target = 30.;
         if b_div_d > 2. {
             let k = match self.stability.k() {
@@ -365,50 +342,6 @@ impl Criterion {
         result
     }
     /// Метацентрическая высота
-    /*     /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    pub fn dso_lever_max_angle(&self) -> Vec<CriterionData> {
-        let mut result = Vec::new();
-        let angles = self.lever_diagram.max_angles();
-        let b_div_d = self.breadth / self.mean_draught;
-        let mut target = if angles.len() > 1 {
-            25.
-        } else {
-            30.
-        };
-        if b_div_d > 2. {
-            let k = match self.stability.k() {
-                Ok(k) => k,
-                Err(error) => {
-                    result.push(CriterionData::new_error(CriterionID::HeelMaximumLC, error.to_string()));
-                    return result;
-                }
-            };
-            target = target - (40. * (b_div_d.min(2.5) - 2.) * (k.min(1.5) - 1.) * 0.5).round();
-        }
-        if b_div_d > 2.5 {
-            target = 15.;
-            if let Some(angle) = angles.first() {
-                result.push(CriterionData::new_result(CriterionID::HeelMaximumLC, angle.0, target));
-
-                let src_area = self.lever_diagram.dso_area(0., angle.0);
-                let target_area = if angle.0 <= 15.0 {
-                    0.07
-                } else if angle.0 >= 30.0 {
-                    0.055
-                } else {
-                    0.05 + 0.001 * (30.0 - angle.0)
-                };
-                result.push(CriterionData::new_result(CriterionID::AreaLc0Thetalmax, src_area, target_area));
-            } else {
-                result.push(CriterionData::new_error(
-                    CriterionID::HeelMaximumLC,
-                    "Нет угла соответствующего максимуму DSO для текущих условий".to_owned(),
-                ));
-            }
-        }
-        result
-    }
-    /// Метацентрическая высота */
     pub fn metacentric_height(&self) -> CriterionData {
         // Все суда
         let target = if self.have_grain {

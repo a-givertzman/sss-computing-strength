@@ -9,7 +9,7 @@ use super::DataArray;
 /// корпуса судна для расчета остойчивости. Дополнительно содержат 
 /// смещение центра поверхности.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct HStabAreaData {
+pub struct HStabArea {
     /// Название 
     pub name: String, 
     /// Значение площади, м^2
@@ -20,21 +20,21 @@ pub struct HStabAreaData {
     pub shift_z: f64,  
 }
 ///
-impl std::fmt::Display for HStabAreaData {
+impl std::fmt::Display for HStabArea {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "HStabAreaData(value:{} shift:({} {} {}))",
+            "HStabArea(value:{} shift:({} {} {}))",
             self.value, self.shift_x, self.shift_y, self.shift_z
         )
     }
 }
 ///
-pub type HStabAreaDataArray = DataArray<HStabAreaData>;
+pub type HStabAreaArray = DataArray<HStabArea>;
 ///
-impl HStabAreaDataArray {
+impl HStabAreaArray {
     /// Преобразование данных в массив
-    pub fn data(self) -> Vec<HStabAreaData> {
+    pub fn data(self) -> Vec<HStabArea> {
         self.data
     }  
 }

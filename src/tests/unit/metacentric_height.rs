@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{mass::FakeMass, math::Position, stability::metacentric_height::MetacentricHeight, IMetacentricHeight};
+    use crate::{math::Position, stability::metacentric_height::MetacentricHeight, FakeMass, FakeParameters, FakeShipMoment, IMetacentricHeight};
 
     static INIT: Once = Once::new();
 
@@ -14,20 +14,21 @@ mod tests {
 
     fn init_once() {
         INIT.call_once(|| {
-            let mass = Rc::new(FakeMass::new(
-                1000.0,
-                vec![0.],
-                Position::new(1.0, 0., 2.),
-                Position::new(0., 0., 0.,), 
-            ));
-
             unsafe {
                 HEIGHT.replace(MetacentricHeight::new(
                     Position::new(-1., 0., 2.),
                     1000.,
                     100.,
                     Vec::new(),
-                    mass,               
+                    Rc::new(FakeMass::new(
+                        1000.0,
+                        vec![0.],
+                    )),
+                    Rc::new(FakeShipMoment::new(
+                        Position::new(1.0, 0., 2.),
+                        Position::new(0., 0., 0.,), 
+                    )), 
+                    Rc::new(FakeParameters{}),             
                 ));
             }
         })

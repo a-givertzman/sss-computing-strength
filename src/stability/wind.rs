@@ -1,6 +1,6 @@
 //! Расчет плеча кренящего момента от давления ветра
 use std::rc::Rc;
-use crate::{mass::IMass, windage::IWindage};
+use crate::{windage::IWindage, IMass, IParameters, ParameterID};
 
 /// Расчет плеча кренящего момента от давления ветра
 pub struct Wind {
@@ -14,6 +14,8 @@ pub struct Wind {
     g: f64,
     /// Все грузы судна
     mass: Rc<dyn IMass>,
+    /// Набор результатов расчетов для записи в БД
+    parameters: Rc<dyn IParameters>, 
 }
 ///
 impl Wind {
@@ -24,12 +26,14 @@ impl Wind {
     /// * z_v: f64, Плечо парусности
     /// * g: f64,   Ускорение свободного падения
     /// * mass: Rc<dyn IMass>, Все грузы судна
+    /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         p_v: f64,   
         m: f64,          
         windage: Rc<dyn IWindage>,
         g: f64,             
         mass: Rc<dyn IMass>, 
+        parameters: Rc<dyn IParameters>, 
     ) -> Self {
         Self {
             p_v,
@@ -37,6 +41,7 @@ impl Wind {
             windage,
             g,
             mass,
+            parameters,
         }
     }
 }
@@ -44,13 +49,20 @@ impl Wind {
 impl IWind for Wind {
     /// Плечо кренящего момента постоянного ветра
     fn arm_wind_static(&self) -> f64 {
-        log::info!("\t Wind arm_wind_static mass_sum:{} p_v:{} a_v:{}  z_v:{}",
+        let res = (self.p_v * self.windage.a_v() * self.windage.z_v()) / (1000. * self.g * self.mass.sum());
+        log::info!("\t Wind arm_wind_static mass_sum:{} p_v:{} a_v:{}  z_v:{} res:{res}",
         self.mass.sum(), self.p_v, self.windage.a_v(), self.windage.z_v(),);
-        (self.p_v * self.windage.a_v() * self.windage.z_v()) / (1000. * self.g * self.mass.sum())
+        self.parameters.add(ParameterID::WindPressure, self.p_v);
+        self.parameters.add(ParameterID::WindageArea, self.windage.a_v());
+        self.parameters.add(ParameterID::WindageAreaLever, self.windage.z_v());
+        self.parameters.add(ParameterID::StaticWindageHeelingLever, res);
+        res
     }
     /// Плечо кренящего момента порыва ветра
-    fn arm_wind_dynamic(&self) -> f64 {
-        (1. + self.m) * self.arm_wind_static()
+    fn arm_wind_dynamic(&self) -> f64 {        
+        let res = (1. + self.m) * self.arm_wind_static();
+        self.parameters.add(ParameterID::DynamicWindageHeelingLever, res);
+        res
     }
 }
 #[doc(hidden)]

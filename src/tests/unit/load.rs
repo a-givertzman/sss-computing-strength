@@ -22,6 +22,7 @@ mod tests {
             20., 
             Bound::new(-1., 3.),
             Some(Position::new(1., 0., 0.)), 
+            LoadingType::Ballast,
         ).value(Some(Bound::new(1., 3.)));
         let target = 10.;
         assert!(
@@ -47,6 +48,7 @@ mod tests {
             20.,
             Bound::new(-1., 3.), 
             Some(Position::new(1., 0., 0.)), 
+            LoadingType::Ballast,
         ).moment();
         let target = Moment::new(20., 0., 0.);
         assert!(
