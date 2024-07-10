@@ -6,7 +6,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{moment::*, math::*, strength::trim::*, Displacement, Frame};
+    use crate::{math::*, strength::trim::*, Displacement, FakeMass, Frame};
 
     #[test]
     fn trim() {
@@ -27,10 +27,8 @@ mod tests {
             0.,
             0.3,
             Rc::new(FakeMass::new(
-                    100.0,
-                    vec![24., 25., 25., 26.,],
-                    Position::new(0., 0., 0.),
-                    Position::new(0., 0., 0.,),
+                100.0,
+                vec![24., 25., 25., 26.,],
             )),
             Rc::new(Displacement::new(frames,)), 
             Rc::new(Bounds::from_n(20., 4)),

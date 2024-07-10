@@ -24,6 +24,7 @@ mod rolling_period;
 mod rolling_amplitude;
 mod windage;
 mod icing_mass;
+mod icing_moment;
 mod acceleration;
 mod circulation;
 //mod grain;

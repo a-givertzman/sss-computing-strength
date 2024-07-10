@@ -41,12 +41,13 @@ impl IIcingMoment for IcingMoment {
         let m_ice_v = moment_v.scale( (1. + coef_v_ds_area) * mass_v );
         let m_ice_h_desc = self.area_stability.moment_h().scale( self.icing_stab.mass_desc_h() );
         let moment_timber_h = self.area_stability.moment_timber_h();
+        let delta_moment_timber_h = self.area_stability.delta_moment_timber_h();
         let delta_p_timber_h = self.icing_stab.mass_timber_h() - self.icing_stab.mass_desc_h();
-        let delta_m_ice_timber_h = moment_timber_h.scale(delta_p_timber_h);
+        let delta_m_ice_timber_h = moment_timber_h.scale(delta_p_timber_h) + delta_moment_timber_h.scale(self.icing_stab.mass_timber_h());
         let res = m_ice_v.clone() + m_ice_h_desc.clone() + delta_m_ice_timber_h.clone();        
-        log::info!("\t IcingMass moment moment_v:{moment_v} coef_v_ds_area:{coef_v_ds_area} 
-        mass_v:{mass_v} m_ice_v:{m_ice_v} m_ice_h_desc:{m_ice_h_desc} moment_timber_h:{moment_timber_h}
-         delta_p_timber_h:{delta_p_timber_h} delta_m_ice_timber_h:{delta_m_ice_timber_h} res:{res}");
+        log::info!("\t IcingMass moment moment_v:{moment_v} coef_v_ds_area:{coef_v_ds_area} mass_v:{mass_v} 
+        m_ice_v:{m_ice_v} m_ice_h_desc:{m_ice_h_desc} moment_timber_h:{moment_timber_h} delta_moment_timber_h:{delta_moment_timber_h}
+        delta_p_timber_h:{delta_p_timber_h} delta_m_ice_timber_h:{delta_m_ice_timber_h} res:{res}");
         res
     }
 }

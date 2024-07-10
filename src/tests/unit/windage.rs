@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{icing::FakeIcingStab, math::*, windage::*};
+    use crate::{icing_stab::FakeIcingStab, math::*, windage::*};
 
     static INIT: Once = Once::new();
 

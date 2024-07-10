@@ -19,11 +19,9 @@ mod tests {
 
     fn init_once() {
         INIT.call_once(|| {
-            let mass = Rc::new(FakeShipMoment::new(
-                1000.0,
-                vec![0.],
+            let moment = Rc::new(FakeShipMoment::new(
                 Position::new(0., 2., 0.),
-                Position::new(0., 0., 0.),
+                Position::new(0., 2000., 0.),
             ));
 
             let center_draught_shift = Position::new(0., 1., 0.);
@@ -58,7 +56,7 @@ mod tests {
                 ),
             ];
             let lever_diagram = LeverDiagram::new(
-                mass,
+                moment,
                 center_draught_shift,
                 Curve2D::from_values_linear(pantocaren),
                 2.,

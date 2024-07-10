@@ -6,7 +6,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, moment::*, strength::{volume::*, total_force::*}};
+    use crate::{math::*, strength::{total_force::*, volume::*}, FakeMass};
 
     #[test]
     fn total_force() {
@@ -22,8 +22,6 @@ mod tests {
             Rc::new(FakeMass::new(
                 30.,
                 vec![20.; 10],
-                Position::new(0., 0., 0.),
-                Position::new(0., 0., 0.,), 
             )),
             1.0,
             FakeVolume::new(vec![5., 25., 25., 25., 25., 25., 25., 25., 15., 5.]),
