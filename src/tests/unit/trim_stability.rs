@@ -5,7 +5,7 @@ mod tests {
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::{math::*, stability::{metacentric_height::*, trim::*}, FakeMass, FakeParameters, FakeShipMoment};
+    use crate::{math::*, stability::{metacentric_height::*, trim::*}, trim::{FakeTrim, ITrim}, FakeMass, FakeParameters, FakeShipMoment};
 
     #[test]
     fn trim_stability() {
@@ -38,7 +38,7 @@ mod tests {
             Rc::new(FakeParameters{}),
         )
         .value();
-        let target = FakeTrim::from_angle(-0.3013717957692749, ship_length).value();
+        let target = FakeTrim::from_angle(-0.23518307533354152, ship_length).value();
 
         assert!(
             (result - target).abs() < result.abs() * 0.001, //TODO

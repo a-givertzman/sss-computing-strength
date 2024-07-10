@@ -2,8 +2,7 @@
 //! в формат пригодный для создания объектов.
 
 use loads::{
-    CompartmentArray, CompartmentData, LoadCargoArray, LoadConstantArray, LoadConstantData,
-    ParsedCargoData,
+    CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData,
 };
 
 use crate::error::Error;
@@ -175,8 +174,6 @@ impl ParsedShipData {
         entry_angle: EntryAngleDataArray,
         delta_windage_area: DeltaWindageAreaDataArray,
         delta_windage_moment: DeltaWindageMomentDataArray,
-        physical_frame: FrameIndexDataArray,
-        //    theoretical_frame: FrameIndexDataArray,
         bonjean_frame: FrameIndexDataArray,
         frame_area: FrameAreaDataArray,
         draft_mark: DraftMarkDataArray,

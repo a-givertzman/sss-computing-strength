@@ -173,10 +173,6 @@ pub fn get_data(
         "SELECT draught, value_x, value_z FROM delta_windage_moment WHERE ship_id={};",
         ship_id
     ))?)?;
-    let physical_frame = FrameIndexDataArray::parse(&api_server.fetch(&format!(
-        "SELECT frame_index, pos_x FROM physical_frame WHERE ship_id={};",
-        ship_id
-    ))?)?;
     let bonjean_frame = FrameIndexDataArray::parse(&api_server.fetch(&format!(
         "SELECT frame_index, pos_x FROM bonjean_frame WHERE ship_id={ship_id};"
     ))?)?;
@@ -276,7 +272,6 @@ pub fn get_data(
         entry_angle,
         delta_windage_area,
         delta_windage_moment,
-        physical_frame,
         bonjean_frame,
         frame_area,
         draft_mark,

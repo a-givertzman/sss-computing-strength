@@ -11,9 +11,9 @@ use crate::{
     windage::{IWindage, Windage},
 };
 use data::{api_server::*, structs::loads::PhysicalType};
+use draught::Draught;
 pub use error::Error;
 use log::info;
-use trim::ITrim;
 use std::{collections::HashMap, io, rc::Rc, time::Instant};
 
 mod area;
@@ -447,8 +447,9 @@ fn execute() -> Result<(), Error> {
                 center_waterline_shift,
                 center_draught_shift.clone(),        
                 Rc::clone(&metacentric_height),
-                Rc::clone(&mass),
-                Rc::clone(&parameters),
+                Rc::clone(&ship_mass),
+                Rc::clone(&ship_moment),
+                Rc::clone(&parameters)
             )),
             None,
         )), 

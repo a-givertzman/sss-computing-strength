@@ -1,6 +1,6 @@
 //! Класс для расчета дифферента и средней осадки в расчете прочности
 
-use crate::{math::Bounds, IVolume};
+use crate::{draught::Draught, math::Bounds, trim::{FakeTrim, ITrim}, IVolume};
 
 use super::{
     displacement::Displacement,
