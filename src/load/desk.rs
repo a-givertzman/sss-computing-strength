@@ -12,7 +12,7 @@ pub trait IDesk: ILoad {
         Moment::from_pos(self.shift(), self.windage_area(None))
     }
     /// Площадь горизонтальной поверхности, м^2
-    fn horizontal_area(&self, bound: Option<Bound>) -> f64;
+    fn horizontal_area(&self, bound_x: Option<Bound>, bound_y: Option<Bound>) -> f64;
     /// Высота груза, м
     fn height(&self) -> f64;
     /// Признак палубного груза: лес
@@ -22,8 +22,10 @@ pub trait IDesk: ILoad {
 pub struct Desk { 
     /// Масса груза   
     mass: f64,
-    /// Границы груза   
+    /// Ограничение по оси Х
     bound_x: Bound,
+    /// Ограничение по оси Y
+    bound_y: Option<Bound>,
     /// Площадь парусности  
     windage_area: f64,
     /// Площадь горизонтальной поверхности 
@@ -37,7 +39,8 @@ pub struct Desk {
 impl Desk {
     /// Основной конструктор  
     /// * mass - Масса груза  
-    /// * bound_x - границы груза вдоль продольной оси  
+    /// * bound_x - Ограничение по оси Х
+    /// * bound_y - Ограничение по оси Y
     /// * windage_area - Площадь парусности  
     /// * horizontal_area - Площадь горизонтальной поверхности  
     /// * shift - Смещение центра  
@@ -45,6 +48,7 @@ impl Desk {
     pub fn new(
         mass: f64,
         bound_x: Bound,
+        bound_y: Option<Bound>,
         windage_area: f64,
         horizontal_area: f64,
         shift: Position,
@@ -53,6 +57,7 @@ impl Desk {
         Self {
             mass,
             bound_x,
+            bound_y,
             windage_area,
             horizontal_area,
             shift,
@@ -69,9 +74,16 @@ impl IDesk for Desk {
         self.windage_area
     }
     /// Площадь горизонтальной поверхности, м^2
-    fn horizontal_area(&self, bound: Option<Bound>) -> f64 {
-        self.bound_x.part_ratio(&bound.unwrap_or(self.bound_x)) *
-        self.horizontal_area
+    fn horizontal_area(&self, bound_x: Option<Bound>, bound_y: Option<Bound>) -> f64 {
+        let part_x = match bound_x {
+            Some(b) => b.part_ratio(&self.bound_x),
+            _=> 1.,
+        };
+        let part_y = match (bound_y, self.bound_y) {
+            (Some(b1), Some(b2)) => b1.part_ratio(&b2),
+            _=> 1.,
+        };
+        part_x * part_y * self.horizontal_area
     }
     /// Высота груза, м
     fn height(&self) -> f64 {

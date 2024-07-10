@@ -6,7 +6,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{mass::*, math::*, stability::{metacentric_height::*, trim::*}, FakeParameters};
+    use crate::{math::*, stability::{metacentric_height::*, trim::*}, FakeMass, FakeParameters, FakeShipMoment};
 
     #[test]
     fn trim() {
@@ -31,8 +31,10 @@ mod tests {
             Rc::new(FakeMass::new(
                 2044.10,
                 vec![0.],
+            )),
+            Rc::new(FakeShipMoment::new(
                 Position::new(1.05, 0., 5.32),
-                Position::new(0., 0., 0.,), 
+                Position::new(2146.305, 0., 10874.612,), 
             )),
             Rc::new(FakeParameters{}),
         )

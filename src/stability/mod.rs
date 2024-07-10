@@ -14,6 +14,9 @@ pub(crate) mod grain;
 pub(crate) mod criterion;
 pub(crate) mod trim;
 pub(crate) mod parameters;
+pub(crate) mod moment;
+pub(crate) mod icing;
+pub(crate) mod wetting;
 
 pub use metacentric_height::*;
 pub use rolling_amplitude::*;
@@ -28,3 +31,6 @@ pub use grain::*;
 pub use criterion::*;
 pub use trim::*;
 pub use parameters::*;
+pub use moment::*;
+pub use icing::*;
+pub use wetting::*;

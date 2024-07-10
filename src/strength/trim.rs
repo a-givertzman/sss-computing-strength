@@ -1,10 +1,10 @@
 //! Класс для расчета дифферента и средней осадки в расчете прочности
 
-use crate::{mass::IMass, math::Bounds, IVolume};
+use crate::{math::Bounds, IVolume};
 
 use super::{
     displacement::Displacement,
-    volume::Volume,
+    volume::Volume, IMass,
 };
 use std::rc::Rc;
 

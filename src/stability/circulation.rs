@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use crate::{ILeverDiagram, IMass, IParameters, ParameterID};
+use crate::{ILeverDiagram, IMass, IParameters, IShipMoment, ParameterID};
 
 /// Расчет угла крена на циркуляции
 pub struct Circulation {
@@ -12,8 +12,10 @@ pub struct Circulation {
     l_wl: f64,
     /// Осадка судна d
     d: f64,
-    /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+    /// Масса судна
     mass: Rc<dyn IMass>,
+    /// Момент массы судна
+    moment: Rc<dyn IShipMoment>, 
     /// Диаграмма плеч статической и динамической остойчивости
     lever_diagram: Rc<dyn ILeverDiagram>,
     /// Набор результатов расчетов для записи в БД
@@ -25,14 +27,16 @@ impl Circulation {
     /// * v_0 - Эксплуатационная скорость судна, m/s
     /// * l_wl - Длина судна по ватерлинии
     /// * d - Осадка судна d
-    /// * mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+    /// * mass - Масса судна
+    /// * moment - Момент массы судна
     /// * lever_diagram - Диаграмма плеч статической и динамической остойчивости
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         v_0: f64,
         l_wl: f64,
         d: f64,
-        mass: Rc<dyn IMass>,
+        mass: Rc<dyn IMass>, 
+        moment: Rc<dyn IShipMoment>,  
         lever_diagram: Rc<dyn ILeverDiagram>,
         parameters: Rc<dyn IParameters>,
     ) -> Self {
@@ -43,6 +47,7 @@ impl Circulation {
             l_wl,
             d,
             mass,
+            moment,
             lever_diagram, 
             parameters,
         }
@@ -50,7 +55,7 @@ impl Circulation {
     /// Плечо кренящего момента на циркуляции при скорости v, m/s
     pub fn heel_lever(&self, v: f64) -> f64 {
         // Кренящий момент на циркуляции
-        let m_r = 0.2*(v*v*self.mass.sum()/self.l_wl)*(self.mass.shift().z() - self.d/2.).abs();
+        let m_r = 0.2*(v*v*self.mass.sum()/self.l_wl)*(self.moment.shift().z() - self.d/2.).abs();
         // Плечо кренящего момента на циркуляции
         let l_r = m_r/self.mass.sum();
         log::info!("Circulation angle v:{v} m_r:{m_r} l_r:{l_r}");

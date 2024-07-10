@@ -1,6 +1,6 @@
 //! Расчет плеча кренящего момента от давления ветра
 use std::rc::Rc;
-use crate::{mass::IMass, windage::IWindage, IParameters, ParameterID};
+use crate::{windage::IWindage, IMass, IParameters, ParameterID};
 
 /// Расчет плеча кренящего момента от давления ветра
 pub struct Wind {
