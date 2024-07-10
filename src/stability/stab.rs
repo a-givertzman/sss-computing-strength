@@ -19,7 +19,7 @@ pub struct Stability {
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>, 
 }
-
+///
 impl Stability {
     /// Конструктор по умолчанию.
     /// * flooding_angle - Угол заливания отверстий

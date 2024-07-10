@@ -6,10 +6,10 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, strength::trim::*, Displacement, FakeMass, Frame};
+    use crate::{math::*, strength::trim::*, trim::ITrim, Displacement, FakeMass, Frame};
 
     #[test]
-    fn trim() {
+    fn trim_strength() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
         let self_id = "test Trim";
@@ -22,7 +22,9 @@ mod tests {
             Frame::new(10., Curve::new_linear(&vec![(0., 0.), (2., 40.)])),
         ];
 
+        let ship_length = 20.;
         let result = Trim::new(
+            ship_length,
             1.025,   
             0.,
             0.3,
@@ -31,21 +33,15 @@ mod tests {
                 vec![24., 25., 25., 26.,],
             )),
             Rc::new(Displacement::new(frames,)), 
-            Rc::new(Bounds::from_n(20., 4)),
+            Rc::new(Bounds::from_n(ship_length, 4)),
         ).value();
-        let target = (0.0146, 0.195);
+        let target = 0.0225;
 
         assert!(
-            (result.0 - target.0).abs() < result.0.abs() * 0.01, 
+            (result - target).abs() < result.abs() * 0.001, 
             "\ntrim: result: {:?}\ntarget: {:?}",
-            result.0,
-            target.0
-        );
-        assert!(
-            (result.1 - target.1).abs() < result.1.abs() * 0.01, 
-            "\nmean_draught: result: {:?}\ntarget: {:?}",
-            result.1,
-            target.1
+            result,
+            target
         );
 
         test_duration.exit();

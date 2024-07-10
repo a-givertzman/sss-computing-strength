@@ -5,7 +5,7 @@ mod tests {
     use std::rc::Rc;
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::{Frame, Curve, Bounds, Displacement, Volume, IVolume};
+    use crate::{draught::FakeDraught, Bounds, Curve, Displacement, Frame, IVolume, Volume};
     
     #[test]
     fn volume() {
@@ -25,10 +25,8 @@ mod tests {
         ];
 
         let result = Volume::new(
-            0.,
-            1.,
             Rc::new(Displacement::new(frames)),
-            0.,
+            Box::new(FakeDraught::new(1., 0.)),
             Rc::new(Bounds::from_n(4., 4)),
         ).values();
 

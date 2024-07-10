@@ -1,5 +1,7 @@
 //! Дифферент. Угол наклона корпуса судна в продольной плоскости.
 use crate::stability::metacentric_height::IMetacentricHeight;
+use crate::trim::ITrim;
+use std::cell::RefCell;
 use std::f64::consts::PI;
 use std::rc::Rc;
 
@@ -60,9 +62,12 @@ impl Trim {
             parameters,
         }
     }
+}
+
+impl ITrim for Trim {
     /// Значение дифферента, коэффициент используемый при вычислении осадки носа и кормы
     #[allow(non_snake_case)]
-    pub fn value(&mut self) -> f64 {
+    fn value(&self) -> f64 {
         // Продольная исправленная метацентрическая высота (3)
         let H = self.metacentric_height.h_long_fix();
         // Момент дифферентующий на 1 см осадки (4)
@@ -71,25 +76,16 @@ impl Trim {
         let t = self.mass.sum() * (self.moment.shift().x() - self.center_draught_shift.x())
             / (100. * trim_moment);
         // Дифферент судна, градусы (5)
-        let trim_angle = (t/self.ship_length).atan()*180.0/PI;    
-        // Осадка на носовом перпендикуляре длины L в ДП dн, м (6)
-        let draught_bow = self.mean_draught + (0.5 - self.center_waterline_shift/self.ship_length)*t;
-        // Осадка на кормовом перпендикуляре длины L в ДП dк, м (7)
-        let draught_stern = self.mean_draught - (0.5 + self.center_waterline_shift/self.ship_length)*t;
-        // Осадка на миделе в ДП, м (8)
-        let draught_mid = (draught_bow + draught_stern) / 2.;
-
+        let trim_angle = (t/self.ship_length).atan()*180.0/PI;  
+        dbg!(H, trim_moment, t, trim_angle);
         log::info!(
-            "\t Trim H:{H} mass:{} mass_shift_x:{} center_draught_x:{} M:{trim_moment} trim:{t} 
-                trim_angle{trim_angle} draught_bow:{draught_bow} draught_stern:{draught_stern} draught_mid:{draught_mid}",
+            "\t Trim H:{H} mass:{} mass_shift_x:{} center_draught_x:{} M:{trim_moment} trim:{t} trim_angle{trim_angle} ",
             self.mass.sum(),
             self.moment.shift().x(),
             self.center_draught_shift.x()
         );
         self.parameters.add(ParameterID::MomentTrimPerCm, trim_moment);
         self.parameters.add(ParameterID::Trim, trim_angle);
-        self.parameters.add(ParameterID::DraughtBow, draught_bow);
-        self.parameters.add(ParameterID::DraughtStern, draught_stern);
         t
     }
 }

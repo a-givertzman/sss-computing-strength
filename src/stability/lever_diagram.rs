@@ -348,15 +348,15 @@ impl FakeLeverDiagram {
 }
 #[doc(hidden)]
 impl ILeverDiagram for FakeLeverDiagram {
-    /// Углы крена судна соответствующие плечу кренящего момента
+    /// Углы крена судна соответствующие плечу кренящего момента, градусы
     fn angle(&self, _: f64) -> Vec<f64> {
         self.angle.clone()
     }
-    /// Плечо кренящего момента соответствующие углу крена судна (angle >= 0. && angle <= 90.)
+    /// Плечо кренящего момента соответствующие углу крена судна (angle >= 0. && angle <= 90.), м
     fn lever_moment(&self, _: f64) -> f64 {
         self.lever_moment
     }
-    /// Площадь под положительной частью диаграммы статической остойчивости
+    /// Площадь под положительной частью диаграммы статической остойчивости, м*rad
     fn dso_area(&self, angle1: f64, angle2: f64) -> f64 {
         assert!(
             angle1 < angle2,
@@ -364,7 +364,7 @@ impl ILeverDiagram for FakeLeverDiagram {
         );
         self.dso_area
     }
-    /// Максимальное плечо диаграммы статической остойчивости в диапазонеб (м)
+    /// Максимальное плечо диаграммы статической остойчивости в диапазоне, м
     fn dso_lever_max(&self, angle1: f64, angle2: f64) -> f64 {
         assert!(
             angle1 < angle2,

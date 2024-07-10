@@ -74,6 +74,10 @@ impl IParameters for Parameters {
         self.data.borrow_mut().insert(id, value);
     }
     ///
+    fn get(&self, id: ParameterID) -> Option<f64> {
+        self.data.borrow().get(&id).copied()
+    }
+    ///
     fn take_data(&self) -> Vec<(usize, f64)> {
         self.data.take().into_iter().map(|(k, v)| (k as usize, v)).collect()
     }
@@ -82,6 +86,8 @@ impl IParameters for Parameters {
 pub trait IParameters {
     ///
     fn add(&self, id: ParameterID, value: f64);
+    ///
+    fn get(&self, id: ParameterID) -> Option<f64>;
     ///
     fn take_data(&self) -> Vec<(usize, f64)>;
 }
@@ -93,6 +99,8 @@ pub struct FakeParameters;
 impl IParameters for FakeParameters {
     ///
     fn add(&self, _: ParameterID, _: f64) { }
+    ///
+    fn get(&self, _: ParameterID) -> Option<f64> {None}
     ///
     fn take_data(&self) -> Vec<(usize, f64)> {
         Vec::new()
