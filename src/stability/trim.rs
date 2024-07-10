@@ -77,7 +77,7 @@ impl ITrim for Trim {
             / (100. * trim_moment);
         // Дифферент судна, градусы (5)
         let trim_angle = (t/self.ship_length).atan()*180.0/PI;  
-        dbg!(H, trim_moment, t, trim_angle);
+        //dbg!(H, trim_moment, t, trim_angle);
         log::info!(
             "\t Trim H:{H} mass:{} mass_shift_x:{} center_draught_x:{} M:{trim_moment} trim:{t} trim_angle{trim_angle} ",
             self.mass.sum(),

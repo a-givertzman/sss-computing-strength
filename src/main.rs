@@ -539,6 +539,7 @@ fn execute() -> Result<(), Error> {
             data.width,
             mean_draught,
             Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())),
+            Rc::clone(&roll_period),
             Rc::clone(&roll_amplitude),
             Rc::clone(&metacentric_height),
         )),

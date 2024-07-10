@@ -160,7 +160,7 @@ impl LeverDiagram {
         let angle_zero = *self
             .angle(0.)
             .first()
-            .unwrap_or(&0.) * angle_zero_signum;
+            .unwrap_or(&0.);
    //     dbg!(angle_zero);
         let ddo = (-90..=90)
                 .map(|angle_deg| {
@@ -180,7 +180,7 @@ impl LeverDiagram {
         *self.diagram.borrow_mut() = Some(dso.iter().zip(ddo.iter()).map(|((a1, v1), (_, v2))| (*a1, *v1, *v2) ).collect::<Vec<_>>());
     //    dbg!(&self.diagram.clone());
         *self.ddo.borrow_mut() = Some(ddo);
-        self.parameters.add(ParameterID::Roll, angle_zero);
+        self.parameters.add(ParameterID::Roll, angle_zero * angle_zero_signum);
     }
 }
 ///
