@@ -56,6 +56,7 @@ impl IAcceleration for Acceleration {
         let (_, theta_1_r) = self.rolling_amplitude.calculate();
         let a = 0.0105 * h_trans_0/(c*c*self.b)*k_theta*theta_1_r;
         let k = 0.3/a; // >= 1;
+        dbg!(h_trans_0, k_theta, c, theta_1_r, a, k);
         k
     }
 }
