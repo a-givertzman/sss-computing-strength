@@ -40,6 +40,7 @@ impl std::fmt::Display for LoadingType {
 impl From<CargoType> for LoadingType {
     fn from(value: CargoType) -> Self {
         match value {
+            CargoType::Ballast => LoadingType::Ballast,
             CargoType::Store => LoadingType::Store,
             CargoType::Cargo => LoadingType::Cargo,
         }

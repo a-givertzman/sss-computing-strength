@@ -224,6 +224,7 @@ pub fn get_data(
                 mass_shift_z, \
                 m_f_s_y, \
                 m_f_s_x, \
+                grain_moment, \
                 loading_type::TEXT, \
                 physical_type::TEXT \
             FROM compartment WHERE ship_id={ship_id} AND active=TRUE AND mass>0;"
@@ -235,18 +236,19 @@ pub fn get_data(
     let area_h_str = HStrAreaArray::parse(&api_server.fetch(
         &format!("SELECT name, value, bound_x1, bound_x2 FROM horizontal_area_strength WHERE ship_id={};", ship_id)
     )?)?;
-    //  dbg!(&area_h_str);
     log::info!("input_api_server area_h_str read ok");
     let area_h_stab = HStabAreaArray::parse(&api_server.fetch(
         &format!("SELECT name, value, shift_x, shift_y, shift_z FROM horizontal_area_stability WHERE ship_id={};", ship_id)
     )?)?;
-    //  dbg!(&area_h_stab);
     log::info!("input_api_server area_h_stab read ok");
-    let area_v = VerticalAreaArray::parse(&api_server.fetch(
-        &format!("SELECT name, value, shift_z, bound_x1, bound_x2 FROM vertical_area WHERE ship_id={};", ship_id)
+    let area_v_str = strength::VerticalAreaArray::parse(&api_server.fetch(
+        &format!("SELECT name, value, shift_z, bound_x1, bound_x2 FROM vertical_area_strength WHERE ship_id={};", ship_id)
     )?)?;
-    //  dbg!(&area_v);
-    log::info!("input_api_server vertical_area read ok");
+    log::info!("input_api_server area_v_str read ok");
+    let area_v_stab = stability::VerticalAreaArray::parse(&api_server.fetch(
+        &format!("SELECT draught, area, moment_x, moment_z FROM vertical_area_stability WHERE ship_id={};", ship_id)
+    )?)?;
+    log::info!("input_api_server area_v_stab read ok");
     log::info!("input_api_server read ok");
     ParsedShipData::parse(
         navigation_area_param,
@@ -283,7 +285,8 @@ pub fn get_data(
         load_constant,
         area_h_stab,
         area_h_str,
-        area_v,
+        area_v_stab,
+        area_v_str,
     )
 }
 

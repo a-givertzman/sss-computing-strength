@@ -1,10 +1,9 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::icing::FakeIcing;
     use crate::math::Bounds;
     use crate::math::position::Position;
-    use crate::{load::*, mass::*, Bound, FakeParameters, FakeResults, Moment};
+    use crate::{load::*, Bound, FakeIcingMass, FakeParameters, FakeResults, FakeWettingMass, IMass, Mass,};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
@@ -12,7 +11,7 @@ mod tests {
     static INIT: Once = Once::new();
 
     unsafe impl Sync for Mass {} //for static
-    static mut MASS: Option<Mass> = None;
+    static mut MASS: Option<Box<dyn IMass>> = None;
 
     fn init_once() {
         INIT.call_once(|| {
@@ -40,15 +39,15 @@ mod tests {
             ))]);
 
             unsafe {
-                MASS.replace(Mass::new(
+                MASS.replace(Box::new(Mass::new(
                     loads_const,
-                    Position::new(0., 0., 0.),
-                    Rc::new(FakeIcing::new(0., Moment::new(0., 0., 0.,),)),
+                    Rc::new(FakeIcingMass::new(0.,)),
+                    Rc::new(FakeWettingMass::new(0.,)),
                     loads_cargo,
                     Rc::new(Bounds::from_n(20., 4)),
                     Rc::new(FakeResults{}),
                     Rc::new(FakeParameters{}),
-                ));
+                )));
             }
         })
     }
@@ -63,7 +62,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { MASS.clone().unwrap().sum() };
+        let result = unsafe { MASS.as_ref().unwrap().sum() };
         let target = 50.;
         assert!(
             result == target,
@@ -85,7 +84,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { MASS.clone().unwrap().values() };
+        let result = unsafe { MASS.as_ref().unwrap().values() };
         let target = vec![5., 15., 20., 10.];
         assert!(
             result == target,

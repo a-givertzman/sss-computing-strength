@@ -1,10 +1,12 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
 use serde::{Deserialize, Serialize};
-use crate::{data::structs::DataArray};
+use crate::data::structs::DataArray;
 
 /// Тип груза
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
 pub enum CargoType {
+    #[serde(alias="ballast")]
+    Ballast,
     #[serde(alias="store")]
     Store,
     #[serde(alias="cargo")]
@@ -17,6 +19,7 @@ impl std::fmt::Display for CargoType {
             f,
             "{}",
             match self {
+                CargoType::Ballast => "Ballast", 
                 CargoType::Store => "Store", 
                 CargoType::Cargo => "Cargo", 
             },
@@ -25,17 +28,18 @@ impl std::fmt::Display for CargoType {
 }
 /// Груз, конструкции корпуса, контейнер или другой твердый груз
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct LoadCargoData {
+pub struct LoadCargo {
     /// Имя груза
     pub name: String,
     /// Общая масса, т
     pub mass: Option<f64>,
-    /// Диапазон по длинне
+    /// Тип груза
+    pub loading_type: CargoType,
+    /// Груз - лес и может намокать и обмерзать
+    pub timber: bool,
+    /// Диапазон по длинне, м
     pub bound_x1: f64,
     pub bound_x2: f64,
-    /// Тип задания диапазона по длинне
-    /// (физ. шпангоуты или метры)
-    pub bound_type: String,  
     /// Диапазон по ширине
     pub bound_y1: Option<f64>,
     pub bound_y2: Option<f64>,
@@ -58,23 +62,22 @@ pub struct LoadCargoData {
     pub vertical_area_shift_x: Option<f64>,
     pub vertical_area_shift_y: Option<f64>,
     pub vertical_area_shift_z: Option<f64>,
-    /// Тип груза
-    pub loading_type: CargoType,
 }
 
 ///
-impl std::fmt::Display for LoadCargoData {
+impl std::fmt::Display for LoadCargo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadCargoData(name:{} mass:{} bound_x:({}, {}) bound_x_type:{} bound_y:({}, {}) bound_z:({}, {}) 
+            "LoadCargo(name:{} mass:{} loading_type:{} timber:{} bound_x:({}, {}) bound_y:({}, {}) bound_z:({}, {}) 
             mass_shift:({}, {}, {}) horizontal_area:{} horizontal_area_shift:({}, {}, {})
-            vertical_area:{} vertical_area_shift_y:({}, {}, {}) loading_type:{})",
+            vertical_area:{} vertical_area_shift_y:({}, {}, {}) )",
             self.name,
+            self.loading_type,
+            self.timber,
             self.mass.unwrap_or(0.),
             self.bound_x1,
             self.bound_x2,
-            self.bound_type,
             self.bound_y1.unwrap_or(0.),
             self.bound_y2.unwrap_or(0.),
             self.bound_z1.unwrap_or(0.),
@@ -90,20 +93,19 @@ impl std::fmt::Display for LoadCargoData {
             self.vertical_area_shift_x.unwrap_or(0.),
             self.vertical_area_shift_y.unwrap_or(0.),
             self.vertical_area_shift_z.unwrap_or(0.),
-            self.loading_type,
         )
     }
 }
 /// Массив данных по грузам
-pub type LoadCargoArray = DataArray<LoadCargoData>;
+pub type LoadCargoArray = DataArray<LoadCargo>;
 ///
 impl LoadCargoArray {
     /// 
-    pub fn data(self) -> Vec<LoadCargoData> {
+    pub fn data(self) -> Vec<LoadCargo> {
         self.data
     }
 }
-
+/*
 /// Груз
 #[derive(Debug)]
 pub struct ParsedCargoData {
@@ -138,6 +140,7 @@ impl std::fmt::Display for ParsedCargoData {
             vertical_area:{} vertical_area_shift:({}, {}, {}) type:{}) ",
             self.name,
             self.mass,
+
             self.bound_x,
             self.bound_y,
             self.bound_z,
@@ -156,3 +159,4 @@ impl std::fmt::Display for ParsedCargoData {
         )
     }
 }
+*/

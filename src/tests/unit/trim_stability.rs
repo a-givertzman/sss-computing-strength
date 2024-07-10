@@ -5,8 +5,7 @@ mod tests {
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
-
-    use crate::{mass::*, math::*, stability::{metacentric_height::*, trim::*}, trim::{FakeTrim, ITrim}, FakeParameters};
+    use crate::{math::*, stability::{metacentric_height::*, trim::*}, FakeMass, FakeParameters, FakeShipMoment};
 
     #[test]
     fn trim_stability() {
@@ -31,8 +30,10 @@ mod tests {
             Rc::new(FakeMass::new(
                 2354.10,
                 vec![0.],
-                Position::new(-3.5246225404891716, -0.027481947482526296, 5.074054011246347),
-                Position::new(-8298.253586934854, -64.702579255814, 11946.183290674426), 
+            )),
+            Rc::new(FakeShipMoment::new(
+                Position::new(1.05, 0., 5.32),
+                Position::new(2146.305, 0., 10874.612,), 
             )),
             Rc::new(FakeParameters{}),
         )

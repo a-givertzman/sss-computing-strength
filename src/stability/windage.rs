@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use crate::{icing::IIcingStab, Moment};
+use crate::{icing_stab::IIcingStab, Moment};
 
 /// Парусность судна, площадь и положение 
 /// центра относительно миделя и ОП
@@ -10,7 +10,7 @@ use crate::{icing::IIcingStab, Moment};
 pub struct Windage {
     /// Тип обледенения
     icing_stab: Rc<dyn IIcingStab>,
-    /// Площади поверхности для расчета остойсивости
+    /// Площади поверхности для расчета остойчивости
     area_stability: Rc<dyn crate::stability::IArea>,
     /// Разница в площадях парусности
     delta_area: f64,
