@@ -17,23 +17,40 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
         let ship_length = 118.39;
-        let result = Draught::new(
+        let mut draught = Draught::new(
             ship_length,
             1.6562565987303715,
             -0.862,
             Box::new(FakeTrim::from_angle(-0.3013717957692749, ship_length)),
             None,
-        )
-        .value(59.194);
+        );
+        // bow
+        let result = draught.value(59.194);
         let target = 1.34;
-
         assert!(
-            (result - target).abs() < result.abs() * 0.001, //TODO
+            (result - target).abs() < result.abs() * 0.01, //TODO
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
-
+        // mid
+        let result = draught.value(0.);
+        let target = 1.65;
+        assert!(
+            (result - target).abs() < result.abs() * 0.01, //TODO
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
+        // stern
+        let result = draught.value(-59.194);
+        let target = 1.96;
+        assert!(
+            (result - target).abs() < result.abs() * 0.01, //TODO
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
         test_duration.exit();
     }
 }

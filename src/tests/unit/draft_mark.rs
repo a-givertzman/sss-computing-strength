@@ -5,7 +5,7 @@ mod tests {
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{draught::FakeDraught, math::*, stability::acceleration::*, DraftMark, FakeLeverDiagram, FakeMetacentricHeight, FakeRollingAmplitude, IParameters, ParameterID, Parameters};
+    use crate::{draught::FakeDraught, DraftMark, IParameters, ParameterID, Parameters};
 
     #[test]
     fn draft_mark_zero() {// дифферент 0, крен 0, сверяем марки осадки нос, корма, мидель

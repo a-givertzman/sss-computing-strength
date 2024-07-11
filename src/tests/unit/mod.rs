@@ -28,6 +28,6 @@ mod acceleration;
 mod circulation;
 //mod grain;
 mod trim_strength;
-//mod trim_stability;
+mod trim_stability;
 mod draught;
 mod draft_mark;

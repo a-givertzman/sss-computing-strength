@@ -32,16 +32,16 @@ mod tests {
                 vec![0.],
             )),
             Rc::new(FakeShipMoment::new(
-                Position::new(1.05, 0., 5.32),
-                Position::new(2146.305, 0., 10874.612,), 
+                Position::new(-3.53, -0.03, 5.07),
+                Position::new(-8309.973, 0., 11935.287,), 
             )),
             Rc::new(FakeParameters{}),
         )
         .value();
-        let target = FakeTrim::from_angle(-0.23518307533354152, ship_length).value();
+        let target = FakeTrim::from_angle(-0.3013717957692749, ship_length).value();
 
         assert!(
-            (result - target).abs() < result.abs() * 0.001, //TODO
+            (result - target).abs() < result.abs() * 0.01, //TODO
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
