@@ -23,12 +23,12 @@ mod icing_stab;
 mod load;
 //mod mass;
 //mod wetting_mass;
+mod draught;
 mod math;
 mod stability;
 mod strength;
 mod tests;
 mod trim;
-mod draught;
 
 fn main() {
     //    std::env::set_var("RUST_LOG", "info");
@@ -47,26 +47,27 @@ fn main() {
 }
 
 fn execute() -> Result<(), Error> {
-   /*      let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
-        let json_data: serde_json::Value = serde_json::from_str(&input)?;
-        let host: String = json_data
-            .get("api-host")
-            .ok_or(Error::FromString(
-                "Parse param error: no api-host".to_owned(),
-            ))?
-            .to_string();
-        let port = json_data
-            .get("api-port")
-            .ok_or(Error::FromString(
-                "Parse param error: no api-host".to_owned(),
-            ))?
-            .to_string();
-  */      //   println!("{}", json_data);
-    
+    /*      let mut input = String::new();
+          io::stdin().read_line(&mut input)?;
+          let json_data: serde_json::Value = serde_json::from_str(&input)?;
+          let host: String = json_data
+              .get("api-host")
+              .ok_or(Error::FromString(
+                  "Parse param error: no api-host".to_owned(),
+              ))?
+              .to_string();
+          let port = json_data
+              .get("api-port")
+              .ok_or(Error::FromString(
+                  "Parse param error: no api-host".to_owned(),
+              ))?
+              .to_string();
+    */
+ //   println!("{}", json_data);
+
     let host: String = "0.0.0.0".to_string();
-    let port = "8080".to_string();    
- 
+    let port = "8080".to_string();
+
     let ship_id = 1;
     let mut api_server =
         ApiServer::new("sss-computing".to_owned(), host.to_owned(), port.to_owned());
@@ -96,12 +97,7 @@ fn execute() -> Result<(), Error> {
     let frames: Vec<Frame> = data
         .frame_area
         .iter()
-        .map(|v| {
-            Frame::new(
-                v.x,
-                Curve::new_linear(&v.immersion_area),
-            )
-        })
+        .map(|v| Frame::new(v.x, Curve::new_linear(&v.immersion_area)))
         .collect();
 
     // вектор разбиения судна на отрезки
@@ -129,17 +125,18 @@ fn execute() -> Result<(), Error> {
             Some(shift_const.clone()),
             LoadingType::from(v.loading_type),
         ));
-     //   log::info!("\t Mass loads_const from load_constants:{:?} ", load);
+        //   log::info!("\t Mass loads_const from load_constants:{:?} ", load);
         loads_const.push(load);
     });
 
     data.cargoes.iter().for_each(|v| {
         let mass_shift = if v.mass_shift_x.is_some() {
             Some(Position::new(
-            v.mass_shift_x.expect("LoadCargo error: no mass_shift_x!"),
-            v.mass_shift_y.expect("LoadCargo error: no mass_shift_y!"),
-            v.mass_shift_z.expect("LoadCargo error: no mass_shift_z!"),
-        ))}  else {
+                v.mass_shift_x.expect("LoadCargo error: no mass_shift_x!"),
+                v.mass_shift_y.expect("LoadCargo error: no mass_shift_y!"),
+                v.mass_shift_z.expect("LoadCargo error: no mass_shift_z!"),
+            ))
+        } else {
             None
         };
         let bound_x = Bound::new(v.bound_x1, v.bound_x2);
@@ -149,10 +146,10 @@ fn execute() -> Result<(), Error> {
             mass_shift.clone(),
             LoadingType::from(v.loading_type),
         ));
-      //  log::info!("\t Mass load_variable from cargoes:{:?} ", load);
+        //  log::info!("\t Mass load_variable from cargoes:{:?} ", load);
         load_variable.push(load.clone());
 
-        if v.timber {            
+        if v.timber {
             load_timber.push(load);
         }
     });
@@ -160,10 +157,14 @@ fn execute() -> Result<(), Error> {
     data.compartments.iter().for_each(|v| {
         let mass_shift = if v.mass_shift_x.is_some() {
             Some(Position::new(
-            v.mass_shift_x.expect("CompartmentData error: no mass_shift_x!"),
-            v.mass_shift_y.expect("CompartmentData error: no mass_shift_y!"),
-            v.mass_shift_z.expect("CompartmentData error: no mass_shift_z!"),
-        ))}  else {
+                v.mass_shift_x
+                    .expect("CompartmentData error: no mass_shift_x!"),
+                v.mass_shift_y
+                    .expect("CompartmentData error: no mass_shift_y!"),
+                v.mass_shift_z
+                    .expect("CompartmentData error: no mass_shift_z!"),
+            ))
+        } else {
             None
         };
         let bound_x = Bound::new(v.bound_x1, v.bound_x2);
@@ -173,27 +174,36 @@ fn execute() -> Result<(), Error> {
             mass_shift.clone(),
             LoadingType::from(v.loading_type),
         ));
-       // log::info!("\t Mass load_variable from compartments src:{:?} trg:{:?}", v, load, );
+        // log::info!("\t Mass load_variable from compartments src:{:?} trg:{:?}", v, load, );
         load_variable.push(load);
         if v.physical_type == PhysicalType::Liquid {
             let tank: Rc<dyn ITank> = Rc::new(Tank::new(
-                v.density.expect("CompartmentData error: no density for PhysicalType::Liquid!"),
-                v.volume.expect("CompartmentData error: no volume for PhysicalType::Liquid!"),
+                v.density
+                    .expect("CompartmentData error: no density for PhysicalType::Liquid!"),
+                v.volume
+                    .expect("CompartmentData error: no volume for PhysicalType::Liquid!"),
                 bound_x,
                 mass_shift.clone(),
                 InertiaMoment::new(
-                    v.m_f_s_x.expect("CompartmentData error: no x in InertiaMoment for PhysicalType::Liquid!"),
-                    v.m_f_s_y.expect("CompartmentData error: no y in InertiaMoment for PhysicalType::Liquid!"),
+                    v.m_f_s_x.expect(
+                        "CompartmentData error: no x in InertiaMoment for PhysicalType::Liquid!",
+                    ),
+                    v.m_f_s_y.expect(
+                        "CompartmentData error: no y in InertiaMoment for PhysicalType::Liquid!",
+                    ),
                 ),
                 LoadingType::from(v.loading_type),
             ));
-    //        log::info!("\t Mass tanks from compartments:{:?} ", tank);
+            //        log::info!("\t Mass tanks from compartments:{:?} ", tank);
             tanks.push(tank);
         }
         if v.physical_type == PhysicalType::Bulk {
             let bulk: Rc<dyn IBulk> = Rc::new(Bulk::new(
-                1./v.density.expect("CompartmentData error: no density for PhysicalType::Bulk!"),
-                v.grain_moment.expect("CompartmentData error: no grain_moment for PhysicalType::Bulk!")
+                1. / v
+                    .density
+                    .expect("CompartmentData error: no density for PhysicalType::Bulk!"),
+                v.grain_moment
+                    .expect("CompartmentData error: no grain_moment for PhysicalType::Bulk!"),
             ));
             bulks.push(bulk);
         }
@@ -222,13 +232,17 @@ fn execute() -> Result<(), Error> {
         .collect::<Vec<_>>();
 
     // Ограничения для площади обледенения палубного груза - леса
-    let (timber_icing_x, timber_icing_y) = match data.icing_timber_stab.trim().to_lowercase().as_str() {
-//        "full" => (None, None),
-        "half_left" => (None, Some(Bound::new(-data.width/2., 0.))),
-        "half_right" => (None, Some(Bound::new(0., data.width/2.))),
-        "bow" => (Some(Bound::new(data.length_lbp/6., data.length_lbp/2.)), None),
-        _ => (None, None),        
-    };
+    let (timber_icing_x, timber_icing_y) =
+        match data.icing_timber_stab.trim().to_lowercase().as_str() {
+            //        "full" => (None, None),
+            "half_left" => (None, Some(Bound::new(-data.width / 2., 0.))),
+            "half_right" => (None, Some(Bound::new(0., data.width / 2.))),
+            "bow" => (
+                Some(Bound::new(data.length_lbp / 6., data.length_lbp / 2.)),
+                None,
+            ),
+            _ => (None, None),
+        };
 
     let area_strength: Rc<dyn crate::strength::IArea> = Rc::new(crate::strength::Area::new(
         icing_area_v.clone(),
@@ -253,22 +267,22 @@ fn execute() -> Result<(), Error> {
         data.icing_coef_v_moment_zero,
     ));
 
-        // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
-        let ship_mass: Rc<dyn strength::IMass> = Rc::new(strength::Mass::new(
-            Rc::clone(&loads_const),
-            Rc::new(strength::IcingMass::new(
-                Rc::clone(&icing_stab),
-                Rc::clone(&area_strength),
-            )),
-            Rc::new(WettingMass::new(
-                data.wetting_timber,
-                Rc::clone(&load_timber),
-            )),
-            Rc::clone(&load_variable),
-            Rc::clone(&bounds),
-            Rc::clone(&results),
-            Rc::clone(&parameters),
-        ));
+    // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+    let ship_mass: Rc<dyn strength::IMass> = Rc::new(strength::Mass::new(
+        Rc::clone(&loads_const),
+        Rc::new(strength::IcingMass::new(
+            Rc::clone(&icing_stab),
+            Rc::clone(&area_strength),
+        )),
+        Rc::new(WettingMass::new(
+            data.wetting_timber,
+            Rc::clone(&load_timber),
+        )),
+        Rc::clone(&load_variable),
+        Rc::clone(&bounds),
+        Rc::clone(&results),
+        Rc::clone(&parameters),
+    ));
 
     // Объемное водоизмещение (1)
     let volume = ship_mass.sum() / data.water_density;
@@ -276,16 +290,16 @@ fn execute() -> Result<(), Error> {
     let mean_draught = Curve::new_linear(&data.mean_draught).value(volume);
     parameters.add(ParameterID::DraughtMean, mean_draught);
     // Момент площади горизонтальных поверхностей и площади парусности судна
-        let area_stability: Rc<dyn crate::stability::IArea> = Rc::new(crate::stability::Area::new(
-            Curve::new_linear(&data.area_v_stab.area()).value(mean_draught),
-            Curve::new_linear(&data.area_v_stab.moment_x()).value(mean_draught),
-            Curve::new_linear(&data.area_v_stab.moment_z()).value(mean_draught),
-            icing_area_h_stab,
-            Rc::clone(&desks),
-            timber_icing_x,
-            timber_icing_y,
-        ));
-    // Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+    let area_stability: Rc<dyn crate::stability::IArea> = Rc::new(crate::stability::Area::new(
+        Curve::new_linear(&data.area_v_stab.area()).value(mean_draught),
+        Curve::new_linear(&data.area_v_stab.moment_x()).value(mean_draught),
+        Curve::new_linear(&data.area_v_stab.moment_z()).value(mean_draught),
+        icing_area_h_stab,
+        Rc::clone(&desks),
+        timber_icing_x,
+        timber_icing_y,
+    ));
+    // Момент массы нагрузки на корпус судна
     let ship_moment: Rc<dyn stability::IShipMoment> = Rc::new(stability::ShipMoment::new(
         Rc::clone(&ship_mass),
         Rc::clone(&loads_const),
@@ -320,8 +334,8 @@ fn execute() -> Result<(), Error> {
     let center_waterline_shift = Curve::new_linear(&data.center_waterline).value(volume);
     // Площадь ватерлинии
     let area_wl = Curve::new_linear(&data.waterline_area).value(volume);
-    // Число тонн на 1 см осадки 
-    parameters.add(ParameterID::TonesPerCm, 0.01*area_wl*data.water_density);
+    // Число тонн на 1 см осадки
+    parameters.add(ParameterID::TonesPerCm, 0.01 * area_wl * data.water_density);
     // Для расчета прочности дифферент находится подбором
     // как условие для схождения изгибающего момента в 0
     Computer::new(
@@ -334,8 +348,9 @@ fn execute() -> Result<(), Error> {
         Rc::new(Displacement::new(frames)),
         Rc::clone(&bounds),
         Rc::clone(&results),
-    ).calculate();
-/*    assert!(
+    )
+    .calculate();
+    /*    assert!(
         computer.shear_force().len() == data.bounds.len() + 1,
         "shear_force.len {} == frame.len {} + 1",
         computer.shear_force().len(),
@@ -348,16 +363,11 @@ fn execute() -> Result<(), Error> {
         data.bounds.len()
     );*/
 
-
-    send_strenght_data(
-        &mut api_server,
-        ship_id,
-        results.take_data(),
-    )?;
+    send_strenght_data(&mut api_server, ship_id, results.take_data())?;
     // Угол заливания отверстий
     let flooding_angle = Curve::new_linear(&data.flooding_angle).value(mean_draught);
     parameters.add(ParameterID::AngleOfDownFlooding, flooding_angle);
-    // Угол входа в воду кромки палубы  
+    // Угол входа в воду кромки палубы
     let entry_angle = Curve::new_linear(&data.entry_angle).value(mean_draught);
     parameters.add(ParameterID::OpenDeckEdgeImmersionAngle, entry_angle);
 
@@ -366,25 +376,28 @@ fn execute() -> Result<(), Error> {
         rad_long,                     // продольный метацентрические радиус
         rad_trans,                    // поперечный метацентрические радиус
         tanks,
-        Rc::clone(&ship_mass), 
+        Rc::clone(&ship_mass),
         Rc::clone(&ship_moment),
         Rc::clone(&parameters),
     ));
     // Момент кренящий на 1 градус MH1deg, т∙м
-    parameters.add(ParameterID::MomentRollPerDeg, ship_mass.sum()*metacentric_height.h_trans_fix()*(std::f64::consts::PI/180.).sin());
+    parameters.add(
+        ParameterID::MomentRollPerDeg,
+        ship_mass.sum() * metacentric_height.h_trans_fix() * (std::f64::consts::PI / 180.).sin(),
+    );
     // Дифферент для остойчивости
-  /*  let trim = stability::Trim::new(
-        data.length_lbp,
-        mean_draught,
-        center_waterline_shift,
-        center_draught_shift.clone(),        
-        Rc::clone(&metacentric_height),
-        Rc::clone(&ship_mass), 
-        Rc::clone(&ship_moment),
-        Rc::clone(&parameters),
-    )
-    .value();
-*/
+    /*  let trim = stability::Trim::new(
+            data.length_lbp,
+            mean_draught,
+            center_waterline_shift,
+            center_draught_shift.clone(),
+            Rc::clone(&metacentric_height),
+            Rc::clone(&ship_mass),
+            Rc::clone(&ship_moment),
+            Rc::clone(&parameters),
+        )
+        .value();
+    */
     // Длинна по ватерлинии при текущей осадке
     let length_wl = Curve::new_linear(&data.waterline_length).value(mean_draught);
     // Ширина по ватерлинии при текущей осадке
@@ -437,22 +450,22 @@ fn execute() -> Result<(), Error> {
     // Марки заглубления
     let mut draft_mark = DraftMark::new(
         Box::new(Draught::new(
-            data.length_lbp, 
-            mean_draught, 
-            center_waterline_shift, 
-                // Дифферент для остойчивости
+            data.length_lbp,
+            mean_draught,
+            center_waterline_shift,
+            // Дифферент для остойчивости
             Box::new(stability::Trim::new(
                 data.length_lbp,
                 mean_draught,
                 center_waterline_shift,
-                center_draught_shift.clone(),        
+                center_draught_shift.clone(),
                 Rc::clone(&metacentric_height),
                 Rc::clone(&ship_mass),
                 Rc::clone(&ship_moment),
-                Rc::clone(&parameters)
+                Rc::clone(&parameters),
             )),
             None,
-        )), 
+        )),
         data.draft_mark.data(),
         Rc::clone(&parameters),
     );
@@ -465,8 +478,8 @@ fn execute() -> Result<(), Error> {
         .expect("main error no area data!");
 
     let wind: Rc<dyn IWind> = Rc::new(Wind::new(
-        p_v, 
-        m, 
+        p_v,
+        m,
         Rc::new(Windage::new(
             Rc::clone(&icing_stab),
             Rc::clone(&area_stability),
@@ -477,9 +490,9 @@ fn execute() -> Result<(), Error> {
                 Curve::new_linear(&data.delta_windage_moment_z).value(mean_draught),
             ),
             volume_shift,
-        )), 
-        gravity_g, 
-        Rc::clone(&ship_mass), 
+        )),
+        gravity_g,
+        Rc::clone(&ship_mass),
         Rc::clone(&parameters),
     ));
 
@@ -493,8 +506,8 @@ fn execute() -> Result<(), Error> {
     let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&metacentric_height),
-        volume,    // Объемное водоизмещение (1)
-        length_wl, // длинна по ватерлинии при текущей осадке
+        volume,     // Объемное водоизмещение (1)
+        length_wl,  // длинна по ватерлинии при текущей осадке
         data.width, // ширина полная
         breadth_wl, // ширина по ватерлинии при текущей осадке
         mean_draught,
