@@ -1,6 +1,6 @@
 //! Учет момента от намокания палубного лесного груза
 
-use crate::{Bound, ILoadMass, LoadMass, Moment};
+use crate::{ILoadMass, LoadMass, Moment};
 use std::rc::Rc;
 
 /// Учет намокания палубного лесного груза.  

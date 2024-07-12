@@ -1,7 +1,7 @@
 //! Исправленная метацентрическая высота
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{math::*, IMass, IParameters, IShipMoment, ITank, LoadingType, ParameterID, Parameters};
+use crate::{math::*, IMass, IParameters, IShipMoment, ITank, LoadingType, ParameterID};
 /// Продольная и поперечная исправленная метацентрическая высота.
 #[derive(Clone)]
 pub struct MetacentricHeight {

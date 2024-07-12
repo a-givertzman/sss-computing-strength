@@ -2,7 +2,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    math::*, IIcingMass, ILoadMass, IMass, IParameters, IResults, IWettingMass, LoadMass, LoadingType, ParameterID, Parameters
+    math::*, ILoadMass, IMass, IParameters, IResults, LoadMass, ParameterID
 };
 
 use super::{IIcingMoment, IWettingMoment};

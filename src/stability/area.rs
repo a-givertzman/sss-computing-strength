@@ -4,7 +4,7 @@
 use std::rc::Rc;
 
 use crate::{
-    area::HAreaStability, Bound, IDesk, Moment, Position
+    area::HAreaStability, icing_timber::IcingTimberBound, IDesk, Moment, Position
 };
 
 /// Момент площади горизонтальных поверхностей и
@@ -21,10 +21,8 @@ pub struct Area {
     area_const_h: Vec<HAreaStability>,
     /// Все палубные грузы судна
     desk_cargo: Rc<Vec<Rc<dyn IDesk>>>,
-    /// Ограничение по оси Х для площади обледенения палубного груза - леса
-    timber_icing_x: Option<Bound>,
-    /// Ограничение по оси Y для площади обледенения палубного груза - леса
-    timber_icing_y: Option<Bound>,
+    /// Ограничение для горизонтальной площади обледенения палубного груза - леса
+    icing_timber_bound: IcingTimberBound,
 }
 ///
 impl Area {
@@ -33,16 +31,14 @@ impl Area {
     /// поверхностей для текущей осадки, относительно миделя и относительно ОП
     /// * area_const_h - Площадь горизонтальных поверхностей корпуса судна
     /// * desk_cargo - Все палубные грузы судна
-    /// * timber_icing_x - Ограничение по оси Х для площади обледенения палубного груза - леса
-    /// * timber_icing_y - Ограничение по оси Y для площади обледенения палубного груза - леса
+    /// * icing_timber_bound - Ограничение для гортзонтальной площади обледенения палубного груза - леса
     pub fn new(
         av_cs_dmin1: f64,
         mvx_cs_dmin1: f64,
         mvz_cs_dmin1: f64,
         area_const_h: Vec<HAreaStability>,
         desk_cargo: Rc<Vec<Rc<dyn IDesk>>>,
-        timber_icing_x: Option<Bound>,
-        timber_icing_y: Option<Bound>,
+        icing_timber_bound: IcingTimberBound,
     ) -> Self {
         Self {
             av_cs_dmin1,
@@ -50,8 +46,7 @@ impl Area {
             mvz_cs_dmin1,
             area_const_h,
             desk_cargo,
-            timber_icing_x,
-            timber_icing_y,
+            icing_timber_bound,
         }
     }
 }
@@ -95,7 +90,7 @@ impl IArea for Area {
                         v.shift().y(),
                         v.shift().z() + v.height(),
                     ),
-                    v.horizontal_area(self.timber_icing_x, self.timber_icing_y),
+                    v.horizontal_area(self.icing_timber_bound.bound_x(), self.icing_timber_bound.bound_y()),
                 )
             })
             .sum::<Moment>()
@@ -113,7 +108,7 @@ impl IArea for Area {
                         v.shift().y(),
                         v.height(),
                     ),
-                    v.horizontal_area(self.timber_icing_x, self.timber_icing_y),
+                    v.horizontal_area(self.icing_timber_bound.bound_x(), self.icing_timber_bound.bound_y()),
                 )
             })
             .sum::<Moment>()

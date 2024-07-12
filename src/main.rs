@@ -13,6 +13,7 @@ use crate::{
 use data::{api_server::*, structs::loads::PhysicalType};
 use draught::Draught;
 pub use error::Error;
+use icing_timber::{IcingTimberBound, IcingTimberType};
 use log::info;
 use std::{collections::HashMap, io, rc::Rc, time::Instant};
 
@@ -20,6 +21,7 @@ mod area;
 mod data;
 mod error;
 mod icing_stab;
+mod icing_timber;
 mod load;
 //mod mass;
 //mod wetting_mass;
@@ -215,43 +217,24 @@ fn execute() -> Result<(), Error> {
     let load_timber = Rc::new(load_timber);
     let bulks = Rc::new(bulks);
 
-    let icing_area_h_str = data
-        .area_h_str
-        .iter()
-        .map(|v| HAreaStrength::new(v.value, Bound::new(v.bound_x1, v.bound_x2)))
-        .collect();
-    let icing_area_h_stab = data
-        .area_h_stab
-        .iter()
-        .map(|v| HAreaStability::new(v.value, Position::new(v.shift_x, v.shift_y, v.shift_z)))
-        .collect();
-    let icing_area_v = data
-        .area_v_str
-        .iter()
-        .map(|v| VerticalArea::new(v.value, v.shift_z, Bound::new(v.bound_x1, v.bound_x2)))
-        .collect::<Vec<_>>();
-
-    // Ограничения для площади обледенения палубного груза - леса
-    let (timber_icing_x, timber_icing_y) =
-        match data.icing_timber_stab.trim().to_lowercase().as_str() {
-            //        "full" => (None, None),
-            "half_left" => (None, Some(Bound::new(-data.width / 2., 0.))),
-            "half_right" => (None, Some(Bound::new(0., data.width / 2.))),
-            "bow" => (
-                Some(Bound::new(data.length_lbp / 6., data.length_lbp / 2.)),
-                None,
-            ),
-            _ => (None, None),
-        };
-
     let area_strength: Rc<dyn crate::strength::IArea> = Rc::new(crate::strength::Area::new(
-        icing_area_v.clone(),
-        icing_area_h_str,
+        data
+            .area_v_str
+            .iter()
+            .map(|v| VerticalArea::new(v.value, v.shift_z, Bound::new(v.bound_x1, v.bound_x2)))
+            .collect::<Vec<_>>(),
+        data
+            .area_h_str
+            .iter()
+            .map(|v| HAreaStrength::new(v.value, Bound::new(v.bound_x1, v.bound_x2)))
+            .collect(),
         Rc::clone(&desks),
-        timber_icing_x,
-        timber_icing_y,
+        IcingTimberBound::new(
+            data.width,
+            data.length_loa,
+            IcingTimberType::from(data.icing_timber_stab.clone()),
+        ),
     ));
-
     let icing_stab: Rc<dyn IIcingStab> = Rc::new(IcingStab::new(
         data.icing_stab.clone(),
         data.icing_m_timber,
@@ -294,10 +277,17 @@ fn execute() -> Result<(), Error> {
         Curve::new_linear(&data.area_v_stab.area()).value(mean_draught),
         Curve::new_linear(&data.area_v_stab.moment_x()).value(mean_draught),
         Curve::new_linear(&data.area_v_stab.moment_z()).value(mean_draught),
-        icing_area_h_stab,
+        data
+            .area_h_stab
+            .iter()
+            .map(|v| HAreaStability::new(v.value, Position::new(v.shift_x, v.shift_y, v.shift_z)))
+            .collect(),
         Rc::clone(&desks),
-        timber_icing_x,
-        timber_icing_y,
+        IcingTimberBound::new(
+            data.width,
+            data.length_loa,
+            IcingTimberType::from(data.icing_timber_stab.clone()),
+        ),
     ));
     // Момент массы нагрузки на корпус судна
     let ship_moment: Rc<dyn stability::IShipMoment> = Rc::new(stability::ShipMoment::new(

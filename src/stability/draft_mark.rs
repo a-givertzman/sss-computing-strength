@@ -3,7 +3,7 @@
 
 use std::{collections::HashMap, f64::consts::PI, rc::Rc};
 
-use crate::{draught::IDraught, Curve, ICurve, ILeverDiagram, IParameters, ParameterID, Position};
+use crate::{draught::IDraught, Curve, ICurve, IParameters, ParameterID};
 
 /// Расчет уровня заглубления для координат отметок заглубления на корпусе судна 
 pub struct DraftMark {
