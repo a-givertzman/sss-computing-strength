@@ -19,7 +19,6 @@ mod tests {
         let result = Trim::new(
             ship_length,
             1.6562565987303715,
-            -0.862,
             Position::new(-0.27987870364183104, 0., 0.843131172736385),
             Rc::new(FakeMetacentricHeight::new(
                 616.8739594823264,
@@ -32,16 +31,16 @@ mod tests {
                 vec![0.],
             )),
             Rc::new(FakeShipMoment::new(
-                Position::new(-3.53, -0.03, 5.07),
-                Position::new(-8309.973, 0., 11935.287,), 
+                Position::new(-2.8119854685374452, -0.027482047868596836, 5.071745296157758),
+                Position::new(-6620.420483734884, -64.70257925581393, 11940.704111971389), 
             )),
             Rc::new(FakeParameters{}),
         )
-        .value();
-        let target = FakeTrim::from_angle(-0.3013717957692749, ship_length).value();
+        .value().1;
+        let target = FakeTrim::from_angle(1.6562565987303715, -0.23518307533354152, ship_length).value().1;
 
         assert!(
-            (result - target).abs() < result.abs() * 0.01, //TODO
+            (result - target).abs() < result.abs() * 0.001, //TODO
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target

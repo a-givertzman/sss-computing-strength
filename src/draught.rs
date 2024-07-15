@@ -8,8 +8,6 @@ use crate::{trim::ITrim, IParameters, ParameterID};
 pub struct Draught {
     /// длинна судна
     ship_length: f64,
-    /// Средняя осадка
-    mean_draught: f64,   
     ///  отстояние центра тяжести ватерлинии по длине от миделя
     center_waterline_shift: f64, 
     /// Дифферент судна
@@ -25,13 +23,12 @@ pub struct Draught {
 impl Draught {
     /// Основной конструктор
     /// * ship_length - длинна судна
-    /// * mean_draught - Средняя осадка
+
     /// * center_waterline_shift - отстояние центра тяжести ватерлинии по длине от миделя
     /// * trim - Дифферент судна
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
-        ship_length: f64,           
-        mean_draught: f64,        
+        ship_length: f64,               
         center_waterline_shift: f64,    
         trim: Box<dyn ITrim>,               
         parameters: Option<Rc<dyn IParameters>>, 
@@ -39,7 +36,6 @@ impl Draught {
         assert!(ship_length > 0., "ship_length {ship_length} > 0.");
         Self {
             ship_length,
-            mean_draught,
             center_waterline_shift,
             trim,
             parameters,
@@ -50,14 +46,19 @@ impl Draught {
     /// Вычисление осадки на миделе и изменения осадки
     #[allow(non_snake_case)]
     fn calculate(&mut self) {
+        let (mean_draught, trim) = self.trim.value();
         // Осадка на носовом перпендикуляре длины L в ДП dн, м (6)
-        let draught_bow = self.mean_draught + (0.5 - self.center_waterline_shift/self.ship_length)*self.trim.value();
+        let draught_bow = mean_draught + (0.5 - self.center_waterline_shift/self.ship_length)*trim;
         // Осадка на кормовом перпендикуляре длины L в ДП dк, м (7)
-        let draught_stern = self.mean_draught - (0.5 + self.center_waterline_shift/self.ship_length)*self.trim.value();
+        let draught_stern = mean_draught - (0.5 + self.center_waterline_shift/self.ship_length)*trim;
         // Осадка на миделе в ДП, м (8)
         let draught_mid = (draught_bow + draught_stern) / 2.;
         // Изменение осадки
         let delta_draught = (draught_bow - draught_stern) / self.ship_length;
+     //   log::info!("\t Draught mean_draught:{:?} center_waterline_shift:{:?} ship_length:{:?}, trim:{}, 
+      //      draught_bow:{draught_bow} draught_stern:{draught_stern} draught_mid:{draught_mid}", 
+     //       mean_draught, self.center_waterline_shift, self.ship_length, trim);
+     //   dbg!(mean_draught, trim, draught_bow, draught_stern, draught_mid);
         if let Some(parameters) = &self.parameters {
             parameters.add(ParameterID::DraughtBow, draught_bow);
             parameters.add(ParameterID::DraughtStern, draught_stern);

@@ -14,9 +14,7 @@ pub struct Trim {
     /// длинна судна
     ship_length: f64,
     /// Средняя осадка
-    mean_draught: f64,   
-    ///  отстояние центра тяжести ватерлинии по длине от миделя
-    center_waterline_shift: f64, 
+    mean_draught: f64,
     /// отстояние центра величины погруженной части судна       
     center_draught_shift: Position,
     /// Исправленная метацентрическая высота
@@ -33,16 +31,14 @@ impl Trim {
     /// Основной конструктор
     /// * ship_length - длинна судна
     /// * mean_draught - Средняя осадка
-    /// * center_waterline_shift - отстояние центра тяжести ватерлинии по длине от миделя
     /// * center_draught_shift - отстояние центра величины погруженной части судна   
     /// * metacentric_height - Исправленная метацентрическая высота
     /// * mass - Масса судна
     /// * moment - Момент массы судна
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
-        ship_length: f64,           
-        mean_draught: f64,        
-        center_waterline_shift: f64,     
+        ship_length: f64,   
+        mean_draught: f64,          
         center_draught_shift: Position,        
         metacentric_height: Rc<dyn IMetacentricHeight>, 
         mass: Rc<dyn IMass>, 
@@ -53,7 +49,6 @@ impl Trim {
         Self {
             ship_length,
             mean_draught,
-            center_waterline_shift,
             center_draught_shift,
             metacentric_height,
             mass,
@@ -66,7 +61,7 @@ impl Trim {
 impl ITrim for Trim {
     /// Значение дифферента, коэффициент используемый при вычислении осадки носа и кормы
     #[allow(non_snake_case)]
-    fn value(&self) -> f64 {
+    fn value(&self) -> (f64, f64) {
         // Продольная исправленная метацентрическая высота (3)
         let H = self.metacentric_height.h_long_fix();
         // Момент дифферентующий на 1 см осадки (4)
@@ -85,6 +80,6 @@ impl ITrim for Trim {
         );
         self.parameters.add(ParameterID::MomentTrimPerCm, trim_moment);
         self.parameters.add(ParameterID::Trim, trim_angle);
-        t
+        (self.mean_draught, t)
     }
 }

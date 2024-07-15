@@ -19,9 +19,8 @@ mod tests {
         let ship_length = 118.39;
         let mut draught = Draught::new(
             ship_length,
-            1.6562565987303715,
             -0.862,
-            Box::new(FakeTrim::from_angle(-0.3013717957692749, ship_length)),
+            Box::new(FakeTrim::from_angle(1.6562565987303715, -0.3013717957692749, ship_length)),
             None,
         );
         // bow

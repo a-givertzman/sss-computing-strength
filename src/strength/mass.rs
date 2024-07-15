@@ -157,7 +157,7 @@ impl Mass {
                         .iter()
                         .map(|v| v.value(Some(*b)))
                         .sum::<f64>()
-                    + icing
+                    + icing + wetting
             })
             .collect();
         vec_hull.push(vec_hull.iter().sum());

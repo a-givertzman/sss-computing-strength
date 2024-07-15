@@ -1,6 +1,6 @@
 //! Класс для расчета дифферента и средней осадки в расчете прочности
 
-use crate::{draught::Draught, math::Bounds, trim::{FakeTrim, ITrim}, IVolume};
+use crate::{draught::Draught, math::Bounds, trim::{FakeTrim, ITrim}, IVolume, MultipleSingle};
 
 use super::{
     displacement::Displacement,
@@ -58,7 +58,7 @@ impl Trim {
     /// Вычисление суммы площади и смещения центра методом трапеций
     /// * values - Vec(x, value)>
     /// * result - (delta_x, sum_s)
-    fn calc_s_trap(&self, values: &Vec<(f64, f64)>) -> (f64, f64) {
+   /* fn calc_s_trap(&self, values: &Vec<(f64, f64)>) -> (f64, f64) {
         let l = self.bounds.delta();
         let mut sum_s = 0.;
         let mut xc = 0.;
@@ -74,11 +74,11 @@ impl Trim {
         }
         xc /= sum_s;
         (xc, sum_s)
-    }
+    }*/
     /// Вычисление суммы площади и смещения центра
     /// * values - Vec(x, value)>
     /// * result - (delta_x, sum_s)
-    fn calc_s(&self, values: &Vec<(f64, f64)>) -> (f64, f64) {
+    pub fn calc_s(values: &Vec<(f64, f64)>) -> (f64, f64) {
         let mut sum_s = 0.;
         let mut xc = 0.;
         for i in 0..values.len() {
@@ -98,45 +98,47 @@ impl Trim {
 }
 /// 
 impl ITrim for Trim {
-    /// Вычисление дифферента
-    fn value(&self) -> f64 {
+    /// Вычисление средней осадки и дифферента
+    fn value(&self) -> (f64, f64) {
         let dx = self.bounds.iter().map(|v| v.center()).collect::<Vec<_>>();
         let mass_pairs = dx.clone().into_iter().zip(self.mass.values()).collect::<Vec<_>>();
-        let (w_xg, w) = self.calc_s(&mass_pairs);
+        let (w_xg, w) = Trim::calc_s(&mass_pairs);
         let mut trim = 0.; // Дифферент
-        let mut mean_draught = self.mean_draught;
-        let (mut v_xc, mut volume) = (0., 0.);
+        let mut mean_draught: f64 = self.mean_draught;
+        let (mut v_xc, mut volume_mass) = (0., 0.);
         for _i in 0..50 {
             mean_draught = self.mean_draught;
             for _j in 0..50 {
-                let volume_values = Volume::new(
+                let mut volume_values = Volume::new(
                     Rc::clone(&self.displacement),
                     Box::new(Draught::new(
                         self.ship_length,           
-                        self.mean_draught,        
                         self.center_waterline_shift,    
-                        Box::new(FakeTrim::new(trim)),               
+                        Box::new(FakeTrim::new(mean_draught, trim)),               
                         None,                       
                     )),
                     Rc::clone(&self.bounds),
                 ).values();
+                volume_values.mul_single(self.water_density);
+    //            dbg!(&volume_values);
                 let volume_pairs = dx.clone().into_iter().zip(volume_values).collect::<Vec<_>>();
-                (v_xc, volume) = self.calc_s(&volume_pairs);
-                let delta_w = (w - volume*self.water_density)/w;              
+                (v_xc, volume_mass) = Trim::calc_s(&volume_pairs);
+                let delta_w = (w - volume_mass)/w;              
                 if delta_w.abs() <= 0.000000001 {
                     break;
                 }         
                 mean_draught = 0.001_f64.max(mean_draught + mean_draught*delta_w);   
-//                dbg!(_j, trim, mean_draught, v_xc, volume*self.water_density, w, delta_w, );             
+    //            dbg!(_j, trim, mean_draught, v_xc, volume_mass, w, delta_w, );             
             }
             let delta_x = w_xg - v_xc;
-//            dbg!(_i, trim, mean_draught, v_xc, w_xg, w, delta_x, );
+   //         dbg!(_i, trim, mean_draught, v_xc, w_xg, w, delta_x, );
             if delta_x.abs() <= 0.000000001 {
+    //            dbg!("delta_x.abs() <= 0.000000001");
                 break;
             }                 
             trim = trim + delta_x / 10.;
         }
-        trim
+        (mean_draught, trim)
     }
 }
 

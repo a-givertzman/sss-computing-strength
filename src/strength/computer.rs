@@ -74,7 +74,6 @@ impl Computer {
             Rc::clone(&self.displacement),
             Box::new(Draught::new(
                 self.ship_length,
-                self.water_density,  
                 self.center_waterline_shift,
                 Box::new(Trim::new(
                     self.ship_length, 

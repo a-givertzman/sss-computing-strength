@@ -23,8 +23,6 @@ mod error;
 mod icing_stab;
 mod icing_timber;
 mod load;
-//mod mass;
-//mod wetting_mass;
 mod draught;
 mod math;
 mod stability;
@@ -441,13 +439,11 @@ fn execute() -> Result<(), Error> {
     let mut draft_mark = DraftMark::new(
         Box::new(Draught::new(
             data.length_lbp,
-            mean_draught,
             center_waterline_shift,
             // Дифферент для остойчивости
             Box::new(stability::Trim::new(
                 data.length_lbp,
                 mean_draught,
-                center_waterline_shift,
                 center_draught_shift.clone(),
                 Rc::clone(&metacentric_height),
                 Rc::clone(&ship_mass),
