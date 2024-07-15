@@ -450,7 +450,7 @@ fn execute() -> Result<(), Error> {
                 Rc::clone(&ship_moment),
                 Rc::clone(&parameters),
             )),
-            None,
+            Some(Rc::clone(&parameters)),
         )),
         data.draft_mark.data(),
         Rc::clone(&parameters),
