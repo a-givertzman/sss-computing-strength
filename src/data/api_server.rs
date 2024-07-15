@@ -185,43 +185,43 @@ pub fn get_data(
         ship_id
     ))?)?;
     let cargo = LoadCargoArray::parse(&api_server.fetch(&format!(
-        "SELECT name, \
-                mass, \
-                bound_x1, \
-                bound_x2, \
-                bound_y1, \
-                bound_y2, \
-                bound_z1, \
-                bound_z2, \
-                mass_shift_x, \
-                mass_shift_y, \
-                mass_shift_z, \
-                horizontal_area, \
-                horizontal_area_shift_x, \
-                horizontal_area_shift_y, \
-                vertical_area, \
-                vertical_area_shift_x, \
-                vertical_area_shift_y, \
-                vertical_area_shift_z, \
-                loading_type::TEXT \
+        "SELECT c.name AS name, \
+                c.mass AS mass, \
+                c.bound_x1 AS bound_x1, \
+                c.bound_x2 AS bound_x2, \
+                c.bound_y1 AS bound_y1, \
+                c.bound_y2 AS bound_y2, \
+                c.bound_z1 AS bound_z1, \
+                c.bound_z2 AS bound_z2, \
+                c.mass_shift_x AS mass_shift_x, \
+                c.mass_shift_y AS mass_shift_y, \
+                c.mass_shift_z AS mass_shift_z, \
+                c.horizontal_area AS horizontal_area, \
+                c.horizontal_area_shift_x AS horizontal_area_shift_x, \
+                c.horizontal_area_shift_y AS horizontal_area_shift_y, \
+                c.vertical_area AS vertical_area, \
+                c.vertical_area_shift_x AS vertical_area_shift_x, \
+                c.vertical_area_shift_y AS vertical_area_shift_y, \
+                c.vertical_area_shift_z AS vertical_area_shift_z, \
+                c.loading_type::TEXT \
             FROM cargo WHERE ship_id={ship_id};"
         ),
     )?)?;
     let compartment = CompartmentArray::parse(&api_server.fetch(&format!(
-        "SELECT space_id, \
-                name, \
-                mass, \
-                density, \
-                volume, \
-                bound_x1, \
-                bound_x2, \
-                mass_shift_x, \
-                mass_shift_y, \
-                mass_shift_z, \
-                m_f_s_y, \
-                m_f_s_x, \
-                grain_moment, \
-                loading_type::TEXT, \
+        "SELECT space_id AS name, \
+                name AS name, \
+                mass AS name, \
+                density AS name, \
+                volume AS name, \
+                bound_x1 AS name, \
+                bound_x2 AS name, \
+                mass_shift_x AS name, \
+                mass_shift_y AS name, \
+                mass_shift_z AS name, \
+                m_f_s_y AS name, \
+                m_f_s_x AS name, \
+                grain_moment AS name, \
+                loading_type::TEXT AS name, \
                 physical_type::TEXT \
             FROM compartment WHERE ship_id={ship_id} AND active=TRUE AND mass>0;"
     ))?)?;

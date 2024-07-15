@@ -17,7 +17,7 @@ pub enum LoadingType {
     Hull,
     Equipment,
     Ballast,
-    Store,
+    Stores,
     Cargo,
 }
 ///
@@ -30,7 +30,7 @@ impl std::fmt::Display for LoadingType {
                 LoadingType::Hull => "Hull",
                 LoadingType::Equipment => "Equipment",
                 LoadingType::Ballast => "Ballast",
-                LoadingType::Store => "Store",
+                LoadingType::Stores => "Stores",
                 LoadingType::Cargo => "Cargo",  
             },
         )
@@ -41,7 +41,7 @@ impl From<CargoType> for LoadingType {
     fn from(value: CargoType) -> Self {
         match value {
             CargoType::Ballast => LoadingType::Ballast,
-            CargoType::Store => LoadingType::Store,
+            CargoType::Stores => LoadingType::Stores,
             CargoType::Cargo => LoadingType::Cargo,
         }
     }
@@ -51,7 +51,7 @@ impl From<CompartmentType> for LoadingType {
     fn from(value: CompartmentType) -> Self {
         match value {
             CompartmentType::Ballast => LoadingType::Ballast,
-            CompartmentType::Store => LoadingType::Store,
+            CompartmentType::Store => LoadingType::Stores,
             CompartmentType::Cargo => LoadingType::Cargo,
         }
     }

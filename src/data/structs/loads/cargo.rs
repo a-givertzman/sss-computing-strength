@@ -7,8 +7,8 @@ use crate::data::structs::DataArray;
 pub enum CargoType {
     #[serde(alias="ballast")]
     Ballast,
-    #[serde(alias="store")]
-    Store,
+    #[serde(alias="stores")]
+    Stores,
     #[serde(alias="cargo")]
     Cargo,
 }
@@ -20,7 +20,7 @@ impl std::fmt::Display for CargoType {
             "{}",
             match self {
                 CargoType::Ballast => "Ballast", 
-                CargoType::Store => "Store", 
+                CargoType::Stores => "Stores", 
                 CargoType::Cargo => "Cargo", 
             },
         )

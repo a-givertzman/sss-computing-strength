@@ -74,7 +74,7 @@ impl Mass {
         let stores = self
             .loads_variable
             .iter()
-            .filter(|v| v.load_type() == LoadingType::Store)
+            .filter(|v| v.load_type() == LoadingType::Stores)
             .map(|v| v.value(None))
             .sum::<f64>();
         let cargo = self
@@ -134,7 +134,7 @@ impl Mass {
                 vec_ballast.push(ballast);
                 let store = self.loads_variable
                     .iter()
-                    .filter(|v| v.load_type() == LoadingType::Store)
+                    .filter(|v| v.load_type() == LoadingType::Stores)
                     .map(|v| v.value(Some(*b)))
                     .sum::<f64>();  
                 vec_store.push(store);
