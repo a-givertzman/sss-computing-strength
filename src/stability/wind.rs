@@ -20,24 +20,22 @@ pub struct Wind {
 ///
 impl Wind {
     /// Основной конструктор
-    /// * p_v: f64  Предполагаемое давление ветра
-    /// * m: f64,   Добавка на порывистость ветра
+    /// * p_v_m: (f64, f64):  Предполагаемое давление ветра + добавка на порывистость ветра
     /// * a_v: f64, Площадь парусности
     /// * z_v: f64, Плечо парусности
     /// * g: f64,   Ускорение свободного падения
     /// * mass: Rc<dyn IMass>, Все грузы судна
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
-        p_v: f64,   
-        m: f64,          
+        p_v_m: (f64, f64),          
         windage: Rc<dyn IWindage>,
         g: f64,             
         mass: Rc<dyn IMass>, 
         parameters: Rc<dyn IParameters>, 
     ) -> Self {
         Self {
-            p_v,
-            m,
+            p_v: p_v_m.0,
+            m: p_v_m.1,
             windage,
             g,
             mass,

@@ -9,7 +9,7 @@ use crate::{
     strength::*,
     windage::Windage,
 };
-use data::{api_server::*, structs::loads::MatterType};
+use data::api_server::*;
 use draught::Draught;
 pub use error::Error;
 use icing_timber::{IcingTimberBound, IcingTimberType};
@@ -76,7 +76,7 @@ fn execute() -> Result<(), Error> {
 
     let results: Rc<dyn IResults> = Rc::new(Results::new());
     let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
-    let mut data = get_data(&mut api_server, ship_id)?;
+    let data = get_data(&mut api_server, ship_id)?;
     elapsed.insert("ParsedShipData sync", time.elapsed());
 
     /*   let time = Instant::now();
@@ -88,15 +88,9 @@ fn execute() -> Result<(), Error> {
 
     let time = Instant::now();
     //   dbg!(&data);
-    
+
     // ускорение свободного падения
     let gravity_g = 9.81;
-    // шпангоуты
-    let frames: Vec<Frame> = data
-        .frame_area
-        .iter()
-        .map(|v| Frame::new(v.x, Curve::new_linear(&v.immersion_area)))
-        .collect();
     // вектор разбиения судна на отрезки
     let bounds = Rc::new(Bounds::from_frames(&data.bounds));
     // коллекция различных типов грузов
@@ -110,25 +104,6 @@ fn execute() -> Result<(), Error> {
         &data.cargoes, 
         &data.compartments
     );
-    // площади поверхностей для расчета прочности
-    let area_strength: Rc<dyn crate::strength::IArea> = Rc::new(crate::strength::Area::new(
-        data
-            .area_v_str
-            .iter()
-            .map(|v| VerticalArea::new(v.value, v.shift_z, Bound::new(v.bound_x1, v.bound_x2)))
-            .collect::<Vec<_>>(),
-        data
-            .area_h_str
-            .iter()
-            .map(|v| HAreaStrength::new(v.value, Bound::new(v.bound_x1, v.bound_x2)))
-            .collect(),
-        loads.desks(),
-        IcingTimberBound::new(
-            data.width,
-            data.length_loa,
-            IcingTimberType::from(data.icing_timber_stab.clone()),
-        ),
-    ));
     // параметры обледенения поверхностей судна
     let icing_stab: Rc<dyn IIcingStab> = Rc::new(IcingStab::new(
         data.icing_stab.clone(),
@@ -149,7 +124,24 @@ fn execute() -> Result<(), Error> {
         loads.loads_const(),
         Rc::new(strength::IcingMass::new(
             Rc::clone(&icing_stab),
-            Rc::clone(&area_strength),
+            Rc::new(crate::strength::Area::new(
+                data
+                    .area_v_str
+                    .iter()
+                    .map(|v| VerticalArea::new(v.value, v.shift_z, Bound::new(v.bound_x1, v.bound_x2)))
+                    .collect::<Vec<_>>(),
+                data
+                    .area_h_str
+                    .iter()
+                    .map(|v| HAreaStrength::new(v.value, Bound::new(v.bound_x1, v.bound_x2)))
+                    .collect(),
+                loads.desks(),
+                IcingTimberBound::new(
+                    data.width,
+                    data.length_loa,
+                    IcingTimberType::from(data.icing_timber_stab.clone()),
+                ),
+            )),
         )),
         Rc::new(WettingMass::new(
             data.wetting_timber,
@@ -228,7 +220,11 @@ fn execute() -> Result<(), Error> {
         center_waterline_shift,
         mean_draught,
         Rc::clone(&ship_mass),
-        Rc::new(Displacement::new(frames)),
+        Rc::new(Displacement::new(data
+            .frame_area
+            .iter()
+            .map(|v| Frame::new(v.x, Curve::new_linear(&v.immersion_area)))
+            .collect())),
         Rc::clone(&bounds),
         Rc::clone(&results),
     )
@@ -261,32 +257,11 @@ fn execute() -> Result<(), Error> {
     let breadth_wl = Curve::new_linear(&data.waterline_breadth).value(mean_draught);
     // Отстояние по вертикали центра площади проекции подводной части корпуса
     let volume_shift = Curve::new_linear(&data.volume_shift).value(mean_draught);
-    // Проверяем есть ли пантокарены в отрицательной области углов
-    // Если нет то считаем что судно симметорично и зеркально
-    // копируем данные в отрицательную область углов крена
-    let mut tmp = data
-        .pantocaren
-        .first()
-        .expect("Main pantocaren error: no data!")
-        .1
-        .clone();
-    tmp.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-    if tmp.first().expect("Main pantocaren error: no data!").0 <= 0. {
-        data.pantocaren.iter_mut().for_each(|(_, vector)| {
-            let mut negative = vector
-                .iter()
-                .filter(|(angle, _)| *angle > 0.)
-                .map(|(angle, moment)| (-angle, -moment))
-                .collect();
-            vector.append(&mut negative);
-            vector.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-        });
-    }
     // Диаграмма плечей остойчивости
     let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
         Rc::clone(&ship_moment),
         center_draught_shift.clone(),
-        Curve2D::from_values_catmull_rom(data.pantocaren),
+        data.pantocaren,
         // Curve2D::from_values_linear(data.pantocaren),
         mean_draught,
         Rc::clone(&metacentric_height),
@@ -314,16 +289,12 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&parameters),
     );
     send_draft_mark(&mut api_server, ship_id, draft_mark.calculate())?;
-    // Предполагаемое давление ветра +
-    // Добавка на порывистость ветра
-    let (p_v, m) = data
-        .navigation_area_param
-        .get_area(&data.navigation_area)
-        .expect("main error no area data!");
     // влияние ветра на остойчивость
     let wind: Rc<dyn IWind> = Rc::new(Wind::new(
-        p_v,
-        m,
+        data
+            .navigation_area_param
+            .get_area(&data.navigation_area)
+            .expect("main error no area data!"),
         Rc::new(Windage::new(
             Rc::clone(&icing_stab),
             Rc::clone(&area_stability),
@@ -362,19 +333,6 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&roll_period),
     ));
     //dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
-    // остойчивость
-    let stability = Stability::new(
-        // Угол заливания отверстий
-        flooding_angle,
-        // Диаграмма плеч статической остойчивости
-        Rc::clone(&lever_diagram),
-        // Амплитуда качки судна с круглой скулой (2.1.5)
-        Rc::clone(&roll_amplitude),
-        // Расчет плеча кренящего момента от давления ветра
-        Rc::clone(&wind),
-        Rc::clone(&parameters),
-    );
-    // dbg!(stability.k()?);
     // Критерии остойчивости
     let mut criterion = Criterion::new(
         data.ship_type,
@@ -390,7 +348,17 @@ fn execute() -> Result<(), Error> {
         Curve::new_linear(&data.h_subdivision).value(mean_draught),
         Rc::clone(&wind),
         Rc::clone(&lever_diagram),
-        Rc::new(stability),
+        Rc::new(Stability::new(
+            // Угол заливания отверстий
+            flooding_angle,
+            // Диаграмма плеч статической остойчивости
+            Rc::clone(&lever_diagram),
+            // Амплитуда качки судна с круглой скулой (2.1.5)
+            Rc::clone(&roll_amplitude),
+            // Расчет плеча кренящего момента от давления ветра
+            Rc::clone(&wind),
+            Rc::clone(&parameters),
+        )),
         Rc::clone(&metacentric_height),
         Rc::new(Acceleration::new(
             data.width,

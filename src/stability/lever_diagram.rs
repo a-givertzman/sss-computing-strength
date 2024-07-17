@@ -17,7 +17,7 @@ pub struct LeverDiagram {
     /// Отстояние центра величины погруженной части судна
     center_draught_shift: Position,
     /// Кривая плечей остойчивости формы для разных осадок
-    data: Curve2D,
+    pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
     /// Средняя осадка
     mean_draught: f64,
     /// Продольная и поперечная исправленная метацентрическая высота.
@@ -42,14 +42,14 @@ impl LeverDiagram {
     /// Основной конструктор.
     /// * ship_moment - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     /// * center_draught_shift - Отстояние центра величины погруженной части судна
-    /// * data - Кривая плечей остойчивости формы для разных осадок
+    /// * pantocaren - Кривая плечей остойчивости формы для разных осадок
     /// * mean_draught - Средняя осадка
     /// * metacentric_height - Продольная и поперечная исправленная метацентрическая высота.
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         ship_moment: Rc<dyn IShipMoment>,
         center_draught_shift: Position,
-        data: Curve2D,
+        pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
         mean_draught: f64,
         metacentric_height: Rc<dyn IMetacentricHeight>,
         parameters: Rc<dyn IParameters>, 
@@ -57,7 +57,7 @@ impl LeverDiagram {
         Self {
             ship_moment,
             center_draught_shift,
-            data,
+            pantocaren,
             mean_draught,
             metacentric_height,
             parameters,
@@ -73,11 +73,33 @@ impl LeverDiagram {
     /// для каждого угла крена (11) + расчет плеча
     /// динамической остойчивости (13)
     fn calculate(&self) {
+        // Проверяем есть ли пантокарены в отрицательной области углов
+        // Если нет то считаем что судно симметорично и зеркально
+        // копируем данные в отрицательную область углов крена
+        let mut pantocaren = self.pantocaren.clone();
+        let mut tmp = pantocaren
+            .first()
+            .expect("Main pantocaren error: no data!")
+            .1
+            .clone();
+        tmp.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        if tmp.first().expect("Main pantocaren error: no data!").0 <= 0. {
+            pantocaren.iter_mut().for_each(|(_, vector)| {
+                let mut negative = vector
+                    .iter()
+                    .filter(|(angle, _)| *angle > 0.)
+                    .map(|(angle, moment)| (-angle, -moment))
+                    .collect();
+                vector.append(&mut negative);
+                vector.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+            });
+        }
+        let curve = Curve2D::from_values_catmull_rom(pantocaren);
         // расчет диаграммы
         let theta = |angle_deg: i32| {
             let angle_deg = angle_deg as f64;
             let angle_rad = angle_deg * std::f64::consts::PI / 180.;
-            let v1 = self.data.value(self.mean_draught, angle_deg);
+            let v1 = curve.value(self.mean_draught, angle_deg);
             let v2 = self.metacentric_height.z_g_fix() * angle_rad.sin();
             let v3 = (self.ship_moment.shift().y() - self.center_draught_shift.y()) * angle_rad.cos();
             let value = v1 - v2 - v3;

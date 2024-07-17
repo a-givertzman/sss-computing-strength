@@ -58,7 +58,7 @@ mod tests {
             let lever_diagram = LeverDiagram::new(
                 moment,
                 center_draught_shift,
-                Curve2D::from_values_linear(pantocaren),
+                pantocaren,
                 2.,
                 metacentric_height,
                 Rc::new(FakeParameters{}),

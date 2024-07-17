@@ -17,8 +17,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = Wind::new(
-            200.,
-            0.50,
+            (200., 0.50),
             Rc::new(FakeWindage::new(1000.,5., 1.)),
             9.81,
             Rc::new(FakeMass::new(
