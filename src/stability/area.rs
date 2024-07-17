@@ -20,7 +20,7 @@ pub struct Area {
     /// Площадь горизонтальных поверхностей корпуса судна
     area_const_h: Vec<HAreaStability>,
     /// Все палубные грузы судна
-    desk_cargo: Rc<Vec<Rc<dyn IDesk>>>,
+    desks: Rc<Vec<Rc<dyn IDesk>>>,
     /// Ограничение для горизонтальной площади обледенения палубного груза - леса
     icing_timber_bound: IcingTimberBound,
 }
@@ -30,14 +30,14 @@ impl Area {
     /// * mvx_cs, mvz_cs - Cтатический момент площади парусности сплошных
     /// поверхностей для текущей осадки, относительно миделя и относительно ОП
     /// * area_const_h - Площадь горизонтальных поверхностей корпуса судна
-    /// * desk_cargo - Все палубные грузы судна
+    /// * desks - Все палубные грузы судна
     /// * icing_timber_bound - Ограничение для гортзонтальной площади обледенения палубного груза - леса
     pub fn new(
         av_cs_dmin1: f64,
         mvx_cs_dmin1: f64,
         mvz_cs_dmin1: f64,
         area_const_h: Vec<HAreaStability>,
-        desk_cargo: Rc<Vec<Rc<dyn IDesk>>>,
+        desks: Rc<Vec<Rc<dyn IDesk>>>,
         icing_timber_bound: IcingTimberBound,
     ) -> Self {
         Self {
@@ -45,7 +45,7 @@ impl Area {
             mvx_cs_dmin1,
             mvz_cs_dmin1,
             area_const_h,
-            desk_cargo,
+            desks,
             icing_timber_bound,
         }
     }
@@ -56,7 +56,7 @@ impl IArea for Area {
     fn area_v(&self) -> f64 {
         self.av_cs_dmin1
             + self
-                .desk_cargo
+                .desks
                 .iter()
                 .map(|v| v.windage_area(None))
                 .sum::<f64>()
@@ -64,7 +64,7 @@ impl IArea for Area {
     /// Момент площади парусности
     fn moment_v(&self) -> Moment {
         Moment::new(self.mvx_cs_dmin1, 0., self.mvz_cs_dmin1) + self
-                .desk_cargo
+                .desks
                 .iter()
                 .map(|v| v.windage_moment())
                 .sum::<Moment>()
@@ -73,14 +73,14 @@ impl IArea for Area {
     fn moment_h(&self) -> Moment {
         self.area_const_h.iter().map(|v| v.moment()).sum::<Moment>()
             + self
-                .desk_cargo
+                .desks
                 .iter()
                 .map(|v| Moment::from_pos(v.shift(), v.horizontal_area(None, None)))
                 .sum::<Moment>()
     }
     /// Момент площади горизонтальных поверхностей палубного груза - леса
     fn moment_timber_h(&self) -> Moment {
-        self.desk_cargo
+        self.desks
             .iter()
             .filter(|v| v.is_timber())
             .map(|v| {
@@ -98,7 +98,7 @@ impl IArea for Area {
     /// Изменение момента площади горизонтальных поверхностей палубного груза - леса
     /// относительно палубы
     fn delta_moment_timber_h(&self) -> Moment {
-        self.desk_cargo
+        self.desks
             .iter()
             .filter(|v| v.is_timber())
             .map(|v| {

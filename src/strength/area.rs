@@ -15,8 +15,8 @@ pub struct Area {
     area_const_v: Vec<VerticalArea>,
     /// Площадь горизонтальных поверхностей корпуса судна
     area_const_h: Vec<HAreaStrength>,
-    /// Все грузы судна
-    loads_cargo: Rc<Vec<Rc<dyn IDesk>>>,
+    /// Все палубные грузы судна
+    desks: Rc<Vec<Rc<dyn IDesk>>>,
     /// Ограничение для гортзонтальной площади обледенения палубного груза - леса
     icing_timber_bound: IcingTimberBound,
 }
@@ -25,18 +25,18 @@ impl Area {
     /// Аргументы конструктора:  
     /// * area_const_v - Площадь парусности корпуса судна
     /// * area_const_h - Площадь горизонтальных поверхностей корпуса судна
-    /// * loads_cargo - Все грузы судна
+    /// * desks - Все палубные грузы судна
     /// * icing_timber_bound - Ограничение для гортзонтальной площади обледенения палубного груза - леса
     pub fn new(
         area_const_v: Vec<VerticalArea>,
         area_const_h: Vec<HAreaStrength>,
-        loads_cargo: Rc<Vec<Rc<dyn IDesk>>>,
+        desks: Rc<Vec<Rc<dyn IDesk>>>,
         icing_timber_bound: IcingTimberBound,
     ) -> Self {
         Self {
             area_const_v,
             area_const_h,
-            loads_cargo,
+            desks,
             icing_timber_bound,
         }
     }
@@ -50,7 +50,7 @@ impl IArea for Area {
             .map(|v| v.value(bound))
             .sum::<f64>()
             + self
-                .loads_cargo
+                .desks
                 .iter()
                 .map(|v| v.windage_area(bound))
                 .sum::<f64>()
@@ -72,7 +72,7 @@ impl IArea for Area {
             (Some(bound_x), None) => Some(bound_x),
             (Some(bound_x), Some(timber_icing_x)) => bound_x.intersect(&timber_icing_x),
         };
-        self.loads_cargo
+        self.desks
             .iter()
             .filter(|v| v.is_timber())
             .map(|v| v.horizontal_area(bound_x, self.icing_timber_bound.bound_y()) )

@@ -12,7 +12,7 @@ pub struct MetacentricHeight {
     /// Поперечный метацентрические радиус
     rad_trans: f64,
     /// Все жидкие грузы судна
-    tanks: Vec<Rc<dyn ITank>>,
+    tanks: Rc<Vec<Rc<dyn ITank>>>,
     /// Все грузы судна
     mass: Rc<dyn IMass>,
     /// Момент массы судна
@@ -43,7 +43,7 @@ impl  MetacentricHeight {
         center_draught_shift: Position, 
         rad_long: f64,                 
         rad_trans: f64,                
-        tanks: Vec<Rc<dyn ITank>>,
+        tanks: Rc<Vec<Rc<dyn ITank>>>,
         mass: Rc<dyn IMass>,    
         moment: Rc<dyn IShipMoment>,
         parameters: Rc<dyn IParameters>       

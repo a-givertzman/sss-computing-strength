@@ -19,7 +19,7 @@ mod tests {
                     Position::new(-1., 0., 2.),
                     1000.,
                     100.,
-                    Vec::new(),
+                    Rc::new(Vec::new()),
                     Rc::new(FakeMass::new(
                         1000.0,
                         vec![0.],
