@@ -2,56 +2,9 @@
 use crate::data::structs::DataArray;
 use serde::{Deserialize, Serialize};
 
+use super::{CargoGeneralCategory, MatterType};
 
-/// Тип элементов погрузки судна
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
-pub enum CompartmentType {
-    #[serde(alias="ballast")]
-    Ballast,
-    #[serde(alias="store")]
-    Store,
-    #[serde(alias="cargo")]
-    Cargo,
-}
-///
-impl std::fmt::Display for CompartmentType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                CompartmentType::Ballast => "Ballast",
-                CompartmentType::Store => "Store", 
-                CompartmentType::Cargo => "Cargo", 
-            },
-        )
-    }
-}
-/// Физический тип груза судна
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
-pub enum PhysicalType {
-    #[serde(alias="bulk")]
-    Bulk,
-    #[serde(alias="liquid")]
-    Liquid,
-    #[serde(alias="solid")]
-    Solid,
-}
-///
-impl std::fmt::Display for PhysicalType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                PhysicalType::Bulk => "Bulk",
-                PhysicalType::Liquid => "Liquid", 
-                PhysicalType::Solid => "Solid", 
-            },
-        )
-    }
-}
-/// Нагрузка судна: цистерны и трюмы  
+/// Помещения судна: цистерны и трюмы  
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CompartmentData {
     /// ID груза
@@ -76,10 +29,10 @@ pub struct CompartmentData {
     pub m_f_s_x: Option<f64>,
     /// Кренящий момент от смещения сыпучего груза, м4
     pub grain_moment: Option<f64>,
-    /// Тип элементов погрузки судна
-    pub loading_type: CompartmentType,
+    /// Классификация груза
+    pub general_category: CargoGeneralCategory,
     /// Физический тип груза судна
-    pub physical_type: PhysicalType,
+    pub matter_type: MatterType,
 }
 ///
 impl std::fmt::Display for CompartmentData {
@@ -87,7 +40,7 @@ impl std::fmt::Display for CompartmentData {
         write!(
             f,
             "CompartmentData(space_id:{} name:{} mass:{} density:{} volume:{} bound:({}, {}) \
-             mass_shift:({}, {}, {}) m_f_s_y:{} m_f_s_x:{} grain_moment:{} loading_type:{} physical_type:{})",
+             mass_shift:({}, {}, {}) m_f_s_y:{} m_f_s_x:{} grain_moment:{} general_category:{} matter_type:{})",
             self.space_id,
             self.name,
             self.mass.unwrap_or(0.),
@@ -101,8 +54,8 @@ impl std::fmt::Display for CompartmentData {
             self.m_f_s_y.unwrap_or(0.),
             self.m_f_s_x.unwrap_or(0.),
             self.grain_moment.unwrap_or(0.),
-            self.loading_type,
-            self.physical_type,
+            self.general_category,
+            self.matter_type,
         )
     }
 }

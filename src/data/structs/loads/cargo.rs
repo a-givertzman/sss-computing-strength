@@ -2,39 +2,17 @@
 use serde::{Deserialize, Serialize};
 use crate::data::structs::DataArray;
 
-/// Тип груза
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
-pub enum CargoType {
-    #[serde(alias="ballast")]
-    Ballast,
-    #[serde(alias="stores")]
-    Stores,
-    #[serde(alias="cargo")]
-    Cargo,
-}
-///
-impl std::fmt::Display for CargoType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                CargoType::Ballast => "Ballast", 
-                CargoType::Stores => "Stores", 
-                CargoType::Cargo => "Cargo", 
-            },
-        )
-    }
-}
-/// Груз, конструкции корпуса, контейнер или другой твердый груз
+use super::CargoGeneralCategory;
+
+/// Груз без привязки к помещению, всегда твердый
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LoadCargo {
     /// Имя груза
     pub name: String,
     /// Общая масса, т
     pub mass: Option<f64>,
-    /// Тип груза
-    pub loading_type: CargoType,
+    /// Классификация груза
+    pub general_category: CargoGeneralCategory,
     /// Груз - лес и может намокать и обмерзать
     pub timber: bool,
     /// Диапазон по длинне, м
@@ -73,7 +51,7 @@ impl std::fmt::Display for LoadCargo {
             mass_shift:({}, {}, {}) horizontal_area:{} horizontal_area_shift:({}, {}, {})
             vertical_area:{} vertical_area_shift_y:({}, {}, {}) )",
             self.name,
-            self.loading_type,
+            self.general_category,
             self.timber,
             self.mass.unwrap_or(0.),
             self.bound_x1,

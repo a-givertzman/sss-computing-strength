@@ -185,49 +185,76 @@ pub fn get_data(
         ship_id
     ))?)?;
     let cargo = LoadCargoArray::parse(&api_server.fetch(&format!(
-        "SELECT c.name AS name, \
-                c.mass AS mass, \
-                c.bound_x1 AS bound_x1, \
-                c.bound_x2 AS bound_x2, \
-                c.bound_y1 AS bound_y1, \
-                c.bound_y2 AS bound_y2, \
-                c.bound_z1 AS bound_z1, \
-                c.bound_z2 AS bound_z2, \
-                c.mass_shift_x AS mass_shift_x, \
-                c.mass_shift_y AS mass_shift_y, \
-                c.mass_shift_z AS mass_shift_z, \
-                c.horizontal_area AS horizontal_area, \
-                c.horizontal_area_shift_x AS horizontal_area_shift_x, \
-                c.horizontal_area_shift_y AS horizontal_area_shift_y, \
-                c.vertical_area AS vertical_area, \
-                c.vertical_area_shift_x AS vertical_area_shift_x, \
-                c.vertical_area_shift_y AS vertical_area_shift_y, \
-                c.vertical_area_shift_z AS vertical_area_shift_z, \
-                c.loading_type::TEXT \
-            FROM cargo WHERE ship_id={ship_id};"
-        ),
-    )?)?;
+        "SELECT 
+            c.name AS name, \
+            c.mass AS mass, \
+            c.timber AS timber, \
+            cgc.key AS general_category, \
+            c.bound_x1 AS bound_x1, \
+            c.bound_x2 AS bound_x2, \
+            c.bound_y1 AS bound_y1, \
+            c.bound_y2 AS bound_y2, \
+            c.bound_z1 AS bound_z1, \
+            c.bound_z2 AS bound_z2, \
+            c.mass_shift_x AS mass_shift_x, \
+            c.mass_shift_y AS mass_shift_y, \
+            c.mass_shift_z AS mass_shift_z, \
+            c.horizontal_area AS horizontal_area, \
+            c.horizontal_area_shift_x AS horizontal_area_shift_x, \
+            c.horizontal_area_shift_y AS horizontal_area_shift_y, \
+            c.vertical_area AS vertical_area, \
+            c.vertical_area_shift_x AS vertical_area_shift_x, \
+            c.vertical_area_shift_y AS vertical_area_shift_y, \
+            c.vertical_area_shift_z AS vertical_area_shift_z \
+        FROM 
+            cargo AS c
+        JOIN 
+            cargo_category AS cc ON c.category_id = cc.id
+        JOIN 
+            cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+        WHERE 
+            c.ship_id={ship_id};"
+    ))?)?;
     let compartment = CompartmentArray::parse(&api_server.fetch(&format!(
-        "SELECT space_id AS name, \
-                name AS name, \
-                mass AS name, \
-                density AS name, \
-                volume AS name, \
-                bound_x1 AS name, \
-                bound_x2 AS name, \
-                mass_shift_x AS name, \
-                mass_shift_y AS name, \
-                mass_shift_z AS name, \
-                m_f_s_y AS name, \
-                m_f_s_x AS name, \
-                grain_moment AS name, \
-                loading_type::TEXT AS name, \
-                physical_type::TEXT \
-            FROM compartment WHERE ship_id={ship_id} AND active=TRUE AND mass>0;"
+        "SELECT 
+            c.space_id AS space_id, \
+            c.name AS name, \
+            c.mass AS mass, \
+            cc.matter_type AS matter_type, \
+            cgc.key AS general_category, \
+            c.density AS density, \
+            c.volume AS volume, \
+            c.bound_x1 AS bound_x1, \
+            c.bound_x2 AS bound_x2, \
+            c.mass_shift_x AS mass_shift_x, \
+            c.mass_shift_y AS mass_shift_y, \
+            c.mass_shift_z AS mass_shift_z, \
+            c.m_f_s_y AS m_f_s_y, \
+            c.m_f_s_x AS m_f_s_x, \
+            c.grain_moment AS grain_moment \
+        FROM 
+            compartment c
+        JOIN 
+            cargo_category AS cc ON c.category_id = cc.id
+        JOIN 
+            cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+        WHERE 
+            ship_id={ship_id} AND active=TRUE AND mass>0;"
     ))?)?;
     let load_constant = LoadConstantArray::parse(&api_server.fetch(&format!(
-        "SELECT mass, bound_x1, bound_x2, loading_type::TEXT FROM load_constant WHERE ship_id={};",
-        ship_id
+        "SELECT 
+            l.mass AS mass, \
+            l.bound_x1 AS bound_x1, \
+            l.bound_x2 AS bound_x2, \
+            cc.key as loading_type \
+        FROM 
+            load_constant AS l
+        JOIN 
+            cargo_category AS cc 
+        ON 
+            l.category_id = cc.id
+        WHERE 
+            l.ship_id={ship_id};"
     ))?)?;
     let area_h_str = HStrAreaArray::parse(&api_server.fetch(
         &format!("SELECT name, value, bound_x1, bound_x2 FROM horizontal_area_strength WHERE ship_id={};", ship_id)

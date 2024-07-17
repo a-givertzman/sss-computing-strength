@@ -1,6 +1,6 @@
 //! Нагрузка на судно: постоянный и переменный груз. 
 use serde::{Deserialize, Serialize};
-use crate::{data::structs::loads::{CargoType, CompartmentType, LoadConstantType}, Bound, Position};
+use crate::{data::structs::loads::{CargoGeneralCategory, LoadConstantType}, Bound, Position};
 mod tank;
 mod desk;
 mod mass;
@@ -37,22 +37,13 @@ impl std::fmt::Display for LoadingType {
     }
 }
 ///
-impl From<CargoType> for LoadingType {
-    fn from(value: CargoType) -> Self {
+impl From<CargoGeneralCategory> for LoadingType {
+    fn from(value: CargoGeneralCategory) -> Self {
         match value {
-            CargoType::Ballast => LoadingType::Ballast,
-            CargoType::Stores => LoadingType::Stores,
-            CargoType::Cargo => LoadingType::Cargo,
-        }
-    }
-}
-///
-impl From<CompartmentType> for LoadingType {
-    fn from(value: CompartmentType) -> Self {
-        match value {
-            CompartmentType::Ballast => LoadingType::Ballast,
-            CompartmentType::Store => LoadingType::Stores,
-            CompartmentType::Cargo => LoadingType::Cargo,
+            CargoGeneralCategory::Lightship => LoadingType::Hull,
+            CargoGeneralCategory::Ballast => LoadingType::Ballast,
+            CargoGeneralCategory::Stores => LoadingType::Stores,
+            CargoGeneralCategory::Cargo => LoadingType::Cargo,
         }
     }
 }

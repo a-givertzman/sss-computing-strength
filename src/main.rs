@@ -2,15 +2,14 @@
 
 use crate::{
     area::{HAreaStability, HAreaStrength, VerticalArea},
-    data::structs::NavigationArea,
     icing_stab::{IIcingStab, IcingStab},
     load::*,
     math::*,
     stability::*,
     strength::*,
-    windage::{IWindage, Windage},
+    windage::Windage,
 };
-use data::{api_server::*, structs::loads::PhysicalType};
+use data::{api_server::*, structs::loads::MatterType};
 use draught::Draught;
 pub use error::Error;
 use icing_timber::{IcingTimberBound, IcingTimberType};
@@ -144,7 +143,7 @@ fn execute() -> Result<(), Error> {
             v.mass.expect("LoadCargo error: no mass!"),
             bound_x,
             mass_shift.clone(),
-            LoadingType::from(v.loading_type),
+            LoadingType::from(v.general_category),
         ));
         //  log::info!("\t Mass load_variable from cargoes:{:?} ", load);
         load_variable.push(load.clone());
@@ -172,11 +171,11 @@ fn execute() -> Result<(), Error> {
             v.mass.expect("CompartmentData error: no mass!"),
             bound_x,
             mass_shift.clone(),
-            LoadingType::from(v.loading_type),
+            LoadingType::from(v.general_category),
         ));
         // log::info!("\t Mass load_variable from compartments src:{:?} trg:{:?}", v, load, );
         load_variable.push(load);
-        if v.physical_type == PhysicalType::Liquid {
+        if v.matter_type == MatterType::Liquid {
             let tank: Rc<dyn ITank> = Rc::new(Tank::new(
                 v.density
                     .expect("CompartmentData error: no density for PhysicalType::Liquid!"),
@@ -192,12 +191,12 @@ fn execute() -> Result<(), Error> {
                         "CompartmentData error: no y in InertiaMoment for PhysicalType::Liquid!",
                     ),
                 ),
-                LoadingType::from(v.loading_type),
+                LoadingType::from(v.general_category),
             ));
             //        log::info!("\t Mass tanks from compartments:{:?} ", tank);
             tanks.push(tank);
         }
-        if v.physical_type == PhysicalType::Bulk {
+        if v.matter_type == MatterType::Bulk {
             let bulk: Rc<dyn IBulk> = Rc::new(Bulk::new(
                 1. / v
                     .density
@@ -338,18 +337,6 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&results),
     )
     .calculate();
-    /*    assert!(
-        computer.shear_force().len() == data.bounds.len() + 1,
-        "shear_force.len {} == frame.len {} + 1",
-        computer.shear_force().len(),
-        data.bounds.len()
-    );
-    assert!(
-        computer.bending_moment().len() == data.bounds.len() + 1,
-        "bending_moment.len {} == frame.len {} + 1",
-        computer.bending_moment().len(),
-        data.bounds.len()
-    );*/
 
     send_strenght_data(&mut api_server, ship_id, results.take_data())?;
     // Угол заливания отверстий
@@ -373,19 +360,6 @@ fn execute() -> Result<(), Error> {
         ParameterID::MomentRollPerDeg,
         ship_mass.sum() * metacentric_height.h_trans_fix() * (std::f64::consts::PI / 180.).sin(),
     );
-    // Дифферент для остойчивости
-    /*  let trim = stability::Trim::new(
-            data.length_lbp,
-            mean_draught,
-            center_waterline_shift,
-            center_draught_shift.clone(),
-            Rc::clone(&metacentric_height),
-            Rc::clone(&ship_mass),
-            Rc::clone(&ship_moment),
-            Rc::clone(&parameters),
-        )
-        .value();
-    */
     // Длинна по ватерлинии при текущей осадке
     let length_wl = Curve::new_linear(&data.waterline_length).value(mean_draught);
     // Ширина по ватерлинии при текущей осадке
