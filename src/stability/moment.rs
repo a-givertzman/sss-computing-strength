@@ -2,7 +2,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    math::*, ILoadMass, IMass, IParameters, IResults, LoadMass, ParameterID
+    math::*, ILoadMass, IMass, IParameters, LoadMass, ParameterID
 };
 
 use super::{IIcingMoment, IWettingMoment};
@@ -23,7 +23,6 @@ pub struct ShipMoment {
     /// Учет намокания палубного груза - леса
     wetting_moment: Rc<dyn IWettingMoment>, 
     /// Набор результатов расчетов для записи в БД
-    results: Rc<dyn IResults>,
     parameters: Rc<dyn IParameters>,
     /// Суммарный статический момент
     moment_mass: Rc<RefCell<Option<Moment>>>,
@@ -39,7 +38,7 @@ impl ShipMoment {
     /// * icing_mass, icing_moment - Учет обледенения судна
     /// * wetting_mass, wetting_moment - Учет намокания палубного груза - леса
     /// * loads_variable - грузы судна
-    /// * results, parameters - Набор результатов расчетов для записи в БД
+    /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         mass: Rc<dyn IMass>, 
         loads_const: Rc<Vec<Rc<LoadMass>>>,
@@ -47,7 +46,6 @@ impl ShipMoment {
         icing_moment: Rc<dyn IIcingMoment>,
         wetting_moment: Rc<dyn IWettingMoment>, 
         loads_variable: Rc<Vec<Rc<LoadMass>>>,
-        results: Rc<dyn IResults>,
         parameters: Rc<dyn IParameters>,
     ) -> Self {
         Self {
@@ -57,7 +55,6 @@ impl ShipMoment {
             icing_moment,
             wetting_moment,
             loads_variable,
-            results,
             parameters,
             moment_mass: Rc::new(RefCell::new(None)),
             shift: Rc::new(RefCell::new(None)),

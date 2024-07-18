@@ -1,13 +1,12 @@
-//! Площадь парусности
-use crate::{Bound, Moment, Position};
+//! Распределение площади парусности
+use crate::Bound;
 
-/// Площадь парусности
+/// Распределение площадь парусности
 #[derive(Debug, Clone)]
 pub struct VerticalArea {
     /// Значение площади, м^2
     value: f64,
-    /// Смещение центра
-    shift_z: f64,    
+  
     /// Ограничение по оси Х
     bound_x: Bound,
 }
@@ -18,13 +17,11 @@ impl VerticalArea {
     /// * shift_z - Смещение центра по оси Z 
     /// * bound_x - Ограничение по оси Х
     pub fn new(    
-        value: f64,
-        shift_z: f64,    
+        value: f64,  
         bound_x: Bound,
     ) -> Self {
         Self {
             value,
-            shift_z,
             bound_x,
         }
     }
@@ -36,8 +33,4 @@ impl VerticalArea {
             self.value
         }
     }     
-    /// Момент площади 
-    pub fn moment(&self) -> Moment {
-        Moment::from_pos(Position::new(self.bound_x.center(), 0., self.shift_z), self.value)
-    }
 }

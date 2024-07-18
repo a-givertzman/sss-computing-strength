@@ -60,12 +60,6 @@ impl IWindage for Windage {
         let z_v_bp = m_vz/a_v;
         z_v_bp - self.volume_shift
     }
-    /// Отстояние центра площади парусности судна для текущей загрузки относительно миделя
-    fn x_v(&self) -> f64 {
-        let m_vx = self.moment().x() - self.delta_moment.x();
-        let a_v = self.a_v();
-        m_vx/a_v
-    }
 }
 #[doc(hidden)]
 pub trait IWindage {
@@ -73,8 +67,6 @@ pub trait IWindage {
     fn a_v(&self) -> f64;
     /// Плечо парусности, м
     fn z_v(&self) -> f64;
-    /// Отстояние центра площади парусности судна для текущей загрузки относительно миделя
-    fn x_v(&self) -> f64;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -83,8 +75,6 @@ pub struct FakeWindage {
     a_v: f64,
     /// Плечо парусности, м
     z_v: f64,
-    /// Отстояние центра площади парусности судна для текущей загрузки относительно миделя
-    x_v: f64,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
@@ -92,12 +82,10 @@ impl FakeWindage {
     pub fn new(
         a_v: f64,
         z_v: f64,
-        x_v: f64,
     ) -> Self {
         Self {
             a_v,
             z_v,
-            x_v,
         }
     }
 }
@@ -110,10 +98,6 @@ impl IWindage for FakeWindage {
     /// Плечо парусности, м
     fn z_v(&self) -> f64 {
         self.z_v
-    }
-    /// Отстояние центра площади парусности судна для текущей загрузки относительно миделя
-    fn x_v(&self) -> f64 {
-        self.x_v
     }
 }
 

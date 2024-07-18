@@ -128,7 +128,7 @@ fn execute() -> Result<(), Error> {
                 data
                     .area_v_str
                     .iter()
-                    .map(|v| VerticalArea::new(v.value, v.shift_z, Bound::new(v.bound_x1, v.bound_x2)))
+                    .map(|v| VerticalArea::new(v.value, Bound::new(v.bound_x1, v.bound_x2)))
                     .collect::<Vec<_>>(),
                 data
                     .area_h_str
@@ -188,7 +188,6 @@ fn execute() -> Result<(), Error> {
             loads.load_timber(),
         )),
         loads.load_variable(),
-        Rc::clone(&results),
         Rc::clone(&parameters),
     ));
     // Отстояние центра величины погруженной части судна
