@@ -5,7 +5,7 @@ use loads::{
     CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData,
 };
 
-use crate::error::Error;
+use crate::{error::Error, icing_stab::IcingStabType, icing_timber::IcingTimberType};
 
 use super::*;
 
@@ -20,9 +20,9 @@ pub struct ParsedShipData {
     /// Параметры района плавания судна  
     pub navigation_area_param: NavigationAreaArray,
     /// Тип обледенения
-    pub icing_stab: String,
+    pub icing_stab: IcingStabType,
     /// Тип обледенения палубного груза - леса
-    pub icing_timber_stab: String,
+    pub icing_timber_stab: IcingTimberType,
     /// Масса льда на квадратный метр площади горизонтальной поверхности
     /// палубного лесного груза
     pub icing_m_timber: f64,
@@ -206,7 +206,7 @@ impl ParsedShipData {
         log::info!("result parse ok");
         log::info!("result check begin");
         Self {
-            ship_type: ShipType::new(
+            ship_type: serde_json::from_str(
                 &ship_data
                     .get("Type of ship")
                     .ok_or(format!(
@@ -214,8 +214,8 @@ impl ParsedShipData {
                         ship_id
                     ))?
                     .0,
-            ),
-            navigation_area: NavigationArea::new(
+            )?,
+            navigation_area: serde_json::from_str(
                 &ship_data
                     .get("Navigation area")
                     .ok_or(format!(
@@ -223,7 +223,7 @@ impl ParsedShipData {
                         ship_id
                     ))?
                     .0,
-            ),
+            )?,
             navigation_area_param,
             multipler_x1,
             multipler_x2,
@@ -278,14 +278,14 @@ impl ParsedShipData {
                 "ParsedShipData parse error: no moulded_depth for ship id:{}",
                 ship_id
             ))?.0.parse::<f64>()?,
-            icing_stab: ship_data.get("Type of icing").ok_or(format!(
+            icing_stab: serde_json::from_str(&ship_data.get("Type of icing").ok_or(format!(
                 "ParsedShipData parse error: no icing_stab for ship id:{}",
                 ship_id
-            ))?.0.clone(),
-            icing_timber_stab: ship_data.get("Type of icing timber").ok_or(format!(
+            ))?.0)?,
+            icing_timber_stab: serde_json::from_str(&ship_data.get("Type of icing timber").ok_or(format!(
                 "ParsedShipData parse error: no icing_timber_stab for ship id:{}",
                 ship_id
-            ))?.0.clone(),
+            ))?.0)?,
             icing_m_timber: *icing.get("icing_m_timber").ok_or(format!(
                 "ParsedShipData parse error: no icing_m_timber for ship id:{}",
                 ship_id

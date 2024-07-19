@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct NavigationAreaData {
     /// Район плавания суджна
-    pub area: String,
+    pub area: NavigationArea,
     /// Предполагаемое давление ветра
     pub p_v: f64,
     /// Добавка на порывистость ветра
@@ -33,7 +33,7 @@ impl NavigationAreaArray {
     pub fn get_area(&self, navigation_area: &NavigationArea) -> Option<(f64, f64)> {
         self.data
             .iter()
-            .filter(|data| navigation_area.eq(&NavigationArea::new(&data.area)))
+            .filter(|data| *navigation_area == data.area)
             .map(|data| (data.p_v, data.m))
             .next()
     }

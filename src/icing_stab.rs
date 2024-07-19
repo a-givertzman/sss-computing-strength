@@ -1,10 +1,21 @@
-//! Тип обледенения судна
+//! Обледенение судна
 
+use serde::{Deserialize, Serialize};
+/// Тип обледенения судна
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+pub enum IcingStabType {
+    #[serde(alias="full")]
+    Full,
+    #[serde(alias="half")]
+    Half,
+    #[serde(alias="none")]
+    None,
+}
 /// Тип обледенения, возпращает массу льда на поверхности в  
 /// в зависимости от типа обледенения
 pub struct IcingStab {
     /// Тип обледенения
-    icing_stab: String,
+    icing_stab: IcingStabType,
     /// Масса льда на квадратный метр площади горизонтальной поверхности
     /// палубного лесного груза
     icing_m_timber: f64,
@@ -59,7 +70,7 @@ impl IcingStab {
     /// * icing_coef_v_moment_half
     /// * icing_coef_v_moment_zero
     pub fn new(
-        icing_stab: String,
+        icing_stab: IcingStabType,
         icing_m_timber: f64,
         icing_m_v_full: f64,
         icing_m_v_half: f64,
@@ -92,33 +103,33 @@ impl IcingStab {
 impl IIcingStab for IcingStab {
     /// Масса льда на метр площади поверхности открытой палубы
     fn mass_desc_h(&self) -> f64 {
-        match self.icing_stab.as_str() {
-            "full" => self.icing_m_h_full,
-            "half" => self.icing_m_h_half,
+        match self.icing_stab {
+            IcingStabType::Full => self.icing_m_h_full,
+            IcingStabType::Half => self.icing_m_h_half,
             _ => 0.,
         }
     }
     /// Масса льда на метр площади палубного груза - леса
     fn mass_timber_h(&self) -> f64 {
-        match self.icing_stab.as_str() {
-            "full" | "half" => self.icing_m_timber,
+        match self.icing_stab {
+            IcingStabType::Full | IcingStabType::Half => self.icing_m_timber,
             _ => 0.,
         }
     }
     /// Масса льда на метр площади парусности
     fn mass_v(&self) -> f64 {
-        match self.icing_stab.as_str() {
-            "full" => self.icing_m_v_full,
-            "half" => self.icing_m_v_half,
+        match self.icing_stab {
+            IcingStabType::Full => self.icing_m_v_full,
+            IcingStabType::Half => self.icing_m_v_half,
             _ => 0.,
         }
     }
     /// Коэффициент увеличения площади парусности несплощной
     /// поверхности с учетом обледенения
     fn coef_v_area(&self) -> f64 {
-        match self.icing_stab.as_str() {
-            "full" => self.icing_coef_v_area_full,
-            "half" => self.icing_coef_v_area_half,
+        match self.icing_stab {
+            IcingStabType::Full => self.icing_coef_v_area_full,
+            IcingStabType::Half => self.icing_coef_v_area_half,
             _ => self.icing_coef_v_area_zero,
         }
     }
@@ -130,16 +141,16 @@ impl IIcingStab for IcingStab {
     /// Коэффициент увеличения статического момента
     /// площади парусности несплощной поверхности
     fn coef_v_moment(&self) -> f64 {
-        match self.icing_stab.as_str() {
-            "full" => self.icing_coef_v_moment_full,
-            "half" => self.icing_coef_v_moment_half,
+        match self.icing_stab {
+            IcingStabType::Full => self.icing_coef_v_moment_full,
+            IcingStabType::Half => self.icing_coef_v_moment_half,
             _ => self.icing_coef_v_moment_zero,
         }
     }
     /// Признал наличия обледенения
     fn is_some(&self) -> bool {
-        match self.icing_stab.as_str() {
-            "full" | "half" => true,
+        match self.icing_stab {
+            IcingStabType::Full | IcingStabType::Half => true,
             _ => false,
         }
     }

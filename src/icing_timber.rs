@@ -1,24 +1,20 @@
 //! Ограничение горизонтальной площади обледенения палубного груза - леса
 
 use crate::Bound;
+
+use serde::{Deserialize, Serialize};
+
 /// Тип обледенения горизонтальной площади палубного груза - леса
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
 pub enum IcingTimberType {
+    #[serde(alias="full")]
     Full,
+    #[serde(alias="half left")]
     HalfLeft,
+    #[serde(alias="half right")]
     HalfRight,
+    #[serde(alias="bow")]
     Bow,
-}
-///
-impl From<String> for IcingTimberType {
-    fn from(value: String) -> Self {
-        match value.trim().to_lowercase().as_str() {
-            "half_left" => IcingTimberType::HalfLeft,
-            "half_right" => IcingTimberType::HalfRight,
-            "bow" => IcingTimberType::Bow,
-            _ => IcingTimberType::Full,
-        }
-    }
 }
 /// Ограничение горизонтальной площади обледенения палубного груза - леса
 #[derive(Clone)]
