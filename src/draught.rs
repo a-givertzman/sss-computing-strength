@@ -1,7 +1,7 @@
 //! Осадка судна
 use std::rc::Rc;
 
-use crate::{trim::ITrim, IParameters, ParameterID};
+use crate::{trim::ITrim, Error, IParameters, ParameterID};
 
 
 /// Осадка судна
@@ -70,20 +70,20 @@ impl Draught {
 impl IDraught for Draught {
     /// Значение осадки в точке
     #[allow(non_snake_case)]
-    fn value(&mut self, pos_x: f64) -> f64 {
+    fn value(&mut self, pos_x: f64) -> Result<f64, Error> {
         if self.draught_mid.is_none() {
             self.calculate();
         }        
-        self.draught_mid.expect("Draught value error: no draught_mid!")
-            + self.delta_draught.expect("Draught value error: no draught_mid!") 
-            * pos_x
+        Ok(self.draught_mid.ok_or(format!("Draught value error: no draught_mid!"))?
+            + self.delta_draught.ok_or(format!("Draught value error: no draught_mid!"))?
+            * pos_x)
     }
 }
 ///
 #[doc(hidden)]
 pub trait IDraught {
     /// Вычисление дифферента
-    fn value(&mut self, pos_x: f64) -> f64;
+    fn value(&mut self, pos_x: f64) -> Result<f64, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -100,10 +100,10 @@ impl FakeDraught {
 }
 #[doc(hidden)]
 impl IDraught for FakeDraught {
-    fn value(&mut self, pos_x: f64) -> f64 {
-        self.draught_mid
+    fn value(&mut self, pos_x: f64) -> Result<f64, Error> {
+        Ok(self.draught_mid
         + self.delta_draught 
-        * pos_x
+        * pos_x)
     }
 }
 

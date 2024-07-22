@@ -1,4 +1,6 @@
 //! Непрерывный набор диапазонов значений
+use crate::Error;
+
 use super::Bound;
 
 /// Непрерывный набор диапазонов значений
@@ -10,12 +12,14 @@ pub struct Bounds {
 ///
 impl Bounds {
     /// Основной конструктор
-    pub fn new(values: Vec<Bound>) -> Self {
-        assert!(!values.is_empty(), "data.is_empty()");
-        Self { values }
+    pub fn new(values: Vec<Bound>) -> Result<Self, Error> {
+        if values.len() < 2 {
+            return Err(Error::FromString(format!("Bounds::new error: values.len() < 2 ")));
+        }
+        Ok(Self { values })
     }
     /// Вспомогательный конструктор
-    pub fn from_n(ship_length: f64, n: usize) -> Self {
+    pub fn from_n(ship_length: f64, n: usize) -> Result<Self, Error> {
         assert!(ship_length > 0., "ship_length {} > 0.", ship_length);
         assert!(n > 1, "n {} > 0.", n);
         let delta = ship_length / n as f64;
@@ -30,7 +34,7 @@ impl Bounds {
         res
     }
     // Вспомогательный конструктор
-    pub fn from_frames(frames: &Vec<(f64, f64)>) -> Self {
+    pub fn from_frames(frames: &Vec<(f64, f64)>) -> Result<Self, Error> {
         assert!(frames.len() > 1, "frames.len() {:?} > 1", frames);
         let mut res = Vec::new();
         for i in 0..frames.len() {

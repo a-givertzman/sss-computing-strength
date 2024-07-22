@@ -41,7 +41,6 @@ fn main() {
     } else {
         r#"{"status":"ok","message":null}"#.to_owned()
     };
-    //    let json_data: serde_json::Value = serde_json::from_str(&reply).unwrap();
     let _ = io::Write::write_all(&mut io::stdout().lock(), reply.as_bytes());
 }
 
@@ -293,7 +292,7 @@ fn execute() -> Result<(), Error> {
         data
             .navigation_area_param
             .get_area(&data.navigation_area)
-            .expect("main error no area data!"),
+            .ok_or(format!("main error no area data!"))?,
         Rc::new(Windage::new(
             Rc::clone(&icing_stab),
             Rc::clone(&area_stability),

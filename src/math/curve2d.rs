@@ -1,4 +1,6 @@
 //! Кривая поверхность, позволяет получать интерполированные значения
+use crate::Error;
+
 use super::{Curve, ICurve};
 
 ///
@@ -22,7 +24,12 @@ impl Curve2D {
     pub fn from_values_linear(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Self {
         assert!(values.len() > 1, "values.len() {} > 0", values.len());
         values.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-        Self::new(values.into_iter().map(|(value, vector)| (value, Curve::new_linear(&vector))).collect())
+        Self::new(
+            values
+                .into_iter()
+                .map(|(value, vector)| (value, Curve::new_linear(&vector)))
+                .collect(),
+        )
     }
     /// Конструктор из матрицы значений,
     /// создает кривые с косинусным методом интерполяции
@@ -30,7 +37,12 @@ impl Curve2D {
     pub fn from_values_catmull_rom(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Self {
         assert!(values.len() > 1, "values.len() {} > 0", values.len());
         values.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-        Self::new(values.into_iter().map(|(value, vector)| (value, Curve::new_catmull_rom(&vector))).collect())
+        Self::new(
+            values
+                .into_iter()
+                .map(|(value, vector)| (value, Curve::new_catmull_rom(&vector)))
+                .collect(),
+        )
     }
 }
 ///
@@ -40,25 +52,28 @@ impl ICurve2D for Curve2D {
     /// - если ключ за пределами ключей таблицы, то вернет либо первое либо последнее значение
     /// - panic - если нет ключей
     ///
-    fn value(&self, key1: f64, key2: f64) -> f64 {   
+    fn value(&self, key1: f64, key2: f64) -> Result<f64, Error> {
         for index in 0..self.curves.len() {
             if self.curves[index].0 >= key1 {
                 if index == 0 {
-                    let res = self.curves[0].1.value(key2);
-    //                log::info!("\t Curve2D value key1:{key1} key2:{key2} index = 0 res:{res}");
-                    return res;
+                    return self.curves[0].1.value(key2);
                 }
-                let res1 = self.curves[index-1].1.value(key2);
-                let res2 = self.curves[index].1.value(key2);
-                let delta = self.curves[index].0 - self.curves[index-1].0;
+                let res1 = self.curves[index - 1].1.value(key2)?;
+                let res2 = self.curves[index].1.value(key2)?;
+                let delta = self.curves[index].0 - self.curves[index - 1].0;
                 let coeff1 = (self.curves[index].0 - key1) / delta;
                 let coeff2 = 1. - coeff1;
                 let result = res1 * coeff1 + res2 * coeff2;
-   //            log::info!("\t Curve2D value key1:{key1} key2:{key2} res1:{res1} res2:{res2} delta:{delta} coeff1:{coeff1} coeff2:{coeff2} result:{result}");
-                return result;
+                //            log::info!("\t Curve2D value key1:{key1} key2:{key2} res1:{res1} res2:{res2} delta:{delta} coeff1:{coeff1} coeff2:{coeff2} result:{result}");
+                return Ok(result);
             }
         }
-        self.curves.last().expect("Curve2D value error: no last curve").1.value(key2)
+        Ok(self
+            .curves
+            .last()
+            .ok_or(format!("Curve2D value error: no last curve"))?
+            .1
+            .value(key2)?)
     }
     /// Количество элементов
     fn len(&self) -> usize {
@@ -68,10 +83,10 @@ impl ICurve2D for Curve2D {
 
 #[doc(hidden)]
 ///
-/// Interface used for testing purposes only 
+/// Interface used for testing purposes only
 pub trait ICurve2D {
     fn len(&self) -> usize;
-    fn value(&self, key1: f64, key2: f64,) -> f64;
+    fn value(&self, key1: f64, key2: f64) -> Result<f64, Error>;
 }
 #[doc(hidden)]
 // заглушка для тестирования
@@ -88,8 +103,8 @@ impl FakeCurve2D {
 #[doc(hidden)]
 impl ICurve2D for FakeCurve2D {
     ///
-    fn value(&self, _: f64, _: f64,) -> f64 {
-        self.value
+    fn value(&self, _: f64, _: f64) -> Result<f64, Error> {
+        Ok(self.value)
     }
     ///
     fn len(&self) -> usize {

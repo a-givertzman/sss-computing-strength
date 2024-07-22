@@ -1,6 +1,8 @@
 //! Кривая, позволяет получать интерполированные значения
 use splines::{Interpolation, Key, Spline};
 
+use crate::Error;
+
 ///
 /// Представление кривой в виде массива пар значений
 /// - Обеспечивает получение промежуточных значений с помощью простой линейной интерполяции
@@ -88,32 +90,32 @@ impl ICurve for Curve {
     /// - если такого ключа нет, то возвращает промежуточное значение между двумя соседними с помощью линейной интерполяции
     /// - если ключ за пределами ключей таблицы, то вернет либо первое либо последнее значение
     /// - panic - если нет ключей
-    fn value(&self, key: f64) -> f64 {
+    fn value(&self, key: f64) -> Result<f64, Error> {
         let res = self
             .spline
             .clamped_sample(key)
-            .expect(&"Curve.clamped_value | Ошибка получения значения: нет ключей".to_string());
+            .ok_or(format!("Curve.clamped_value | Ошибка получения значения: нет ключей"))?;
         //    log::info!("\t Curve clamped_value key:{key} res:{res}");
-        res
+        Ok(res)
     }
     /// Численное интегрирование методом трапеций
-    fn integral(&self, start: f64, end: f64) -> f64 {
+    fn integral(&self, start: f64, end: f64) -> Result<f64, Error> {
         assert!(start <= end, "Integral start {start} <= end {end}");
         if start == end {
-            return 0.;
+            return Ok(0.);
         }
         let mut sum = 0.;
         let n = 100;
         let delta = (end - start)/n as f64;
-        let mut last_value = self.value(start);
+        let mut last_value = self.value(start)?;
         let mut key = start;
         for _ in 0..n {
             key += delta;
-            let next_value = self.value(key);
+            let next_value = self.value(key)?;
             sum += (last_value + next_value)*delta/2.;
             last_value = next_value;
         }
-        sum
+        Ok(sum)
     }
 }
 
@@ -121,8 +123,8 @@ impl ICurve for Curve {
 ///
 /// Interface used for testing purposes only
 pub trait ICurve {
-    fn value(&self, key: f64) -> f64;
-    fn integral(&self, start: f64, end: f64) -> f64;
+    fn value(&self, _: f64) -> Result<f64, Error>;
+    fn integral(&self, start: f64, end: f64) -> Result<f64, Error>;
 }
 #[doc(hidden)]
 // заглушка для тестирования
@@ -139,10 +141,10 @@ impl FakeCurve {
 }
 #[doc(hidden)]
 impl ICurve for FakeCurve {
-    fn value(&self, _: f64) -> f64 {
-        self.value
+    fn value(&self, _: f64) -> Result<f64, Error> {
+        Ok(self.value)
     }
-    fn integral(&self, _: f64, _: f64) -> f64 {
-        self.integral
+    fn integral(&self, _: f64, _: f64) -> Result<f64, Error> {
+        Ok(self.integral)
     }
 }

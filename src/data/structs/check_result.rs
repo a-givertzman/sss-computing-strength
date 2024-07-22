@@ -322,7 +322,7 @@ impl ParsedShipData {
                 "Error check draft_mark: compartments.is_empty()"
             )));
         }       
-        if let Some(s) = self.compartments.iter().find(|s| s.mass.unwrap() < 0.) {
+        if let Some(s) = self.compartments.iter().find(|s| s.mass.unwrap_or(0.) < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: compartment{s} mass < 0"
             )));
@@ -333,7 +333,7 @@ impl ParsedShipData {
             )));
         }
         if let Some(s) = self.compartments.iter().find(|s| {
-            s.mass.unwrap() > 0.
+            s.mass.unwrap_or(0.) > 0.
                 && s.mass_shift_x.is_some()
                 && (s.bound_x1 >= s.mass_shift_x.unwrap() || s.mass_shift_x.unwrap() >= s.bound_x2)
         }) {
