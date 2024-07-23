@@ -37,7 +37,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { ICING.clone().unwrap().mass(None) };
+        let result = unsafe { ICING.clone().unwrap().mass(None).unwrap() };
         let target =  50.*0.04 + 50.*1.05*0.015;
         assert!(
             result == target,

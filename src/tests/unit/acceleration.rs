@@ -28,7 +28,7 @@ mod tests {
                 1.,
                 0.,
             )),
-        ).calculate();
+        ).calculate().unwrap();
 
         let target = 0.3/0.0105;
         assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);

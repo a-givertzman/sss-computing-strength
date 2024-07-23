@@ -1,5 +1,5 @@
 //! Цистерна с жидкостью
-use crate::{math::*, ILoad, ILoadMass, LoadingType};
+use crate::{math::*, Error, ILoad, ILoadMass, LoadingType};
 
 /// Цистерна с жидкостью.
 /// Имеет свойства свободной поверхности жидкости.
@@ -42,17 +42,21 @@ impl Tank {
         shift: Option<Position>,
         inertia: InertiaMoment,
         load_type: LoadingType,
-    ) -> Self {
-        assert!(density > 0., "density {} > 0", density);
-        assert!(volume >= 0., "volume {} >= 0", volume);
-        Self {
+    ) -> Result<Self, Error> {
+        if density <= 0. {
+            return Err(Error::FromString(format!("Tank new error: density {density} <= 0.")));
+        }
+        if volume <= 0. {
+            return Err(Error::FromString(format!("Tank new error: volume {volume} <= 0.")));
+        }
+        Ok(Self {
             density,
             volume,
             bound_x,
             shift,
             inertia,
             load_type,
-        }
+        })
     }
 }
 ///

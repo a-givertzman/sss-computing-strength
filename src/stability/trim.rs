@@ -4,7 +4,7 @@ use crate::trim::ITrim;
 use std::f64::consts::PI;
 use std::rc::Rc;
 
-use crate::{math::*, IParameters, IShipMoment, ParameterID};
+use crate::{math::*, Error, IParameters, IShipMoment, ParameterID};
 
 use crate::IMass;
 
@@ -44,9 +44,11 @@ impl Trim {
         mass: Rc<dyn IMass>, 
         moment: Rc<dyn IShipMoment>,                
         parameters: Rc<dyn IParameters>, 
-    ) -> Self {
-        assert!(ship_length > 0., "ship_length {ship_length} > 0.");
-        Self {
+    ) -> Result<Self, Error> {
+        if ship_length <= 0. {
+            return Err(Error::FromString(format!("Trim new error: ship_length <= 0.")));
+        }
+        Ok(Self {
             ship_length,
             mean_draught,
             center_draught_shift,
@@ -54,32 +56,32 @@ impl Trim {
             mass,
             moment,
             parameters,
-        }
+        })
     }
 }
 
 impl ITrim for Trim {
     /// Значение дифферента, коэффициент используемый при вычислении осадки носа и кормы
     #[allow(non_snake_case)]
-    fn value(&self) -> (f64, f64) {
+    fn value(&self) -> Result<(f64, f64), Error> {
         // Продольная исправленная метацентрическая высота (3)
-        let H = self.metacentric_height.h_long_fix();
+        let H = self.metacentric_height.h_long_fix()?;
         // Момент дифферентующий на 1 см осадки (4)
-        let trim_moment = (self.mass.sum() * H) / (100. * self.ship_length);
+        let trim_moment = (self.mass.sum()? * H) / (100. * self.ship_length);
         // Дифферент судна (5)
-        let t = self.mass.sum() * (self.moment.shift().x() - self.center_draught_shift.x())
+        let t = self.mass.sum()? * (self.moment.shift().x() - self.center_draught_shift.x())
             / (100. * trim_moment);
         // Дифферент судна, градусы (5)
         let trim_angle = (t/self.ship_length).atan()*180.0/PI;  
         //dbg!(H, trim_moment, t, trim_angle);
-        log::info!(
+   /*     log::info!(
             "\t Trim H:{H} mass:{} mass_shift_x:{} center_draught_x:{} M:{trim_moment} trim:{t} trim_angle{trim_angle} ",
-            self.mass.sum(),
+            self.mass.sum()?,
             self.moment.shift().x(),
             self.center_draught_shift.x()
         );
-        self.parameters.add(ParameterID::MomentTrimPerCm, trim_moment);
+  */      self.parameters.add(ParameterID::MomentTrimPerCm, trim_moment);
         self.parameters.add(ParameterID::Trim, trim_angle);
-        (self.mean_draught, t)
+        Ok((self.mean_draught, t))
     }
 }

@@ -122,8 +122,8 @@ impl<'a> Loads<'_> {
         let mut load_timber: Vec<Rc<LoadMass>> = Vec::new();
         let mut loads_const: Vec<Rc<LoadMass>> = Vec::new();
 
-        self.load_constants.iter().for_each(|v| {
-            let bound_x = Bound::new(v.bound_x1, v.bound_x2);
+        for v in self.load_constants.iter() {
+            let bound_x = Bound::new(v.bound_x1, v.bound_x2)?;
             let load = Rc::new(LoadMass::new(
                 v.mass,
                 bound_x,
@@ -132,7 +132,7 @@ impl<'a> Loads<'_> {
             ));
             //   log::info!("\t Mass loads_const from load_constants:{:?} ", load);
             loads_const.push(load);
-        });
+        }
 
         for v in self.cargoes.iter() {
             let mass_shift = if v.mass_shift_x.is_some() {
@@ -147,7 +147,7 @@ impl<'a> Loads<'_> {
             } else {
                 None
             };
-            let bound_x = Bound::new(v.bound_x1, v.bound_x2);
+            let bound_x = Bound::new(v.bound_x1, v.bound_x2)?;
             let load = Rc::new(LoadMass::new(
                 v.mass.ok_or(format!("LoadCargo error: no mass!"))?,
                 bound_x,
@@ -175,7 +175,7 @@ impl<'a> Loads<'_> {
             } else {
                 None
             };
-            let bound_x = Bound::new(v.bound_x1, v.bound_x2);
+            let bound_x = Bound::new(v.bound_x1, v.bound_x2)?;
             let load = Rc::new(LoadMass::new(
                 v.mass.ok_or(format!("CompartmentData error: no mass!"))?,
                 bound_x,
@@ -199,7 +199,7 @@ impl<'a> Loads<'_> {
                             "CompartmentData error: no y in InertiaMoment for PhysicalType::Liquid!"))?,
                     ),
                     LoadingType::from(v.general_category),
-                ));
+                )?);
                 //        log::info!("\t Mass tanks from compartments:{:?} ", tank);
                 tanks.push(tank);
             }
@@ -210,7 +210,7 @@ impl<'a> Loads<'_> {
                         .ok_or(format!("CompartmentData error: no density for PhysicalType::Bulk!"))?,
                     v.grain_moment
                         .ok_or(format!("CompartmentData error: no grain_moment for PhysicalType::Bulk!"))?,
-                ));
+                )?);
                 bulks.push(bulk);
             }
         }
@@ -225,7 +225,7 @@ impl<'a> Loads<'_> {
 
     pub fn tanks(&mut self) -> Result<Rc<Vec<Rc<dyn ITank>>>, Error> {
         if self.tanks.is_none() {
-            self.create();
+            self.create()?;
         }
         Ok(Rc::clone(
             self.tanks
@@ -235,7 +235,7 @@ impl<'a> Loads<'_> {
     }
     pub fn desks(&mut self) -> Result<Rc<Vec<Rc<dyn IDesk>>>, Error> {
         if self.desks.is_none() {
-            self.create();
+            self.create()?;
         }
         Ok(Rc::clone(
             self.desks
@@ -245,7 +245,7 @@ impl<'a> Loads<'_> {
     }
     pub fn bulks(&mut self) -> Result<Rc<Vec<Rc<dyn IBulk>>>, Error> {
         if self.bulks.is_none() {
-            self.create();
+            self.create()?;
         }
         Ok(Rc::clone(
             self.bulks
@@ -255,7 +255,7 @@ impl<'a> Loads<'_> {
     }
     pub fn load_variable(&mut self) -> Result<Rc<Vec<Rc<LoadMass>>>, Error> {
         if self.load_variable.is_none() {
-            self.create();
+            self.create()?;
         }
         Ok(Rc::clone(
             self.load_variable
@@ -265,7 +265,7 @@ impl<'a> Loads<'_> {
     }
     pub fn load_timber(&mut self) -> Result<Rc<Vec<Rc<LoadMass>>>, Error> {
         if self.load_timber.is_none() {
-            self.create();
+            self.create()?;
         }
         Ok(Rc::clone(
             self.load_timber
@@ -276,7 +276,7 @@ impl<'a> Loads<'_> {
     /// Постоянная масса судна
     pub fn loads_const(&mut self) -> Result<Rc<Vec<Rc<LoadMass>>>, Error> {
         if self.loads_const.is_none() {
-            self.create();
+            self.create()?;
         }
         Ok(Rc::clone(
             self.loads_const

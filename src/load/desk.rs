@@ -1,18 +1,18 @@
 //! Палубный груз
-use crate::{math::*, ILoad};
+use crate::{math::*, Error, ILoad};
 
 use crate::load::ILoadMass;
 
 /// Палубный груз, имеет площадь и парусность
 pub trait IDesk: ILoad {
     /// Парусность попадающая в Bound или вся если Bound отсутствует
-    fn windage_area(&self, bound: Option<Bound>) -> f64;
+    fn windage_area(&self, bound: Option<Bound>) -> Result<f64, Error>;
     /// Статический момент площади парусности палубного груза, м^3
-    fn windage_moment(&self) -> Moment {
-        Moment::from_pos(self.shift(), self.windage_area(None))
+    fn windage_moment(&self) -> Result<Moment, Error> {
+        Ok(Moment::from_pos(self.shift(), self.windage_area(None)?))
     }
     /// Площадь горизонтальной поверхности, м^2
-    fn horizontal_area(&self, bound_x: Option<Bound>, bound_y: Option<Bound>) -> f64;
+    fn horizontal_area(&self, bound_x: Option<Bound>, bound_y: Option<Bound>) -> Result<f64, Error>;
     /// Высота груза, м
     fn height(&self) -> f64;
     /// Признак палубного груза: лес
@@ -69,21 +69,21 @@ impl Desk {
 ///
 impl IDesk for Desk {
     /// Парусность попадающая в Bound или вся если Bound отсутствует
-    fn windage_area(&self, bound: Option<Bound>) -> f64 {
-        self.bound_x.part_ratio(&bound.unwrap_or(self.bound_x)) * 
-        self.windage_area
+    fn windage_area(&self, bound: Option<Bound>) -> Result<f64, Error> {
+        Ok(self.bound_x.part_ratio(&bound.unwrap_or(self.bound_x))? * 
+        self.windage_area)
     }
     /// Площадь горизонтальной поверхности, м^2
-    fn horizontal_area(&self, bound_x: Option<Bound>, bound_y: Option<Bound>) -> f64 {
+    fn horizontal_area(&self, bound_x: Option<Bound>, bound_y: Option<Bound>) -> Result<f64, Error> {
         let part_x = match bound_x {
-            Some(b) => b.part_ratio(&self.bound_x),
+            Some(b) => b.part_ratio(&self.bound_x)?,
             _=> 1.,
         };
         let part_y = match (bound_y, self.bound_y) {
-            (Some(b1), Some(b2)) => b1.part_ratio(&b2),
+            (Some(b1), Some(b2)) => b1.part_ratio(&b2)?,
             _=> 1.,
         };
-        part_x * part_y * self.horizontal_area
+        Ok(part_x * part_y * self.horizontal_area)
     }
     /// Высота груза, м
     fn height(&self) -> f64 {

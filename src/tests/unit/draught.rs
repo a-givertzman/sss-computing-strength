@@ -6,7 +6,10 @@ mod tests {
     use std::time::Duration;
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{draught::{Draught, IDraught}, trim::FakeTrim};
+    use crate::{
+        draught::{Draught, IDraught},
+        trim::FakeTrim,
+    };
 
     #[test]
     fn draught() {
@@ -20,11 +23,16 @@ mod tests {
         let mut draught = Draught::new(
             ship_length,
             -0.862,
-            Box::new(FakeTrim::from_angle(1.6562565987303715, -0.3013717957692749, ship_length)),
+            Box::new(FakeTrim::from_angle(
+                1.6562565987303715,
+                -0.3013717957692749,
+                ship_length,
+            )),
             None,
-        );
+        )
+        .unwrap();
         // bow
-        let result = draught.value(59.194);
+        let result = draught.value(59.194).unwrap();
         let target = 1.34;
         assert!(
             (result - target).abs() < result.abs() * 0.01, //TODO
@@ -33,7 +41,7 @@ mod tests {
             target
         );
         // mid
-        let result = draught.value(0.);
+        let result = draught.value(0.).unwrap();
         let target = 1.65;
         assert!(
             (result - target).abs() < result.abs() * 0.01, //TODO
@@ -42,7 +50,7 @@ mod tests {
             target
         );
         // stern
-        let result = draught.value(-59.194);
+        let result = draught.value(-59.194).unwrap();
         let target = 1.96;
         assert!(
             (result - target).abs() < result.abs() * 0.01, //TODO

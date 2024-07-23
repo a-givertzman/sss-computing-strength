@@ -63,7 +63,7 @@ mod tests {
                 metacentric_height,
                 Rc::new(FakeParameters{}),
             );
-            lever_diagram.max_angles();
+            let _ = lever_diagram.max_angles();
             unsafe {
                 LEVER_DIAGRAM.replace(lever_diagram);
             }
@@ -83,7 +83,7 @@ mod tests {
         let angle = 30.0;
         let angle_rad = angle * std::f64::consts::PI / 180.;
         let moment = 2. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos();
-        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().angle(moment) };
+        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().angle(moment).unwrap() };
         let target = vec![angle, 90. - angle];
         result.iter().zip(target.iter()).for_each(|(r, t)| {
             assert!((r - t).abs() < 0.001, "\nresult: {:?}\ntarget: {:?}", r, t)
@@ -103,7 +103,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let angle = 30.0;
-        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().lever_moment(angle) };
+        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().lever_moment(angle).unwrap() };
         let angle_rad = angle * std::f64::consts::PI / 180.;
         let target = 2. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos();
         assert!((result - target).abs() < 0.001, "\nresult: {:?}\ntarget: {:?}", result, target);
@@ -121,7 +121,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().dso_lever_max(15., 90.,) };
+        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().dso_lever_max(15., 90.,).unwrap() };
         let angle = 45.0;
         let angle_rad = angle * std::f64::consts::PI / 180.;
         let target = 3. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos();
@@ -145,7 +145,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().max_angles() };
+        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().max_angles().unwrap() };
         let angle_rad = 45.0 * std::f64::consts::PI / 180.;
         let target = vec![(45., 3. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos()),];
         assert!(

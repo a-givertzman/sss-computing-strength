@@ -16,19 +16,18 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let frames = vec![
-            Frame::new(-2., Curve::new_linear(&vec![(0., 1.), (1., 1.)])),
-            Frame::new(-1., Curve::new_linear(&vec![(0., 2.), (1., 2.)])),
-            Frame::new(0., Curve::new_linear(&vec![(0., 2.), (1., 2.)])),
-            Frame::new(1., Curve::new_linear(&vec![(0., 2.), (1., 2.)])),
-            Frame::new(2., Curve::new_linear(&vec![(0., 1.), (1., 1.)])),
+        let frame_area_data = vec![
+            crate::data::structs::ParsedFrameData{ x: -2., immersion_area: vec![(0., 1.), (1., 1.)], },
+            crate::data::structs::ParsedFrameData{ x: -1., immersion_area: vec![(0., 2.), (1., 2.)], },
+            crate::data::structs::ParsedFrameData{ x: 0., immersion_area: vec![(0., 2.), (1., 2.)], },
+            crate::data::structs::ParsedFrameData{ x: 1., immersion_area: vec![(0., 2.), (1., 2.)], },
+            crate::data::structs::ParsedFrameData{ x: 2., immersion_area: vec![(0., 1.), (1., 1.)], },
         ];
-
         let result = Volume::new(
-            Rc::new(Displacement::new(frames)),
+            Rc::new(Displacement::new(frame_area_data).unwrap()),
             Box::new(FakeDraught::new(1., 0.)),
-            Rc::new(Bounds::from_n(4., 4)),
-        ).values();
+            Rc::new(Bounds::from_n(4., 4).unwrap()),
+        ).values().unwrap();
 
         let target = vec![2., 2., 2., 2.,];
         assert!(

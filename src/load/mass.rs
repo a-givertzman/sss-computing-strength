@@ -1,14 +1,14 @@
 //! Масса груз
-use crate::{math::*, ILoad, LoadingType};
+use crate::{math::*, Error, ILoad, LoadingType};
 /// Абстрактная масса груза.
 /// Может вернуть какая масса попадает в указанные границы
 pub trait ILoadMass: ILoad {
     /// Масса груза, попадающая в Bound или вся если Bound не заданно
-    fn value(&self, bound: Option<Bound>) -> f64 {
+    fn value(&self, bound: Option<Bound>) -> Result<f64, Error> {
         if let Some(bound) = bound {
-            self.bound_x().part_ratio(&bound) * self.mass()
+            Ok(self.bound_x().part_ratio(&bound)? * self.mass())
         } else {
-            self.mass()
+            Ok(self.mass())
         }
     }
     /// Статический момент массы

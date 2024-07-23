@@ -14,35 +14,47 @@ pub struct Curve2D {
 impl Curve2D {
     /// Основной конструктор
     #[allow(dead_code)]
-    pub fn new(curves: Vec<(f64, Curve)>) -> Self {
-        assert!(curves.len() > 1, "curves.len() {} > 0", curves.len());
-        Self { curves }
+    pub fn new(curves: Vec<(f64, Curve)>) -> Result<Self, Error> {
+        if curves.len() < 2 {
+            return Err(Error::FromString(format!(
+                "Curve2D new error|: curves.len() < 2"
+            )));
+        }
+        Ok(Self { curves })
     }
     /// Конструктор из матрицы значений,
     /// создает кривые с линейным методом интерполяции
     #[allow(dead_code)]
-    pub fn from_values_linear(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Self {
-        assert!(values.len() > 1, "values.len() {} > 0", values.len());
+    pub fn from_values_linear(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Result<Self, Error> {
+        if values.len() < 2 {
+            return Err(Error::FromString(format!(
+                "Curve2D from_values_linear error|: values.len() < 2"
+            )));
+        }
         values.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-        Self::new(
-            values
-                .into_iter()
-                .map(|(value, vector)| (value, Curve::new_linear(&vector)))
-                .collect(),
-        )
+        let mut curves = Vec::new();
+        for (value, vector) in values.into_iter() {
+            curves.push((value, Curve::new_linear(&vector)?));
+     
+        }
+        Self::new(curves)
     }
     /// Конструктор из матрицы значений,
     /// создает кривые с косинусным методом интерполяции
     #[allow(dead_code)]
-    pub fn from_values_catmull_rom(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Self {
-        assert!(values.len() > 1, "values.len() {} > 0", values.len());
+    pub fn from_values_catmull_rom(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Result<Self, Error> {
+        if values.len() < 2 {
+            return Err(Error::FromString(format!(
+                "Curve2D from_values_catmull_rom error|: values.len() < 2"
+            )));
+        }
         values.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-        Self::new(
-            values
-                .into_iter()
-                .map(|(value, vector)| (value, Curve::new_catmull_rom(&vector)))
-                .collect(),
-        )
+        let mut curves = Vec::new();
+        for (value, vector) in values.into_iter() {
+            curves.push((value, Curve::new_catmull_rom(&vector)?));
+     
+        }
+        Self::new(curves)
     }
 }
 ///
@@ -75,17 +87,12 @@ impl ICurve2D for Curve2D {
             .1
             .value(key2)?)
     }
-    /// Количество элементов
-    fn len(&self) -> usize {
-        self.curves.len()
-    }
 }
 
 #[doc(hidden)]
 ///
 /// Interface used for testing purposes only
 pub trait ICurve2D {
-    fn len(&self) -> usize;
     fn value(&self, key1: f64, key2: f64) -> Result<f64, Error>;
 }
 #[doc(hidden)]
@@ -105,9 +112,5 @@ impl ICurve2D for FakeCurve2D {
     ///
     fn value(&self, _: f64, _: f64) -> Result<f64, Error> {
         Ok(self.value)
-    }
-    ///
-    fn len(&self) -> usize {
-        20
     }
 }

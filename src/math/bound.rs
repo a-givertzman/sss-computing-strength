@@ -1,50 +1,52 @@
 //! Диапазон значений
+
+use crate::Error;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Bound {
     /// начало диапазона
     start: f64,
     /// конец диапазона
-    end: f64,   
+    end: f64,
 }
-/// 
+///
 impl Bound {
     /// Основной конструктор  
     /// * start - начало диапазона
     /// * end - конец диапазона
-    pub fn new(start: f64, end: f64) -> Self {
-        assert!(end > start);
-        Self {
-            start,
-            end,
+    pub fn new(start: f64, end: f64) -> Result<Self, Error> {
+        if end <= start {
+            return Err(Error::FromString(format!("Bound new error: end <= start")));
         }
+        Ok(Self { start, end })
     }
     /// Дополнительный конструктор  
     /// * (f64, f64) - (начало диапазона, конец диапазона)
-    pub fn from(v: (f64, f64)) -> Self {
-        assert!(v.1 > v.0);
-        Self::new(
-            v.0,
-            v.1,
-        )
+    pub fn from(v: (f64, f64)) -> Result<Self, Error> {
+        Self::new(v.0, v.1)
     }
     ///
     /// Отношение общей части пересечения к длине диапазона
-    pub fn part_ratio(&self, bound: &Bound) -> f64 {
-        self.intersect(bound).map(|v| v.length()/self.length() ).unwrap_or(0.)
+    pub fn part_ratio(&self, bound: &Bound) -> Result<f64, Error> {
+        Ok(self.intersect(bound)?
+            .map(|v| v.length() / self.length())
+            .unwrap_or(0.))
     }
     ///
     /// Пересечение c другим диапазоном, возвращает общий диапазон
-    pub fn intersect(&self, other: &Bound) -> Option<Bound> {
+    pub fn intersect(&self, other: &Bound) -> Result<Option<Bound>, Error> {
         if other.start() >= self.end {
-            return None;
+            return Ok(None);
         }
         if other.end() <= self.start {
-            return None;
+            return Ok(None);
         }
         if other.start() <= self.start && other.end() >= self.end {
-            return Some(*self);
+            return Ok(Some(*self));
         }
-        Some(Bound::new(other.start().max(self.start), other.end().min(self.end)))
+        Ok(Some(Bound::new(
+            other.start().max(self.start),
+            other.end().min(self.end),
+        )?))
     }
     ///
     /// Длинна диапазона
@@ -64,7 +66,7 @@ impl Bound {
     ///
     /// Центр диапазона
     pub fn center(&self) -> f64 {
-        (self.start + self.end)/2.
+        (self.start + self.end) / 2.
     }
 }
 ///

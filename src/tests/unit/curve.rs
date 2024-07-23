@@ -17,13 +17,13 @@ mod tests {
         test_duration.run().unwrap();
         let curve = Curve::new_linear(&vec![
             // (2., 2.)
-        ]);
+        ]).unwrap();
         let test_data = [
-            (curve.value(-1.), 2.),
-            (curve.value(0.), 2.),
-            (curve.value(1.), 2.),
-            (curve.value(2.), 2.),
-            (curve.value(3.), 2.),];
+            (curve.value(-1.).unwrap(), 2.),
+            (curve.value(0.).unwrap(), 2.),
+            (curve.value(1.).unwrap(), 2.),
+            (curve.value(2.).unwrap(), 2.),
+            (curve.value(3.).unwrap(), 2.),];
         for (result, target) in test_data {
             assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         }
@@ -41,13 +41,13 @@ mod tests {
         let curve = Curve::new_linear(&vec![
             (0., 0.), 
             (2., 2.)
-        ]);
+        ]).unwrap();
         let test_data = [
-            (curve.value(-1.), 0.),
-            (curve.value(0.), 0.),
-            (curve.value(1.), 1.),
-            (curve.value(2.), 2.),
-            (curve.value(3.), 2.),];
+            (curve.value(-1.).unwrap(), 0.),
+            (curve.value(0.).unwrap(), 0.),
+            (curve.value(1.).unwrap(), 1.),
+            (curve.value(2.).unwrap(), 2.),
+            (curve.value(3.).unwrap(), 2.),];
         for (result, target) in test_data {
             assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         }
@@ -65,7 +65,7 @@ mod tests {
         let result = Curve::new_linear(&vec![
             (0., 0.), 
             (4., 4.)
-        ]).integral(1., 2.,);
+        ]).unwrap().integral(1., 2.,).unwrap();
         let target = 1.5;
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         test_duration.exit();

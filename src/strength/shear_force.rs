@@ -1,7 +1,7 @@
 //! Срезающая сила
 
 use super::total_force::ITotalForce;
-use crate::math::vec::*;
+use crate::{math::vec::*, Error};
 
 /// Срезающая сила, действующая на корпус судна
 pub struct ShearForce {
@@ -20,22 +20,22 @@ impl ShearForce {
 ///
 impl IShearForce for ShearForce {
     ///
-    fn values(&mut self) -> Vec<f64> {
+    fn values(&mut self) -> Result<Vec<f64>, Error> {
         let result = self
             .total_force
-            .values()
+            .values()?
             .sum_above()
             .into_iter()
             .map(|v| -v)
             .collect();
         //     log::info!("\t ShearForce result:{:?}", result);
-        result
+        Ok(result)
     }
 }
 
 #[doc(hidden)]
 pub trait IShearForce {
-    fn values(&mut self) -> Vec<f64>;
+    fn values(&mut self) -> Result<Vec<f64>, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -51,7 +51,7 @@ impl FakeShearForce {
 }
 #[doc(hidden)]
 impl IShearForce for FakeShearForce {
-    fn values(&mut self) -> Vec<f64> {
-        self.data.clone()
+    fn values(&mut self) -> Result<Vec<f64>, Error> {
+        Ok(self.data.clone())
     }
 }

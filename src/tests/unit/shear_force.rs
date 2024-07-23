@@ -19,7 +19,7 @@ mod tests {
         let result = ShearForce::new(FakeTotalForce::new(vec![
             15., -5., -5., -5., -5., -5., -5., -5., 5., 15.,
         ]))
-        .values();
+        .values().unwrap();
         let target = Vec::from([
             0.0, -15.0, -10.0, -5.0, -0.0, 5.0, 10.0, 15.0, 20.0, 15.0, 0.0,
         ]);

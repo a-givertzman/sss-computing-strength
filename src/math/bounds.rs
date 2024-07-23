@@ -20,28 +20,35 @@ impl Bounds {
     }
     /// Вспомогательный конструктор
     pub fn from_n(ship_length: f64, n: usize) -> Result<Self, Error> {
-        assert!(ship_length > 0., "ship_length {} > 0.", ship_length);
-        assert!(n > 1, "n {} > 0.", n);
+        if ship_length <= 0. {
+            return Err(Error::FromString(format!("Bounds from_n error: ship_length {ship_length} <= 0.")));
+        }
+        if n <= 1 {
+            return Err(Error::FromString(format!("Bounds from_n error: n {n} <= 1")));
+        }
         let delta = ship_length / n as f64;
         let start = -ship_length / 2.;
         // вектор разбиения судна на отрезки
-        let res = Self::new(
-            (0..n)
-                .map(|v| Bound::new(start + delta * v as f64, start + delta * (v as f64 + 1.)))
-                .collect::<Vec<_>>(),
-        );
-        //        log::info!("\t Bounds from_n: ship_length:{ship_length} n:{n} values:{:?} ", res.values);
-        res
+        let mut values = Vec::new();
+        for i in 0..n {
+            let i = i as f64;
+            values.push( Bound::new(start + delta * i, start + delta * (i + 1.))?);
+        }
+        Self::new(
+            values,
+        )
     }
     // Вспомогательный конструктор
     pub fn from_frames(frames: &Vec<(f64, f64)>) -> Result<Self, Error> {
-        assert!(frames.len() > 1, "frames.len() {:?} > 1", frames);
-        let mut res = Vec::new();
+        if frames.len() <= 1 {
+            return Err(Error::FromString(format!("Bounds from_frames error: frames.len() <= 1")));
+        }
+        let mut values = Vec::new();
         for i in 0..frames.len() {
-            res.push(Bound::new(frames[i].0, frames[i].1));
+            values.push(Bound::new(frames[i].0, frames[i].1)?);
         }
         //      log::info!("\t Bounds from_frames: frames:{:?} values:{:?} ", frames, res);
-        Self::new(res)
+        Self::new(values)
     }
     /// Итератор по коллекции
     pub fn iter(&self) -> std::slice::Iter<'_, Bound> {

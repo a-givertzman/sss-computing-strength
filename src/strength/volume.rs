@@ -1,6 +1,6 @@
 //! Распределение объема вытесненной воды по шпациям
-use std::rc::Rc;
-use crate::{draught::IDraught, math::Bounds};
+use std::{borrow::BorrowMut, rc::Rc};
+use crate::{draught::IDraught, math::Bounds, Error};
 use super::displacement::Displacement;
 
 ///
@@ -34,27 +34,24 @@ impl Volume {
 ///
 impl IVolume for Volume {
     /// Распределение объема вытесненной воды по шпациям
-    fn values(&mut self) -> Vec<f64> {
-        let result: Vec<f64> = self
-            .bounds
-            .iter()
-            .map(|v| {
-                self.displacement.value(
+    fn values(&mut self) -> Result<Vec<f64>, Error> {
+        let mut result: Vec<f64> = Vec::new();
+        for v in self.bounds.iter() {
+            result.push(self.displacement.borrow_mut().value(
                     *v,
-                    self.draught.value(v.start()),
-                    self.draught.value(v.end()),
-                )
-            })
-            .collect();
+                    self.draught.value(v.start())?,
+                    self.draught.value(v.end())?,
+            )?)
+        }
   //      log::info!("\t Volume ship_length:{ship_length} trim:{trim} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} result:{:?}, res_sum:{}", result, result.iter().sum::<f64>());
 //            log::info!("\t Volume ship_length:{ship_length} trim:{trim} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} res_sum:{}", result.iter().sum::<f64>());
-        result
+        Ok(result)
     }
 }
 
 #[doc(hidden)]
 pub trait IVolume {
-    fn values(&mut self) -> Vec<f64>;
+    fn values(&mut self) -> Result<Vec<f64>, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -70,7 +67,7 @@ impl FakeVolume {
 }
 #[doc(hidden)]
 impl IVolume for FakeVolume {
-    fn values(&mut self) -> Vec<f64> {
-        self.data.clone()
+    fn values(&mut self) -> Result<Vec<f64>, Error> {
+        Ok(self.data.clone())
     }
 }

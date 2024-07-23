@@ -15,13 +15,13 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = Bounds::from_n(20., 4);
+        let result = Bounds::from_n(20., 4).unwrap();
         let target = Bounds::new(vec![
-            Bound::new(-10., -5.),
-            Bound::new(-5., 0.),
-            Bound::new(0., 5.),
-            Bound::new(5., 10.),
-        ]);
+            Bound::new(-10., -5.).unwrap(),
+            Bound::new(-5., 0.).unwrap(),
+            Bound::new(0., 5.).unwrap(),
+            Bound::new(5., 10.).unwrap(),
+        ]).unwrap();
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",
@@ -41,13 +41,13 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = Bounds::from_frames(&vec![(-10., -5.), (-5., 0.), (0., 5.), (5., 10.),]);
+        let result = Bounds::from_frames(&vec![(-10., -5.), (-5., 0.), (0., 5.), (5., 10.),]).unwrap();
         let target = Bounds::new(vec![
-            Bound::new(-10., -5.),
-            Bound::new(-5., 0.),
-            Bound::new(0., 5.),
-            Bound::new(5., 10.),
-        ]);
+            Bound::new(-10., -5.).unwrap(),
+            Bound::new(-5., 0.).unwrap(),
+            Bound::new(0., 5.).unwrap(),
+            Bound::new(5., 10.).unwrap(),
+        ]).unwrap();
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",

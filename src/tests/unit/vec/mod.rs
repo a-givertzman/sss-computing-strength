@@ -122,7 +122,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let mut target = Vec::from([2., 1.,]);
-        target.div_vec(&Vec::from([1., 2.,]));
+        let _ = target.div_vec(&Vec::from([1., 2.,]));
         let result = Vec::from([2., 0.5,]);
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 

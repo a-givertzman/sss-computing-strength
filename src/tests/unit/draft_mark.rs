@@ -26,7 +26,7 @@ mod tests {
             Box::new(FakeDraught::new(2., 0.)),
             points,
             Rc::new(parameters),
-        ).calculate();
+        ).calculate().unwrap();
         let target = 2.;
         assert!((result[0].1.2 - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
         assert!((result[1].1.2 - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
@@ -52,7 +52,7 @@ mod tests {
             Box::new(FakeDraught::new(2., 0.)),
             points,
             Rc::new(parameters),
-        ).calculate();
+        ).calculate().unwrap();
         let target = 2. + 2.*(10.*PI/180.).sin();
         assert!((result[0].1.2 - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
         assert!((result[1].1.2 - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
@@ -78,7 +78,7 @@ mod tests {
             Box::new(FakeDraught::new(2., 0.)),
             points,
             Rc::new(parameters),
-        ).calculate();
+        ).calculate().unwrap();
         let target = 2. - 2.*(10.*PI/180.).sin();
         assert!((result[0].1.2 - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
         assert!((result[1].1.2 - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
@@ -102,7 +102,7 @@ mod tests {
             Box::new(FakeDraught::new(2., 0.1)),
             points,
             Rc::new(parameters),
-        ).calculate();
+        ).calculate().unwrap();
         let target = 3. + 2.*(10.*PI/180.).sin();
         assert!((result[0].1.2 - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
         test_duration.exit();
@@ -124,7 +124,7 @@ mod tests {
             Box::new(FakeDraught::new(2., -0.1)),
             points,
             Rc::new(parameters),
-        ).calculate();
+        ).calculate().unwrap();
         let target = 1. + 2.*(10.*PI/180.).sin();
         assert!((result[0].1.2 - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
         test_duration.exit();
@@ -146,7 +146,7 @@ mod tests {
             Box::new(FakeDraught::new(2., -0.1)),
             points,
             Rc::new(parameters),
-        ).calculate();
+        ).calculate().unwrap();
         let target = 3. + 2.*(10.*PI/180.).sin();
         assert!((result[0].1.2 - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
         test_duration.exit();

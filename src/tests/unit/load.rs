@@ -2,8 +2,8 @@
 
 mod tests {
     use crate::{
-        math::{bound::Bound, moment::Moment, position::Position},
         load::*,
+        math::{bound::Bound, moment::Moment, position::Position},
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::time::Duration;
@@ -19,11 +19,13 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = LoadMass::new(
-            20., 
-            Bound::new(-1., 3.),
-            Some(Position::new(1., 0., 0.)), 
+            20.,
+            Bound::new(-1., 3.).unwrap(),
+            Some(Position::new(1., 0., 0.)),
             LoadingType::Ballast,
-        ).value(Some(Bound::new(1., 3.)));
+        )
+        .value(Some(Bound::new(1., 3.).unwrap()))
+        .unwrap();
         let target = 10.;
         assert!(
             result == target,
@@ -46,10 +48,11 @@ mod tests {
 
         let result = LoadMass::new(
             20.,
-            Bound::new(-1., 3.), 
-            Some(Position::new(1., 0., 0.)), 
+            Bound::new(-1., 3.).unwrap(),
+            Some(Position::new(1., 0., 0.)),
             LoadingType::Ballast,
-        ).moment();
+        )
+        .moment();
         let target = Moment::new(20., 0., 0.);
         assert!(
             result == target,

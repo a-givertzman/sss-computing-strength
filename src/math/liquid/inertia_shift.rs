@@ -1,5 +1,5 @@
 //! Кривая момента инерции
-use crate::math::curve::{Curve, ICurve};
+use crate::{math::curve::{Curve, ICurve}, Error};
 use super::inertia_moment::InertiaMoment;
 
 /// 
@@ -16,21 +16,21 @@ impl InertiaShift {
         Self { x, y }
     }
     ///моменты инерции площади свободной поверхности (x - поперечный, y - продольный)
-    pub fn value(&self, key: f64) -> InertiaMoment {
-        InertiaMoment::new(self.x.value(key), self.y.value(key))
+    pub fn value(&self, key: f64) -> Result<InertiaMoment, Error> {
+        Ok(InertiaMoment::new(self.x.value(key)?, self.y.value(key)?))
     }
 }
 ///
 impl IInertiaShift for InertiaShift {
     ///моменты инерции площади свободной поверхности (x - поперечный, y - продольный)
-    fn value(&self, key: f64) -> InertiaMoment {
-        InertiaMoment::new(self.x.value(key), self.y.value(key))
+    fn value(&self, key: f64) -> Result<InertiaMoment, Error> {
+        Ok(InertiaMoment::new(self.x.value(key)?, self.y.value(key)?))
     }   
 }
 #[doc(hidden)]
 pub trait IInertiaShift {
     ///моменты инерции площади свободной поверхности (x - поперечный, y - продольный)
-    fn value(&self, key: f64) -> InertiaMoment;
+    fn value(&self, key: f64) -> Result<InertiaMoment, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -52,8 +52,8 @@ impl FakeInertiaShift {
 #[doc(hidden)]
 impl IInertiaShift for FakeInertiaShift {
     ///
-    fn value(&self, _: f64) -> InertiaMoment {
-        self.value.clone()
+    fn value(&self, _: f64) -> Result<InertiaMoment, Error> {
+        Ok(self.value.clone())
     }    
 }
 

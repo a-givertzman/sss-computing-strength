@@ -26,7 +26,7 @@ mod tests {
             )),
             Rc::new(Parameters::new()),
         )
-        .arm_wind_dynamic();
+        .arm_wind_dynamic().unwrap();
         let target = 1.5;
 
         assert!(

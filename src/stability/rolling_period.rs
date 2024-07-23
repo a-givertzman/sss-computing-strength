@@ -2,6 +2,8 @@
 
 use std::rc::Rc;
 
+use crate::Error;
+
 use super::metacentric_height::IMetacentricHeight;
 
 /// Период качки судна  (2.1.5)
@@ -34,17 +36,17 @@ impl RollingPeriod {
 ///
 impl IRollingPeriod for RollingPeriod {
     /// Период качки судна
-    fn calculate(&self) -> f64 {
+    fn calculate(&self) -> Result<f64, Error> {
         let c = self.c();
-        if self.metacentric_height.h_trans_fix() > 0. {
-            let h_sqrt = self.metacentric_height.h_trans_fix().sqrt();
+        Ok(if self.metacentric_height.h_trans_fix()? > 0. {
+            let h_sqrt = self.metacentric_height.h_trans_fix()?.sqrt();
             let res = 2. *  c * self.b / h_sqrt;
-            log::info!("\t RollingPeriod calculate c:{c} h_sqrt: {h_sqrt} T:{res}");
+  //          log::info!("\t RollingPeriod calculate c:{c} h_sqrt: {h_sqrt} T:{res}");
             res
         } else {
-            log::info!("\t RollingPeriod calculate error: h_trans_fix is negative!");
+  //          log::info!("\t RollingPeriod calculate error: h_trans_fix is negative!");
             0.
-        }
+        })
     }
     /// Коэффициент для расчета периода
     fn c(&self) -> f64 {
@@ -54,7 +56,7 @@ impl IRollingPeriod for RollingPeriod {
 #[doc(hidden)]
 pub trait IRollingPeriod {
     /// Период качки судна
-    fn calculate(&self) -> f64;
+    fn calculate(&self) -> Result<f64, Error> ;
     /// Коэффициент для расчета периода
     fn c(&self) -> f64;
 }
@@ -79,8 +81,8 @@ impl FakeRollingPeriod {
 }
 #[doc(hidden)]
 impl IRollingPeriod for FakeRollingPeriod {
-    fn calculate(&self) -> f64 {
-        self.value
+    fn calculate(&self) -> Result<f64, Error>  {
+        Ok(self.value)
     }
     fn c(&self) -> f64 {
         self.c

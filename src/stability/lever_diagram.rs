@@ -96,13 +96,13 @@ impl LeverDiagram {
                 vector.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
             });
         }
-        let curve = Curve2D::from_values_catmull_rom(pantocaren);
+        let curve = Curve2D::from_values_catmull_rom(pantocaren)?;
         // расчет диаграммы
-        let theta = |angle_deg: i32| {
+        let theta: &dyn Fn(i32) -> Result<(f64, f64), Error> = &|angle_deg: i32| {
             let angle_deg = angle_deg as f64;
             let angle_rad = angle_deg * std::f64::consts::PI / 180.;
             let v1 = curve.value(self.mean_draught, angle_deg)?;
-            let v2 = self.metacentric_height.z_g_fix() * angle_rad.sin();
+            let v2 = self.metacentric_height.z_g_fix()? * angle_rad.sin();
             let v3 =
                 (self.ship_moment.shift().y() - self.center_draught_shift.y()) * angle_rad.cos();
             let value = v1 - v2 - v3;
@@ -116,7 +116,7 @@ impl LeverDiagram {
         // знак статического угла крена
         let mut angle_zero_signum = 1.;
         // если крен на левый борт то переворачиваем диаграмму
-        if theta(0).1 > 0. {
+        if theta(0)?.1 > 0. {
             dso = dso.into_iter().map(|(a, v)| (-a, -v)).collect();
             dso.sort_by(|(a1, _), (a2, _)| {
                 a1.partial_cmp(a2)
@@ -126,7 +126,7 @@ impl LeverDiagram {
                                      //    dbg!("theta(0).1 > 0.", &dso);
         }
         // нахождение максимума диаграммы
-        let curve = Curve::new_catmull_rom(&dso);
+        let curve = Curve::new_catmull_rom(&dso)?;
         let mut angle = 45.;
         let mut max_angle = angle;
         let mut value = curve.value(angle)?;

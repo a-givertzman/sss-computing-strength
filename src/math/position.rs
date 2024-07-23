@@ -1,4 +1,6 @@
-//! Точка относительно Центра Судна
+//! Точка относительно Центра 
+use std::{iter::Sum, ops::{Add, AddAssign}};
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Position {
     x: f64,
@@ -39,3 +41,27 @@ impl std::fmt::Display for Position {
         write!(f, "Position({}, {}, {})", self.x(), self.y(), self.z())
     }
 }
+///
+impl Add for Position {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
+        Position::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z(),)
+    }
+}
+///
+impl Sum for Position {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Self::new(0., 0., 0.),|a, b| a + b )
+    }
+}
+///
+impl AddAssign for Position {
+    fn add_assign(&mut self, other: Self) {
+        *self = Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
+        };
+    }
+}
+

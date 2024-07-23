@@ -28,7 +28,8 @@ mod tests {
                 Moment::new(0., 0., delta_moment_timber_h),
             )),
         )
-        .moment();
+        .moment()
+        .unwrap();
         let target = Moment::new(
             0.,
             0.,

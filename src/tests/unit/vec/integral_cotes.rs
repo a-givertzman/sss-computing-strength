@@ -15,7 +15,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = Vec::from([1., 2., 3.,]).integral_cotes(1.);
+        let result = Vec::from([1., 2., 3.,]).integral_cotes(1.).unwrap();
         let target = 4.;
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 

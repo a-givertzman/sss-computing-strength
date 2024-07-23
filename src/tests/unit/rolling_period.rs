@@ -1,8 +1,8 @@
 #[cfg(test)]
 
 mod tests {
+    use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, time::Duration};
-    use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
 
     use crate::stability::{metacentric_height::*, rolling_period::*};
@@ -17,18 +17,20 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = RollingPeriod::new(
-            10., 
+            10.,
             4.,
-            1.,            
-            Rc::new(FakeMetacentricHeight::new(
-                0.,
-                0.,
-                1.,
-                0.,
-            )),
-        ).calculate();        
+            1.,
+            Rc::new(FakeMetacentricHeight::new(0., 0., 1., 0.)),
+        )
+        .calculate()
+        .unwrap();
         let target = 3.686;
-        assert!((result - target).abs() < 0.001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        assert!(
+            (result - target).abs() < 0.001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
 
         test_duration.exit();
     }

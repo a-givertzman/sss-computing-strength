@@ -1,6 +1,6 @@
 //! Учет массы от намокания палубного лесного груза
 
-use crate::{Bound, ILoadMass, LoadMass};
+use crate::{Bound, Error, ILoadMass, LoadMass};
 use std::rc::Rc;
 
 /// Учет намокания палубного лесного груза.  
@@ -29,18 +29,19 @@ impl WettingMass {
 ///
 impl IWettingMass for WettingMass {
     /// Масса намокания попадающая в Bound или вся если Bound отсутствует
-    fn mass(&self, bound: Option<Bound>) -> f64 {
-        self.loads_timber
-            .iter()
-            .map(|v| v.value(bound))
-            .sum::<f64>()
-            * self.coeff
+    fn mass(&self, bound: Option<Bound>) -> Result<f64, Error> {
+        let mut sum = 0.;
+        for v in self.loads_timber
+            .iter() {
+                sum += v.value(bound)?; 
+            }
+        Ok(sum * self.coeff)
     }
 }
 #[doc(hidden)]
 pub trait IWettingMass {
     /// Масса намокания попадающая в Bound или вся если Bound отсутствует
-    fn mass(&self, bound: Option<Bound>) -> f64;
+    fn mass(&self, bound: Option<Bound>) -> Result<f64, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -56,7 +57,7 @@ impl FakeWettingMass {
 }
 #[doc(hidden)]
 impl IWettingMass for FakeWettingMass {
-    fn mass(&self, _: Option<Bound>) -> f64 {
-        self.mass
+    fn mass(&self, _: Option<Bound>) -> Result<f64, Error> {
+        Ok(self.mass)
     }
 }

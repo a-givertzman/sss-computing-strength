@@ -16,28 +16,34 @@ impl Curve {
     ///
     /// Creates new instance of the Curve with linear interpolation  
     /// from vector of the key - value pairs
-    pub fn new_linear(values: &Vec<(f64, f64)>) -> Curve {
-        assert!(values.len() > 1, "Curve.new_linear | Input array must have at least two elements (values.len > 1), \nvalues: {:?}", values);
-        let values: Vec<_> = values
+    pub fn new_linear(src: &Vec<(f64, f64)>) -> Result<Curve, Error> {
+        if src.len() <= 1 {
+            return Err(Error::FromString(format!("Curve new_linear error: src.len() <= 1")))
+        }
+        let src: Vec<_> = src
             .iter()
             .map(|v| Key::new(v.0, v.1, Interpolation::Linear))
             .collect();
-        Self {
-            spline: Spline::from_vec(values),
-        }
+        Ok(Self {
+            spline: Spline::from_vec(src),
+        })
     }
     ///
     /// Creates new instance of the Curve with CatmullRom interpolation  
     /// from vector of the key - value pairs
     /// Values must be sorted by key
-    pub fn new_catmull_rom(src: &Vec<(f64, f64)>) -> Curve {
-        assert!(src.len() > 2, "Curve.new | Input array must have at least four elements (values.len > 1), \nvalues: {:?}", src);
+    pub fn new_catmull_rom(src: &Vec<(f64, f64)>) -> Result<Curve, Error> {
+        if src.len() <= 2 {
+            return Err(Error::FromString(format!("Curve new_catmull_rom error: src.len() <= 2")))
+        }
         let mut res = Vec::new();
         let mut src = src.clone();
         src.sort_by(|a, b| a.0.partial_cmp(&b.0).expect("Curve.new_catmull_rom src sort error!"));
         // Для метода CatmullRom добавляем по 3 значения вначало и конец вектора
         let delta_key = src[1].0 - src[0].0;
-        assert!(delta_key > 0., "Curve.new_catmull_rom delta_key > 0 {}:{} {}:{}, src:{:?}", src[0].0, src[0].1 , src[1].0, src[1].1, &src );
+        if delta_key <= 0. {
+            return Err(Error::FromString(format!("Curve new_catmull_rom error: delta_key <= 0.")));
+        }         
         let delta_value = src[1].1 - src[0].1;
         res.push(Key::new(
             src[0].0 - delta_key * 3.,
@@ -62,7 +68,9 @@ impl Curve {
         res.append(&mut values.clone());
 
         let delta_key = src[src.len() - 1].0 - src[src.len() - 2].0;
-        assert!(delta_key > 0., "Curve.new_catmull_rom delta_key > 0");
+        if delta_key <= 0. {
+            return Err(Error::FromString(format!("Curve new_catmull_rom error: delta_key <= 0")))
+        }
         let delta_value = src[src.len() - 1].1 - src[src.len() - 2].1;
         res.push(Key::new(
             src.last().unwrap().0 + delta_key,
@@ -79,9 +87,9 @@ impl Curve {
             src.last().unwrap().1 + delta_value * 3.,
             Interpolation::CatmullRom,
         ));
-        Self {
+        Ok(Self {
             spline: Spline::from_vec(res),
-        }
+        })
     }
 }
 
@@ -100,7 +108,9 @@ impl ICurve for Curve {
     }
     /// Численное интегрирование методом трапеций
     fn integral(&self, start: f64, end: f64) -> Result<f64, Error> {
-        assert!(start <= end, "Integral start {start} <= end {end}");
+        if start > end {
+            return Err(Error::FromString(format!("Curve integral error: start > end")));
+        } 
         if start == end {
             return Ok(0.);
         }

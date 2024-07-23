@@ -1,6 +1,6 @@
 //! Класс для расчета дифферента и средней осадки в расчете прочности
 
-use crate::{draught::Draught, math::Bounds, trim::{FakeTrim, ITrim}, IVolume, MultipleSingle};
+use crate::{draught::Draught, math::Bounds, trim::{FakeTrim, ITrim}, Error, IVolume, MultipleSingle};
 
 use super::{
     displacement::Displacement,
@@ -99,9 +99,9 @@ impl Trim {
 /// 
 impl ITrim for Trim {
     /// Вычисление средней осадки и дифферента
-    fn value(&self) -> (f64, f64) {
+    fn value(&self) -> Result<(f64, f64), Error> {
         let dx = self.bounds.iter().map(|v| v.center()).collect::<Vec<_>>();
-        let mass_pairs = dx.clone().into_iter().zip(self.mass.values()).collect::<Vec<_>>();
+        let mass_pairs = dx.clone().into_iter().zip(self.mass.values()?).collect::<Vec<_>>();
         let (w_xg, w) = Trim::calc_s(&mass_pairs);
         let mut trim = 0.; // Дифферент
         let mut mean_draught: f64 = self.mean_draught;
@@ -116,9 +116,9 @@ impl ITrim for Trim {
                         self.center_waterline_shift,    
                         Box::new(FakeTrim::new(mean_draught, trim)),               
                         None,                       
-                    )),
+                    )?),
                     Rc::clone(&self.bounds),
-                ).values();
+                ).values()?;
                 volume_values.mul_single(self.water_density);
     //            dbg!(&volume_values);
                 let volume_pairs = dx.clone().into_iter().zip(volume_values).collect::<Vec<_>>();
@@ -138,7 +138,7 @@ impl ITrim for Trim {
             }                 
             trim = trim + delta_x / 10.;
         }
-        (mean_draught, trim)
+        Ok((mean_draught, trim))
     }
 }
 

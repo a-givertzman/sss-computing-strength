@@ -41,7 +41,9 @@ impl DraftMark {
             )))?;
         let mut result = Vec::new();
         for (s, v) in self.points.iter() {
-            assert!(v.len() > 2, "DraftMark calculate v.len() > 2");
+            if v.len() <= 2 {
+                return Err(Error::FromString(format!("DraftMark calculate error: v.len() < 2")));
+            } 
             let mut z_fix: Vec<(f64, f64, f64, f64)> = Vec::new();
             for v in v.iter() {
                 z_fix.push((
@@ -66,11 +68,11 @@ impl DraftMark {
             }
             // Интерполированные значения координат марок заглубления
             let fix_x =
-                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.0)).collect()).value(0.)?;
+                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.0)).collect())?.value(0.)?;
             let fix_y =
-                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.1)).collect()).value(0.)?;
+                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.1)).collect())?.value(0.)?;
             let fix_z =
-                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.2)).collect()).value(0.)?;
+                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.2)).collect())?.value(0.)?;
             result.push((s.to_owned(), (fix_x, fix_y, fix_z)));
         }
         Ok(result)
