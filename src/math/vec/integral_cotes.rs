@@ -22,7 +22,7 @@ pub trait IntegralCotes {
 impl IntegralCotes for Vec<f64>  {
     fn integral_cotes(&self, h: f64) -> Result<f64, Error> {
         if self.len() < 2 {
-            return Err(Error::FromString(format!("IntegralCotes error: len() < 2")));
+            return Err(Error::FromString("IntegralCotes error: len() < 2".to_string()));
         }
         let first_last = self.first().expect("IntegralCotes err first") + self.last().expect("IntegralCotes err last");
         Ok(h*(self.iter().sum::<f64>() - first_last + first_last*0.5))

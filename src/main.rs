@@ -12,7 +12,7 @@ use crate::{
 use data::api_server::*;
 use draught::Draught;
 pub use error::Error;
-use icing_timber::{IcingTimberBound, IcingTimberType};
+use icing_timber::IcingTimberBound;
 use log::info;
 use std::{collections::HashMap, io, rc::Rc, time::Instant};
 
@@ -105,7 +105,7 @@ fn execute() -> Result<(), Error> {
     );
     // параметры обледенения поверхностей судна
     let icing_stab: Rc<dyn IIcingStab> = Rc::new(IcingStab::new(
-        data.icing_stab.clone(),
+        data.icing_stab,
         data.icing_m_timber,
         data.icing_m_v_full,
         data.icing_m_v_half,
@@ -144,7 +144,7 @@ fn execute() -> Result<(), Error> {
                 IcingTimberBound::new(
                     data.width,
                     data.length_loa,
-                    IcingTimberType::from(data.icing_timber_stab.clone()),
+                    data.icing_timber_stab,
                 ),
             )),
         )),
@@ -172,7 +172,7 @@ fn execute() -> Result<(), Error> {
         IcingTimberBound::new(
             data.width,
             data.length_loa,
-            IcingTimberType::from(data.icing_timber_stab.clone()),
+            data.icing_timber_stab,
         ),
     ));
     // Момент массы нагрузки на корпус судна
@@ -290,7 +290,7 @@ fn execute() -> Result<(), Error> {
     let wind: Rc<dyn IWind> = Rc::new(Wind::new(
         data.navigation_area_param
             .get_area(&data.navigation_area)
-            .ok_or(format!("main error no area data!"))?,
+            .ok_or("main error no area data!".to_string())?,
         Rc::new(Windage::new(
             Rc::clone(&icing_stab),
             Rc::clone(&area_stability),

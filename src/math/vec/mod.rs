@@ -119,10 +119,10 @@ pub trait AddVec {
 impl AddVec for Vec<f64>  {   
     fn add_vec(&mut self, rhs: &Self) -> Result<(), Error> {
         if self.len() != rhs.len() {
-            return Err(Error::FromString(format!("AddVec add_vec error: self.len() != rhs.len()")));
+            return Err(Error::FromString("AddVec add_vec error: self.len() != rhs.len()".to_string()));
         } 
         self.iter_mut()
-            .zip(rhs.into_iter())
+            .zip(rhs)
             .for_each(|(v1, v2)| *v1 += v2 );
         Ok(())
     }    
@@ -145,10 +145,10 @@ pub trait SubVec {
 impl SubVec for Vec<f64>  {   
     fn sub_vec(&mut self, rhs: &Self) -> Result<(), Error> {
         if self.len() != rhs.len() {
-            return Err(Error::FromString(format!("SubVec error: self.len() != rhs.len()")));
+            return Err(Error::FromString("SubVec error: self.len() != rhs.len()".to_string()));
         } 
         self.iter_mut()
-            .zip(rhs.into_iter())
+            .zip(rhs)
             .for_each(|(v1, v2)| *v1 -= v2 );
         Ok(())
     }    
@@ -172,10 +172,10 @@ pub trait MultipleVec {
 impl MultipleVec for Vec<f64>  {   
     fn mul_vec(&mut self, rhs: &Self) -> Result<(), Error> {
         if self.len() != rhs.len() {
-            return Err(Error::FromString(format!("MultipleVec error: self.len() != rhs.len()")));
+            return Err(Error::FromString("MultipleVec error: self.len() != rhs.len()".to_string()));
         } 
         self.iter_mut()
-            .zip(rhs.into_iter())
+            .zip(rhs)
             .for_each(|(v1, v2)| *v1 *= v2 );
         Ok(())
     }    
@@ -199,10 +199,10 @@ pub trait DivideVec {
 impl DivideVec for Vec<f64>  {   
     fn div_vec(&mut self, rhs: &Vec<f64>) -> Result<(), Error> {
         if self.len() != rhs.len() {
-            return Err(Error::FromString(format!("DivideVec error: self.len() != rhs.len()")));
+            return Err(Error::FromString("DivideVec error: self.len() != rhs.len()".to_string()));
         } 
         self.iter_mut()
-            .zip(rhs.into_iter())
+            .zip(rhs)
             .for_each(|(v1, v2)| *v1 /= v2 );
         Ok(())
     }    

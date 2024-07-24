@@ -18,7 +18,7 @@ impl Curve {
     /// from vector of the key - value pairs
     pub fn new_linear(src: &Vec<(f64, f64)>) -> Result<Curve, Error> {
         if src.len() <= 1 {
-            return Err(Error::FromString(format!("Curve new_linear error: src.len() <= 1")))
+            return Err(Error::FromString("Curve new_linear error: src.len() <= 1".to_string()))
         }
         let src: Vec<_> = src
             .iter()
@@ -34,7 +34,7 @@ impl Curve {
     /// Values must be sorted by key
     pub fn new_catmull_rom(src: &Vec<(f64, f64)>) -> Result<Curve, Error> {
         if src.len() <= 2 {
-            return Err(Error::FromString(format!("Curve new_catmull_rom error: src.len() <= 2")))
+            return Err(Error::FromString("Curve new_catmull_rom error: src.len() <= 2".to_string()))
         }
         let mut res = Vec::new();
         let mut src = src.clone();
@@ -42,7 +42,7 @@ impl Curve {
         // Для метода CatmullRom добавляем по 3 значения вначало и конец вектора
         let delta_key = src[1].0 - src[0].0;
         if delta_key <= 0. {
-            return Err(Error::FromString(format!("Curve new_catmull_rom error: delta_key <= 0.")));
+            return Err(Error::FromString("Curve new_catmull_rom error: delta_key <= 0.".to_string()));
         }         
         let delta_value = src[1].1 - src[0].1;
         res.push(Key::new(
@@ -69,7 +69,7 @@ impl Curve {
 
         let delta_key = src[src.len() - 1].0 - src[src.len() - 2].0;
         if delta_key <= 0. {
-            return Err(Error::FromString(format!("Curve new_catmull_rom error: delta_key <= 0")))
+            return Err(Error::FromString("Curve new_catmull_rom error: delta_key <= 0".to_string()))
         }
         let delta_value = src[src.len() - 1].1 - src[src.len() - 2].1;
         res.push(Key::new(
@@ -102,14 +102,14 @@ impl ICurve for Curve {
         let res = self
             .spline
             .clamped_sample(key)
-            .ok_or(format!("Curve.clamped_value | Ошибка получения значения: нет ключей"))?;
+            .ok_or("Curve.clamped_value | Ошибка получения значения: нет ключей".to_string())?;
         //    log::info!("\t Curve clamped_value key:{key} res:{res}");
         Ok(res)
     }
     /// Численное интегрирование методом трапеций
     fn integral(&self, start: f64, end: f64) -> Result<f64, Error> {
         if start > end {
-            return Err(Error::FromString(format!("Curve integral error: start > end")));
+            return Err(Error::FromString("Curve integral error: start > end".to_string()));
         } 
         if start == end {
             return Ok(0.);

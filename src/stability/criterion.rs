@@ -142,7 +142,7 @@ impl Criterion {
         grain: Box<dyn IGrain>,
     ) -> Result<Self, Error> {
         if moulded_depth <= 0. {
-            return Err(Error::FromString(format!("Criterion new error: moulded_depth <= 0.")));
+            return Err(Error::FromString("Criterion new error: moulded_depth <= 0.".to_string()));
         } 
         Ok(Self {
             ship_type,
@@ -319,14 +319,12 @@ impl Criterion {
                     src_area,
                     target_area,
                 ));
-            } else {
-                if angles.len() > 1 {
-                    result.push(CriterionData::new_result(
-                        CriterionID::HeelFirstMaximumLC,
-                        angle.0,
-                        25.,
-                    ));
-                }
+            } else if angles.len() > 1 {
+                result.push(CriterionData::new_result(
+                    CriterionID::HeelFirstMaximumLC,
+                    angle.0,
+                    25.,
+                ));
             }
             result.push(CriterionData::new_result(
                 CriterionID::HeelMaximumLC,

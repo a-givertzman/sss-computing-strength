@@ -73,7 +73,7 @@ mod tests {
     fn angle() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test LeverDiagram angle";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -83,7 +83,7 @@ mod tests {
         let angle_rad = angle * std::f64::consts::PI / 180.;
         let moment = 2. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos();
         let result = unsafe { LEVER_DIAGRAM.clone().unwrap().angle(moment).unwrap() };
-        let target = vec![angle, 90. - angle];
+        let target = [angle, 90. - angle];
         result.iter().zip(target.iter()).for_each(|(r, t)| {
             assert!((r - t).abs() < 0.001, "\nresult: {:?}\ntarget: {:?}", r, t)
         });
@@ -95,7 +95,7 @@ mod tests {
     fn lever_moment() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test LeverDiagram lever_moment";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -114,7 +114,7 @@ mod tests {
     fn dso_lever_max() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test LeverDiagram dso_lever_max";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -138,7 +138,7 @@ mod tests {
     fn max_angles() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test LeverDiagram max_angles";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));

@@ -16,9 +16,7 @@ impl Curve2D {
     #[allow(dead_code)]
     pub fn new(curves: Vec<(f64, Curve)>) -> Result<Self, Error> {
         if curves.len() < 2 {
-            return Err(Error::FromString(format!(
-                "Curve2D new error|: curves.len() < 2"
-            )));
+            return Err(Error::FromString("Curve2D new error|: curves.len() < 2".to_string()));
         }
         Ok(Self { curves })
     }
@@ -27,9 +25,7 @@ impl Curve2D {
     #[allow(dead_code)]
     pub fn from_values_linear(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Result<Self, Error> {
         if values.len() < 2 {
-            return Err(Error::FromString(format!(
-                "Curve2D from_values_linear error|: values.len() < 2"
-            )));
+            return Err(Error::FromString("Curve2D from_values_linear error|: values.len() < 2".to_string()));
         }
         values.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
         let mut curves = Vec::new();
@@ -44,9 +40,7 @@ impl Curve2D {
     #[allow(dead_code)]
     pub fn from_values_catmull_rom(mut values: Vec<(f64, Vec<(f64, f64)>)>) -> Result<Self, Error> {
         if values.len() < 2 {
-            return Err(Error::FromString(format!(
-                "Curve2D from_values_catmull_rom error|: values.len() < 2"
-            )));
+            return Err(Error::FromString("Curve2D from_values_catmull_rom error|: values.len() < 2".to_string()));
         }
         values.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
         let mut curves = Vec::new();
@@ -80,12 +74,12 @@ impl ICurve2D for Curve2D {
                 return Ok(result);
             }
         }
-        Ok(self
+        self
             .curves
             .last()
-            .ok_or(format!("Curve2D value error: no last curve"))?
+            .ok_or("Curve2D value error: no last curve".to_string())?
             .1
-            .value(key2)?)
+            .value(key2)
     }
 }
 

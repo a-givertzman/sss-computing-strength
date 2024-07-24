@@ -27,7 +27,7 @@ impl TotalForce {
         gravity_g: f64,
     ) -> Result<Self, Error> {
         if gravity_g <= 0. {
-            return Err(Error::FromString(format!("TotalForce new error: gravity_g <= 0.")));
+            return Err(Error::FromString("TotalForce new error: gravity_g <= 0.".to_string()));
         }
         Ok(Self {
             mass,
@@ -44,7 +44,7 @@ impl ITotalForce for TotalForce {
         let mass_values = self.mass.values()?;
         let mut volume_values = self.volume.values()?;
         if mass_values.len() != volume_values.len() {
-            return Err(Error::FromString(format!("TotalForce values error: mass_values.len() != volume_values.len()")));
+            return Err(Error::FromString("TotalForce values error: mass_values.len() != volume_values.len()".to_string()));
         }
         let mut result = mass_values.clone();
         volume_values.mul_single(self.water_density);

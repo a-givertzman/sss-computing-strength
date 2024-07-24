@@ -137,7 +137,7 @@ impl ITrim for Trim {
     //            dbg!("delta_x.abs() <= 0.000000001");
                 break;
             }                 
-            trim = trim + delta_x / 10.;
+            trim += delta_x / 10.;
         }
         Ok((mean_draught, trim))
     }

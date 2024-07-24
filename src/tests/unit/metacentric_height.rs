@@ -35,7 +35,7 @@ mod tests {
     fn h_long_fix() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test MetacentricHeight h_long_fix";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -57,7 +57,7 @@ mod tests {
     fn h_trans_fix() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test MetacentricHeight h_trans_fix";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -79,7 +79,7 @@ mod tests {
     fn z_g_fix() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test MetacentricHeight z_g_fix";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));

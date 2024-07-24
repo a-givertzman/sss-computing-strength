@@ -9,7 +9,7 @@ mod tests {
     #[test]
     fn integral_cotes() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test Vec integral_cotes";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));

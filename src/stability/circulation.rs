@@ -41,12 +41,10 @@ impl Circulation {
         parameters: Rc<dyn IParameters>,
     ) -> Result<Self, Error> {
         if l_wl <= 0. {
-            return Err(Error::FromString(format!(
-                "Circulation new error: l_wl <= 0."
-            )));
+            return Err(Error::FromString("Circulation new error: l_wl <= 0.".to_string()));
         }
         if d <= 0. {
-            return Err(Error::FromString(format!("Circulation new error: d <= 0.")));
+            return Err(Error::FromString("Circulation new error: d <= 0.".to_string()));
         }
         Ok(Self {
             v_0,

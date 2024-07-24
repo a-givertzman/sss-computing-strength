@@ -15,7 +15,7 @@ impl Bound {
     /// * end - конец диапазона
     pub fn new(start: f64, end: f64) -> Result<Self, Error> {
         if end <= start {
-            return Err(Error::FromString(format!("Bound new error: end <= start")));
+            return Err(Error::FromString("Bound new error: end <= start".to_string()));
         }
         Ok(Self { start, end })
     }

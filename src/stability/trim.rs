@@ -46,7 +46,7 @@ impl Trim {
         parameters: Rc<dyn IParameters>, 
     ) -> Result<Self, Error> {
         if ship_length <= 0. {
-            return Err(Error::FromString(format!("Trim new error: ship_length <= 0.")));
+            return Err(Error::FromString("Trim new error: ship_length <= 0.".to_string()));
         }
         Ok(Self {
             ship_length,

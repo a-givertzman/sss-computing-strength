@@ -17,7 +17,7 @@ impl Displacement {
     /// * frame_area_data - массив данных по погруженным площадям шпангоутов
     pub fn new(frame_area_data: Vec<ParsedFrameData>) -> Result<Self, Error> {
         if frame_area_data.len() < 2 {
-            return Err(Error::FromString(format!("Displacement new error: frame_area_data.len() < 2")));
+            return Err(Error::FromString("Displacement new error: frame_area_data.len() < 2".to_string()));
         }
         let mut frames = Vec::new();
         for v in frame_area_data.iter() {
@@ -40,17 +40,17 @@ impl Displacement {
     /// - pos_x: координата шпангоута по х от центра судна
     /// - draft: осадка в районе шпангоута
     fn area(&self, pos_x: f64, draft: f64) -> Result<f64, Error> {
-        let frames_first = self.frames.first().ok_or(Error::FromString(format!("Displacement area error: can't find first frame")))?;
+        let frames_first = self.frames.first().ok_or(Error::FromString("Displacement area error: can't find first frame".to_string()))?;
         if frames_first.shift_x() >= pos_x {
  //           log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  frames_first.shift_x() {} >= pos_x",  frames_first.shift_x());      
             return Ok(frames_first.area(draft)?*2.); // для крайних шпангоутов удваеваем площадь
         }
-        let frames_last = self.frames.last().ok_or(Error::FromString(format!("Displacement area error: can't find last frame")))?;
+        let frames_last = self.frames.last().ok_or(Error::FromString("Displacement area error: can't find last frame".to_string()))?;
         if frames_last.shift_x() <= pos_x {
  //           log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  frames_last.shift_x() {} <= pos_x",  frames_last.shift_x());  
             return Ok(frames_last.area(draft)?*2.); // для крайних шпангоутов удваеваем площадь
         }
-        let (index_up, frame_up) = &self.frames.iter().enumerate().find(|(_, v)| v.shift_x() >= pos_x ).ok_or(Error::FromString(format!("Displacement area error: can't find frame")))?;             
+        let (index_up, frame_up) = &self.frames.iter().enumerate().find(|(_, v)| v.shift_x() >= pos_x ).ok_or(Error::FromString("Displacement area error: can't find frame".to_string()))?;             
         if *index_up == 0 {
  //           log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  index_up == 0");    
             return Ok(self.frames[*index_up].area(draft)?*2.); // для крайних шпангоутов удваеваем площадь

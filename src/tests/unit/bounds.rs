@@ -9,7 +9,7 @@ mod tests {
     #[test]
     fn from_n() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test Bounds create from_n";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -35,7 +35,7 @@ mod tests {
     #[test]
     fn from_frames() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test Bounds create from_frames";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));

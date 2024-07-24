@@ -113,7 +113,7 @@ impl IGrain for Grain {
         if self.angle.is_none() {
             self.calculate()?;
         }
-        self.angle.ok_or(Error::FromString(format!("Grain angle error!")))
+        self.angle.ok_or(Error::FromString("Grain angle error!".to_string()))
     }
     /// Остаточная площадь между кривой кренящих и
     /// кривой восстанавливающих плеч
@@ -121,7 +121,7 @@ impl IGrain for Grain {
         if self.area.is_none() {
             self.calculate()?;
         }
-        self.area.ok_or(Error::FromString(format!("Grain area error!")))
+        self.area.ok_or(Error::FromString("Grain area error!".to_string()))
     }
 }
 #[doc(hidden)]

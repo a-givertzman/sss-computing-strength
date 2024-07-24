@@ -56,7 +56,7 @@ mod tests {
     fn sum() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test Mass sum";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -78,7 +78,7 @@ mod tests {
     fn values() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test Mass values";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));

@@ -10,7 +10,7 @@ mod tests {
     #[test]
     fn draft_mark_zero() {// дифферент 0, крен 0, сверяем марки осадки нос, корма, мидель
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test DraftMark";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -36,7 +36,7 @@ mod tests {
     #[test]
     fn draft_mark_roll_right() {// дифферент 0, крен 10, сверяем марки осадки нос, корма, мидель правый борт
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test DraftMark";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn draft_mark_roll_left() {// дифферент 0, крен 10, сверяем марки осадки нос, корма, мидель левый борт
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test DraftMark";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -88,7 +88,7 @@ mod tests {
     #[test]
     fn draft_mark_1_bow() { // дифферент в нос, крен 10 градусов, сверяем марку осадки в носу правый борт
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test DraftMark";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -110,7 +110,7 @@ mod tests {
     #[test]
     fn draft_mark_2_bow() { // дифферент в корму, крен 10 градусов, сверяем марку осадки в носу правый борт
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test DraftMark";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -132,7 +132,7 @@ mod tests {
     #[test]
     fn draft_mark_1_stern() { // дифферент в корму, крен -10 градусов, сверяем марку осадки в корме левый борт
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test DraftMark";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));

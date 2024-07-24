@@ -63,10 +63,9 @@ impl Tank {
 impl ITank for Tank {
     /// Момент свободной поверхности 
     fn moment_surface(&self) -> FreeSurfaceMoment {
-        let result =
-            FreeSurfaceMoment::from_inertia(self.inertia.clone(), self.density);
+        
  //       log::info!("\t Tank result:{:?}", result);    
-        result
+        FreeSurfaceMoment::from_inertia(self.inertia.clone(), self.density)
     }
     ///
     fn load_type(&self) -> LoadingType {

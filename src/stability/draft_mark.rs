@@ -36,13 +36,11 @@ impl DraftMark {
         let roll = self
             .parameters
             .get(ParameterID::Roll)
-            .ok_or(Error::FromString(format!(
-                "DraftMark calculate error: no ParameterID::Roll!"
-            )))?;
+            .ok_or(Error::FromString("DraftMark calculate error: no ParameterID::Roll!".to_string()))?;
         let mut result = Vec::new();
         for (s, v) in self.points.iter() {
             if v.len() <= 2 {
-                return Err(Error::FromString(format!("DraftMark calculate error: v.len() < 2")));
+                return Err(Error::FromString("DraftMark calculate error: v.len() < 2".to_string()));
             } 
             let mut z_fix: Vec<(f64, f64, f64, f64)> = Vec::new();
             for v in v.iter() {

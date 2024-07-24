@@ -64,7 +64,7 @@ impl RollingAmplitude {
         t: Rc<dyn IRollingPeriod>,
     ) -> Result<Self, Error> {
         if d <= 0. {
-            return Err(Error::FromString(format!("RollingAmplitude new error: draught <= 0.")));
+            return Err(Error::FromString("RollingAmplitude new error: draught <= 0.".to_string()));
         } 
         Ok(Self {
             a_k,

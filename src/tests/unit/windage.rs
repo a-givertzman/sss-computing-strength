@@ -44,7 +44,7 @@ mod tests {
     fn a_v() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test Windage a_v";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -66,7 +66,7 @@ mod tests {
     fn z_v() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test Windage z_v";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));

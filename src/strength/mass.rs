@@ -203,7 +203,7 @@ impl IMass for Mass {
         if self.sum.borrow().is_none() {
             self.calculate()?;
         }
-        Ok(self.sum.borrow().clone().expect("Mass sum error: no value"))
+        Ok((*self.sum.borrow()).expect("Mass sum error: no value"))
     }
     /// Распределение массы по вектору разбиения
     fn values(&self) -> Result<Vec<f64>, Error> {

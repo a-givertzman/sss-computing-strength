@@ -22,7 +22,7 @@ pub trait Integral {
 impl Integral for Vec<(f64, f64)>  {
     fn integral(&self) -> Result<f64, Error> {
         if self.len() < 2 {
-            return Err(Error::FromString(format!("Integral error: self.len() < 2")));
+            return Err(Error::FromString("Integral error: self.len() < 2".to_string()));
         } 
         let mut sum = 0.;
         for i in 0..self.len()-1 {

@@ -14,7 +14,7 @@ impl Bounds {
     /// Основной конструктор
     pub fn new(values: Vec<Bound>) -> Result<Self, Error> {
         if values.len() < 2 {
-            return Err(Error::FromString(format!("Bounds::new error: values.len() < 2 ")));
+            return Err(Error::FromString("Bounds::new error: values.len() < 2 ".to_string()));
         }
         Ok(Self { values })
     }
@@ -42,7 +42,7 @@ impl Bounds {
     // Вспомогательный конструктор
     pub fn from_frames(frames: &Vec<(f64, f64)>) -> Result<Self, Error> {
         if frames.len() <= 1 {
-            return Err(Error::FromString(format!("Bounds from_frames error: frames.len() <= 1")));
+            return Err(Error::FromString("Bounds from_frames error: frames.len() <= 1".to_string()));
         }
         let mut values = Vec::new();
         for i in 0..frames.len() {

@@ -75,9 +75,7 @@ impl LeverDiagram {
     /// динамической остойчивости (13)
     fn calculate(&self) -> Result<(), Error> {
         if self.pantocaren.len() < 2 {
-            return Err(Error::FromString(format!(
-                "LeverDiagram calculate error: pantocaren.len() < 2"
-            )));
+            return Err(Error::FromString("LeverDiagram calculate error: pantocaren.len() < 2".to_string()));
         }
         // Проверяем есть ли пантокарены в отрицательной области углов
         // Если нет то считаем что судно симметорично и зеркально
@@ -165,10 +163,8 @@ impl LeverDiagram {
         for angle_deg in 0..=9000 {
             let angle_deg = angle_deg as f64 * 0.01;
             let value = curve.value(angle_deg)?;
-            if value < last_value {
-                if max_angles.is_empty() || max_angles.last().unwrap().1 < last_value {
-                    max_angles.push((last_angle, last_value));
-                }
+            if value < last_value && (max_angles.is_empty() || max_angles.last().unwrap().1 < last_value) {
+                max_angles.push((last_angle, last_value));
             }
             last_value = value;
             last_angle = angle_deg
@@ -216,13 +212,13 @@ impl ILeverDiagram for LeverDiagram {
         let binding = self.dso_curve.borrow();
         let curve = binding
             .as_ref()
-            .ok_or(Error::FromString(format!("LeverDiagram angle error: no dso_curve!")))?;
+            .ok_or(Error::FromString("LeverDiagram angle error: no dso_curve!".to_string()))?;
         let max_angle = self
             .theta_max
             .borrow()
-            .ok_or(Error::FromString(format!("StabilityArm angle error: no max_angle!")))?;
+            .ok_or(Error::FromString("StabilityArm angle error: no max_angle!".to_string()))?;
         if curve.value(max_angle)? < lever_moment {
-            return Err(Error::FromString(format!("StabilityArm angle error: curve.value(max_angle) < lever_moment!")));
+            return Err(Error::FromString("StabilityArm angle error: curve.value(max_angle) < lever_moment!".to_string()));
         }
         let mut delta_angle = 22.5;
         let mut angles = vec![max_angle - delta_angle, max_angle + delta_angle];
@@ -256,7 +252,7 @@ impl ILeverDiagram for LeverDiagram {
         self.dso_curve
             .borrow()
             .as_ref()
-            .ok_or(Error::FromString(format!("LeverDiagram angle error: no dso_curve!")))?
+            .ok_or(Error::FromString("LeverDiagram angle error: no dso_curve!".to_string()))?
             .value(angle)
     }
     /// Площадь под положительной частью диаграммы статической остойчивости (rad^2)
@@ -270,7 +266,7 @@ impl ILeverDiagram for LeverDiagram {
         Ok(self.dso_curve
             .borrow()
             .as_ref()
-            .ok_or(Error::FromString(format!("LeverDiagram dso_area error: no dso_curve!")))?
+            .ok_or(Error::FromString("LeverDiagram dso_area error: no dso_curve!".to_string()))?
             .integral(angle1, angle2)?
             * PI
             / 180.)
@@ -286,7 +282,7 @@ impl ILeverDiagram for LeverDiagram {
         let dso = self.dso.borrow();
         let mut segment = dso
             .as_ref()
-            .ok_or(Error::FromString(format!("LeverDiagram dso_lever_max error: no dso!")))?
+            .ok_or(Error::FromString("LeverDiagram dso_lever_max error: no dso!".to_string()))?
             .iter()
             .filter(|v| v.0 >= angle1 && v.0 <= angle2)
             .collect::<Vec<_>>();
@@ -296,7 +292,7 @@ impl ILeverDiagram for LeverDiagram {
         });
         Ok(segment
             .last()
-            .ok_or(Error::FromString(format!("LeverDiagram dso_lever_max segment error: no values!")))?
+            .ok_or(Error::FromString("LeverDiagram dso_lever_max segment error: no values!".to_string()))?
             .1)
     }
     /// Диаграммы остойчивости, зависимость от угла, градусы
@@ -307,7 +303,7 @@ impl ILeverDiagram for LeverDiagram {
         self.diagram
             .borrow()
             .clone()
-            .ok_or(Error::FromString(format!("StabilityArm diagram error: no diagram!")))
+            .ok_or(Error::FromString("StabilityArm diagram error: no diagram!".to_string()))
     }
     /// Углы максимумов диаграммы плеч статической остойчивости
     fn max_angles(&self) -> Result<Vec<(f64, f64)>, Error> {
@@ -317,7 +313,7 @@ impl ILeverDiagram for LeverDiagram {
         self.max_angles
             .borrow()
             .clone()
-            .ok_or(Error::FromString(format!("StabilityArm max_angles error: no max_angles!")))
+            .ok_or(Error::FromString("StabilityArm max_angles error: no max_angles!".to_string()))
     }
 }
 #[doc(hidden)]

@@ -68,8 +68,8 @@ impl Computer {
     pub fn calculate(&mut self) -> Result<(), Error> {
         let mut displacement_values;
         let mut total_force_values;
-        let shear_force_values;
-        let bending_moment_values;
+        
+        
         let mut volume = Volume::new(
             Rc::clone(&self.displacement),
             Box::new(Draught::new(
@@ -99,8 +99,8 @@ impl Computer {
         total_force_values = total_force.values()?;
         total_force_values.push(total_force_values.iter().sum());
         let mut shear_force = ShearForce::new(total_force);
-        shear_force_values = shear_force.values()?;
-        bending_moment_values = BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values()?;  
+        let shear_force_values = shear_force.values()?;
+        let bending_moment_values = BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values()?;  
         self.results.add("value_displacement".to_owned(), displacement_values);
         self.results.add("value_total_force".to_owned(), total_force_values);
         self.results.add("value_shear_force".to_owned(), shear_force_values);

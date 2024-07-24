@@ -77,8 +77,8 @@ impl IDraught for Draught {
         if self.draught_mid.is_none() {
             self.calculate()?;
         }        
-        Ok(self.draught_mid.ok_or(format!("Draught value error: no draught_mid!"))?
-            + self.delta_draught.ok_or(format!("Draught value error: no draught_mid!"))?
+        Ok(self.draught_mid.ok_or("Draught value error: no draught_mid!".to_string())?
+            + self.delta_draught.ok_or("Draught value error: no draught_mid!".to_string())?
             * pos_x)
     }
 }
