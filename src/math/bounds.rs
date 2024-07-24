@@ -19,6 +19,7 @@ impl Bounds {
         Ok(Self { values })
     }
     /// Вспомогательный конструктор
+    #[allow(unused)]
     pub fn from_n(ship_length: f64, n: usize) -> Result<Self, Error> {
         if ship_length <= 0. {
             return Err(Error::FromString(format!("Bounds from_n error: ship_length {ship_length} <= 0.")));
@@ -55,6 +56,7 @@ impl Bounds {
         self.values.iter()
     }
     /// Длинна диапазона
+    #[allow(unused)]
     pub fn length(&self) -> f64 {
         self.values
             .last()

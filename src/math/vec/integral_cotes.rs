@@ -14,6 +14,7 @@ use crate::Error;
 /// asserteq!(res, 4);
 /// ```
 pub trait IntegralCotes {
+    #[allow(unused)]
     fn integral_cotes(&self, h: f64) -> Result<f64, Error> ;
 }
 ///

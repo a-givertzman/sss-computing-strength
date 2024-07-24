@@ -59,18 +59,15 @@ pub trait IIcingMoment {
 // заглушка для тестирования
 #[doc(hidden)]
 pub struct FakeIcingMoment {
-    mass: f64,
     moment: Moment,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeIcingMoment {
     pub fn new(
-        mass: f64,
         moment: Moment,
     ) -> Self {
         Self {
-            mass,
             moment,
         }
     }

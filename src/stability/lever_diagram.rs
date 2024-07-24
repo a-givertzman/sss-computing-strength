@@ -104,7 +104,7 @@ impl LeverDiagram {
             let v1 = curve.value(self.mean_draught, angle_deg)?;
             let v2 = self.metacentric_height.z_g_fix()? * angle_rad.sin();
             let v3 =
-                (self.ship_moment.shift().y() - self.center_draught_shift.y()) * angle_rad.cos();
+                (self.ship_moment.shift()?.y() - self.center_draught_shift.y()) * angle_rad.cos();
             let value = v1 - v2 - v3;
             //           log::info!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}");
             Ok((angle_deg, value))
@@ -277,8 +277,8 @@ impl ILeverDiagram for LeverDiagram {
     }
     /// Максимальное плечо диаграммы статической остойчивости в диапазонеб (м)
     fn dso_lever_max(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
-        if angle1 < angle2 {
-            return Err(Error::FromString(format!("FakeLeverDiagram dso_lever_max error: angle1 {angle1} < angle2 {angle2}")));
+        if angle1 > angle2 {
+            return Err(Error::FromString(format!("FakeLeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}")));
         }
         if self.dso.borrow().is_none() {
             self.calculate()?;

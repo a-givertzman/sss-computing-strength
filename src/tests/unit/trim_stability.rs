@@ -32,14 +32,11 @@ mod tests {
                 5.090317945969997,
             )),
             Rc::new(FakeMass::new(2354.10, vec![0.])),
-            Rc::new(FakeShipMoment::new(
-                Position::new(
-                    -2.8119854685374452,
-                    -0.027482047868596836,
-                    5.071745296157758,
-                ),
-                Position::new(-6620.420483734884, -64.70257925581393, 11940.704111971389),
-            )),
+            Rc::new(FakeShipMoment::new(Position::new(
+                -2.8119854685374452,
+                -0.027482047868596836,
+                5.071745296157758,
+            ))),
             Rc::new(FakeParameters {}),
         )
         .unwrap()

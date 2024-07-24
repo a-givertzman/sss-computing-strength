@@ -105,7 +105,7 @@ impl ITrim for Trim {
         let (w_xg, w) = Trim::calc_s(&mass_pairs);
         let mut trim = 0.; // Дифферент
         let mut mean_draught: f64 = self.mean_draught;
-        let (mut v_xc, mut volume_mass) = (0., 0.);
+        let mut v_xc = 0.;
         for _i in 0..50 {
             mean_draught = self.mean_draught;
             for _j in 0..50 {
@@ -122,7 +122,8 @@ impl ITrim for Trim {
                 volume_values.mul_single(self.water_density);
     //            dbg!(&volume_values);
                 let volume_pairs = dx.clone().into_iter().zip(volume_values).collect::<Vec<_>>();
-                (v_xc, volume_mass) = Trim::calc_s(&volume_pairs);
+                let (new_v_xc, volume_mass) = Trim::calc_s(&volume_pairs);
+                v_xc = new_v_xc;
                 let delta_w = (w - volume_mass)/w;              
                 if delta_w.abs() <= 0.000000001 {
                     break;

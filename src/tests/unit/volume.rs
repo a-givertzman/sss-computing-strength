@@ -5,7 +5,7 @@ mod tests {
     use std::rc::Rc;
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::{draught::FakeDraught, Bounds, Curve, Displacement, Frame, IVolume, Volume};
+    use crate::{draught::FakeDraught, Bounds, Displacement, IVolume, Volume};
     
     #[test]
     fn volume() {

@@ -68,7 +68,8 @@ pub struct Criterion {
     have_timber: bool,
     /// Признак наличия сыпучего груза
     have_grain: bool,
-    /// Признак наличия груза или балласта
+    /// Признак наличия груза или 
+    #[allow(unused)]
     have_cargo: bool,
     /// Признак учета обледенения
     have_icing: bool,

@@ -1,8 +1,8 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::math::{bound::Bound, curve::Curve};
-    use crate::strength::{displacement::*, frame::Frame};
+    use crate::math::bound::Bound;
+    use crate::strength::displacement::*;
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::time::Duration;
     use testing::stuff::max_test_duration::TestDuration;

@@ -88,7 +88,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let mut result = Vec::from([1., 0.,]);
-        result.add_vec(&Vec::from([1., 1.,]));
+        let _ = result.add_vec(&Vec::from([1., 1.,]));
         let target = Vec::from([2., 1.,]);
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
@@ -105,7 +105,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let mut target = Vec::from([2., 1.,]);
-        target.sub_vec(&Vec::from([1., 2.,]));
+        let _ = target.sub_vec(&Vec::from([1., 2.,]));
         let result = Vec::from([1., -1.,]);
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 
@@ -139,7 +139,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let mut target = Vec::from([2., 1.,]);
-        target.mul_vec(&Vec::from([1., 0.,]));
+        let _ = target.mul_vec(&Vec::from([1., 0.,]));
         let result = Vec::from([2., 0.,]);
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 

@@ -25,7 +25,6 @@ mod tests {
             Rc::new(FakeMass::new(1000., vec![1000.])),
             Rc::new(FakeShipMoment::new(
                 Position::new(0., 0., 0.),
-                Moment::new(0., 0., 0.),
             )),
             Rc::new(FakeLeverDiagram::new(
                 vec![0.],

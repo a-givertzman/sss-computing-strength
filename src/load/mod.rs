@@ -135,15 +135,10 @@ impl<'a> Loads<'_> {
         }
 
         for v in self.cargoes.iter() {
-            let mass_shift = if v.mass_shift_x.is_some() {
-                Some(Position::new(
-                    v.mass_shift_x
-                        .ok_or(format!("LoadCargo error: no mass_shift_x!"))?,
-                    v.mass_shift_y
-                        .ok_or(format!("LoadCargo error: no mass_shift_y!"))?,
-                    v.mass_shift_z
-                        .ok_or(format!("LoadCargo error: no mass_shift_z!"))?,
-                ))
+            let mass_shift = if let (Some(mass_shift_x), Some(mass_shift_y), Some(mass_shift_z)) =
+                (v.mass_shift_x, v.mass_shift_y, v.mass_shift_z)
+            {
+                Some(Position::new(mass_shift_x, mass_shift_y, mass_shift_z))
             } else {
                 None
             };
@@ -156,6 +151,65 @@ impl<'a> Loads<'_> {
             ));
             //  log::info!("\t Mass load_variable from cargoes:{:?} ", load);
             load_variable.push(load.clone());
+
+            if let (Some(vertical_area), Some(horizontal_area)) =
+                (v.vertical_area, v.horizontal_area)
+            {
+                let bound_y = if let (Some(bound_y1), Some(bound_y2)) = (v.bound_y1, v.bound_y2) {
+                    Some(Bound::new(bound_y1, bound_y2)?)
+                } else {
+                    None
+                };
+                let bound_z = if let (Some(bound_z1), Some(bound_z2)) = (v.bound_z1, v.bound_z2) {
+                    Some(Bound::new(bound_z1, bound_z2)?)
+                } else {
+                    None
+                };
+                let mass_shift = if let Some(mass_shift) = mass_shift {
+                    mass_shift
+                } else {
+                    if let (Some(bound_y), Some(bound_z)) = (bound_y, bound_z) {
+                        Some(Position::new(
+                            bound_x.center(),
+                            bound_y.center(),
+                            bound_z.center(),
+                        ))
+                    } else {
+                        None
+                    }
+                    .ok_or(Error::FromString(format!(
+                        "Load create Desk error: no center of mass!"
+                    )))?
+                };
+                let vertical_shift = if let (
+                    Some(vertical_area_shift_x),
+                    Some(vertical_area_shift_y),
+                    Some(vertical_area_shift_z),
+                ) = (
+                    v.vertical_area_shift_x,
+                    v.vertical_area_shift_y,
+                    v.vertical_area_shift_z,
+                ) {
+                    Position::new(
+                        vertical_area_shift_x,
+                        vertical_area_shift_y,
+                        vertical_area_shift_z,
+                    )
+                } else {
+                    mass_shift.clone()
+                };
+                let desk: Rc<dyn IDesk> = Rc::new(Desk::new(
+                    v.mass.ok_or(format!("LoadCargo error: no mass!"))?,
+                    mass_shift,
+                    bound_x,
+                    bound_y,
+                    vertical_area,
+                    vertical_shift,
+                    horizontal_area,
+                    v.timber,
+                ));
+                desks.push(desk);
+            }
 
             if v.timber {
                 load_timber.push(load);
@@ -205,11 +259,12 @@ impl<'a> Loads<'_> {
             }
             if v.matter_type == MatterType::Bulk {
                 let bulk: Rc<dyn IBulk> = Rc::new(Bulk::new(
-                    1. / v
-                        .density
-                        .ok_or(format!("CompartmentData error: no density for PhysicalType::Bulk!"))?,
-                    v.grain_moment
-                        .ok_or(format!("CompartmentData error: no grain_moment for PhysicalType::Bulk!"))?,
+                    1. / v.density.ok_or(format!(
+                        "CompartmentData error: no density for PhysicalType::Bulk!"
+                    ))?,
+                    v.grain_moment.ok_or(format!(
+                        "CompartmentData error: no grain_moment for PhysicalType::Bulk!"
+                    ))?,
                 )?);
                 bulks.push(bulk);
             }

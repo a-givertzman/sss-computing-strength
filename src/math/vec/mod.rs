@@ -47,6 +47,7 @@ impl SumAbove<f64> for Vec<f64>  {
 /// asserteq!(vec, vec![ 2., 3., 4.,]);
 /// ```
 pub trait Shift {
+    #[allow(unused)]
     fn shift(&mut self, rhs: f64);
 }
 
@@ -68,6 +69,7 @@ impl Shift for Vec<f64>  {
 /// asserteq!(vec, vec![0.5, 1., 1.5,]);
 /// ```
 pub trait DivideSingle {
+    #[allow(unused)]
     fn div_single(&mut self, rhs: f64);
 }
 ///
@@ -110,6 +112,7 @@ impl MultipleSingle for Vec<f64>  {
 /// asserteq!(vec, vec![4., 6., 8.,]);
 /// ```
 pub trait AddVec {
+    #[allow(unused)]
     fn add_vec(&mut self, rhs: &Self) -> Result<(), Error>;
 }
 ///
@@ -162,6 +165,7 @@ impl SubVec for Vec<f64>  {
 /// asserteq!(vec, vec![3., 8., 15.,]);
 /// ```
 pub trait MultipleVec {
+    #[allow(unused)]
     fn mul_vec(&mut self, rhs: &Self) -> Result<(), Error>;
 }
 ///
@@ -188,6 +192,7 @@ impl MultipleVec for Vec<f64>  {
 /// asserteq!(vec, vec![2., 2., 2.,]);
 /// ```
 pub trait DivideVec {
+    #[allow(unused)]
     fn div_vec(&mut self, rhs: &Vec<f64>) -> Result<(), Error>;
 }
 ///

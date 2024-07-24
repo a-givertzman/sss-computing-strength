@@ -21,6 +21,7 @@ impl Bound {
     }
     /// Дополнительный конструктор  
     /// * (f64, f64) - (начало диапазона, конец диапазона)
+    #[allow(unused)]
     pub fn from(v: (f64, f64)) -> Result<Self, Error> {
         Self::new(v.0, v.1)
     }

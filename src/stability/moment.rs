@@ -96,51 +96,33 @@ impl IShipMoment for ShipMoment {
         if self.shift.borrow().is_none() {
             self.calculate()?;
         }
-        self.shift
+        Ok(self.shift
             .borrow()
             .clone()
-            .expect("Mass shift error: no value")
-    }
-    /// Суммарный статический момент. Для постоянной массы и для запасов считается по
-    /// заданным значениям смещения центра масс
-    fn moment_mass(&self) -> Result<Moment, Error> {
-        if self.moment_mass.borrow().is_none() {
-            self.calculate()?;
-        }
-        self.moment_mass
-            .borrow()
-            .clone()
-            .expect("Mass moment_mass error: no value")
+            .expect("Mass shift error: no value"))
     }
 }
 
 #[doc(hidden)]
 pub trait IShipMoment {
     /// Отстояние центра масс
-    fn shift(&self) -> Position;
-    /// Суммарный статический момент. Для постоянной массы и для запасов считается по
-    /// заданным значениям смещения центра масс
-    fn moment_mass(&self) -> Moment;
+    fn shift(&self) -> Result<Position, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
 pub struct FakeShipMoment {
     shift: Position,
-    moment_mass: Moment,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeShipMoment {
-    pub fn new(shift: Position, moment_mass: Moment) -> Self {
-        Self { shift, moment_mass }
+    pub fn new(shift: Position) -> Self {
+        Self { shift }
     }
 }
 #[doc(hidden)]
 impl IShipMoment for FakeShipMoment {
-    fn shift(&self) -> Position {
-        self.shift.clone()
-    }
-    fn moment_mass(&self) -> Moment {
-        self.moment_mass.clone()
+    fn shift(&self) -> Result<Position, Error> {
+        Ok(self.shift.clone())
     }
 }

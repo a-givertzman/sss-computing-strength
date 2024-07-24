@@ -48,7 +48,7 @@ impl ITotalForce for TotalForce {
         }
         let mut result = mass_values.clone();
         volume_values.mul_single(self.water_density);
-        result.sub_vec(&volume_values);
+        result.sub_vec(&volume_values)?;
         result.mul_single(self.gravity_g);
         //      log::info!("\t TotalForce mass:{:?} volume:{:?} result:{:?}, mass_sum:{}, volume_mass_sum:{}", mass_values, volume_values, result, mass_values.iter().sum::<f64>(), volume_values.iter().sum::<f64>());
         Ok(result)

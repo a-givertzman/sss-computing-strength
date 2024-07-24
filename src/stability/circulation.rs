@@ -63,7 +63,7 @@ impl Circulation {
         // Кренящий момент на циркуляции
         let m_r = 0.2
             * (v * v * self.mass.sum()? / self.l_wl)
-            * (self.moment.shift().z() - self.d / 2.).abs();
+            * (self.moment.shift()?.z() - self.d / 2.).abs();
         // Плечо кренящего момента на циркуляции
         let l_r = m_r / self.mass.sum()?;
     //    log::info!("Circulation angle v:{v} m_r:{m_r} l_r:{l_r}");

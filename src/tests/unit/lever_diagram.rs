@@ -21,7 +21,6 @@ mod tests {
         INIT.call_once(|| {
             let moment = Rc::new(FakeShipMoment::new(
                 Position::new(0., 2., 0.),
-                Position::new(0., 2000., 0.),
             ));
 
             let center_draught_shift = Position::new(0., 1., 0.);

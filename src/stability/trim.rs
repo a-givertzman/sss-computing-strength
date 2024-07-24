@@ -69,7 +69,7 @@ impl ITrim for Trim {
         // Момент дифферентующий на 1 см осадки (4)
         let trim_moment = (self.mass.sum()? * H) / (100. * self.ship_length);
         // Дифферент судна (5)
-        let t = self.mass.sum()? * (self.moment.shift().x() - self.center_draught_shift.x())
+        let t = self.mass.sum()? * (self.moment.shift()?.x() - self.center_draught_shift.x())
             / (100. * trim_moment);
         // Дифферент судна, градусы (5)
         let trim_angle = (t/self.ship_length).atan()*180.0/PI;  

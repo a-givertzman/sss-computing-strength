@@ -200,8 +200,6 @@ pub fn get_data(
             c.mass_shift_y AS mass_shift_y, \
             c.mass_shift_z AS mass_shift_z, \
             c.horizontal_area AS horizontal_area, \
-            c.horizontal_area_shift_x AS horizontal_area_shift_x, \
-            c.horizontal_area_shift_y AS horizontal_area_shift_y, \
             c.vertical_area AS vertical_area, \
             c.vertical_area_shift_x AS vertical_area_shift_x, \
             c.vertical_area_shift_y AS vertical_area_shift_y, \
