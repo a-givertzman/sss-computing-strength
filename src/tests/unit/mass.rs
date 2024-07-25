@@ -21,13 +21,13 @@ mod tests {
                     Bound::new(-10., 0.).unwrap(),
                     Some(Position::new(-5., 0., 0.)),     
                     LoadingType::Hull,         
-                )),
+                ).unwrap()),
                 Rc::new(LoadMass::new(
                     20.,
                     Bound::new(0., 10.).unwrap(),
                     Some(Position::new(5., 0., 0.)),
                     LoadingType::Hull,  
-                )),
+                ).unwrap()),
             ]);
 
             let loads_cargo: Rc<Vec<Rc<LoadMass>>> = Rc::new(vec![
@@ -36,7 +36,7 @@ mod tests {
                 Bound::new(-5., 5.).unwrap(),
                 Some(Position::new(0., 0., 0.)),
                 LoadingType::Cargo,  
-            ))]);
+            ).unwrap())]);
 
             unsafe {
                 MASS.replace(Box::new(Mass::new(

@@ -13,8 +13,17 @@ pub struct Bounds {
 impl Bounds {
     /// Основной конструктор
     pub fn new(values: Vec<Bound>) -> Result<Self, Error> {
+        for v in &values {
+            match v {
+                Bound::None => return Err(Error::FromString("Bounds new error: Bound::None in values".to_owned())),
+                Bound::Full => return Err(Error::FromString("Bounds new error: Bound::Full in values".to_owned())),
+                Bound::Value(_, _) => continue,
+            }
+        }
         if values.len() < 2 {
-            return Err(Error::FromString("Bounds::new error: values.len() < 2 ".to_string()));
+            return Err(Error::FromString(
+                "Bounds::new error: values.len() < 2 ".to_string(),
+            ));
         }
         Ok(Self { values })
     }
@@ -22,10 +31,14 @@ impl Bounds {
     #[allow(unused)]
     pub fn from_n(ship_length: f64, n: usize) -> Result<Self, Error> {
         if ship_length <= 0. {
-            return Err(Error::FromString(format!("Bounds from_n error: ship_length {ship_length} <= 0.")));
+            return Err(Error::FromString(format!(
+                "Bounds from_n error: ship_length {ship_length} <= 0."
+            )));
         }
         if n <= 1 {
-            return Err(Error::FromString(format!("Bounds from_n error: n {n} <= 1")));
+            return Err(Error::FromString(format!(
+                "Bounds from_n error: n {n} <= 1"
+            )));
         }
         let delta = ship_length / n as f64;
         let start = -ship_length / 2.;
@@ -33,16 +46,16 @@ impl Bounds {
         let mut values = Vec::new();
         for i in 0..n {
             let i = i as f64;
-            values.push( Bound::new(start + delta * i, start + delta * (i + 1.))?);
+            values.push(Bound::new(start + delta * i, start + delta * (i + 1.))?);
         }
-        Self::new(
-            values,
-        )
+        Self::new(values)
     }
     // Вспомогательный конструктор
     pub fn from_frames(frames: &Vec<(f64, f64)>) -> Result<Self, Error> {
         if frames.len() <= 1 {
-            return Err(Error::FromString("Bounds from_frames error: frames.len() <= 1".to_string()));
+            return Err(Error::FromString(
+                "Bounds from_frames error: frames.len() <= 1".to_string(),
+            ));
         }
         let mut values = Vec::new();
         for i in 0..frames.len() {
@@ -62,7 +75,13 @@ impl Bounds {
             .last()
             .expect("Bounds length error: no values!")
             .end()
-            - self.values.first().expect("No values!").start()
+            .expect("Bounds delta error: no end value for last element!")
+            - self
+                .values
+                .first()
+                .expect("No values!")
+                .start()
+                .expect("Bounds delta error: no start value for first element!")
     }
     /// Длинна элемента разбиения
     pub fn delta(&self) -> f64 {
@@ -70,5 +89,6 @@ impl Bounds {
             .first()
             .expect("Bounds delta error: no values!")
             .length()
+            .expect("Bounds delta error: no length for first element!")
     }
 }

@@ -24,7 +24,8 @@ mod tests {
             Some(Position::new(1., 0., 0.)),
             LoadingType::Ballast,
         )
-        .value(Some(Bound::new(1., 3.).unwrap()))
+        .unwrap()
+        .value(&Bound::new(1., 3.).unwrap())
         .unwrap();
         let target = 10.;
         assert!(
@@ -52,6 +53,7 @@ mod tests {
             Some(Position::new(1., 0., 0.)),
             LoadingType::Ballast,
         )
+        .unwrap()
         .moment();
         let target = Moment::new(20., 0., 0.);
         assert!(

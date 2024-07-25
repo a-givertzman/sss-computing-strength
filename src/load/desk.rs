@@ -6,31 +6,31 @@ use crate::load::ILoadMass;
 /// Палубный груз, имеет площадь и парусность
 pub trait IDesk: ILoad {
     /// Парусность попадающая в Bound или вся если Bound отсутствует
-    fn windage_area(&self, bound: Option<Bound>) -> Result<f64, Error>;
+    fn windage_area(&self, bound: &Bound) -> Result<f64, Error>;
     /// Статический момент площади парусности палубного груза, м^3
     fn windage_moment(&self) -> Result<Moment, Error>;
     /// Площадь горизонтальной поверхности, м^2
-    fn horizontal_area(&self, bound_x: Option<Bound>, bound_y: Option<Bound>) -> Result<f64, Error>;
+    fn horizontal_area(&self, bound_x: &Bound, bound_y: &Bound) -> Result<f64, Error>;
     /// Высота груза, м
-    fn height(&self) -> f64;
+    fn height(&self) -> Result<f64, Error>;
     /// Признак палубного груза: лес
     fn is_timber(&self) -> bool;
 }
 /// Палубный груз, имеет площадь и парусность  
-pub struct Desk { 
+pub struct Desk {
     /// Масса груза   
     mass: f64,
     /// Смещение центра массы  
-    mass_shift: Position,    
+    mass_shift: Position,
     /// Ограничение по оси Х
     bound_x: Bound,
     /// Ограничение по оси Y
-    bound_y: Option<Bound>,
+    bound_y: Bound,
     /// Площадь парусности  
     windage_area: f64,
     /// Смещение центра парусности  
-    windage_shift: Position,   
-    /// Площадь горизонтальной поверхности 
+    windage_shift: Position,
+    /// Площадь горизонтальной поверхности
     horizontal_area: f64,
     /// Признак палубного груза: лес  
     is_timber: bool,
@@ -43,14 +43,14 @@ impl Desk {
     /// * bound_x - Ограничение по оси Х
     /// * bound_y - Ограничение по оси Y
     /// * windage_area - Площадь парусности  
-    /// * windage_shift - Смещение центра парусности 
+    /// * windage_shift - Смещение центра парусности
     /// * horizontal_area - Площадь горизонтальной поверхности  
     /// * is_timber - Признак палубного груза: лес  
     pub fn new(
         mass: f64,
         mass_shift: Position,
         bound_x: Bound,
-        bound_y: Option<Bound>,
+        bound_y: Bound,
         windage_area: f64,
         windage_shift: Position,
         horizontal_area: f64,
@@ -72,30 +72,29 @@ impl Desk {
 ///
 impl IDesk for Desk {
     /// Парусность попадающая в Bound или вся если Bound отсутствует
-    fn windage_area(&self, bound: Option<Bound>) -> Result<f64, Error> {
-        Ok(self.bound_x.part_ratio(&bound.unwrap_or(self.bound_x))? * 
-        self.windage_area)
+    fn windage_area(&self, bound: &Bound) -> Result<f64, Error> {
+        Ok(self.bound_x.part_ratio(bound)? * self.windage_area)
     }
     /// Статический момент площади парусности палубного груза, м^3
     fn windage_moment(&self) -> Result<Moment, Error> {
-        Ok(Moment::from_pos(self.windage_shift.clone(), self.windage_area(None)?))
+        Ok(Moment::from_pos(
+            self.windage_shift.clone(),
+            self.windage_area(&Bound::Full)?,
+        ))
     }
     /// Площадь горизонтальной поверхности, м^2
-    fn horizontal_area(&self, bound_x: Option<Bound>, bound_y: Option<Bound>) -> Result<f64, Error> {
-        let part_x = match bound_x {
-            Some(b) => b.part_ratio(&self.bound_x)?,
-            _=> 1.,
-        };
-        let part_y = match (bound_y, self.bound_y) {
-            (Some(b1), Some(b2)) => b1.part_ratio(&b2)?,
-            _=> 1.,
-        };
+    fn horizontal_area(&self, bound_x: &Bound, bound_y: &Bound) -> Result<f64, Error> {
+        let part_x = self.bound_x.part_ratio(bound_x)?;
+        let part_y = self.bound_y.part_ratio(bound_y)?;
         Ok(part_x * part_y * self.horizontal_area)
     }
     /// Высота груза, м,
     /// TODO: после того, как в базе появятся палубные грузы добавить нормальную высоту
-    fn height(&self) -> f64 {
-        self.windage_area/self.bound_x.length()
+    fn height(&self) -> Result<f64, Error> {
+        Ok(self.windage_area
+            / self.bound_x.length().ok_or(Error::FromString(
+                "Desk height error: no self.bound_x.length".to_owned(),
+            ))?)
     }
     /// Признак палубного груза: лес
     fn is_timber(&self) -> bool {
@@ -119,4 +118,3 @@ impl ILoad for Desk {
 }
 ///
 impl ILoadMass for Desk {}
-

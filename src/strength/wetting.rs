@@ -29,7 +29,7 @@ impl WettingMass {
 ///
 impl IWettingMass for WettingMass {
     /// Масса намокания попадающая в Bound или вся если Bound отсутствует
-    fn mass(&self, bound: Option<Bound>) -> Result<f64, Error> {
+    fn mass(&self, bound: &Bound) -> Result<f64, Error> {
         let mut sum = 0.;
         for v in self.loads_timber
             .iter() {
@@ -41,7 +41,7 @@ impl IWettingMass for WettingMass {
 #[doc(hidden)]
 pub trait IWettingMass {
     /// Масса намокания попадающая в Bound или вся если Bound отсутствует
-    fn mass(&self, bound: Option<Bound>) -> Result<f64, Error>;
+    fn mass(&self, bound: &Bound) -> Result<f64, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -57,7 +57,7 @@ impl FakeWettingMass {
 }
 #[doc(hidden)]
 impl IWettingMass for FakeWettingMass {
-    fn mass(&self, _: Option<Bound>) -> Result<f64, Error> {
+    fn mass(&self, _: &Bound) -> Result<f64, Error> {
         Ok(self.mass)
     }
 }

@@ -100,7 +100,13 @@ impl Trim {
 impl ITrim for Trim {
     /// Вычисление средней осадки и дифферента
     fn value(&self) -> Result<(f64, f64), Error> {
-        let dx = self.bounds.iter().map(|v| v.center()).collect::<Vec<_>>();
+        let mut dx = Vec::new();
+        for v in self.bounds.iter() { 
+            if !v.is_value() {
+                return Err(Error::FromString("Trim value error: bound is no value".to_owned()));
+            }
+            dx.push(v.center().unwrap());
+        }
         let mass_pairs = dx.clone().into_iter().zip(self.mass.values()?).collect::<Vec<_>>();
         let (w_xg, w) = Trim::calc_s(&mass_pairs);
         let mut trim = 0.; // Дифферент

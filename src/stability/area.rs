@@ -4,7 +4,7 @@
 use std::rc::Rc;
 
 use crate::{
-    area::HAreaStability, icing_timber::IcingTimberBound, Error, IDesk, Moment, Position
+    area::HAreaStability, icing_timber::IcingTimberBound, Bound, Error, IDesk, Moment, Position
 };
 
 /// Момент площади горизонтальных поверхностей и
@@ -56,7 +56,7 @@ impl IArea for Area {
     fn area_v(&self) -> Result<f64, Error> {
         let mut area_sum = self.av_cs_dmin1;
         for v in self.desks.iter() {
-            area_sum += v.windage_area(None)?;
+            area_sum += v.windage_area(&Bound::Full)?;
         }
         Ok(area_sum)
     }
@@ -72,7 +72,7 @@ impl IArea for Area {
     fn moment_h(&self) -> Result<Moment, Error> {
         let mut moment_sum = self.area_const_h.iter().map(|v| v.moment()).sum::<Moment>();
         for v in self.desks.iter() {
-            moment_sum += Moment::from_pos(v.shift(), v.horizontal_area(None, None)?);
+            moment_sum += Moment::from_pos(v.shift(), v.horizontal_area(&Bound::Full, &Bound::Full)?);
         }
         Ok(moment_sum)
     }
@@ -80,7 +80,7 @@ impl IArea for Area {
     fn moment_timber_h(&self) -> Result<Moment, Error> {
         let mut moment_sum = Moment::new(0., 0., 0.);
         for v in self.desks.iter().filter(|v| v.is_timber()) {
-            moment_sum += Moment::from_pos(v.shift(), v.horizontal_area(None, None)?);
+            moment_sum += Moment::from_pos(v.shift(), v.horizontal_area(&Bound::Full, &Bound::Full)?);
         }
         Ok(moment_sum)
     }
@@ -93,9 +93,9 @@ impl IArea for Area {
                 Position::new(
                     v.shift().x(),
                     v.shift().y(),
-                    v.height(),
+                    v.height()?,
                 ),
-                v.horizontal_area(self.icing_timber_bound.bound_x()?, self.icing_timber_bound.bound_y()?)?,
+                v.horizontal_area(&self.icing_timber_bound.bound_x()?, &self.icing_timber_bound.bound_y()?)?,
             );
         }
         Ok(moment_sum)
