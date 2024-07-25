@@ -129,7 +129,7 @@ impl<'a> Loads<'_> {
                 bound_x,
                 Some(self.shift_const.clone()),
                 LoadingType::from(v.loading_type),
-            ));
+            )?);
             //   log::info!("\t Mass loads_const from load_constants:{:?} ", load);
             loads_const.push(load);
         }
@@ -148,7 +148,7 @@ impl<'a> Loads<'_> {
                 bound_x,
                 mass_shift.clone(),
                 LoadingType::from(v.general_category),
-            ));
+            )?);
             //  log::info!("\t Mass load_variable from cargoes:{:?} ", load);
             load_variable.push(load.clone());
 
@@ -156,23 +156,23 @@ impl<'a> Loads<'_> {
                 (v.vertical_area, v.horizontal_area)
             {
                 let bound_y = if let (Some(bound_y1), Some(bound_y2)) = (v.bound_y1, v.bound_y2) {
-                    Some(Bound::new(bound_y1, bound_y2)?)
+                    Bound::new(bound_y1, bound_y2)?
                 } else {
-                    None
+                    Bound::Full
                 };
                 let bound_z = if let (Some(bound_z1), Some(bound_z2)) = (v.bound_z1, v.bound_z2) {
-                    Some(Bound::new(bound_z1, bound_z2)?)
+                    Bound::new(bound_z1, bound_z2)?
                 } else {
-                    None
+                    Bound::Full
                 };
                 let mass_shift = if let Some(mass_shift) = mass_shift {
                     mass_shift
                 } else {
-                    if let (Some(bound_y), Some(bound_z)) = (bound_y, bound_z) {
+                    if let (Bound::Value(_, _), Bound::Value(_, _)) = (bound_y, bound_z) {
                         Some(Position::new(
-                            bound_x.center(),
-                            bound_y.center(),
-                            bound_z.center(),
+                            bound_x.center().unwrap(),
+                            bound_y.center().unwrap(),
+                            bound_z.center().unwrap(),
                         ))
                     } else {
                         None
@@ -233,7 +233,7 @@ impl<'a> Loads<'_> {
                 bound_x,
                 mass_shift.clone(),
                 LoadingType::from(v.general_category),
-            ));
+            )?);
             // log::info!("\t Mass load_variable from compartments src:{:?} trg:{:?}", v, load, );
             load_variable.push(load);
             if v.matter_type == MatterType::Liquid {

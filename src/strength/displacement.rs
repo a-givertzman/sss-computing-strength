@@ -28,10 +28,13 @@ impl Displacement {
     /// Погруженный объем шпации.
     /// - bound: диапазон корпуса в длинну, для которого считается водоизмещение
     /// - draft: средняя осадка корпуса в диапазоне
-    pub fn value(&self, bound: Bound, draft_start: f64, draft_end: f64) -> Result<f64, Error> {
-        let area_start = self.area(bound.start(), draft_start)?;
-        let area_end = self.area(bound.end(), draft_end)?;
-        let result = bound.length() * (area_start + area_end) / 2.;
+    pub fn value(&self, bound: &Bound, draft_start: f64, draft_end: f64) -> Result<f64, Error> {
+        if !bound.is_value() {
+            return Err(Error::FromString("Displacement value error: bound is no value".to_owned()));
+        }
+        let area_start = self.area(bound.start().unwrap(), draft_start)?;
+        let area_end = self.area(bound.end().unwrap(), draft_end)?;
+        let result = bound.length().unwrap() * (area_start + area_end) / 2.;
    //     log::trace!("\t Displacement value bound:{bound} draft_start:{draft_start} draft_end:{draft_end} area_start:{area_start} area_end:{area_end} result:{result}");
         Ok(result)
     }

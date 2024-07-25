@@ -70,7 +70,7 @@ impl Mass {
             .iter()
             .filter(|v| v.load_type() == LoadingType::Ballast)
         {
-            ballast += v.value(None)?;
+            ballast += v.value(&Bound::Full)?;
         }
         let mut stores = 0.;
         for v in self
@@ -78,7 +78,7 @@ impl Mass {
             .iter()
             .filter(|v| v.load_type() == LoadingType::Stores)
         {
-            stores += v.value(None)?;
+            stores += v.value(&Bound::Full)?;
         }
         let mut cargo = 0.;
         for v in self
@@ -86,15 +86,15 @@ impl Mass {
             .iter()
             .filter(|v| v.load_type() == LoadingType::Cargo)
         {
-            cargo += v.value(None)?;
+            cargo += v.value(&Bound::Full)?;
         }
         let deadweight = ballast + stores + cargo;
         let mut lightship = 0.;
         for v in self.loads_const.iter() {
-            lightship += v.value(None)?;
+            lightship += v.value(&Bound::Full)?;
         }
-        let icing = self.icing_mass.mass(None)?;
-        let wetting = self.wetting_mass.mass(None)?;
+        let icing = self.icing_mass.mass(&Bound::Full)?;
+        let wetting = self.wetting_mass.mass(&Bound::Full)?;
         let mass_sum = deadweight + lightship + wetting;
         self.parameters.add(ParameterID::Displacement, mass_sum);
         self.parameters.add(ParameterID::MassBallast, ballast);
@@ -126,7 +126,7 @@ impl Mass {
                 .iter()
                 .filter(|v| v.load_type() == LoadingType::Hull)
             {
-                hull += v.value(Some(*b))?;
+                hull += v.value(b)?;
             }
             vec_hull.push(hull);
             let mut equipment = 0.;
@@ -135,7 +135,7 @@ impl Mass {
                 .iter()
                 .filter(|v| v.load_type() == LoadingType::Equipment)
             {
-                equipment += v.value(Some(*b))?;
+                equipment += v.value(b)?;
             }
             vec_equipment.push(equipment);
             let mut ballast = 0.;
@@ -144,7 +144,7 @@ impl Mass {
                 .iter()
                 .filter(|v| v.load_type() == LoadingType::Ballast)
             {
-                ballast += v.value(Some(*b))?;
+                ballast += v.value(b)?;
             }
             vec_ballast.push(ballast);
             let mut store = 0.;
@@ -153,7 +153,7 @@ impl Mass {
                 .iter()
                 .filter(|v| v.load_type() == LoadingType::Stores)
             {
-                store += v.value(Some(*b))?;
+                store += v.value(b)?;
             }
             vec_store.push(store);
             let mut cargo = 0.;
@@ -162,12 +162,12 @@ impl Mass {
                 .iter()
                 .filter(|v| v.load_type() == LoadingType::Cargo)
             {
-                cargo += v.value(Some(*b))?;
+                cargo += v.value(b)?;
             }
             vec_cargo.push(cargo);
-            let icing = self.icing_mass.mass(Some(*b))?;
+            let icing = self.icing_mass.mass(b)?;
             vec_icing.push(icing);
-            let wetting = self.wetting_mass.mass(Some(*b))?;
+            let wetting = self.wetting_mass.mass(b)?;
             vec_wetting.push(wetting);
 
             res.push(hull + equipment + ballast + store + cargo + icing + wetting);

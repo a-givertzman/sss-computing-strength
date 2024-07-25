@@ -29,7 +29,7 @@ mod tests {
 
         let result = Displacement::new(frame_area_data)
             .unwrap()
-            .value(Bound::new(-10., 0.).unwrap(), 10., 10.)
+            .value(&Bound::new(-10., 0.).unwrap(), 10., 10.)
             .unwrap();
         let target = 100.;
         assert!(

@@ -15,12 +15,12 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
         let test_data = [
-            (Bound::new(2., 4.).unwrap(), Bound::new(0., 1.,).unwrap(), None),
-            (Bound::new(2., 4.).unwrap(), Bound::new(4., 5.,).unwrap(), None),
-            (Bound::new(2., 4.).unwrap(), Bound::new(1., 3.,).unwrap(), Some(Bound::new(2., 3.).unwrap())),
-            (Bound::new(2., 4.).unwrap(), Bound::new(1., 5.,).unwrap(), Some(Bound::new(2., 4.).unwrap())),
-            (Bound::new(2., 4.).unwrap(), Bound::new(3., 5.,).unwrap(), Some(Bound::new(3., 4.).unwrap())),
-            (Bound::new(2., 4.).unwrap(), Bound::new(2., 3.,).unwrap(), Some(Bound::new(2., 3.).unwrap())),
+            (Bound::new(2., 4.).unwrap(), Bound::new(0., 1.,).unwrap(), Bound::None),
+            (Bound::new(2., 4.).unwrap(), Bound::new(4., 5.,).unwrap(), Bound::None),
+            (Bound::new(2., 4.).unwrap(), Bound::new(1., 3.,).unwrap(), Bound::new(2., 3.).unwrap()),
+            (Bound::new(2., 4.).unwrap(), Bound::new(1., 5.,).unwrap(), Bound::new(2., 4.).unwrap()),
+            (Bound::new(2., 4.).unwrap(), Bound::new(3., 5.,).unwrap(), Bound::new(3., 4.).unwrap()),
+            (Bound::new(2., 4.).unwrap(), Bound::new(2., 3.,).unwrap(), Bound::new(2., 3.).unwrap()),
         ];
         for (left, right, target) in test_data {
             let result = left.intersect(&right).unwrap();
@@ -44,7 +44,9 @@ mod tests {
             (Bound::new(2., 4.).unwrap(), Bound::new(1., 5.,).unwrap(), 1.),
             (Bound::new(2., 4.).unwrap(), Bound::new(3., 5.,).unwrap(), 0.5),
             (Bound::new(2., 4.).unwrap(), Bound::new(2., 3.,).unwrap(), 0.5),
+            (Bound::new(-3., 3.).unwrap(), Bound::new(-5., 0.,).unwrap(), 0.5),
         ];
+
         for (left, right, target) in test_data {
             let result = left.part_ratio(&right).unwrap();
             assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
@@ -60,7 +62,7 @@ mod tests {
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
-        let result = Bound::new(-2., 4.).unwrap().center();   
+        let result = Bound::new(-2., 4.).unwrap().center().unwrap();   
         let target = 1.;
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
         test_duration.exit();

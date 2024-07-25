@@ -35,8 +35,8 @@ impl IcingMass {
 ///
 impl IIcingMass for IcingMass {
     /// Масса льда попадающая в Bound или вся если Bound отсутствует
-    fn mass(&self, bound: Option<Bound>) -> Result<f64, Error> {
-        Ok(self.area_strength.area_desc_h(bound)? * self.icing_stab.mass_desc_h() + 
+    fn mass(&self, bound: &Bound) -> Result<f64, Error> {
+        Ok(self.area_strength.area_h(bound)? * self.icing_stab.mass_desc_h() + 
             self.area_strength.area_timber_h(bound)? * (self.icing_stab.mass_timber_h() - self.icing_stab.mass_desc_h()) + 
             self.area_strength.area_v(bound)? * (1. + self.icing_stab.coef_v_ds_area()) * self.icing_stab.mass_v())
     }
@@ -44,7 +44,7 @@ impl IIcingMass for IcingMass {
 #[doc(hidden)]
 pub trait IIcingMass {
     /// Масса льда попадающая в Bound или вся если Bound отсутствует
-    fn mass(&self, bound: Option<Bound>) -> Result<f64, Error>;
+    fn mass(&self, bound: &Bound) -> Result<f64, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -64,7 +64,7 @@ impl FakeIcingMass {
 }
 #[doc(hidden)]
 impl IIcingMass for FakeIcingMass {
-    fn mass(&self, _: Option<Bound>) -> Result<f64, Error> {
+    fn mass(&self, _: &Bound) -> Result<f64, Error> {
         Ok(self.mass)
     }
 }

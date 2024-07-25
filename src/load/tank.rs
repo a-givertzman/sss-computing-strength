@@ -81,13 +81,19 @@ impl ILoad for Tank {
     ///
     fn bound_x(&self) -> Bound {
         self.bound_x
-    }    
+    }   
     ///
     fn shift(&self) -> Position {
         if let Some(shift) = self.shift.clone() {
             shift
         } else {
-            Position::new(self.bound_x.center(), 0., 0.,)
+            Position::new(
+                self.bound_x
+                    .center()
+                    .expect("Tank shift error: self.bound_x.center"),
+                0.,
+                0.,
+            )
         }
     }
 }

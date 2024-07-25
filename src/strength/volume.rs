@@ -37,10 +37,13 @@ impl IVolume for Volume {
     fn values(&mut self) -> Result<Vec<f64>, Error> {
         let mut result: Vec<f64> = Vec::new();
         for v in self.bounds.iter() {
+            if !v.is_value() {
+                return Err(Error::FromString("Volume value error: bound is no value".to_owned()));
+            }
             result.push(self.displacement.borrow_mut().value(
-                    *v,
-                    self.draught.value(v.start())?,
-                    self.draught.value(v.end())?,
+                    v,
+                    self.draught.value(v.start().unwrap())?,
+                    self.draught.value(v.end().unwrap())?,
             )?)
         }
   //      log::info!("\t Volume ship_length:{ship_length} trim:{trim} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} result:{:?}, res_sum:{}", result, result.iter().sum::<f64>());

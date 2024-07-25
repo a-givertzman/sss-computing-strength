@@ -83,7 +83,7 @@ impl ShipMoment {
             + self.wetting_moment.moment()
             + self.icing_moment.moment()?;
         for v in self.loads_const.iter() {
-            moment_sum += Moment::from_pos(self.shift_const.clone(), v.value(None)?);
+            moment_sum += Moment::from_pos(self.shift_const.clone(), v.value(&Bound::Full)?);
         }
         //log::info!("\t Mass moment_mass:{res} ");
         Ok(moment_sum)
