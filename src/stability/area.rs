@@ -4,7 +4,7 @@
 use std::rc::Rc;
 
 use crate::{
-    area::HAreaStability, icing_timber::IcingTimberBound, Bound, Error, IDesk, Moment, Position
+    area::HAreaStability, icing_timber::IcingTimberBound, Bound, Error, IDesk, Moment, Position,
 };
 
 /// Момент площади горизонтальных поверхностей и
@@ -71,8 +71,13 @@ impl IArea for Area {
     /// Момент площади горизонтальных поверхностей
     fn moment_h(&self) -> Result<Moment, Error> {
         let mut moment_sum = self.area_const_h.iter().map(|v| v.moment()).sum::<Moment>();
+        dbg!(&moment_sum);
         for v in self.desks.iter() {
-            moment_sum += Moment::from_pos(v.shift(), v.horizontal_area(&Bound::Full, &Bound::Full)?);
+            moment_sum += Moment::from_pos(
+                Position::new(v.shift().x(), v.shift().y(), v.height()?),
+                v.horizontal_area(&Bound::Full, &Bound::Full)?,
+            );
+            dbg!(&moment_sum);
         }
         Ok(moment_sum)
     }
@@ -80,7 +85,8 @@ impl IArea for Area {
     fn moment_timber_h(&self) -> Result<Moment, Error> {
         let mut moment_sum = Moment::new(0., 0., 0.);
         for v in self.desks.iter().filter(|v| v.is_timber()) {
-            moment_sum += Moment::from_pos(v.shift(), v.horizontal_area(&Bound::Full, &Bound::Full)?);
+            moment_sum +=
+                Moment::from_pos(Position::new(v.shift().x(), v.shift().y(), v.shift().z() + v.height()?/2.), v.horizontal_area(&Bound::Full, &Bound::Full)?);
         }
         Ok(moment_sum)
     }
@@ -90,12 +96,11 @@ impl IArea for Area {
         let mut moment_sum = Moment::new(0., 0., 0.);
         for v in self.desks.iter().filter(|v| v.is_timber()) {
             moment_sum += Moment::from_pos(
-                Position::new(
-                    v.shift().x(),
-                    v.shift().y(),
-                    v.height()?,
-                ),
-                v.horizontal_area(&self.icing_timber_bound.bound_x()?, &self.icing_timber_bound.bound_y()?)?,
+                Position::new(v.shift().x(), v.shift().y(), v.height()?),
+                v.horizontal_area(
+                    &self.icing_timber_bound.bound_x()?,
+                    &self.icing_timber_bound.bound_y()?,
+                )?,
             );
         }
         Ok(moment_sum)
@@ -104,9 +109,9 @@ impl IArea for Area {
 #[doc(hidden)]
 pub trait IArea {
     /// Площадь парусности
-    fn area_v(&self) -> Result<f64, Error> ;
+    fn area_v(&self) -> Result<f64, Error>;
     /// Момент площади парусности
-    fn moment_v(&self) -> Result<Moment, Error> ;
+    fn moment_v(&self) -> Result<Moment, Error>;
     /// Момент площади горизонтальных поверхностей
     fn moment_h(&self) -> Result<Moment, Error>;
     /// Момент площади горизонтальных поверхностей палубного груза - леса

@@ -32,3 +32,4 @@ mod trim_stability;
 mod draught;
 mod draft_mark;
 mod area_strength;
+mod area_stability;
