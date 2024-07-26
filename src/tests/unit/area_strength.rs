@@ -9,6 +9,15 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
+    static SHIP_LENGTH: f64 = 10.;
+    static SHIP_WIDTH: f64 = 2.;
+    static SHIP_AREA_V: f64 = 5.;
+    static SHIP_AREA_H: f64 = 10.;
+    static DESC_MASS: f64 = 3.;
+    static DESC_LENGTH: f64 = 6.;
+    static DESC_WIDTH: f64 = 2.;
+    static DESC_HEIGHT: f64 = 1.;
+
     #[test]
     fn area_v() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
@@ -18,43 +27,48 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let ship_length = 10.;
-        let ship_width = 2.;   
-        let ship_area_v = 5.;
-        let ship_area_h = 10.;  
-        let desc_mass = 3.;
-        let desc_length = 6.;
-        let desc_width = 2.;
-        let desc_height = 1.;
-
         let area = Area::new(
-            vec![VerticalArea::new(ship_area_v, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
-            vec![HAreaStrength::new(ship_area_h, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
+            vec![VerticalArea::new(
+                SHIP_AREA_V,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
+            vec![HAreaStrength::new(
+                SHIP_AREA_H,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
             Rc::new(vec![Rc::new(Desk::new(
-                desc_mass,
+                DESC_MASS,
                 Position::new(0., 0., 0.),
-                Bound::new(-desc_length/2., desc_length/2.,).unwrap(),
-                Bound::new(-desc_width/2., desc_width/2.,).unwrap(),
-                desc_length*desc_height,
-                Position::new(0., 0., desc_height/2.),
-                desc_length*desc_width,
+                Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
+                Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                DESC_LENGTH * DESC_HEIGHT,
+                Position::new(0., 0., DESC_HEIGHT / 2.),
+                DESC_LENGTH * DESC_WIDTH,
                 true,
-            )),],),
-            IcingTimberBound::new(
-                ship_width,
-                ship_length,
-                IcingTimberType::Full,
-            ),
+            ))]),
+            IcingTimberBound::new(SHIP_WIDTH, SHIP_LENGTH, IcingTimberType::Full),
         );
 
         // full
-        let result = area.area_v(&Bound::Full).unwrap(); 
-        let target = ship_area_v + desc_length*desc_height;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area.area_v(&Bound::Full).unwrap();
+        let target = SHIP_AREA_V + DESC_LENGTH * DESC_HEIGHT;
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
         // half
-        let result = area.area_v(&Bound::new(-ship_length/2., 0.,).unwrap()).unwrap(); 
-        let target = (ship_area_v + desc_length*desc_height)*0.5;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area
+            .area_v(&Bound::new(-SHIP_LENGTH / 2., 0.).unwrap())
+            .unwrap();
+        let target = (SHIP_AREA_V + DESC_LENGTH * DESC_HEIGHT) * 0.5;
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
 
         test_duration.exit();
     }
@@ -68,43 +82,48 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let ship_length = 10.;
-        let ship_width = 2.;   
-        let ship_area_v = 5.;
-        let ship_area_h = 10.;  
-        let desc_mass = 3.;
-        let desc_length = 6.;
-        let desc_width = 2.;
-        let desc_height = 1.;
-
         let area = Area::new(
-            vec![VerticalArea::new(ship_area_v, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
-            vec![HAreaStrength::new(ship_area_h, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
+            vec![VerticalArea::new(
+                SHIP_AREA_V,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
+            vec![HAreaStrength::new(
+                SHIP_AREA_H,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
             Rc::new(vec![Rc::new(Desk::new(
-                desc_mass,
-                Position::new(0., 0., 0.),
-                Bound::new(-desc_length/2., desc_length/2.,).unwrap(),
-                Bound::new(-desc_width/2., desc_width/2.,).unwrap(),
-                desc_length*desc_height,
-                Position::new(0., 0., desc_height/2.),
-                desc_length*desc_width,
+                DESC_MASS,
+                Position::new(0., 0., DESC_HEIGHT / 2.),
+                Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
+                Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                DESC_LENGTH * DESC_HEIGHT,
+                Position::new(0., 0., DESC_HEIGHT / 2.),
+                DESC_LENGTH * DESC_WIDTH,
                 true,
-            )),],),
-            IcingTimberBound::new(
-                ship_width,
-                ship_length,
-                IcingTimberType::Full,
-            ),
+            ))]),
+            IcingTimberBound::new(SHIP_WIDTH, SHIP_LENGTH, IcingTimberType::Full),
         );
 
         // full
-        let result = area.area_h(&Bound::Full).unwrap(); 
-        let target = ship_area_h;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area.area_h(&Bound::Full).unwrap();
+        let target = SHIP_AREA_H;
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
         // half
-        let result = area.area_h(&Bound::new(-ship_length/2., 0.,).unwrap()).unwrap(); 
-        let target = (ship_area_h)*0.5;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area
+            .area_h(&Bound::new(-SHIP_LENGTH / 2., 0.).unwrap())
+            .unwrap();
+        let target = (SHIP_AREA_H) * 0.5;
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
 
         test_duration.exit();
     }
@@ -118,43 +137,48 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let ship_length = 10.;
-        let ship_width = 2.;   
-        let ship_area_v = 5.;
-        let ship_area_h = 10.;  
-        let desc_mass = 3.;
-        let desc_length = 6.;
-        let desc_width = 2.;
-        let desc_height = 1.;
-
         let area = Area::new(
-            vec![VerticalArea::new(ship_area_v, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
-            vec![HAreaStrength::new(ship_area_h, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
+            vec![VerticalArea::new(
+                SHIP_AREA_V,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
+            vec![HAreaStrength::new(
+                SHIP_AREA_H,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
             Rc::new(vec![Rc::new(Desk::new(
-                desc_mass,
-                Position::new(0., 0., 0.),
-                Bound::new(-desc_length/2., desc_length/2.,).unwrap(),
-                Bound::new(-desc_width/2., desc_width/2.,).unwrap(),
-                desc_length*desc_height,
-                Position::new(0., 0., desc_height/2.),
-                desc_length*desc_width,
+                DESC_MASS,
+                Position::new(0., 0., DESC_HEIGHT / 2.),
+                Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
+                Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                DESC_LENGTH * DESC_HEIGHT,
+                Position::new(0., 0., DESC_HEIGHT / 2.),
+                DESC_LENGTH * DESC_WIDTH,
                 true,
-            )),],),
-            IcingTimberBound::new(
-                ship_width,
-                ship_length,
-                IcingTimberType::Full,
-            ),
+            ))]),
+            IcingTimberBound::new(SHIP_WIDTH, SHIP_LENGTH, IcingTimberType::Full),
         );
 
         // full
-        let result = area.area_timber_h(&Bound::Full).unwrap(); 
-        let target = desc_length*desc_width;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area.area_timber_h(&Bound::Full).unwrap();
+        let target = DESC_LENGTH * DESC_WIDTH;
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
         // half
-        let result = area.area_timber_h(&Bound::new(-ship_length/2., 0.,).unwrap()).unwrap(); 
-        let target = (desc_length*desc_width)*0.5;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area
+            .area_timber_h(&Bound::new(-SHIP_LENGTH / 2., 0.).unwrap())
+            .unwrap();
+        let target = (DESC_LENGTH * DESC_WIDTH) * 0.5;
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
 
         test_duration.exit();
     }
@@ -168,43 +192,48 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let ship_length = 10.;
-        let ship_width = 2.;   
-        let ship_area_v = 5.;
-        let ship_area_h = 10.;  
-        let desc_mass = 3.;
-        let desc_length = 6.;
-        let desc_width = 2.;
-        let desc_height = 1.;
-
         let area = Area::new(
-            vec![VerticalArea::new(ship_area_v, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
-            vec![HAreaStrength::new(ship_area_h, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
+            vec![VerticalArea::new(
+                SHIP_AREA_V,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
+            vec![HAreaStrength::new(
+                SHIP_AREA_H,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
             Rc::new(vec![Rc::new(Desk::new(
-                desc_mass,
-                Position::new(0., 0., 0.),
-                Bound::new(-desc_length/2., desc_length/2.,).unwrap(),
-                Bound::new(-desc_width/2., desc_width/2.,).unwrap(),
-                desc_length*desc_height,
-                Position::new(0., 0., desc_height/2.),
-                desc_length*desc_width,
+                DESC_MASS,
+                Position::new(0., 0., DESC_HEIGHT / 2.),
+                Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
+                Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                DESC_LENGTH * DESC_HEIGHT,
+                Position::new(0., 0., DESC_HEIGHT / 2.),
+                DESC_LENGTH * DESC_WIDTH,
                 true,
-            )),],),
-            IcingTimberBound::new(
-                ship_width,
-                ship_length,
-                IcingTimberType::HalfLeft,
-            ),
+            ))]),
+            IcingTimberBound::new(SHIP_WIDTH, SHIP_LENGTH, IcingTimberType::HalfLeft),
         );
 
         // full
-        let result = area.area_timber_h(&Bound::Full).unwrap(); 
-        let target = desc_length*desc_width/2.;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area.area_timber_h(&Bound::Full).unwrap();
+        let target = DESC_LENGTH * DESC_WIDTH / 2.;
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
         // half
-        let result = area.area_timber_h(&Bound::new(-ship_length/2., 0.,).unwrap()).unwrap(); 
-        let target = desc_length*desc_width/4.;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area
+            .area_timber_h(&Bound::new(-SHIP_LENGTH / 2., 0.).unwrap())
+            .unwrap();
+        let target = DESC_LENGTH * DESC_WIDTH / 4.;
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
 
         test_duration.exit();
     }
@@ -218,43 +247,48 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let ship_length = 10.;
-        let ship_width = 2.;   
-        let ship_area_v = 5.;
-        let ship_area_h = 10.;  
-        let desc_mass = 3.;
-        let desc_length = 6.;
-        let desc_width = 2.;
-        let desc_height = 1.;
-
         let area = Area::new(
-            vec![VerticalArea::new(ship_area_v, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
-            vec![HAreaStrength::new(ship_area_h, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
+            vec![VerticalArea::new(
+                SHIP_AREA_V,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
+            vec![HAreaStrength::new(
+                SHIP_AREA_H,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
             Rc::new(vec![Rc::new(Desk::new(
-                desc_mass,
-                Position::new(0., 0., 0.),
-                Bound::new(-desc_length/2., desc_length/2.,).unwrap(),
-                Bound::new(-desc_width/2., desc_width/2.,).unwrap(),
-                desc_length*desc_height,
-                Position::new(0., 0., desc_height/2.),
-                desc_length*desc_width,
+                DESC_MASS,
+                Position::new(0., 0., DESC_HEIGHT / 2.),
+                Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
+                Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                DESC_LENGTH * DESC_HEIGHT,
+                Position::new(0., 0., DESC_HEIGHT / 2.),
+                DESC_LENGTH * DESC_WIDTH,
                 true,
-            )),],),
-            IcingTimberBound::new(
-                ship_width,
-                ship_length,
-                IcingTimberType::HalfRight,
-            ),
+            ))]),
+            IcingTimberBound::new(SHIP_WIDTH, SHIP_LENGTH, IcingTimberType::HalfRight),
         );
 
         // full
-        let result = area.area_timber_h(&Bound::Full).unwrap(); 
-        let target = desc_length*desc_width/2.;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area.area_timber_h(&Bound::Full).unwrap();
+        let target = DESC_LENGTH * DESC_WIDTH / 2.;
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
         // half
-        let result = area.area_timber_h(&Bound::new(-ship_length/2., 0.,).unwrap()).unwrap(); 
-        let target = desc_length*desc_width/4.;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area
+            .area_timber_h(&Bound::new(-SHIP_LENGTH / 2., 0.).unwrap())
+            .unwrap();
+        let target = DESC_LENGTH * DESC_WIDTH / 4.;
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
 
         test_duration.exit();
     }
@@ -268,47 +302,59 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let ship_length = 10.;
-        let ship_width = 2.;   
-        let ship_area_v = 5.;
-        let ship_area_h = 10.;  
-        let desc_mass = 3.;
-        let desc_length = 6.;
-        let desc_width = 2.;
-        let desc_height = 1.;
-
         let area = Area::new(
-            vec![VerticalArea::new(ship_area_v, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
-            vec![HAreaStrength::new(ship_area_h, Bound::new(-ship_length/2., ship_length/2.,).unwrap()),],
+            vec![VerticalArea::new(
+                SHIP_AREA_V,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
+            vec![HAreaStrength::new(
+                SHIP_AREA_H,
+                Bound::new(-SHIP_LENGTH / 2., SHIP_LENGTH / 2.).unwrap(),
+            )],
             Rc::new(vec![Rc::new(Desk::new(
-                desc_mass,
-                Position::new(0., 0., 0.),
-                Bound::new(-desc_length/2., desc_length/2.,).unwrap(),
-                Bound::new(-desc_width/2., desc_width/2.,).unwrap(),
-                desc_length*desc_height,
-                Position::new(0., 0., desc_height/2.),
-                desc_length*desc_width,
+                DESC_MASS,
+                Position::new(0., 0., DESC_HEIGHT / 2.),
+                Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
+                Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                DESC_LENGTH * DESC_HEIGHT,
+                Position::new(0., 0., DESC_HEIGHT / 2.),
+                DESC_LENGTH * DESC_WIDTH,
                 true,
-            )),],),
-            IcingTimberBound::new(
-                ship_width,
-                ship_length,
-                IcingTimberType::Bow,
-            ),
+            ))]),
+            IcingTimberBound::new(SHIP_WIDTH, SHIP_LENGTH, IcingTimberType::Bow),
         );
 
         // full
-        let result = area.area_timber_h(&Bound::Full).unwrap(); 
-        let target = desc_width*(3. - 10./6.);
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area.area_timber_h(&Bound::Full).unwrap();
+        let target = DESC_WIDTH * (3. - 10. / 6.);
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
         // back part of ship
-        let result = area.area_timber_h(&Bound::new(-ship_length/2., 0.,).unwrap()).unwrap(); 
+        let result = area
+            .area_timber_h(&Bound::new(-SHIP_LENGTH / 2., 0.).unwrap())
+            .unwrap();
         let target = 0.;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
         // forward part of ship
-        let result = area.area_timber_h(&Bound::new( 0., ship_length/2.,).unwrap()).unwrap(); 
-        let target = desc_width*(3. - 10./6.);
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let result = area
+            .area_timber_h(&Bound::new(0., SHIP_LENGTH / 2.).unwrap())
+            .unwrap();
+        let target = DESC_WIDTH * (3. - 10. / 6.);
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
         test_duration.exit();
     }
 }

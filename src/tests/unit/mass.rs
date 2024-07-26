@@ -5,13 +5,14 @@ mod tests {
     use crate::math::position::Position;
     use crate::{load::*, Bound, FakeIcingMass, FakeParameters, FakeResults, FakeWettingMass, IMass, Mass,};
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
+    use std::sync::Arc;
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
     static INIT: Once = Once::new();
 
     unsafe impl Sync for Mass {} //for static
-    static mut MASS: Option<Box<dyn IMass>> = None;
+    static mut MASS: Option<Arc<dyn IMass>> = None;
 
     fn init_once() {
         INIT.call_once(|| {
@@ -39,7 +40,7 @@ mod tests {
             ).unwrap())]);
 
             unsafe {
-                MASS.replace(Box::new(Mass::new(
+                MASS.replace(Arc::new(Mass::new(
                     loads_const,
                     Rc::new(FakeIcingMass::new(0.,)),
                     Rc::new(FakeWettingMass::new(0.,)),
