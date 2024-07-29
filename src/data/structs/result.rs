@@ -200,11 +200,8 @@ impl ParsedShipData {
             });
         }
         parsed_frame_area.sort_by(|a, b| a.x.partial_cmp(&b.x).expect("result parsed_frame_area cpm error!"));
-
         let icing = icing.data();
-
         log::info!("result parse ok");
-        log::info!("result check begin");
         Self {
             ship_type: serde_json::from_str(
                 &ship_data

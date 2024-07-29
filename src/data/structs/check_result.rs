@@ -5,6 +5,7 @@ use super::*;
 impl ParsedShipData {
     /// Проверка данных на корректность
     pub fn check(self) -> Result<Self, Error> {
+        log::info!("result check begin");
         if self.navigation_area_param.data.is_empty() {
             return Err(Error::Parameter("Error check NavigationAreaArray: no data".to_string()));
         }
@@ -337,7 +338,8 @@ impl ParsedShipData {
                 "Error check ParsedShipData: draught:{},  area:{}",
                 v.0, v.1
             )));
-        }
+        }!
+        log::info!("result check ok");
         Ok(self)
     }
 }
