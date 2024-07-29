@@ -338,7 +338,7 @@ impl ParsedShipData {
                 "Error check ParsedShipData: draught:{},  area:{}",
                 v.0, v.1
             )));
-        }!
+        }
         log::info!("result check ok");
         Ok(self)
     }
