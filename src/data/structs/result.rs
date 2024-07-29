@@ -201,136 +201,164 @@ impl ParsedShipData {
         }
         parsed_frame_area.sort_by(|a, b| a.x.partial_cmp(&b.x).expect("result parsed_frame_area cpm error!"));
         let icing = icing.data();
+        let ship_type = serde_json::from_str(
+            &ship_data
+                .get("Type of ship")
+                .ok_or(format!(
+                    "ParsedShipData parse error: no ship_type for ship id:{}",
+                    ship_id
+                ))?
+                .0,
+        )?;
+        let navigation_area = serde_json::from_str(
+            &ship_data
+                .get("Navigation area")
+                .ok_or(format!(
+                    "ParsedShipData parse error: no navigation_area for ship id:{}",
+                    ship_id
+                ))?
+                .0,
+        )?;
+        let length_lbp = ship_data.get("LBP").ok_or(format!(
+            "ParsedShipData parse error: no length for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let length_loa = ship_data.get("L.O.A").ok_or(format!(
+            "ParsedShipData parse error: no length_loa for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let width = ship_data.get("Hull width").ok_or(format!(
+            "ParsedShipData parse error: no width for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let midship = ship_data.get("X midship from Fr0").ok_or(format!(
+            "ParsedShipData parse error: no midship for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let velocity = ship_data.get("Ship operating speed").ok_or(format!(
+            "ParsedShipData parse error: no velocity for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let keel_area = ship_data.get("Keel area").ok_or(format!(
+            "ParsedShipData parse error: no keel_area for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>().ok();
+        let water_density = ship_data.get("Water Density").ok_or(format!(
+            "ParsedShipData parse error: no water_density for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let const_mass_shift_x = ship_data.get("Center of mass shift x").ok_or(format!(
+            "ParsedShipData parse error: no const_mass_shift_x for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let const_mass_shift_y = ship_data.get("Center of mass shift y").ok_or(format!(
+            "ParsedShipData parse error: no const_mass_shift_y for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let const_mass_shift_z = ship_data.get("Center of mass shift z").ok_or(format!(
+            "ParsedShipData parse error: no const_mass_shift_z for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let draught_min = ship_data.get("Minimum draft").ok_or(format!(
+            "ParsedShipData parse error: no draught_min for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let moulded_depth = ship_data.get("Moulded depth").ok_or(format!(
+            "ParsedShipData parse error: no moulded_depth for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let icing_stab = serde_json::from_str(&ship_data.get("Type of icing").ok_or(format!(
+            "ParsedShipData parse error: no icing_stab for ship id:{}",
+            ship_id
+        ))?.0)?;
+        let icing_timber_stab = serde_json::from_str(&ship_data.get("Type of icing timber").ok_or(format!(
+            "ParsedShipData parse error: no icing_timber_stab for ship id:{}",
+            ship_id
+        ))?.0)?;
+        let icing_m_timber = *icing.get("icing_m_timber").ok_or(format!(
+            "ParsedShipData parse error: no icing_m_timber for ship id:{}",
+            ship_id
+        ))?;
+        let icing_m_v_full = *icing.get("icing_m_v_full").ok_or(format!(
+            "ParsedShipData parse error: no icing_m_v_full for ship id:{}",
+            ship_id
+        ))?;
+        let icing_m_v_half = *icing.get("icing_m_v_half").ok_or(format!(
+            "ParsedShipData parse error: no icing_m_v_half for ship id:{}",
+            ship_id
+        ))?;
+        let icing_m_h_full = *icing.get("icing_m_h_full").ok_or(format!(
+            "ParsedShipData parse error: no icing_m_h_full for ship id:{}",
+            ship_id
+        ))?;
+        let icing_m_h_half = *icing.get("icing_m_h_half").ok_or(format!(
+            "ParsedShipData parse error: no icing_m_h_half for ship id:{}",
+            ship_id
+        ))?;
+        let wetting_timber = ship_data.get("Wetting of deck timber").ok_or(format!(
+            "ParsedShipData parse error: no wetting_timber for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let icing_coef_v_area_full = *icing.get("icing_coef_v_area_full").ok_or(format!(
+            "ParsedShipData parse error: no icing_coef_v_area_full for ship id:{}",
+            ship_id
+        ))?;
+        let icing_coef_v_area_half = *icing.get("icing_coef_v_area_half").ok_or(format!(
+            "ParsedShipData parse error: no icing_coef_v_area_half for ship id:{}",
+            ship_id
+        ))?;
+        let icing_coef_v_area_zero = *icing.get("icing_coef_v_area_zero").ok_or(format!(
+            "ParsedShipData parse error: no icing_coef_v_area_zero for ship id:{}",
+            ship_id
+        ))?;
+        let icing_coef_v_moment_full = *icing.get("icing_coef_v_moment_full").ok_or(format!(
+            "ParsedShipData parse error: no icing_coef_v_moment_full for ship id:{}",
+            ship_id
+        ))?;
+        let icing_coef_v_moment_half = *icing.get("icing_coef_v_moment_half").ok_or(format!(
+            "ParsedShipData parse error: no icing_coef_v_moment_half for ship id:{}",
+            ship_id
+        ))?;
+        let icing_coef_v_moment_zero = *icing.get("icing_coef_v_moment_zero").ok_or(format!(
+            "ParsedShipData parse error: no icing_coef_v_moment_zero for ship id:{}",
+            ship_id
+        ))?;
         log::info!("result parse ok");
         Self {
-            ship_type: serde_json::from_str(
-                &ship_data
-                    .get("Type of ship")
-                    .ok_or(format!(
-                        "ParsedShipData parse error: no ship_type for ship id:{}",
-                        ship_id
-                    ))?
-                    .0,
-            )?,
-            navigation_area: serde_json::from_str(
-                &ship_data
-                    .get("Navigation area")
-                    .ok_or(format!(
-                        "ParsedShipData parse error: no navigation_area for ship id:{}",
-                        ship_id
-                    ))?
-                    .0,
-            )?,
+            ship_type,
+            navigation_area,
             navigation_area_param,
             multipler_x1,
             multipler_x2,
             multipler_s,
             coefficient_k,
             coefficient_k_theta,
-            length_lbp: ship_data.get("LBP").ok_or(format!(
-                "ParsedShipData parse error: no length for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            length_loa: ship_data.get("L.O.A").ok_or(format!(
-                "ParsedShipData parse error: no length_loa for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            width: ship_data.get("Hull width").ok_or(format!(
-                "ParsedShipData parse error: no width for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            midship: ship_data.get("X midship from Fr0").ok_or(format!(
-                "ParsedShipData parse error: no midship for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            velocity: ship_data.get("Ship operating speed").ok_or(format!(
-                "ParsedShipData parse error: no velocity for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            keel_area: ship_data.get("Keel area").ok_or(format!(
-                "ParsedShipData parse error: no keel_area for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>().ok(),
-            water_density: ship_data.get("Water Density").ok_or(format!(
-                "ParsedShipData parse error: no water_density for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            const_mass_shift_x: ship_data.get("Center of mass shift x").ok_or(format!(
-                "ParsedShipData parse error: no const_mass_shift_x for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            const_mass_shift_y: ship_data.get("Center of mass shift y").ok_or(format!(
-                "ParsedShipData parse error: no const_mass_shift_y for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            const_mass_shift_z: ship_data.get("Center of mass shift z").ok_or(format!(
-                "ParsedShipData parse error: no const_mass_shift_z for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            draught_min: ship_data.get("Minimum draft").ok_or(format!(
-                "ParsedShipData parse error: no draught_min for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            moulded_depth: ship_data.get("Moulded depth").ok_or(format!(
-                "ParsedShipData parse error: no moulded_depth for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            icing_stab: serde_json::from_str(&ship_data.get("Type of icing").ok_or(format!(
-                "ParsedShipData parse error: no icing_stab for ship id:{}",
-                ship_id
-            ))?.0)?,
-            icing_timber_stab: serde_json::from_str(&ship_data.get("Type of icing timber").ok_or(format!(
-                "ParsedShipData parse error: no icing_timber_stab for ship id:{}",
-                ship_id
-            ))?.0)?,
-            icing_m_timber: *icing.get("icing_m_timber").ok_or(format!(
-                "ParsedShipData parse error: no icing_m_timber for ship id:{}",
-                ship_id
-            ))?,
-            icing_m_v_full: *icing.get("icing_m_v_full").ok_or(format!(
-                "ParsedShipData parse error: no icing_m_v_full for ship id:{}",
-                ship_id
-            ))?,
-            icing_m_v_half: *icing.get("icing_m_v_half").ok_or(format!(
-                "ParsedShipData parse error: no icing_m_v_half for ship id:{}",
-                ship_id
-            ))?,
-            icing_m_h_full: *icing.get("icing_m_h_full").ok_or(format!(
-                "ParsedShipData parse error: no icing_m_h_full for ship id:{}",
-                ship_id
-            ))?,
-            icing_m_h_half: *icing.get("icing_m_h_half").ok_or(format!(
-                "ParsedShipData parse error: no icing_m_h_half for ship id:{}",
-                ship_id
-            ))?,
-            wetting_timber: ship_data.get("Wetting of deck timber").ok_or(format!(
-                "ParsedShipData parse error: no wetting_timber for ship id:{}",
-                ship_id
-            ))?.0.parse::<f64>()?,
-            icing_coef_v_area_full: *icing.get("icing_coef_v_area_full").ok_or(format!(
-                "ParsedShipData parse error: no icing_coef_v_area_full for ship id:{}",
-                ship_id
-            ))?,
-            icing_coef_v_area_half: *icing.get("icing_coef_v_area_half").ok_or(format!(
-                "ParsedShipData parse error: no icing_coef_v_area_half for ship id:{}",
-                ship_id
-            ))?,
-            icing_coef_v_area_zero: *icing.get("icing_coef_v_area_zero").ok_or(format!(
-                "ParsedShipData parse error: no icing_coef_v_area_zero for ship id:{}",
-                ship_id
-            ))?,
-            icing_coef_v_moment_full: *icing.get("icing_coef_v_moment_full").ok_or(format!(
-                "ParsedShipData parse error: no icing_coef_v_moment_full for ship id:{}",
-                ship_id
-            ))?,
-            icing_coef_v_moment_half: *icing.get("icing_coef_v_moment_half").ok_or(format!(
-                "ParsedShipData parse error: no icing_coef_v_moment_half for ship id:{}",
-                ship_id
-            ))?,
-            icing_coef_v_moment_zero: *icing.get("icing_coef_v_moment_zero").ok_or(format!(
-                "ParsedShipData parse error: no icing_coef_v_moment_zero for ship id:{}",
-                ship_id
-            ))?,
+            length_lbp,
+            length_loa,
+            width,
+            midship,
+            velocity,
+            keel_area,
+            water_density,
+            const_mass_shift_x,
+            const_mass_shift_y,
+            const_mass_shift_z,
+            draught_min,
+            moulded_depth,
+            icing_stab,
+            icing_timber_stab,
+            icing_m_timber,
+            icing_m_v_full,
+            icing_m_v_half,
+            icing_m_h_full,
+            icing_m_h_half,
+            wetting_timber,
+            icing_coef_v_area_full,
+            icing_coef_v_area_half,
+            icing_coef_v_area_zero,
+            icing_coef_v_moment_full,
+            icing_coef_v_moment_half,
+            icing_coef_v_moment_zero,
             bounds: bounds.data(),
             center_waterline: center_waterline.data(),
             waterline_length: waterline_length.data(),
