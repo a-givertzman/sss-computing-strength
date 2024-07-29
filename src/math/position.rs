@@ -1,5 +1,5 @@
 //! Точка относительно Центра 
-use std::{iter::Sum, ops::{Add, AddAssign}};
+use std::{iter::Sum, ops::{Add, AddAssign, Sub}};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Position {
@@ -35,6 +35,10 @@ impl Position {
     pub fn z(&self) -> f64 {
         self.z
     }
+    ///
+    pub fn len(&self) -> f64 {
+        (self.x*self.x + self.y*self.y + self.z*self.z).sqrt()
+    }
 }
 ///
 impl std::fmt::Display for Position {
@@ -47,6 +51,13 @@ impl Add for Position {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
         Position::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z(),)
+    }
+}
+///
+impl Sub for Position {
+    type Output = Self;    
+    fn sub(self, rhs: Self) -> Self::Output {
+        Position::new(self.x() - rhs.x(), self.y() - rhs.y(), self.z() - rhs.z(),)
     }
 }
 ///
