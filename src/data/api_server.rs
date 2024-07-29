@@ -189,7 +189,7 @@ pub fn get_data(
             c.name AS name, \
             c.mass AS mass, \
             c.timber AS timber, \
-            cgc.key AS general_category, \
+            cgc.key::TEXT AS general_category, \
             c.bound_x1 AS bound_x1, \
             c.bound_x2 AS bound_x2, \
             c.bound_y1 AS bound_y1, \
@@ -218,8 +218,8 @@ pub fn get_data(
             c.space_id AS space_id, \
             c.name AS name, \
             c.mass AS mass, \
-            cc.matter_type AS matter_type, \
-            cgc.key AS general_category, \
+            cc.matter_type::TEXT AS matter_type, \
+            cgc.key::TEXT AS general_category, \
             c.density AS density, \
             c.volume AS volume, \
             c.bound_x1 AS bound_x1, \
