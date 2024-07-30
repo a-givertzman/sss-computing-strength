@@ -209,7 +209,7 @@ impl ParsedShipData {
                     ship_id
                 ))?
                 .0,
-        )?;
+        ).map_err(|e| format!("Error parse ship_type: {e}"))?;
         let navigation_area = NavigationArea::from_str(
             &ship_data
                 .get("Navigation area")
@@ -218,7 +218,7 @@ impl ParsedShipData {
                     ship_id
                 ))?
                 .0,
-        )?;
+        ).map_err(|e| format!("Error parse navigation_area: {e}"))?;
         let length_lbp = ship_data.get("LBP").ok_or(format!(
             "ParsedShipData parse error: no length for ship id:{}",
             ship_id
@@ -270,11 +270,11 @@ impl ParsedShipData {
         let icing_stab = IcingStabType::from_str(&ship_data.get("Type of icing").ok_or(format!(
             "ParsedShipData parse error: no icing_stab for ship id:{}",
             ship_id
-        ))?.0)?;
+        ))?.0).map_err(|e| format!("Error parse icing_stab: {e}"))?;
         let icing_timber_stab = IcingTimberType::from_str(&ship_data.get("Type of icing timber").ok_or(format!(
             "ParsedShipData parse error: no icing_timber_stab for ship id:{}",
             ship_id
-        ))?.0)?;
+        ))?.0).map_err(|e| format!("Error parse icing_timber_stab: {e}"))?;
         let icing_m_timber = *icing.get("icing_m_timber").ok_or(format!(
             "ParsedShipData parse error: no icing_m_timber for ship id:{}",
             ship_id
