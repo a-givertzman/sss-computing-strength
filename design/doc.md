@@ -7,12 +7,20 @@ $ \frac {A (x -1) ^ 2}{ \sqrt {\frac {B}{x+1}}} $
 > Importent information  
 > $$ \frac {A (x -1) ^ 2}{ \sqrt {\frac {B}{x+1}}} $$
 
+> [!NOTE]  
+> Importent information  
+> $$ \frac {A (x -1) ^ 2}{ \sqrt {\frac {B}{x+1}}} $$
 
-
+> [!TIP]  
+> Importent information  
+> $$ \frac {A (x -1) ^ 2}{ \sqrt {\frac {B}{x+1}}} $$
 - sdflsghlkdfgakfda.kdjh
 
 
  $$ \frac {A (x -1) ^ 2}{ \sqrt {\frac {B}{x+1}}} $$
+
+
+
 
 
 ```python
@@ -36,3 +44,8 @@ if x > 0
 disp("Hello, World!")
 end
 ```
+
+| ds    | csdc  | ACA |
+| ----- | ----- | --- |
+| dc    | dcs   | ac  |
+| aaaaa | ccccc | aca |
