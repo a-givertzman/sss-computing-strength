@@ -30,10 +30,6 @@ pub struct LoadCargo {
     pub mass_shift_z: Option<f64>,
     /// Площадь горизонтальной поверхности, м^2
     pub horizontal_area: Option<f64>,
-    /// Смещение центра площади горизонтальной поверхности, м
-    pub horizontal_area_shift_x: Option<f64>,
-    pub horizontal_area_shift_y: Option<f64>,
-    pub horizontal_area_shift_z: Option<f64>,
     /// Площадь вертикальной поверхности, м^2
     pub vertical_area: Option<f64>,
     /// Смещение центра площади вертикальной поверхности, м
@@ -48,8 +44,7 @@ impl std::fmt::Display for LoadCargo {
         write!(
             f,
             "LoadCargo(name:{} mass:{} loading_type:{} timber:{} bound_x:({}, {}) bound_y:({}, {}) bound_z:({}, {}) 
-            mass_shift:({}, {}, {}) horizontal_area:{} horizontal_area_shift:({}, {}, {})
-            vertical_area:{} vertical_area_shift_y:({}, {}, {}) )",
+            mass_shift:({}, {}, {}) horizontal_area:{} vertical_area:{} vertical_area_shift_y:({}, {}, {}) )",
             self.name,
             self.general_category,
             self.timber,
@@ -64,9 +59,6 @@ impl std::fmt::Display for LoadCargo {
             self.mass_shift_y.unwrap_or(0.),
             self.mass_shift_z.unwrap_or(0.),
             self.horizontal_area.unwrap_or(0.),
-            self.horizontal_area_shift_x.unwrap_or(0.),
-            self.horizontal_area_shift_y.unwrap_or(0.),
-            self.horizontal_area_shift_z.unwrap_or(0.),
             self.vertical_area.unwrap_or(0.),
             self.vertical_area_shift_x.unwrap_or(0.),
             self.vertical_area_shift_y.unwrap_or(0.),

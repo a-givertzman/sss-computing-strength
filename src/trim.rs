@@ -1,8 +1,10 @@
 //! Интерфейс для расчета дифферента
 
+use crate::Error;
+
 pub trait ITrim {
     /// Вычисление средней осадки и дифферента
-    fn value(&self) -> (f64, f64);
+    fn value(&self) -> Result<(f64, f64), Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -25,8 +27,8 @@ impl FakeTrim {
 }
 #[doc(hidden)]
 impl ITrim for FakeTrim {
-    fn value(&self) -> (f64, f64) {
-        (self.mean_draught, self.trim)
+    fn value(&self) -> Result<(f64, f64), Error> {
+        Ok((self.mean_draught, self.trim))
     }
 }
 

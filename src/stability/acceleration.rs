@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use crate::{ICurve, IMetacentricHeight, IRollingAmplitude, IRollingPeriod};
+use crate::{Error, ICurve, IMetacentricHeight, IRollingAmplitude, IRollingPeriod};
 
 /// Расчет критерия ускорения
 pub struct Acceleration {
@@ -49,20 +49,20 @@ impl Acceleration {
 ///
 impl IAcceleration for Acceleration {
     /// Расчет критерия ускорения
-    fn calculate(&self) -> f64 {
-        let h_trans_0 = self.metacentric_height.h_trans_0();    
-        let k_theta = self.k_theta.value(self.b/self.d);
+    fn calculate(&self) -> Result<f64, Error> {
+        let h_trans_0 = self.metacentric_height.h_trans_0()?;    
+        let k_theta = self.k_theta.value(self.b/self.d)?;
         let c = self.rolling_period.c();
-        let (_, theta_1_r) = self.rolling_amplitude.calculate();
+        let (_, theta_1_r) = self.rolling_amplitude.calculate()?;
         let a = 0.0105 * h_trans_0/(c*c*self.b)*k_theta*theta_1_r;
         let k = 0.3/a; // >= 1;
-        k
+        Ok(k)
     }
 }
 #[doc(hidden)]
 pub trait IAcceleration {
     /// Расчет критерия ускорения
-    fn calculate(&self) -> f64;
+    fn calculate(&self) -> Result<f64, Error> ;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -83,8 +83,8 @@ impl FakeAccelleration {
 #[doc(hidden)]
 impl IAcceleration for FakeAccelleration {
     ///
-    fn calculate(&self) -> f64 {
-        self.value
+    fn calculate(&self) -> Result<f64, Error>  {
+        Ok(self.value)
     }
 }
 

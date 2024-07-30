@@ -1,6 +1,6 @@
 //! Изгибающий момент
 
-use crate::math::vec::*;
+use crate::{math::vec::*, Error};
 
 use super::shear_force::IShearForce;
 
@@ -18,16 +18,16 @@ impl BendingMoment {
         Self { shear_force, delta }
     }
     ///
-    pub fn values(&mut self) -> Vec<f64> {
+    pub fn values(&mut self) -> Result<Vec<f64>, Error> {
         let mut result: Vec<f64> = self
             .shear_force
-            .values()
+            .values()?
             .integral_sum()
             .into_iter()
             .map(|v| -v)
             .collect();
         result.mul_single(self.delta / 2.);
         //      log::info!("\t BendingMoment result:{:?}", result);
-        result
+        Ok(result)
     }
 }

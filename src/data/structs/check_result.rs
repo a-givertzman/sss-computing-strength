@@ -5,10 +5,9 @@ use super::*;
 impl ParsedShipData {
     /// Проверка данных на корректность
     pub fn check(self) -> Result<Self, Error> {
+        log::info!("result check begin");
         if self.navigation_area_param.data.is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check NavigationAreaArray: no data"
-            )));
+            return Err(Error::Parameter("Error check NavigationAreaArray: no data".to_string()));
         }
         if self.icing_m_timber <= 0. {
             return Err(Error::Parameter(format!(
@@ -47,29 +46,19 @@ impl ParsedShipData {
             )));
         }
         if self.multipler_x1.data.is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check MultiplerX1Array: no data"
-            )));
+            return Err(Error::Parameter("Error check MultiplerX1Array: no data".to_string()));
         }
         if self.multipler_x2.data.is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check MultiplerX2Array: no data"
-            )));
+            return Err(Error::Parameter("Error check MultiplerX2Array: no data".to_string()));
         }
         if self.multipler_s.data.is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check MultiplerSArray: no data"
-            )));
+            return Err(Error::Parameter("Error check MultiplerSArray: no data".to_string()));
         }
         if self.coefficient_k.data.is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check CoefficientKArray: no data"
-            )));
+            return Err(Error::Parameter("Error check CoefficientKArray: no data".to_string()));
         }
         if self.coefficient_k_theta.data.is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check CoefficientKThetaArray: no data"
-            )));
+            return Err(Error::Parameter("Error check CoefficientKThetaArray: no data".to_string()));
         }
         if self.length_lbp <= 0. {
             return Err(Error::Parameter(format!(
@@ -109,9 +98,7 @@ impl ParsedShipData {
             }
         }                
         if self.bounds.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: len() <= 1".to_string()));
         }
         if self.water_density <= 0. {
             return Err(Error::Parameter(format!(
@@ -198,69 +185,43 @@ impl ParsedShipData {
             )));
         }
         if self.center_waterline.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: len() <= 1".to_string()));
         }
         if self.waterline_length.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: waterline_length.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: waterline_length.len() <= 1".to_string()));
         }
         if self.waterline_breadth.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: waterline_breadth.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: waterline_breadth.len() <= 1".to_string()));
         }
         if self.waterline_area.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: waterline_area.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: waterline_area.len() <= 1".to_string()));
         }
         if self.volume_shift.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: volume_shift.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: volume_shift.len() <= 1".to_string()));
         }
         if self.rad_long.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: rad_long.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: rad_long.len() <= 1".to_string()));
         }
         if self.rad_trans.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: rad_trans.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: rad_trans.len() <= 1".to_string()));
         }
         if self.h_subdivision.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: h_subdivision.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: h_subdivision.len() <= 1".to_string()));
         }
         if self.mean_draught.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: mean_draught.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: mean_draught.len() <= 1".to_string()));
         }
         if self.center_draught_shift_x.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: center_draught_shift_x.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: center_draught_shift_x.len() <= 1".to_string()));
         }
         if self.center_draught_shift_y.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: center_draught_shift_y.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: center_draught_shift_y.len() <= 1".to_string()));
         }
         if self.center_draught_shift_z.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: center_draught_shift_z.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: center_draught_shift_z.len() <= 1".to_string()));
         }
         if self.pantocaren.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: pantocaren.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: pantocaren.len() <= 1".to_string()));
         }
         if let Some((draught, _)) = self.pantocaren.iter().find(|(draught, _)| *draught < 0.) {
             return Err(Error::Parameter(format!(
@@ -269,9 +230,7 @@ impl ParsedShipData {
             )));
         }
         if self.flooding_angle.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: flooding_angle.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: flooding_angle.len() <= 1".to_string()));
         }
         if let Some((key, value)) = self
             .flooding_angle
@@ -283,9 +242,7 @@ impl ParsedShipData {
             )));
         }
         if self.entry_angle.len() <= 1 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: entry_angle.len() <= 1"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: entry_angle.len() <= 1".to_string()));
         }
         if let Some((key, value)) = self
             .entry_angle
@@ -305,24 +262,19 @@ impl ParsedShipData {
         if let Some(frame) = self.frame_area.iter().find(|f| {
             f.immersion_area
                 .iter()
-                .find(|v| v.0 < 0. || v.1 < 0.)
-                .is_some()
+                .any(|v| v.0 < 0. || v.1 < 0.)
         }) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: immersion_area frame{frame}: v.0 < 0 || v.1 < 0"
             )));
         }
         if self.draft_mark.data().is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check draft_mark: draft_mark.data().is_empty()"
-            )));
+            return Err(Error::Parameter("Error check draft_mark: draft_mark.data().is_empty()".to_string()));
         }
         if self.compartments.is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check draft_mark: compartments.is_empty()"
-            )));
+            return Err(Error::Parameter("Error check draft_mark: compartments.is_empty()".to_string()));
         }       
-        if let Some(s) = self.compartments.iter().find(|s| s.mass.unwrap() < 0.) {
+        if let Some(s) = self.compartments.iter().find(|s| s.mass.unwrap_or(0.) < 0.) {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: compartment{s} mass < 0"
             )));
@@ -333,7 +285,7 @@ impl ParsedShipData {
             )));
         }
         if let Some(s) = self.compartments.iter().find(|s| {
-            s.mass.unwrap() > 0.
+            s.mass.unwrap_or(0.) > 0.
                 && s.mass_shift_x.is_some()
                 && (s.bound_x1 >= s.mass_shift_x.unwrap() || s.mass_shift_x.unwrap() >= s.bound_x2)
         }) {
@@ -342,14 +294,10 @@ impl ParsedShipData {
             )));
         }
         if self.load_constants.is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: load_constants.is_empty()"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: load_constants.is_empty()".to_string()));
         }
         if self.area_h_stab.is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: area_h_stab.is_empty()"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: area_h_stab.is_empty()".to_string()));
         }
         if let Some(area) = self.area_h_stab.iter().find(|f| f.value < 0.) {
             return Err(Error::Parameter(format!(
@@ -357,9 +305,7 @@ impl ParsedShipData {
             )));
         }
         if self.area_h_str.is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: area_h_str.is_empty()"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: area_h_str.is_empty()".to_string()));
         }
         if let Some(area) = self.area_h_str.iter().find(|f| f.value < 0.) {
             return Err(Error::Parameter(format!(
@@ -372,9 +318,7 @@ impl ParsedShipData {
             )));
         }
         if self.area_v_str.is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: area_v_str.is_empty()"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: area_v_str.is_empty()".to_string()));
         }
         if let Some(area) = self.area_v_str.iter().find(|f| f.value < 0.) {
             return Err(Error::Parameter(format!(
@@ -382,9 +326,7 @@ impl ParsedShipData {
             )));
         }
         if self.area_v_stab.area().is_empty() {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: area_v_stab.area().is_empty()"
-            )));
+            return Err(Error::Parameter("Error check ParsedShipData: area_v_stab.area().is_empty()".to_string()));
         }
         if let Some(v) = self
             .area_v_stab
@@ -397,6 +339,7 @@ impl ParsedShipData {
                 v.0, v.1
             )));
         }
+        log::info!("result check ok");
         Ok(self)
     }
 }
