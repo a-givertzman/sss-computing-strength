@@ -1,13 +1,14 @@
 #[cfg(test)]
 
 mod tests {
+    use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::{rc::Rc, time::Duration};
-    use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::*, stability::grain::*};
+    use crate::{stability::grain::*, Bulk, FakeLeverDiagram, FakeMass, FakeParameters};
 
     #[test]
+    #[ignore = "TODO"]
     fn grain() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
@@ -18,28 +19,28 @@ mod tests {
 
         let result = Grain::new(
             1.,
-            30.,
-            Rc::new(FakeBulk::new()),
-            Rc::new(FakeMass::new(
-                2044.10,
-                vec![0.],
-                Position::new(1.05, 0., 5.32),
-                Position::new(0., 0., 0.,), 
-            )),  
+            Rc::new(vec![Rc::new(Bulk::new(1. / 1.025, 100.).unwrap())]),
+            Rc::new(FakeMass::new(1000., vec![0.])),
             Rc::new(FakeLeverDiagram::new(
-                angle: Vec<f64>,
-                lever_moment: f64,
-                vec![0.],
-                dso_area: f64,
-                vec![0.],
-                theta_max: f64,
-                theta_last: f64,
-                vec![0.],
-            )), 
-        ).area();
+                vec![15., 75.],
+                1.5,
+                vec![(0., 0., 0.)],
+                2.,
+                30.,
+                vec![(1.5, 25.)],
+            )),
+            Rc::new(FakeParameters {}),
+        )
+        .area()
+        .unwrap();
 
-        let target = 0.3/0.0105;
-        assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let target = 0.3 / 0.0105;
+        assert!(
+            (result - target).abs() < 0.0001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
 
         test_duration.exit();
     }

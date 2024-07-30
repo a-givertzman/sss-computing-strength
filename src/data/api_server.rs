@@ -57,7 +57,7 @@ impl ApiServer {
                     "ApiServer can't get error message str:{}",
                     json
                 )))?;
-            if error_mess.len() > 0 {
+            if !error_mess.is_empty() {
                 return Err(Error::FromString(error_mess.to_owned()));
             }
             Ok(result)
@@ -90,24 +90,24 @@ pub fn get_data(
         ship_id
     ))?)?;
     let navigation_area_param = NavigationAreaArray::parse(
-        &api_server.fetch(&format!("SELECT area, p_v, m FROM navigation_area;"))?,
+        &api_server.fetch("SELECT area, p_v, m FROM navigation_area;")?,
     )?;
     let multipler_x1 = MultiplerX1Array::parse(
-        &api_server.fetch(&format!("SELECT key, value FROM multipler_x1;"))?,
+        &api_server.fetch("SELECT key, value FROM multipler_x1;")?,
     )?;
     let multipler_x2 = MultiplerX2Array::parse(
-        &api_server.fetch(&format!("SELECT key, value FROM multipler_x2;"))?,
+        &api_server.fetch("SELECT key, value FROM multipler_x2;")?,
     )?;
     let multipler_s = MultiplerSArray::parse(
-        &api_server.fetch(&format!("SELECT area, t, s FROM multipler_s;"))?,
+        &api_server.fetch("SELECT area, t, s FROM multipler_s;")?,
     )?;
     let coefficient_k = CoefficientKArray::parse(
-        &api_server.fetch(&format!("SELECT key, value FROM coefficient_k;"))?,
+        &api_server.fetch("SELECT key, value FROM coefficient_k;")?,
     )?;
     let coefficient_k_theta = CoefficientKThetaArray::parse(
-        &api_server.fetch(&format!("SELECT key, value FROM coefficient_k_theta;"))?,
+        &api_server.fetch("SELECT key, value FROM coefficient_k_theta;")?,
     )?;
-    let icing = IcingArray::parse(&api_server.fetch(&format!("SELECT key, value FROM icing;"))?)?;
+    let icing = IcingArray::parse(&api_server.fetch("SELECT key, value FROM icing;")?)?;
     let bounds = ComputedFrameDataArray::parse(&api_server.fetch(&format!(
         "SELECT index, start_x, end_x FROM computed_frame_space WHERE ship_id={};",
         ship_id
@@ -185,49 +185,74 @@ pub fn get_data(
         ship_id
     ))?)?;
     let cargo = LoadCargoArray::parse(&api_server.fetch(&format!(
-        "SELECT name, \
-                mass, \
-                bound_x1, \
-                bound_x2, \
-                bound_y1, \
-                bound_y2, \
-                bound_z1, \
-                bound_z2, \
-                mass_shift_x, \
-                mass_shift_y, \
-                mass_shift_z, \
-                horizontal_area, \
-                horizontal_area_shift_x, \
-                horizontal_area_shift_y, \
-                vertical_area, \
-                vertical_area_shift_x, \
-                vertical_area_shift_y, \
-                vertical_area_shift_z, \
-                loading_type::TEXT \
-            FROM cargo WHERE ship_id={ship_id};"
-        ),
-    )?)?;
+        "SELECT 
+            c.name AS name, \
+            c.mass AS mass, \
+            c.timber AS timber, \
+            cgc.key::TEXT AS general_category, \
+            c.bound_x1 AS bound_x1, \
+            c.bound_x2 AS bound_x2, \
+            c.bound_y1 AS bound_y1, \
+            c.bound_y2 AS bound_y2, \
+            c.bound_z1 AS bound_z1, \
+            c.bound_z2 AS bound_z2, \
+            c.mass_shift_x AS mass_shift_x, \
+            c.mass_shift_y AS mass_shift_y, \
+            c.mass_shift_z AS mass_shift_z, \
+            c.horizontal_area AS horizontal_area, \
+            c.vertical_area AS vertical_area, \
+            c.vertical_area_shift_x AS vertical_area_shift_x, \
+            c.vertical_area_shift_y AS vertical_area_shift_y, \
+            c.vertical_area_shift_z AS vertical_area_shift_z \
+        FROM 
+            cargo AS c
+        JOIN 
+            cargo_category AS cc ON c.category_id = cc.id
+        JOIN 
+            cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+        WHERE 
+            c.ship_id={ship_id};"
+    ))?)?;
     let compartment = CompartmentArray::parse(&api_server.fetch(&format!(
-        "SELECT space_id, \
-                name, \
-                mass, \
-                density, \
-                volume, \
-                bound_x1, \
-                bound_x2, \
-                mass_shift_x, \
-                mass_shift_y, \
-                mass_shift_z, \
-                m_f_s_y, \
-                m_f_s_x, \
-                grain_moment, \
-                loading_type::TEXT, \
-                physical_type::TEXT \
-            FROM compartment WHERE ship_id={ship_id} AND active=TRUE AND mass>0;"
+        "SELECT 
+            c.space_id AS space_id, \
+            c.name AS name, \
+            c.mass AS mass, \
+            cc.matter_type::TEXT AS matter_type, \
+            cgc.key::TEXT AS general_category, \
+            c.density AS density, \
+            c.volume AS volume, \
+            c.bound_x1 AS bound_x1, \
+            c.bound_x2 AS bound_x2, \
+            c.mass_shift_x AS mass_shift_x, \
+            c.mass_shift_y AS mass_shift_y, \
+            c.mass_shift_z AS mass_shift_z, \
+            c.m_f_s_y AS m_f_s_y, \
+            c.m_f_s_x AS m_f_s_x, \
+            c.grain_moment AS grain_moment \
+        FROM 
+            compartment c
+        JOIN 
+            cargo_category AS cc ON c.category_id = cc.id
+        JOIN 
+            cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+        WHERE 
+            ship_id={ship_id} AND active=TRUE AND mass>0;"
     ))?)?;
     let load_constant = LoadConstantArray::parse(&api_server.fetch(&format!(
-        "SELECT mass, bound_x1, bound_x2, loading_type::TEXT FROM load_constant WHERE ship_id={};",
-        ship_id
+        "SELECT 
+            l.mass AS mass, \
+            l.bound_x1 AS bound_x1, \
+            l.bound_x2 AS bound_x2, \
+            cc.key as loading_type \
+        FROM 
+            load_constant AS l
+        JOIN 
+            cargo_category AS cc 
+        ON 
+            l.category_id = cc.id
+        WHERE 
+            l.ship_id={ship_id};"
     ))?)?;
     let area_h_str = HStrAreaArray::parse(&api_server.fetch(
         &format!("SELECT name, value, bound_x1, bound_x2 FROM horizontal_area_strength WHERE ship_id={};", ship_id)
@@ -294,7 +319,7 @@ pub fn send_strenght_data(
     log::info!("send_strenght_data begin");
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM result_strength WHERE ship_id={ship_id};");
-    full_sql += &format!(" INSERT INTO result_strength (ship_id, index");
+    full_sql += " INSERT INTO result_strength (ship_id, index";
     full_sql += &results.iter().map(|(k, _)| format!(", {k}") ).collect::<String>();
     full_sql += ") VALUES";
 
@@ -302,7 +327,7 @@ pub fn send_strenght_data(
         full_sql += &format!(" ({ship_id}, {i}," );
         full_sql += &results.iter().map(|(_, v)| format!(" {},", v[i])).collect::<String>();
         full_sql.pop();
-        full_sql += &format!(")," );        
+        full_sql += "),";        
     }
     full_sql.pop();
     full_sql.push(';');
@@ -373,7 +398,7 @@ pub fn send_parameters_data(
     log::info!("send_parameters_data begin");
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM parameter_data WHERE ship_id={ship_id};");
-    if data.len() > 0 {
+    if !data.is_empty() {
         full_sql += " INSERT INTO parameter_data (ship_id, parameter_id, result) VALUES";
         data.into_iter().for_each(|v| {
             full_sql += &format!(" ({ship_id}, {}, {}),", v.0, v.1);
@@ -396,7 +421,7 @@ pub fn send_draft_mark(
     log::info!("send_draft_mark begin");
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM draft_mark_result WHERE ship_id={ship_id};");
-    if data.len() > 0 {
+    if !data.is_empty() {
         full_sql += " INSERT INTO draft_mark_result (ship_id, name, x, y, draft_value) VALUES";
         data.into_iter().for_each(|(name, (x, y, draft_value))| {
             full_sql += &format!(" ({ship_id}, '{name}', {x}, {y}, {draft_value}),");

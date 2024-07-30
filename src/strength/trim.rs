@@ -1,6 +1,6 @@
 //! Класс для расчета дифферента и средней осадки в расчете прочности
 
-use crate::{draught::Draught, math::Bounds, trim::{FakeTrim, ITrim}, IVolume, MultipleSingle};
+use crate::{draught::Draught, math::Bounds, trim::{FakeTrim, ITrim}, Error, IVolume, MultipleSingle};
 
 use super::{
     displacement::Displacement,
@@ -99,13 +99,19 @@ impl Trim {
 /// 
 impl ITrim for Trim {
     /// Вычисление средней осадки и дифферента
-    fn value(&self) -> (f64, f64) {
-        let dx = self.bounds.iter().map(|v| v.center()).collect::<Vec<_>>();
-        let mass_pairs = dx.clone().into_iter().zip(self.mass.values()).collect::<Vec<_>>();
+    fn value(&self) -> Result<(f64, f64), Error> {
+        let mut dx = Vec::new();
+        for v in self.bounds.iter() { 
+            if !v.is_value() {
+                return Err(Error::FromString("Trim value error: bound is no value".to_owned()));
+            }
+            dx.push(v.center().unwrap());
+        }
+        let mass_pairs = dx.clone().into_iter().zip(self.mass.values()?).collect::<Vec<_>>();
         let (w_xg, w) = Trim::calc_s(&mass_pairs);
         let mut trim = 0.; // Дифферент
         let mut mean_draught: f64 = self.mean_draught;
-        let (mut v_xc, mut volume_mass) = (0., 0.);
+        let mut v_xc = 0.;
         for _i in 0..50 {
             mean_draught = self.mean_draught;
             for _j in 0..50 {
@@ -116,13 +122,14 @@ impl ITrim for Trim {
                         self.center_waterline_shift,    
                         Box::new(FakeTrim::new(mean_draught, trim)),               
                         None,                       
-                    )),
+                    )?),
                     Rc::clone(&self.bounds),
-                ).values();
+                ).values()?;
                 volume_values.mul_single(self.water_density);
     //            dbg!(&volume_values);
                 let volume_pairs = dx.clone().into_iter().zip(volume_values).collect::<Vec<_>>();
-                (v_xc, volume_mass) = Trim::calc_s(&volume_pairs);
+                let (new_v_xc, volume_mass) = Trim::calc_s(&volume_pairs);
+                v_xc = new_v_xc;
                 let delta_w = (w - volume_mass)/w;              
                 if delta_w.abs() <= 0.000000001 {
                     break;
@@ -136,9 +143,9 @@ impl ITrim for Trim {
     //            dbg!("delta_x.abs() <= 0.000000001");
                 break;
             }                 
-            trim = trim + delta_x / 10.;
+            trim += delta_x / 10.;
         }
-        (mean_draught, trim)
+        Ok((mean_draught, trim))
     }
 }
 

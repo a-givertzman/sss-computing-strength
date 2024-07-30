@@ -9,7 +9,7 @@ mod tests {
     #[test]
     fn bending_moment() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test BendingMoment";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -18,7 +18,7 @@ mod tests {
         let result = BendingMoment::new(Box::new(FakeShearForce::new(vec![
             0.0, -5.0, -10., -15.0, -10.0, -5.0, 0.0, 5.0, 10.0, 15.0, 15.0, 0.0,
         ])), 2.)
-        .values();
+        .values().unwrap();
         let target = Vec::from([0.0, 5.0, 20.0, 45.0, 70.0, 85.0, 90.0, 85.0, 70.0, 45.0, 15.0, 0.0]);
 
         assert!(

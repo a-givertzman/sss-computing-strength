@@ -1,5 +1,7 @@
 //! Навалочный смещаемый груз
 
+use crate::Error;
+
 /// Навалочный смещаемый груз.
 /// Имеет свойства смещения груза в сторону крена судна.
 pub trait IBulk {
@@ -21,12 +23,14 @@ impl Bulk {
     pub fn new(
         s_f: f64,     
         moment: f64,
-    ) -> Self {
-        assert!(s_f > 0., "s_f {s_f} > 0.");
-        Self {
+    ) -> Result<Self, Error> {
+        if s_f <= 0. {
+            return Err(Error::FromString(format!("Bulk new error: s_f {s_f} <= 0.")));
+        }
+        Ok(Self {
             s_f,         
             moment,
-        }
+        })
     }
 }
 ///

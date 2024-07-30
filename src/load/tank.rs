@@ -1,5 +1,5 @@
 //! Цистерна с жидкостью
-use crate::{math::*, ILoad, ILoadMass, LoadingType};
+use crate::{math::*, Error, ILoad, ILoadMass, LoadingType};
 
 /// Цистерна с жидкостью.
 /// Имеет свойства свободной поверхности жидкости.
@@ -42,27 +42,30 @@ impl Tank {
         shift: Option<Position>,
         inertia: InertiaMoment,
         load_type: LoadingType,
-    ) -> Self {
-        assert!(density > 0., "density {} > 0", density);
-        assert!(volume >= 0., "volume {} >= 0", volume);
-        Self {
+    ) -> Result<Self, Error> {
+        if density <= 0. {
+            return Err(Error::FromString(format!("Tank new error: density {density} <= 0.")));
+        }
+        if volume <= 0. {
+            return Err(Error::FromString(format!("Tank new error: volume {volume} <= 0.")));
+        }
+        Ok(Self {
             density,
             volume,
             bound_x,
             shift,
             inertia,
             load_type,
-        }
+        })
     }
 }
 ///
 impl ITank for Tank {
     /// Момент свободной поверхности 
     fn moment_surface(&self) -> FreeSurfaceMoment {
-        let result =
-            FreeSurfaceMoment::from_inertia(self.inertia.clone(), self.density);
+        
  //       log::info!("\t Tank result:{:?}", result);    
-        result
+        FreeSurfaceMoment::from_inertia(self.inertia.clone(), self.density)
     }
     ///
     fn load_type(&self) -> LoadingType {
@@ -78,13 +81,19 @@ impl ILoad for Tank {
     ///
     fn bound_x(&self) -> Bound {
         self.bound_x
-    }    
+    }   
     ///
     fn shift(&self) -> Position {
         if let Some(shift) = self.shift.clone() {
             shift
         } else {
-            Position::new(self.bound_x.center(), 0., 0.,)
+            Position::new(
+                self.bound_x
+                    .center()
+                    .expect("Tank shift error: self.bound_x.center"),
+                0.,
+                0.,
+            )
         }
     }
 }

@@ -2,8 +2,8 @@
 
 mod tests {
     use crate::{
-        math::{bound::Bound, moment::Moment, position::Position},
         load::*,
+        math::{bound::Bound, moment::Moment, position::Position},
     };
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
     use std::time::Duration;
@@ -12,18 +12,21 @@ mod tests {
     #[test]
     fn mass() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test Load mass";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
         let result = LoadMass::new(
-            20., 
-            Bound::new(-1., 3.),
-            Some(Position::new(1., 0., 0.)), 
+            20.,
+            Bound::new(-1., 3.).unwrap(),
+            Some(Position::new(1., 0., 0.)),
             LoadingType::Ballast,
-        ).value(Some(Bound::new(1., 3.)));
+        )
+        .unwrap()
+        .value(&Bound::new(1., 3.).unwrap())
+        .unwrap();
         let target = 10.;
         assert!(
             result == target,
@@ -38,7 +41,7 @@ mod tests {
     #[test]
     fn moment() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test Load moment";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -46,10 +49,12 @@ mod tests {
 
         let result = LoadMass::new(
             20.,
-            Bound::new(-1., 3.), 
-            Some(Position::new(1., 0., 0.)), 
+            Bound::new(-1., 3.).unwrap(),
+            Some(Position::new(1., 0., 0.)),
             LoadingType::Ballast,
-        ).moment();
+        )
+        .unwrap()
+        .moment();
         let target = Moment::new(20., 0., 0.);
         assert!(
             result == target,

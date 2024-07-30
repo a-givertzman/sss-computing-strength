@@ -2,39 +2,17 @@
 use serde::{Deserialize, Serialize};
 use crate::data::structs::DataArray;
 
-/// Тип груза
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
-pub enum CargoType {
-    #[serde(alias="ballast")]
-    Ballast,
-    #[serde(alias="store")]
-    Store,
-    #[serde(alias="cargo")]
-    Cargo,
-}
-///
-impl std::fmt::Display for CargoType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                CargoType::Ballast => "Ballast", 
-                CargoType::Store => "Store", 
-                CargoType::Cargo => "Cargo", 
-            },
-        )
-    }
-}
-/// Груз, конструкции корпуса, контейнер или другой твердый груз
+use super::CargoGeneralCategory;
+
+/// Груз без привязки к помещению, всегда твердый
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LoadCargo {
     /// Имя груза
     pub name: String,
     /// Общая масса, т
     pub mass: Option<f64>,
-    /// Тип груза
-    pub loading_type: CargoType,
+    /// Классификация груза
+    pub general_category: CargoGeneralCategory,
     /// Груз - лес и может намокать и обмерзать
     pub timber: bool,
     /// Диапазон по длинне, м
@@ -52,10 +30,6 @@ pub struct LoadCargo {
     pub mass_shift_z: Option<f64>,
     /// Площадь горизонтальной поверхности, м^2
     pub horizontal_area: Option<f64>,
-    /// Смещение центра площади горизонтальной поверхности, м
-    pub horizontal_area_shift_x: Option<f64>,
-    pub horizontal_area_shift_y: Option<f64>,
-    pub horizontal_area_shift_z: Option<f64>,
     /// Площадь вертикальной поверхности, м^2
     pub vertical_area: Option<f64>,
     /// Смещение центра площади вертикальной поверхности, м
@@ -70,10 +44,9 @@ impl std::fmt::Display for LoadCargo {
         write!(
             f,
             "LoadCargo(name:{} mass:{} loading_type:{} timber:{} bound_x:({}, {}) bound_y:({}, {}) bound_z:({}, {}) 
-            mass_shift:({}, {}, {}) horizontal_area:{} horizontal_area_shift:({}, {}, {})
-            vertical_area:{} vertical_area_shift_y:({}, {}, {}) )",
+            mass_shift:({}, {}, {}) horizontal_area:{} vertical_area:{} vertical_area_shift_y:({}, {}, {}) )",
             self.name,
-            self.loading_type,
+            self.general_category,
             self.timber,
             self.mass.unwrap_or(0.),
             self.bound_x1,
@@ -86,9 +59,6 @@ impl std::fmt::Display for LoadCargo {
             self.mass_shift_y.unwrap_or(0.),
             self.mass_shift_z.unwrap_or(0.),
             self.horizontal_area.unwrap_or(0.),
-            self.horizontal_area_shift_x.unwrap_or(0.),
-            self.horizontal_area_shift_y.unwrap_or(0.),
-            self.horizontal_area_shift_z.unwrap_or(0.),
             self.vertical_area.unwrap_or(0.),
             self.vertical_area_shift_x.unwrap_or(0.),
             self.vertical_area_shift_y.unwrap_or(0.),

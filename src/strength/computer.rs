@@ -1,6 +1,6 @@
 //! Класс для расчета прочности
 
-use crate::{draught::Draught, math::Bounds, IResults, ITotalForce, IVolume};
+use crate::{draught::Draught, math::Bounds, Error, IResults, ITotalForce, IVolume};
 
 use super::{
     bending_moment::BendingMoment, displacement::Displacement, shear_force::{IShearForce, ShearForce}, total_force::TotalForce, volume::Volume, IMass, Trim
@@ -65,11 +65,11 @@ impl Computer {
     }
     /// Вычисление изгибающего момента и срезающей силы. Дифферент  
     /// подбирается перебором.
-    pub fn calculate(&mut self) {
+    pub fn calculate(&mut self) -> Result<(), Error> {
         let mut displacement_values;
         let mut total_force_values;
-        let shear_force_values;
-        let bending_moment_values;
+        
+        
         let mut volume = Volume::new(
             Rc::clone(&self.displacement),
             Box::new(Draught::new(
@@ -85,73 +85,26 @@ impl Computer {
                     Rc::clone(&self.bounds),
                 )),
                 None,
-            )),
+            )?),
             Rc::clone(&self.bounds),
         );
-        displacement_values = volume.values();
+        displacement_values = volume.values()?;
         displacement_values.push(displacement_values.iter().sum());
         let mut total_force = TotalForce::new(
             Rc::clone(&self.mass),
             self.water_density,
             volume,
             self.gravity_g,
-        );
-        total_force_values = total_force.values();
+        )?;
+        total_force_values = total_force.values()?;
         total_force_values.push(total_force_values.iter().sum());
         let mut shear_force = ShearForce::new(total_force);
-        shear_force_values = shear_force.values();
-        bending_moment_values = BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values();  
+        let shear_force_values = shear_force.values()?;
+        let bending_moment_values = BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values()?;  
         self.results.add("value_displacement".to_owned(), displacement_values);
         self.results.add("value_total_force".to_owned(), total_force_values);
         self.results.add("value_shear_force".to_owned(), shear_force_values);
         self.results.add("value_bending_moment".to_owned(), bending_moment_values);
+        Ok(())
     }
-
-    /* 
-    /// Вычисление изгибающего момента и срезающей силы. Дифферент  
-    /// подбирается перебором.
-    fn calculate(&mut self) {
-        let mut trim = 0.; // Дифферент
-        let mut delta = 1.; // Изменение дифферента
-        let mut displacement_values = Vec::new();
-        let mut total_force_values = Vec::new();
-        let mut shear_force_values = Vec::new();
-        let mut bending_moment_values = Vec::new();
-        for _i in 0..30 {
-            let mut volume = Volume::new(
-                self.center_waterline_shift,
-                self.mean_draught,
-                Rc::clone(&self.displacement),
-                trim,
-                Rc::clone(&self.bounds),
-            );
-            displacement_values = volume.values();
-            let mut total_force = TotalForce::new(
-                Rc::clone(&self.mass),
-                self.water_density,
-                volume,
-                self.gravity_g,
-            );
-            total_force_values = total_force.values();
-            let mut shear_force = ShearForce::new(total_force);
-            shear_force_values = shear_force.values();
-            bending_moment_values = BendingMoment::new(Box::new(shear_force), self.bounds.delta()).values();
-            // Последнее значение изгибающего момента в векторе.
-            // Если корабль сбалансирован, должно равняться нулю
-            let last_value = *bending_moment_values
-                .last()
-                .expect("BendingMoment values error: no last value");
-            //         log::info!("Computing Trim: BendingMoment last value:{last_value} trim:{trim} i:{i} delta:{delta} ");
-            if self.mass.sum() <= 1. || last_value.abs() < 0.1 {
-                break;
-            }
-            trim -= last_value.signum() * delta;
-            delta *= 0.5;
-        }
-        self.mass_values = Some(self.mass.values());
-        self.displacement_values = displacement_values;
-        self.total_force_values = total_force_values;
-        self.shear_force = shear_force_values;
-        self.bending_moment = bending_moment_values;
-    } */
 }
