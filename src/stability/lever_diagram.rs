@@ -257,8 +257,8 @@ impl ILeverDiagram for LeverDiagram {
     }
     /// Площадь под положительной частью диаграммы статической остойчивости (rad^2)
     fn dso_area(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
-        if angle1 < angle2 {
-            return Err(Error::FromString(format!("FakeLeverDiagram dso_area error: angle1 {angle1} < angle2 {angle2}")));
+        if angle1 > angle2 {
+            return Err(Error::FromString(format!("FakeLeverDiagram dso_area error: angle1 {angle1} > angle2 {angle2}")));
         }
         if self.dso_curve.borrow().is_none() {
             self.calculate()?;
@@ -374,15 +374,15 @@ impl ILeverDiagram for FakeLeverDiagram {
     }
     /// Площадь под положительной частью диаграммы статической остойчивости, м*rad
     fn dso_area(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
-        if angle1 < angle2 {
-            return Err(Error::FromString(format!("FakeLeverDiagram dso_area error: angle1 {angle1} < angle2 {angle2}")));
+        if angle1 > angle2 {
+            return Err(Error::FromString(format!("FakeLeverDiagram dso_area error: angle1 {angle1} > angle2 {angle2}")));
         }
         Ok(self.dso_area)
     }
     /// Максимальное плечо диаграммы статической остойчивости в диапазоне, м
     fn dso_lever_max(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
-        if angle1 < angle2 {
-            return Err(Error::FromString(format!("FakeLeverDiagram dso_lever_max error: angle1 {angle1} < angle2 {angle2}")));
+        if angle1 > angle2 {
+            return Err(Error::FromString(format!("FakeLeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}")));
         }
         Ok(self.dso_lever_max)
     }
