@@ -17,7 +17,6 @@ pub(crate) mod wetting;
 pub use computer::*;
 pub use displacement::*;
 pub use volume::*;
-pub use frame::*;
 pub use total_force::*;
 pub use area::*;
 pub use trim::*;

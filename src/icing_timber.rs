@@ -1,23 +1,32 @@
 //! Ограничение горизонтальной площади обледенения палубного груза - леса
 
-use crate::Bound;
+use crate::{Bound, Error};
+
+use serde::{Deserialize, Serialize};
+
 /// Тип обледенения горизонтальной площади палубного груза - леса
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
 pub enum IcingTimberType {
+    #[serde(alias="full")]
     Full,
+    #[serde(alias="half left")]
     HalfLeft,
+    #[serde(alias="half right")]
     HalfRight,
+    #[serde(alias="bow")]
     Bow,
 }
 ///
-impl From<String> for IcingTimberType {
-    fn from(value: String) -> Self {
-        match value.trim().to_lowercase().as_str() {
-            "half_left" => IcingTimberType::HalfLeft,
-            "half_right" => IcingTimberType::HalfRight,
+impl IcingTimberType {
+    ///
+    pub fn from_str(src: &str) -> Result<Self, Error> {
+        Ok(match src.trim().to_lowercase().as_str() {
+            "full" => IcingTimberType::Full,
+            "half left" => IcingTimberType::HalfLeft,
+            "half right" => IcingTimberType::HalfRight,
             "bow" => IcingTimberType::Bow,
-            _ => IcingTimberType::Full,
-        }
+            src @ _ => return Err(Error::FromString(format!("IcingTimberType from_str error: no type {src}"))),
+        })
     }
 }
 /// Ограничение горизонтальной площади обледенения палубного груза - леса
@@ -44,21 +53,18 @@ impl IcingTimberBound {
         }
     }
     /// Ограничение по x
-    pub fn bound_x(&self) -> Option<Bound> {
-        match self.icing_timber_stab {
-            IcingTimberType::HalfLeft => None,
-            IcingTimberType::HalfRight => None, 
-            IcingTimberType::Bow => Some(Bound::new(self.length / 6., self.length / 2.)),
-            _ => None,
-        }
+    pub fn bound_x(&self) -> Result<Bound, Error> {
+        Ok(match self.icing_timber_stab {
+            IcingTimberType::Bow => Bound::new(self.length / 6., self.length / 2.)?,
+            _ => Bound::Full,
+        })
     }
     /// Ограничение по y
-    pub fn bound_y(&self) -> Option<Bound> {
-        match self.icing_timber_stab {
-            IcingTimberType::HalfLeft => Some(Bound::new(-self.width / 2., 0.)),
-            IcingTimberType::HalfRight => Some(Bound::new(0., self.width / 2.)),
-            IcingTimberType::Bow => None,
-            _ => None,
-        }
+    pub fn bound_y(&self) -> Result<Bound, Error> {
+        Ok(match self.icing_timber_stab {
+            IcingTimberType::HalfLeft => Bound::new(-self.width / 2., 0.)?,
+            IcingTimberType::HalfRight => Bound::new(0., self.width / 2.)?,
+            _ => Bound::Full,
+        })
     }
 }

@@ -1,4 +1,6 @@
-//! Точка относительно Центра Судна
+//! Точка относительно Центра 
+use std::{iter::Sum, ops::{Add, AddAssign, Sub}};
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Position {
     x: f64,
@@ -12,7 +14,8 @@ impl Position {
         Self { x, y, z }
     }
     /// Дополнительный конструктор  
-    /// * (f64, f64) - (начало диапазона, конец диапазона)
+    /// * (f64, f64, f64) - x, y, z
+    #[allow(unused)]
     pub fn from(v: (f64, f64, f64)) -> Self {
         Self::new(
             v.0,
@@ -32,6 +35,10 @@ impl Position {
     pub fn z(&self) -> f64 {
         self.z
     }
+    ///
+    pub fn len(&self) -> f64 {
+        (self.x*self.x + self.y*self.y + self.z*self.z).sqrt()
+    }
 }
 ///
 impl std::fmt::Display for Position {
@@ -39,3 +46,34 @@ impl std::fmt::Display for Position {
         write!(f, "Position({}, {}, {})", self.x(), self.y(), self.z())
     }
 }
+///
+impl Add for Position {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
+        Position::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z(),)
+    }
+}
+///
+impl Sub for Position {
+    type Output = Self;    
+    fn sub(self, rhs: Self) -> Self::Output {
+        Position::new(self.x() - rhs.x(), self.y() - rhs.y(), self.z() - rhs.z(),)
+    }
+}
+///
+impl Sum for Position {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Self::new(0., 0., 0.),|a, b| a + b )
+    }
+}
+///
+impl AddAssign for Position {
+    fn add_assign(&mut self, other: Self) {
+        *self = Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
+        };
+    }
+}
+

@@ -1,5 +1,5 @@
 //! Шпангоут
-use crate::math::{Curve, ICurve};
+use crate::{math::{Curve, ICurve}, Error};
 
 ///Шпангоут, содержит кривую погруженной площади сечения в зависимости от осадки
 pub struct Frame {
@@ -16,7 +16,7 @@ impl Frame {
     }
     /// Расчет погруженной площади сечения
     /// - draft: осадка судна в районе шпангоута
-    pub fn area(&self, draft: f64) -> f64 {
+    pub fn area(&self, draft: f64) -> Result<f64, Error>  {
         self.area.value(draft)
     }
     /// Смещение относительно миделя

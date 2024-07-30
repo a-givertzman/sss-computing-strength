@@ -21,7 +21,7 @@ impl IResults for Results {
     }
     ///
     fn take_data(&self) -> Vec<(String, Vec<f64>)> {
-        self.data.take().into_iter().map(|(k, v)| (k, v)).collect()
+        self.data.take().into_iter().collect()
     }
 }
 #[doc(hidden)]

@@ -10,7 +10,7 @@ mod tests {
     #[ignore = "TODO"]
     fn computer() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test Computer";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));

@@ -4,7 +4,7 @@
 use std::rc::Rc;
 
 use crate::{
-    area::HAreaStability, icing_timber::IcingTimberBound, IDesk, Moment, Position
+    area::HAreaStability, icing_timber::IcingTimberBound, Bound, Error, IDesk, Moment, Position,
 };
 
 /// Момент площади горизонтальных поверхностей и
@@ -53,80 +53,72 @@ impl Area {
 ///
 impl IArea for Area {
     /// Площадь парусности
-    fn area_v(&self) -> f64 {
-        self.av_cs_dmin1
-            + self
-                .desks
-                .iter()
-                .map(|v| v.windage_area(None))
-                .sum::<f64>()
+    fn area_v(&self) -> Result<f64, Error> {
+        let mut area_sum = self.av_cs_dmin1;
+        for v in self.desks.iter() {
+            area_sum += v.windage_area(&Bound::Full)?;
+        }
+        Ok(area_sum)
     }
     /// Момент площади парусности
-    fn moment_v(&self) -> Moment {
-        Moment::new(self.mvx_cs_dmin1, 0., self.mvz_cs_dmin1) + self
-                .desks
-                .iter()
-                .map(|v| v.windage_moment())
-                .sum::<Moment>()
+    fn moment_v(&self) -> Result<Moment, Error> {
+        let mut moment_sum = Moment::new(self.mvx_cs_dmin1, 0., self.mvz_cs_dmin1);
+        for v in self.desks.iter() {
+            moment_sum += v.windage_moment()?;
+        }
+        Ok(moment_sum)
     }
     /// Момент площади горизонтальных поверхностей
-    fn moment_h(&self) -> Moment {
-        self.area_const_h.iter().map(|v| v.moment()).sum::<Moment>()
-            + self
-                .desks
-                .iter()
-                .map(|v| Moment::from_pos(v.shift(), v.horizontal_area(None, None)))
-                .sum::<Moment>()
+    fn moment_h(&self) -> Result<Moment, Error> {
+        let mut moment_sum = self.area_const_h.iter().map(|v| v.moment()).sum::<Moment>();
+        dbg!(&moment_sum);
+        for v in self.desks.iter() {
+            moment_sum += Moment::from_pos(
+                Position::new(v.shift().x(), v.shift().y(), v.height()?),
+                v.horizontal_area(&Bound::Full, &Bound::Full)?,
+            );
+            dbg!(&moment_sum);
+        }
+        Ok(moment_sum)
     }
     /// Момент площади горизонтальных поверхностей палубного груза - леса
-    fn moment_timber_h(&self) -> Moment {
-        self.desks
-            .iter()
-            .filter(|v| v.is_timber())
-            .map(|v| {
-                Moment::from_pos(
-                    Position::new(
-                        v.shift().x(),
-                        v.shift().y(),
-                        v.shift().z() + v.height(),
-                    ),
-                    v.horizontal_area(self.icing_timber_bound.bound_x(), self.icing_timber_bound.bound_y()),
-                )
-            })
-            .sum::<Moment>()
+    fn moment_timber_h(&self) -> Result<Moment, Error> {
+        let mut moment_sum = Moment::new(0., 0., 0.);
+        for v in self.desks.iter().filter(|v| v.is_timber()) {
+            moment_sum +=
+                Moment::from_pos(Position::new(v.shift().x(), v.shift().y(), v.shift().z() + v.height()?/2.), v.horizontal_area(&Bound::Full, &Bound::Full)?);
+        }
+        Ok(moment_sum)
     }
     /// Изменение момента площади горизонтальных поверхностей палубного груза - леса
     /// относительно палубы
-    fn delta_moment_timber_h(&self) -> Moment {
-        self.desks
-            .iter()
-            .filter(|v| v.is_timber())
-            .map(|v| {
-                Moment::from_pos(
-                    Position::new(
-                        v.shift().x(),
-                        v.shift().y(),
-                        v.height(),
-                    ),
-                    v.horizontal_area(self.icing_timber_bound.bound_x(), self.icing_timber_bound.bound_y()),
-                )
-            })
-            .sum::<Moment>()
+    fn delta_moment_timber_h(&self) -> Result<Moment, Error> {
+        let mut moment_sum = Moment::new(0., 0., 0.);
+        for v in self.desks.iter().filter(|v| v.is_timber()) {
+            moment_sum += Moment::from_pos(
+                Position::new(v.shift().x(), v.shift().y(), v.height()?),
+                v.horizontal_area(
+                    &self.icing_timber_bound.bound_x()?,
+                    &self.icing_timber_bound.bound_y()?,
+                )?,
+            );
+        }
+        Ok(moment_sum)
     }
 }
 #[doc(hidden)]
 pub trait IArea {
     /// Площадь парусности
-    fn area_v(&self) -> f64;
+    fn area_v(&self) -> Result<f64, Error>;
     /// Момент площади парусности
-    fn moment_v(&self) -> Moment;
+    fn moment_v(&self) -> Result<Moment, Error>;
     /// Момент площади горизонтальных поверхностей
-    fn moment_h(&self) -> Moment;
+    fn moment_h(&self) -> Result<Moment, Error>;
     /// Момент площади горизонтальных поверхностей палубного груза - леса
-    fn moment_timber_h(&self) -> Moment;
+    fn moment_timber_h(&self) -> Result<Moment, Error>;
     /// Изменение момента площади горизонтальных поверхностей палубного груза - леса
     /// относительно палубы
-    fn delta_moment_timber_h(&self) -> Moment;
+    fn delta_moment_timber_h(&self) -> Result<Moment, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -159,24 +151,24 @@ impl FakeArea {
 #[doc(hidden)]
 impl IArea for FakeArea {
     /// Площадь парусности
-    fn area_v(&self) -> f64 {
-        self.area_v
+    fn area_v(&self) -> Result<f64, Error> {
+        Ok(self.area_v)
     }
     /// Момент площади парусности
-    fn moment_v(&self) -> Moment {
-        self.moment_v.clone()
+    fn moment_v(&self) -> Result<Moment, Error> {
+        Ok(self.moment_v.clone())
     }
     /// Момент площади горизонтальных поверхностей
-    fn moment_h(&self) -> Moment {
-        self.moment_h.clone()
+    fn moment_h(&self) -> Result<Moment, Error> {
+        Ok(self.moment_h.clone())
     }
     /// Момент площади горизонтальных поверхностей палубного груза - леса
-    fn moment_timber_h(&self) -> Moment {
-        self.moment_timber_h.clone()
+    fn moment_timber_h(&self) -> Result<Moment, Error> {
+        Ok(self.moment_timber_h.clone())
     }
     /// Изменение момента площади горизонтальных поверхностей палубного груза - леса
     /// относительно палубы
-    fn delta_moment_timber_h(&self) -> Moment {
-        self.delta_moment_timber_h.clone()
+    fn delta_moment_timber_h(&self) -> Result<Moment, Error> {
+        Ok(self.delta_moment_timber_h.clone())
     }
 }
