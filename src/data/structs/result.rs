@@ -201,7 +201,7 @@ impl ParsedShipData {
         }
         parsed_frame_area.sort_by(|a, b| a.x.partial_cmp(&b.x).expect("result parsed_frame_area cpm error!"));
         let icing = icing.data();
-        let ship_type = serde_json::from_str(
+        let ship_type = ShipType::from_str(
             &ship_data
                 .get("Type of ship")
                 .ok_or(format!(
@@ -210,7 +210,7 @@ impl ParsedShipData {
                 ))?
                 .0,
         )?;
-        let navigation_area = serde_json::from_str(
+        let navigation_area = NavigationArea::from_str(
             &ship_data
                 .get("Navigation area")
                 .ok_or(format!(
@@ -267,11 +267,11 @@ impl ParsedShipData {
             "ParsedShipData parse error: no moulded_depth for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
-        let icing_stab = serde_json::from_str(&ship_data.get("Type of icing").ok_or(format!(
+        let icing_stab = IcingStabType::from_str(&ship_data.get("Type of icing").ok_or(format!(
             "ParsedShipData parse error: no icing_stab for ship id:{}",
             ship_id
         ))?.0)?;
-        let icing_timber_stab = serde_json::from_str(&ship_data.get("Type of icing timber").ok_or(format!(
+        let icing_timber_stab = IcingTimberType::from_str(&ship_data.get("Type of icing timber").ok_or(format!(
             "ParsedShipData parse error: no icing_timber_stab for ship id:{}",
             ship_id
         ))?.0)?;
