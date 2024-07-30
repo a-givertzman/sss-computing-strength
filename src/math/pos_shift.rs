@@ -1,4 +1,6 @@
 //! Зависимость положения точки от некоторого значения
+use crate::Error;
+
 use super::{curve::{Curve, ICurve}, position::Position};
 /// Зависимость положения точки от некоторого значения.
 /// Интерполирует значение по ключу.
@@ -31,14 +33,14 @@ impl PosShift {
 
 impl IPosShift for PosShift {
     ///
-    fn value(&self, key: f64) -> Position {
-        Position::new(self.x.value(key), self.y.value(key), self.z.value(key))
+    fn value(&self, key: f64) -> Result<Position, Error> {
+        Ok(Position::new(self.x.value(key)?, self.y.value(key)?, self.z.value(key)?))
     }
 }
 
 #[doc(hidden)]
 pub trait IPosShift {
-    fn value(&self, key: f64) -> Position;
+    fn value(&self, key: f64) -> Result<Position, Error>;
 }
 #[doc(hidden)]
 /// заглушка для тестирования
@@ -54,7 +56,7 @@ impl FakePosShift {
 }
 #[doc(hidden)]
 impl IPosShift for FakePosShift {
-    fn value(&self, _: f64) -> Position {
-        self.data.clone()
+    fn value(&self, _: f64) -> Result<Position, Error> {
+        Ok(self.data.clone())
     }
 }

@@ -44,13 +44,13 @@ mod tests {
     fn a_v() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test Windage a_v";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { WINDAGE.clone().unwrap().a_v() };
+        let result = unsafe { WINDAGE.clone().unwrap().a_v().unwrap() };
         let target = 600.; //1000.*(1.+0.1) - 500
         assert!(
             result == target,
@@ -66,13 +66,13 @@ mod tests {
     fn z_v() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test Windage z_v";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { WINDAGE.clone().unwrap().z_v() };
+        let result = unsafe { WINDAGE.clone().unwrap().z_v().unwrap() };
         let target = 6.833333333333333; // (1000.*4.*(1.+0.3) - 500.*1.)/600. - 1.
         assert!(
             result == target,

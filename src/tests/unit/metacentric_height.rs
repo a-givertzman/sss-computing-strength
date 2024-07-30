@@ -5,7 +5,10 @@ mod tests {
     use std::{rc::Rc, sync::Once, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{math::Position, stability::metacentric_height::MetacentricHeight, FakeMass, FakeParameters, FakeShipMoment, IMetacentricHeight};
+    use crate::{
+        math::Position, stability::metacentric_height::MetacentricHeight, FakeMass, FakeParameters,
+        FakeShipMoment, IMetacentricHeight,
+    };
 
     static INIT: Once = Once::new();
 
@@ -13,24 +16,18 @@ mod tests {
     static mut HEIGHT: Option<MetacentricHeight> = None;
 
     fn init_once() {
-        INIT.call_once(|| {
-            unsafe {
-                HEIGHT.replace(MetacentricHeight::new(
-                    Position::new(-1., 0., 2.),
-                    1000.,
-                    100.,
-                    Vec::new(),
-                    Rc::new(FakeMass::new(
-                        1000.0,
-                        vec![0.],
-                    )),
-                    Rc::new(FakeShipMoment::new(
-                        Position::new(1.0, 0., 2.),
-                        Position::new(0., 0., 0.,), 
-                    )), 
-                    Rc::new(FakeParameters{}),             
-                ));
-            }
+        INIT.call_once(|| unsafe {
+            HEIGHT.replace(MetacentricHeight::new(
+                Position::new(-1., 0., 2.),
+                1000.,
+                100.,
+                Rc::new(Vec::new()),
+                Rc::new(FakeMass::new(1000.0, vec![0.])),
+                Rc::new(FakeShipMoment::new(
+                    Position::new(1.0, 0., 2.),
+                )),
+                Rc::new(FakeParameters {}),
+            ));
         })
     }
 
@@ -38,13 +35,13 @@ mod tests {
     fn h_long_fix() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test MetacentricHeight h_long_fix";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { HEIGHT.clone().unwrap().h_long_fix() };
+        let result = unsafe { HEIGHT.clone().unwrap().h_long_fix().unwrap() };
         let target = 1000.;
         assert!(
             result == target,
@@ -60,13 +57,13 @@ mod tests {
     fn h_trans_fix() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test MetacentricHeight h_trans_fix";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { HEIGHT.clone().unwrap().h_trans_fix() };
+        let result = unsafe { HEIGHT.clone().unwrap().h_trans_fix().unwrap() };
         let target = 100.;
         assert!(
             result == target,
@@ -82,13 +79,13 @@ mod tests {
     fn z_g_fix() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test MetacentricHeight z_g_fix";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { HEIGHT.clone().unwrap().z_g_fix() };
+        let result = unsafe { HEIGHT.clone().unwrap().z_g_fix().unwrap() };
         let target = 2.;
         assert!(
             result == target,

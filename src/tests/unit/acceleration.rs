@@ -10,7 +10,7 @@ mod tests {
     #[test]
     fn acceleration() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test Acceleration";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -28,7 +28,7 @@ mod tests {
                 1.,
                 0.,
             )),
-        ).calculate();
+        ).calculate().unwrap();
 
         let target = 0.3/0.0105;
         assert!((result - target).abs() < 0.0001, "\nresult: {:?}\ntarget: {:?}", result, target);

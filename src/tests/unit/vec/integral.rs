@@ -9,13 +9,13 @@ mod tests {
     #[test]
     fn integral() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test Vec integral";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = Vec::from([(1.,1.), (2. ,2.), (3., 3.),]).integral();
+        let result = Vec::from([(1.,1.), (2. ,2.), (3., 3.),]).integral().unwrap();
         let target = 4.;
         assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
 

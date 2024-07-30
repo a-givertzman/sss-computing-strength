@@ -1,7 +1,8 @@
 //! Критерий крена от смещения зерна
 
+use core::f64;
 use std::{f64::consts::PI, rc::Rc};
-use crate::{IBulk, ILeverDiagram, IMass, IParameters, ParameterID};
+use crate::{Error, IBulk, ILeverDiagram, IMass, IParameters, ParameterID};
 
 /// Критерий крена от смещения зерна
 pub struct Grain {
@@ -48,9 +49,9 @@ impl Grain {
     }
     /// Расчет угла крена и остаточной площади между кривой кренящих и
     /// кривой восстанавливающих плеч
-    fn calculate(&mut self) {
+    fn calculate(&mut self) -> Result<(), Error> {
         let m_grain: f64 = self.loads_bulk.iter().map(|v| v.moment() ).sum();    
-        let lambda_0 = m_grain/self.mass.sum(); 
+        let lambda_0 = m_grain/self.mass.sum()?; 
         // Первая точка апроксимирующей прямой
         let first_point_ab = (0.0f64, lambda_0); 
         // Вторая точка апроксимирующей прямой
@@ -71,7 +72,7 @@ impl Grain {
             // значение апроксимирующей прямой плеч момента зерна в текущей точке
             let lever_ab = delta_ab * angle; 
             // значение восстанавливающего момента в текущей точке
-            let lever_dso = self.lever_diagram.lever_moment(angle);
+            let lever_dso = self.lever_diagram.lever_moment(angle).unwrap_or(f64::MIN);
             lever_dso >= lever_ab
         }).unwrap_or((90./precision) as usize) as f64 * precision;
         // угол соответствующий максимальной разности между ординатами двух кривых
@@ -82,69 +83,67 @@ impl Grain {
             // значение апроксимирующей прямой плеч момента зерна в текущей точке
             let lever_ab = delta_ab * angle; 
             // значение восстанавливающего момента в текущей точке
-            let lever_dso = self.lever_diagram.lever_moment(angle);
+            let lever_dso = self.lever_diagram.lever_moment(angle).unwrap_or(lever_ab);
             (angle, lever_dso - lever_ab)
         }).collect();
         angles.sort_by(|v1, v2| v1.1.partial_cmp(&v2.1).expect("Grain calculate cmp error"));
-        let angle_delta_max = angles.last().expect("Grain calculate last error").0;
+        let angle_delta_max = angles.last().unwrap_or(&(0., 0.)).0;
         let second_angle = self.flooding_angle.min(40.).min(angle_delta_max);
         self.angle = Some((first_angle, second_angle));
-        if first_angle >= second_angle {
-            return;
-        }
         // Площадь кривой восстанавливающих плеч
-        let dso_area = self.lever_diagram.dso_area(first_angle, second_angle);
+        let dso_area = self.lever_diagram.dso_area(first_angle, second_angle)?;
         // Площадь кривой кренящих плеч от смещения зерна
-        let first_grain_lever = self.lever_diagram.lever_moment(first_angle);
+        let first_grain_lever = self.lever_diagram.lever_moment(first_angle)?;
         let second_grain_lever = delta_ab * second_angle;
         let grain_area = ((second_grain_lever - first_grain_lever)/2.) * (second_angle - first_angle) * PI/180.;
         let result_area = dso_area - grain_area;
         self.area = Some(result_area);
-        log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} first_angle:{first_angle} angle_delta_max:{angle_delta_max}
-            second_angle:{second_angle} dso_area:{dso_area} grain_area:{grain_area} result_area:{result_area}");
+    //    log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} first_angle:{first_angle} angle_delta_max:{angle_delta_max}
+    //        second_angle:{second_angle} dso_area:{dso_area} grain_area:{grain_area} result_area:{result_area}");
         self.parameters.add(ParameterID::HeelingMomentDueToTheTransverseShiftOfGrain, m_grain);
         self.parameters.add(ParameterID::HeelingAngleWithMaximumDifference, angle_delta_max);
+        Ok(())
     }
 
 }
 ///
 impl IGrain for Grain {
     /// Расчетный и максимально допустимый углы крена от смещения зерна 
-    fn angle(&mut self) -> (f64, f64) {
+    fn angle(&mut self) -> Result<(f64, f64), Error> {
         if self.angle.is_none() {
-            self.calculate();
+            self.calculate()?;
         }
-        self.angle.expect("Grain angle error!")
+        self.angle.ok_or(Error::FromString("Grain angle error!".to_string()))
     }
     /// Остаточная площадь между кривой кренящих и
     /// кривой восстанавливающих плеч
-    fn area(&mut self) -> Option<f64> {
+    fn area(&mut self) -> Result<f64, Error> {
         if self.area.is_none() {
-            self.calculate();
+            self.calculate()?;
         }
-        self.area
+        self.area.ok_or(Error::FromString("Grain area error!".to_string()))
     }
 }
 #[doc(hidden)]
 pub trait IGrain {
     /// Расчетный и максимально допустимый углы крена от смещения зерна 
-    fn angle(&mut self) -> (f64, f64);
+    fn angle(&mut self) -> Result<(f64, f64), Error>;
     /// Остаточная площадь между кривой кренящих и
     /// кривой восстанавливающих плеч
-    fn area(&mut self) -> Option<f64>;
+    fn area(&mut self) -> Result<f64, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
 pub struct FakeAccelleration {
     angle: (f64, f64),
-    area: Option<f64>,
+    area: f64,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeAccelleration {
     pub fn new(
         angle: (f64, f64),
-        area: Option<f64>,
+        area: f64,
     ) -> Self {
         Self {
             angle,
@@ -155,12 +154,12 @@ impl FakeAccelleration {
 #[doc(hidden)]
 impl IGrain for FakeAccelleration {
     ///
-    fn angle(&mut self) -> (f64, f64) {
-        self.angle
+    fn angle(&mut self) -> Result<(f64, f64), Error> {
+        Ok(self.angle)
     }
     ///
-    fn area(&mut self) -> Option<f64> {
-        self.area
+    fn area(&mut self) -> Result<f64, Error> {
+        Ok(self.area)
     }
 }
 

@@ -10,16 +10,15 @@ mod tests {
     #[test]
     fn wind() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test Wind";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
         let result = Wind::new(
-            200.,
-            0.50,
-            Rc::new(FakeWindage::new(1000.,5., 1.)),
+            (200., 0.50),
+            Rc::new(FakeWindage::new(1000.,5.)),
             9.81,
             Rc::new(FakeMass::new(
                 1000./9.81,
@@ -27,7 +26,7 @@ mod tests {
             )),
             Rc::new(Parameters::new()),
         )
-        .arm_wind_dynamic();
+        .arm_wind_dynamic().unwrap();
         let target = 1.5;
 
         assert!(

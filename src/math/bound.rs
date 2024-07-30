@@ -1,75 +1,115 @@
 //! Диапазон значений
+
+use crate::Error;
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Bound {
-    /// начало диапазона
-    start: f64,
-    /// конец диапазона
-    end: f64,   
+pub enum Bound {
+    None,
+    Full,
+    /// диапазон: (начало диапазона, конец диапазона)
+    Value(f64, f64),
 }
-/// 
+///
 impl Bound {
     /// Основной конструктор  
     /// * start - начало диапазона
     /// * end - конец диапазона
-    pub fn new(start: f64, end: f64) -> Self {
-        assert!(end > start);
-        Self {
-            start,
-            end,
+    pub fn new(start: f64, end: f64) -> Result<Self, Error> {
+        if end <= start {
+            return Err(Error::FromString(
+                "Bound new error: end <= start".to_string(),
+            ));
         }
+        Ok(Self::Value(start, end))
     }
     /// Дополнительный конструктор  
     /// * (f64, f64) - (начало диапазона, конец диапазона)
-    pub fn from(v: (f64, f64)) -> Self {
-        assert!(v.1 > v.0);
-        Self::new(
-            v.0,
-            v.1,
-        )
+    #[allow(unused)]
+    pub fn from(v: (f64, f64)) -> Result<Self, Error> {
+        Self::new(v.0, v.1)
     }
-    ///
     /// Отношение общей части пересечения к длине диапазона
-    pub fn part_ratio(&self, bound: &Bound) -> f64 {
-        self.intersect(bound).map(|v| v.length()/self.length() ).unwrap_or(0.)
+    pub fn part_ratio(&self, other: &Bound) -> Result<f64, Error> {
+        Ok(match self.intersect(other)? {
+            Bound::None => 0.,
+            Bound::Full => 1.,
+            r @ Bound::Value(_, _) => {
+                r.length().expect("Bound part_ratio error")
+                    / self.length().expect("Bound part_ratio error")
+            }
+        })
     }
-    ///
     /// Пересечение c другим диапазоном, возвращает общий диапазон
-    pub fn intersect(&self, other: &Bound) -> Option<Bound> {
-        if other.start() >= self.end {
-            return None;
-        }
-        if other.end() <= self.start {
-            return None;
-        }
-        if other.start() <= self.start && other.end() >= self.end {
-            return Some(*self);
-        }
-        Some(Bound::new(other.start().max(self.start), other.end().min(self.end)))
+    pub fn intersect(&self, other: &Bound) -> Result<Bound, Error> {
+        return Ok(match self {
+            Bound::None => Bound::None,
+            Bound::Full => *other,
+            Bound::Value(self_start, self_end) => match other {
+                Bound::None => Bound::None,
+                Bound::Full => *self,
+                Bound::Value(other_start, other_end) => {
+                    if other_start >= self_end {
+                        return Ok(Bound::None);
+                    }
+                    if other_end <= self_start {
+                        return Ok(Bound::None);
+                    }
+                    if other_start <= self_start && other_end >= self_end {
+                        return Ok(*self);
+                    }
+                    Bound::new(other_start.max(*self_start), other_end.min(*self_end))?
+                }
+            },
+        });
     }
-    ///
     /// Длинна диапазона
-    pub fn length(&self) -> f64 {
-        self.end - self.start
+    pub fn length(&self) -> Option<f64> {
+        match self {
+            Bound::None => Some(0.),
+            Bound::Full => None,
+            Bound::Value(start, end) => Some(end - start),
+        }
     }
-    ///
     /// Начало диапазона
-    pub fn start(&self) -> f64 {
-        self.start
+    pub fn start(&self) -> Option<f64> {
+        match self {
+            Bound::Value(start, _) => Some(*start),
+            _ => None,
+        }
     }
-    ///
     /// Конец диапазона
-    pub fn end(&self) -> f64 {
-        self.end
+    pub fn end(&self) -> Option<f64> {
+        match self {
+            Bound::Value(_, end) => Some(*end),
+            _ => None,
+        }
+    }
+    /// Центр диапазона
+    pub fn center(&self) -> Option<f64> {
+        match self {
+            Bound::Value(start, end) => Some((start + end) / 2.),
+            _ => None,
+        }
     }
     ///
-    /// Центр диапазона
-    pub fn center(&self) -> f64 {
-        (self.start + self.end)/2.
+    pub fn is_none(&self) -> bool {
+        return *self == Bound::None
+    }
+    ///
+    pub fn is_some(&self) -> bool {
+        return !self.is_none()
+    }
+    ///
+    pub fn is_value(&self) -> bool {
+        return *self != Bound::None && *self != Bound::Full
     }
 }
 ///
 impl std::fmt::Display for Bound {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Bound({}, {})", self.start, self.end)
+        match self {
+            Bound::None => write!(f, "Bound::None"),
+            Bound::Full => write!(f, "Bound::Full"),
+            Bound::Value(start, end) => write!(f, "Bound::Value({}, {})", start, end),
+        }
     }
 }

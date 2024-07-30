@@ -2,7 +2,7 @@
 
 mod tests {
     use crate::{
-        icing_stab::FakeIcingStab, IcingMass, IIcingMass,
+        icing_stab::FakeIcingStab, Bound, IIcingMass, IcingMass
     };
 
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
@@ -31,13 +31,13 @@ mod tests {
     fn icing_mass() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         init_once();
-        println!("");
+        println!();
         let self_id = "test IcingMass mass";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { ICING.clone().unwrap().mass(None) };
+        let result = unsafe { ICING.clone().unwrap().mass(&Bound::Full).unwrap() };
         let target =  50.*0.04 + 50.*1.05*0.015;
         assert!(
             result == target,

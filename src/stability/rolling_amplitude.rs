@@ -1,7 +1,7 @@
 //! Амплитуда качки судна
 use std::rc::Rc;
 
-use crate::{math::{Curve, ICurve}, IMetacentricHeight,};
+use crate::{math::{Curve, ICurve}, Error, IMetacentricHeight};
 
 use super::rolling_period::IRollingPeriod;
 
@@ -62,9 +62,11 @@ impl RollingAmplitude {
         x_2: Curve,
         s: Curve,
         t: Rc<dyn IRollingPeriod>,
-    ) -> Self {
-        assert!(d > 0., "RollingAmplitude draught {d} > 0.");
-        Self {
+    ) -> Result<Self, Error> {
+        if d <= 0. {
+            return Err(Error::FromString("RollingAmplitude new error: draught <= 0.".to_string()));
+        } 
+        Ok(Self {
             a_k,
             metacentric_height,
             volume,
@@ -77,32 +79,36 @@ impl RollingAmplitude {
             x_2,
             s,
             t,
-        }
+        })
     }
 }
 ///
 impl IRollingAmplitude for RollingAmplitude {
     /// Период и амплитуда качки судна с круглой скулой (2.1.5)
-    fn calculate(&self) -> (f64, f64) {
+    fn calculate(&self) -> Result<(f64, f64), Error> {
         // Коэффициент полноты судна
         let c_b = self.volume / (self.l_wl * self.b_wl * self.d);
-        let k = self.a_k.map(|a_k| self.k.value(a_k*100./(self.l_wl*self.b))).unwrap_or(1.);
-        let x_1 = self.x_1.value(self.b / self.d);
-        let x_2 = self.x_2.value(c_b);
-        let r = (0.73 + 0.6 * (self.metacentric_height.z_g_fix() - self.d) / self.d).min(1.);
-        let t = self.t.calculate();
-        let s = self.s.value(t);
+        let k = if let Some(a_k) = self.a_k {
+            self.k.value(a_k*100./(self.l_wl*self.b))?
+        } else {
+            1.
+        };
+        let x_1 = self.x_1.value(self.b / self.d)?;
+        let x_2 = self.x_2.value(c_b)?;
+        let r = (0.73 + 0.6 * (self.metacentric_height.z_g_fix()? - self.d) / self.d).min(1.);
+        let t = self.t.calculate()?;
+        let s = self.s.value(t)?;
         // (2.1.5.1)
         let res = 109. * k * x_1 * x_2 * (r * s).sqrt();
-        log::info!("\t RollingAmplitude l:{} b:{} d:{} z_g_fix:{} c_b:{} k:{k} x_1:{x_1} x_2:{x_2} r:{r} t:{t} s:{s} angle:{res}",
-        self.l_wl, self.b, self.d, self.metacentric_height.z_g_fix(), c_b);
-        (t, res)
+  //      log::info!("\t RollingAmplitude l:{} b:{} d:{} z_g_fix:{} c_b:{} k:{k} x_1:{x_1} x_2:{x_2} r:{r} t:{t} s:{s} angle:{res}",
+   //     self.l_wl, self.b, self.d, self.metacentric_height.z_g_fix(), c_b);
+        Ok((t, res))
     }
 }
 #[doc(hidden)]
 pub trait IRollingAmplitude {
     /// Период и амплитуда качки судна с круглой скулой (2.1.5)
-    fn calculate(&self) -> (f64, f64);
+    fn calculate(&self) -> Result<(f64, f64), Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -124,8 +130,8 @@ impl FakeRollingAmplitude {
 }
 #[doc(hidden)]
 impl IRollingAmplitude for FakeRollingAmplitude {
-    fn calculate(&self) -> (f64, f64) {
-        (self.t, self.a)
+    fn calculate(&self) -> Result<(f64, f64), Error> {
+        Ok((self.t, self.a))
     }
 }
 

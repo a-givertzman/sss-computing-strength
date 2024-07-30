@@ -1,15 +1,11 @@
 //! Масса груз
-use crate::{math::*, ILoad, LoadingType};
+use crate::{math::*, Error, ILoad, LoadingType};
 /// Абстрактная масса груза.
 /// Может вернуть какая масса попадает в указанные границы
 pub trait ILoadMass: ILoad {
     /// Масса груза, попадающая в Bound или вся если Bound не заданно
-    fn value(&self, bound: Option<Bound>) -> f64 {
-        if let Some(bound) = bound {
-            self.bound_x().part_ratio(&bound) * self.mass()
-        } else {
-            self.mass()
-        }
+    fn value(&self, bound: &Bound) -> Result<f64, Error> {
+        Ok(self.bound_x().part_ratio(bound)? * self.mass())
     }
     /// Статический момент массы
     fn moment(&self) -> Moment {
@@ -19,10 +15,10 @@ pub trait ILoadMass: ILoad {
 
 /// Абстрактный груз - заглушка для учета массы
 #[derive(Debug)]
-pub struct LoadMass { 
-    /// Масса груза 
+pub struct LoadMass {
+    /// Масса груза
     mass: f64,
-    /// Границы груза 
+    /// Границы груза
     bound_x: Bound,
     /// Смещение центра
     shift: Option<Position>,
@@ -41,13 +37,18 @@ impl LoadMass {
         bound_x: Bound,
         shift: Option<Position>,
         load_type: LoadingType,
-    ) -> Self {
-        Self {
+    ) -> Result<Self, Error> {
+        if shift.is_none() && bound_x.is_none() {
+            return Err(Error::FromString(
+                "LoadMass shift error: shift.is_none() && bound_x.is_none()".to_owned(),
+            ));
+        }
+        Ok(Self {
             mass,
             bound_x,
             shift,
             load_type,
-        }
+        })
     }
     ///
     pub fn load_type(&self) -> LoadingType {
@@ -69,11 +70,15 @@ impl ILoad for LoadMass {
         if let Some(shift) = self.shift.clone() {
             shift
         } else {
-            Position::new(self.bound_x.center(), 0., 0.,)
+            Position::new(
+                self.bound_x
+                    .center()
+                    .expect("LoadMass shift error: self.bound_x.center"),
+                0.,
+                0.,
+            )
         }
     }
 }
 ///
 impl ILoadMass for LoadMass {}
-
-
