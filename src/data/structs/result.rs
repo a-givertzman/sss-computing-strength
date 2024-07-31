@@ -227,7 +227,7 @@ impl ParsedShipData {
             "ParsedShipData parse error: no length_loa for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
-        let width = ship_data.get("Hull width").ok_or(format!(
+        let width = ship_data.get("MouldedBreadth").ok_or(format!(
             "ParsedShipData parse error: no width for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
