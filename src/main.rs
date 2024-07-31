@@ -83,10 +83,7 @@ fn execute() -> Result<(), Error> {
         let data = block_on(data)?;
         elapsed.insert("ParsedShipData async", time.elapsed());
     */
-    //  dbg!(&data.pantocaren);
-
     let time = Instant::now();
-    //   dbg!(&data);
 
     // ускорение свободного падения
     let gravity_g = 9.81;
@@ -258,8 +255,7 @@ fn execute() -> Result<(), Error> {
     let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
         Rc::clone(&ship_moment),
         center_draught_shift.clone(),
-        data.pantocaren,
-        // Curve2D::from_values_linear(data.pantocaren),
+        data.pantocaren.clone(),
         mean_draught,
         Rc::clone(&metacentric_height),
         Rc::clone(&parameters),
@@ -344,14 +340,14 @@ fn execute() -> Result<(), Error> {
         Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,
         Rc::clone(&wind),
         Rc::clone(&lever_diagram),
-        Rc::new(Stability::new(
-            // Угол заливания отверстий
+        Rc::new(StabilityComputer::new(
             flooding_angle,
-            // Диаграмма плеч статической остойчивости
-            Rc::clone(&lever_diagram),
-            // Амплитуда качки судна с круглой скулой (2.1.5)
+            mean_draught,
+            Rc::clone(&ship_moment),
+            center_draught_shift.clone(),
+            data.pantocaren.clone(),
+            Rc::clone(&metacentric_height),
             Rc::clone(&roll_amplitude),
-            // Расчет плеча кренящего момента от давления ветра
             Rc::clone(&wind),
             Rc::clone(&parameters),
         )),

@@ -6,6 +6,7 @@ pub(crate) mod rolling_period;
 pub(crate) mod lever_diagram;
 pub(crate) mod wind;
 pub(crate) mod stab;
+pub(crate) mod stab_computer;
 pub(crate) mod windage;
 pub(crate) mod area;
 pub(crate) mod acceleration;
@@ -36,3 +37,5 @@ pub use draft_mark::*;
 pub use moment::*;
 pub use icing::*;
 pub use wetting::*;
+pub use stab_computer::*;
+

@@ -5,6 +5,8 @@ use std::rc::Rc;
 use crate::{
     data::structs::{NavigationArea, ShipType}, Curve, Error, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight, IStability, IWind
 };
+
+use super::IStabilityComputer;
 ///
 #[derive(Hash, Eq, PartialEq)]
 pub enum CriterionID {
@@ -48,7 +50,7 @@ impl CriterionData {
             error_message: None,
         }
     }
-    /// Конструктор при наличии ошибке расчета
+    /// Конструктор при ошибке расчета
     pub fn new_error(criterion_id: CriterionID, error_message: String) -> Self {
         Self {
             criterion_id: criterion_id as usize,
@@ -90,7 +92,7 @@ pub struct Criterion {
     /// Диаграмма плеч статической и динамической остойчивости
     lever_diagram: Rc<dyn ILeverDiagram>,
     /// Критерий погоды K
-    stability: Rc<dyn IStability>,
+    stability: Rc<dyn IStabilityComputer>,
     /// Продольная и поперечная исправленная метацентрическая высота
     metacentric_height: Rc<dyn IMetacentricHeight>,
     /// Расчет критерия ускорения
@@ -135,7 +137,7 @@ impl Criterion {
         h_subdivision: f64,
         wind: Rc<dyn IWind>,
         lever_diagram: Rc<dyn ILeverDiagram>,
-        stability: Rc<dyn IStability>,
+        stability: Rc<dyn IStabilityComputer>,
         metacentric_height: Rc<dyn IMetacentricHeight>,
         acceleration: Rc<dyn IAcceleration>,
         circulation: Rc<dyn ICirculation>,
@@ -204,6 +206,7 @@ impl Criterion {
     }
     /// Критерий погоды K
     pub fn weather(&mut self) -> CriterionData {
+        let zg = self.stability.zg(1.); 
         let k = self.stability.k();
         match k {
             Ok(k) => CriterionData::new_result(CriterionID::Wheather, k, 1.),
