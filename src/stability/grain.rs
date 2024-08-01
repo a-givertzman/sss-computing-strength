@@ -134,13 +134,13 @@ pub trait IGrain {
 }
 // заглушка для тестирования
 #[doc(hidden)]
-pub struct FakeAccelleration {
+pub struct FakeGrain {
     angle: (f64, f64),
     area: f64,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
-impl FakeAccelleration {
+impl FakeGrain {
     pub fn new(
         angle: (f64, f64),
         area: f64,
@@ -152,7 +152,7 @@ impl FakeAccelleration {
     }
 }
 #[doc(hidden)]
-impl IGrain for FakeAccelleration {
+impl IGrain for FakeGrain  {
     ///
     fn angle(&mut self) -> Result<(f64, f64), Error> {
         Ok(self.angle)

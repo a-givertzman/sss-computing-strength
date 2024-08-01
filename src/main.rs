@@ -309,7 +309,11 @@ fn execute() -> Result<(), Error> {
         mean_draught,
         Rc::clone(&metacentric_height),
     ));
-    // амплитуда качки судна
+    // амплитуда качки судна    
+    let coefficient_k: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.coefficient_k.data())?);
+    let multipler_x1: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_x1.data())?);
+    let multipler_x2: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_x2.data())?);
+    let multipler_s: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area))?);            
     let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&metacentric_height),
@@ -318,10 +322,10 @@ fn execute() -> Result<(), Error> {
         data.width, // ширина полная
         breadth_wl, // ширина по ватерлинии при текущей осадке
         mean_draught,
-        Curve::new_linear(&data.coefficient_k.data())?,
-        Curve::new_linear(&data.multipler_x1.data())?,
-        Curve::new_linear(&data.multipler_x2.data())?,
-        Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area))?,
+        Rc::clone(&coefficient_k),
+        Rc::clone(&multipler_x1),
+        Rc::clone(&multipler_x2),
+        Rc::clone(&multipler_s),
         Rc::clone(&roll_period),
     )?);
     //dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
@@ -343,12 +347,21 @@ fn execute() -> Result<(), Error> {
         Rc::new(StabilityComputer::new(
             flooding_angle,
             mean_draught,
+            volume,  
+            length_wl, 
+            data.width,
+            breadth_wl, 
             Rc::clone(&ship_moment),
             center_draught_shift.clone(),
             data.pantocaren.clone(),
             Rc::clone(&metacentric_height),
             Rc::clone(&roll_amplitude),
             Rc::clone(&wind),
+            Rc::clone(&coefficient_k),
+            Rc::clone(&multipler_x1),
+            Rc::clone(&multipler_x2),
+            Rc::clone(&multipler_s),
+            data.keel_area,
             Rc::clone(&parameters),
         )),
         Rc::clone(&metacentric_height),

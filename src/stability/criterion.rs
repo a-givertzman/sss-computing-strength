@@ -6,7 +6,7 @@ use crate::{
     data::structs::{NavigationArea, ShipType}, Curve, Error, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight, IStability, IWind
 };
 
-use super::IStabilityComputer;
+use super::{IAccelerationComputer, IGrainComputer, IStabilityComputer};
 ///
 #[derive(Hash, Eq, PartialEq)]
 pub enum CriterionID {
@@ -96,11 +96,11 @@ pub struct Criterion {
     /// Продольная и поперечная исправленная метацентрическая высота
     metacentric_height: Rc<dyn IMetacentricHeight>,
     /// Расчет критерия ускорения
-    acceleration: Rc<dyn IAcceleration>,
+    acceleration: Rc<dyn IAccelerationComputer>,
     /// Расчет крена на циркуляции
     circulation: Rc<dyn ICirculation>,
     /// Смещение груза при перевозки навалочных смещаемых грузов (зерна)
-    grain: Box<dyn IGrain>,
+    grain: Box<dyn IGrainComputer>,
 }
 ///
 impl Criterion {
@@ -139,9 +139,9 @@ impl Criterion {
         lever_diagram: Rc<dyn ILeverDiagram>,
         stability: Rc<dyn IStabilityComputer>,
         metacentric_height: Rc<dyn IMetacentricHeight>,
-        acceleration: Rc<dyn IAcceleration>,
+        acceleration: Rc<dyn IAccelerationComputer>,
         circulation: Rc<dyn ICirculation>,
-        grain: Box<dyn IGrain>,
+        grain: Box<dyn IGrainComputer>,
     ) -> Result<Self, Error> {
         if moulded_depth <= 0. {
             return Err(Error::FromString("Criterion new error: moulded_depth <= 0.".to_string()));
@@ -265,26 +265,32 @@ impl Criterion {
     }
     /// Максимум диаграммы статической остойчивости
     pub fn dso_lever(&self) -> Result<CriterionData, Error> {
+        let target = Curve::new_linear(&vec![(105., 0.20), (80., 0.25)])?.value(self.ship_length)?;
+        let zg = self.lever_diagram.dso_zg(target); 
         Ok(CriterionData::new_result(
             CriterionID::MaximumLC,
             self.lever_diagram.dso_lever_max(30., 90.)?,
-            Curve::new_linear(&vec![(105., 0.20), (80., 0.25)])?.value(self.ship_length)?
+            target,
         ))
     }
     /// Максимум диаграммы статической остойчивости для лесовозов
     pub fn dso_lever_timber(&self) -> Result<CriterionData, Error>  {
+        let target = 0.25;
+        let zg = self.lever_diagram.dso_zg(target); 
         Ok(CriterionData::new_result(
             CriterionID::MaximumLcTimber,
             self.lever_diagram.dso_lever_max(0., 90.)?,
-            0.25,
+            target,
         ))
     }
     /// Максимум диаграммы статической остойчивости с учетом обледенения
     pub fn dso_lever_icing(&self) -> Result<CriterionData, Error>  {
+        let target = 0.20;
+        let zg = self.lever_diagram.dso_zg(target); 
         Ok(CriterionData::new_result(
             CriterionID::MaximumLcIcing,
             self.lever_diagram.dso_lever_max(25., 90.)?,
-            0.20,
+            target,
         ))
     }
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
