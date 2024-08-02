@@ -92,15 +92,15 @@ pub struct Criterion {
     /// Диаграмма плеч статической и динамической остойчивости
     lever_diagram: Rc<dyn ILeverDiagram>,
     /// Критерий погоды K
-    stability: Rc<dyn IStability>,
+    stability: Rc<dyn IStabilityComputer>,
     /// Продольная и поперечная исправленная метацентрическая высота
     metacentric_height: Rc<dyn IMetacentricHeight>,
     /// Расчет критерия ускорения
-    acceleration: Rc<dyn IAcceleration>,
+    acceleration: Rc<dyn IAccelerationComputer>,
     /// Расчет крена на циркуляции
     circulation: Rc<dyn ICirculation>,
     /// Смещение груза при перевозки навалочных смещаемых грузов (зерна)
-    grain: Box<dyn IGrain>,
+    grain: Box<dyn IGrainComputer>,
 }
 ///
 impl Criterion {
@@ -137,11 +137,11 @@ impl Criterion {
         h_subdivision: f64,
         wind: Rc<dyn IWind>,
         lever_diagram: Rc<dyn ILeverDiagram>,
-        stability: Rc<dyn IStability>,
+        stability: Rc<dyn IStabilityComputer>,
         metacentric_height: Rc<dyn IMetacentricHeight>,
-        acceleration: Rc<dyn IAcceleration>,
+        acceleration: Rc<dyn IAccelerationComputer>,
         circulation: Rc<dyn ICirculation>,
-        grain: Box<dyn IGrain>,
+        grain: Box<dyn IGrainComputer>,
     ) -> Result<Self, Error> {
         if moulded_depth <= 0. {
             return Err(Error::FromString("Criterion new error: moulded_depth <= 0.".to_string()));
@@ -206,6 +206,7 @@ impl Criterion {
     }
     /// Критерий погоды K
     pub fn weather(&mut self) -> CriterionData {
+        let zg = self.stability.zg(1.); 
         let k = self.stability.k();
         match k {
             Ok(k) => CriterionData::new_result(CriterionID::Wheather, k, 1.),
@@ -265,6 +266,7 @@ impl Criterion {
     /// Максимум диаграммы статической остойчивости
     pub fn dso_lever(&self) -> Result<CriterionData, Error> {
         let target = Curve::new_linear(&vec![(105., 0.20), (80., 0.25)])?.value(self.ship_length)?;
+        let zg = self.lever_diagram.dso_zg(target); 
         Ok(CriterionData::new_result(
             CriterionID::MaximumLC,
             self.lever_diagram.dso_lever_max(30., 90.)?,
@@ -274,6 +276,7 @@ impl Criterion {
     /// Максимум диаграммы статической остойчивости для лесовозов
     pub fn dso_lever_timber(&self) -> Result<CriterionData, Error>  {
         let target = 0.25;
+        let zg = self.lever_diagram.dso_zg(target); 
         Ok(CriterionData::new_result(
             CriterionID::MaximumLcTimber,
             self.lever_diagram.dso_lever_max(0., 90.)?,
@@ -283,6 +286,7 @@ impl Criterion {
     /// Максимум диаграммы статической остойчивости с учетом обледенения
     pub fn dso_lever_icing(&self) -> Result<CriterionData, Error>  {
         let target = 0.20;
+        let zg = self.lever_diagram.dso_zg(target); 
         Ok(CriterionData::new_result(
             CriterionID::MaximumLcIcing,
             self.lever_diagram.dso_lever_max(25., 90.)?,
