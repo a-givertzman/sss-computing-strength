@@ -1,14 +1,13 @@
 //!
 
-use std::{collections::HashMap, rc::Rc};
+use std::rc::Rc;
 
 use crate::{
-    data::structs::{NavigationArea, ShipType},
-    Error,
+    data::structs::{NavigationArea, ShipType}, Error, IBulk, ICurve, IMass, Position
 };
 
 use super::{
-    Acceleration, Circulation, Criterion, CriterionID, FakeMetacentricHeight, Grain, ILeverDiagram, IMetacentricHeight, IParameters, IRollingAmplitude, IRollingPeriod, IStability, IWind, LeverDiagram, RollingAmplitude, Stability, Wind
+    Acceleration, Circulation, Criterion, FakeMetacentricHeight, Grain, ILeverDiagram, IMetacentricHeight, IParameters, IRollingAmplitude, IRollingPeriod, IShipMoment, IStability, IWind, LeverDiagram, RollingAmplitude, RollingPeriod, Stability, Wind
 };
 
 ///
@@ -17,6 +16,8 @@ pub struct CriterionComputer {
     max_zg: f64,
     /// Тип судна
     ship_type: ShipType,
+    /// Минимальная допустимая метацентрическая высота деления на отсеки
+    h_subdivision: f64,
     /// Район плавания судна
     navigation_area: NavigationArea,
     /// Признак наличия леса
@@ -30,30 +31,61 @@ pub struct CriterionComputer {
     have_icing: bool,
     /// Угол заливания отверстий
     flooding_angle: f64,
-    /// Длина судна
+    /// Длинна корпуса судна между перпендикулярами
     ship_length: f64,
-    /// Ширина судна
-    breadth: f64,
     /// Высота борта, м
     moulded_depth: f64,
-    /// Минимальная допустимая метацентрическая высота деления на отсеки
-    h_subdivision: f64,
+    /// Средняя осадка
+    mean_draught: f64,
+    /// Объемное водоизмещение
+    volume: f64,
+    /// Длина судна по ватерлинии при текущей осадке
+    length_wl: f64,
+    /// Ширина судна полная
+    width: f64,
+    /// Ширина судна по ватерлинии ватерлинии при текущей осадке
+    breadth_wl: f64,
+    /// Эксплуатационная скорость судна, m/s
+    velocity: f64,
+    /// Момент массы судна: сумма моментов конструкции, груз, экипаж и т.п. для расчета остойчивости
+    ship_moment: Rc<dyn IShipMoment>,
+    /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+    ship_mass: Rc<dyn IMass>,
+    /// Все навалочные смещаемые грузы судна
+    loads_bulk: Rc<Vec<Rc<dyn IBulk>>>,
+    /// Коэффициент k для судов, имеющих скуловые кили или
+    /// брусковый киль. Табл. 2.1.5.2
+    coefficient_k: Rc<dyn ICurve>,
+    /// Безразмерный множитель Х_1 Табл. 2.1.5.1-1
+    multipler_x1: Rc<dyn ICurve>,
+    /// Безразмерный множитель Х_2 Табл. 2.1.5.1-2
+    multipler_x2: Rc<dyn ICurve>,
+    /// Безразмерный множитель S Табл. 2.1.5.1-3
+    multipler_s_area: Rc<dyn ICurve>,
+    /// Коэффициент, учитывающий особенности качки судов смешанного типа
+    coefficient_k_theta: Rc<dyn ICurve>,
+    /// Суммарная габаритная площадь скуловых килей
+    keel_area: Option<f64>,
+    /// Отстояние центра величины погруженной части судна
+    center_draught_shift: Position,
+    /// Кривая плечей остойчивости формы для разных осадок
+    pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
     /// Продольная и поперечная исправленная метацентрическая высота
     metacentric_height: Rc<dyn IMetacentricHeight>,
+    /// Расчет плеча кренящего момента от давления ветра
+    wind: Rc<dyn IWind>,
     /// Период качки судна
     roll_period: Rc<dyn IRollingPeriod>,
-    /// zg + Vec<id, delta>
-    results: HashMap<f64, Vec<(CriterionID, f64)>>,
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>,
+    /// zg + Vec<id, delta>
+    results: Vec<(f64, Vec<(usize, Option<f64>)>)>,
 }
 ///
 impl CriterionComputer {
     /// Главный конструктор:
     /// * max_zg - Максимальное исправленное отстояние центра масс судна по высоте
     /// * ship_type - Тип судна
-    /// * breadth - Ширина судна
-    /// * moulded_depth - Высота борта, м
     /// * h_subdivision - Минимальная допустимая метацентрическая высота деления на отсеки
     /// * navigation_area - Район плавания судна
     /// * have_timber - Признак наличия леса
@@ -61,13 +93,34 @@ impl CriterionComputer {
     /// * have_cargo - Признак наличия груза или балласта
     /// * have_icing - Признак учета обледенения
     /// * flooding_angle - Угол заливания отверстий
-    /// * ship_length - Длина судна
+    /// * ship_length - Длинна корпуса судна между перпендикулярами
+    /// * moulded_depth - Высота борта, м
+    /// * mean_draught - Средняя осадка
+    /// * volume - Объемное водоизмещение
+    /// * length_wl - Длина судна по ватерлинии при текущей осадке
+    /// * width - Ширина судна полная
+    /// * breadth_wl - Ширина судна по ватерлинии ватерлинии при текущей 
+    /// * velocity - Эксплуатационная скорость судна, m/s
+    /// * ship_moment - Момент массы судна: сумма моментов конструкции, груз, экипаж и т.п. для расчета остойчивости
+    /// * ship_mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
+    /// * loads_bulk - Все навалочные смещаемые грузы судна
+    /// * coefficient_k - Коэффициент k для судов, имеющих скуловые кили или
+    /// брусковый киль. Табл. 2.1.5.2
+    /// * multipler_x1 - Безразмерный множитель Х_1 Табл. 2.1.5.1-1
+    /// * multipler_x2 - Безразмерный множитель Х_2 Табл. 2.1.5.1-2
+    /// * multipler_s_area - Безразмерный множитель S Табл. 2.1.5.1-3
+    /// * coefficient_k_theta - Коэффициент, учитывающий особенности качки судов смешанного типа
+    /// * keel_area - Суммарная габаритная площадь скуловых килей
+    /// * center_draught_shift - Отстояние центра величины погруженной части судна
+    /// * pantocaren - Кривая плечей остойчивости формы для разных осадок
     /// * roll_period - Период качки судна
+    /// * wind - Расчет плеча кренящего момента от давления ветра
     /// * metacentric_height - Продольная и поперечная исправленная метацентрическая высота
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         max_zg: f64,
         ship_type: ShipType,
+        h_subdivision: f64,
         navigation_area: NavigationArea,
         have_timber: bool,
         have_grain: bool,
@@ -75,10 +128,26 @@ impl CriterionComputer {
         have_icing: bool,
         flooding_angle: f64,
         ship_length: f64,
-        breadth: f64,
         moulded_depth: f64,
-        h_subdivision: f64,
+        mean_draught: f64,
+        volume: f64,
+        length_wl: f64,
+        width: f64,
+        breadth_wl: f64,
+        velocity: f64,
+        ship_moment: Rc<dyn IShipMoment>,
+        ship_mass: Rc<dyn IMass>,
+        loads_bulk: Rc<Vec<Rc<dyn IBulk>>>,
+        coefficient_k: Rc<dyn ICurve>,
+        multipler_x1: Rc<dyn ICurve>,
+        multipler_x2: Rc<dyn ICurve>,
+        multipler_s_area: Rc<dyn ICurve>,
+        coefficient_k_theta: Rc<dyn ICurve>,
+        keel_area: Option<f64>,
+        center_draught_shift: Position,
+        pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
         roll_period: Rc<dyn IRollingPeriod>,
+        wind: Rc<dyn IWind>,
         metacentric_height: Rc<dyn IMetacentricHeight>,
         parameters: Rc<dyn IParameters>,
     ) -> Result<Self, Error> {
@@ -95,6 +164,7 @@ impl CriterionComputer {
         Ok(Self {
             max_zg,
             ship_type,
+            h_subdivision,
             navigation_area,
             have_timber,
             have_grain,
@@ -102,12 +172,29 @@ impl CriterionComputer {
             have_icing,
             flooding_angle,
             ship_length,
-            breadth,
             moulded_depth,
-            h_subdivision,
+            mean_draught,
+            volume,
+            length_wl,
+            width,
+            breadth_wl,
+            velocity,
+            ship_moment,
+            ship_mass,
+            loads_bulk,
+            center_draught_shift,
+            pantocaren,
+            coefficient_k,
+            multipler_x1,
+            multipler_x2,
+            multipler_s_area,
+            coefficient_k_theta,
+            keel_area,
             roll_period,
+            wind,
             metacentric_height,
             parameters,
+            results: Vec::new(),
         })
     }
     ///
@@ -133,9 +220,9 @@ impl CriterionComputer {
             ));
             // период качки судна
             let roll_period: Rc<dyn IRollingPeriod> = Rc::new(RollingPeriod::new(
-                length_wl,
-                data.width,
-                mean_draught,
+                self.length_wl,
+                self.width,
+                self.mean_draught,
                 Rc::clone(&metacentric_height),
             ));
             let rolling_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
@@ -152,26 +239,6 @@ impl CriterionComputer {
                 Rc::clone(&self.multipler_s_area),
                 Rc::clone(&self.roll_period),
             )?);
-            let wind: Rc<dyn IWind> = Rc::new(Wind::new(
-                data.navigation_area_param
-                    .get_area(&data.navigation_area)
-                    .ok_or("main error no area data!".to_string())?,
-                Rc::new(Windage::new(
-                    Rc::clone(&icing_stab),
-                    Rc::clone(&area_stability),
-                    Curve::new_linear(&data.delta_windage_area)?.value(mean_draught)?,
-                    Moment::new(
-                        Curve::new_linear(&data.delta_windage_moment_x)?.value(mean_draught)?,
-                        0.,
-                        Curve::new_linear(&data.delta_windage_moment_z)?.value(mean_draught)?,
-                    ),
-                    volume_shift,
-                )),
-                gravity_g,
-                Rc::clone(&ship_mass),
-                Rc::clone(&self.parameters),
-            ));
-
             let results = Criterion::new(
                 self.ship_type,
                 self.navigation_area,
@@ -181,16 +248,16 @@ impl CriterionComputer {
                 self.have_icing,
                 self.flooding_angle,
                 self.ship_length,
-                self.breadth,
+                self.width,
                 self.moulded_depth,
                 self.h_subdivision,
-                Rc::clone(&wind),
+                Rc::clone(&self.wind),
                 Rc::clone(&lever_diagram),
                 Rc::new(Stability::new(
                     self.flooding_angle,
                     Rc::clone(&lever_diagram),
                     Rc::clone(&rolling_amplitude),
-                    Rc::clone(&wind),
+                    Rc::clone(&self.wind),
                     Rc::clone(&self.parameters),
                 )),
                 Rc::clone(&metacentric_height),
@@ -203,9 +270,9 @@ impl CriterionComputer {
                     Rc::clone(&metacentric_height),
                 )),
                 Rc::new(Circulation::new(
-                    data.velocity,
-                    length_wl,
-                    mean_draught,
+                    self.velocity,
+                    self.length_wl,
+                    self.mean_draught,
                     Rc::clone(&self.ship_mass),
                     Rc::clone(&self.ship_moment),
                     Rc::clone(&lever_diagram),
@@ -213,13 +280,22 @@ impl CriterionComputer {
                 )?),
                 Box::new(Grain::new(
                     self.flooding_angle,
-                    self.bulks.clone(),
+                    self.loads_bulk.clone(),
                     Rc::clone(&self.ship_mass),
                     Rc::clone(&lever_diagram),
                     Rc::clone(&self.parameters),
                 )),
-            )
-            .create();
+            )?
+            .create()?;
+            let results: Vec<(usize, Option<f64>)> = results.iter().map(|v| { 
+                let delta = if v.error_message.is_none() {
+                    Some(v.result - v.target)
+                } else {
+                   None
+                };
+                (v.criterion_id, delta)     
+            }).collect();
+            self.results.push((z_g_fix, results));
         }
         Ok(())
     }
