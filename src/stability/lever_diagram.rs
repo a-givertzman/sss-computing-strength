@@ -324,7 +324,7 @@ pub trait ILeverDiagram {
     fn lever_moment(&self, angle: f64) -> Result<f64, Error>;
     /// Площадь под положительной частью диаграммы статической остойчивости (rad^2)
     fn dso_area(&self, angle1: f64, angle2: f64) -> Result<f64, Error>;
-    /// Максимальное плечо диаграммы статической остойчивости в диапазонеб (м)
+    /// Максимальное плечо диаграммы статической остойчивости в диапазоне (м)
     fn dso_lever_max(&self, angle1: f64, angle2: f64) -> Result<f64, Error>;
     /// Диаграммы остойчивости, зависимость от угла, градусы
     fn diagram(&self) -> Result<Vec<(f64, f64, f64)>, Error>;

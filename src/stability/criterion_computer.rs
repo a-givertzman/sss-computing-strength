@@ -198,7 +198,7 @@ impl CriterionComputer {
         let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
         // zg + Vec<id, delta>
         let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
-        let delta = 0.001;
+        let delta = 0.01;
         let max_index = (self.max_zg / delta).ceil() as i32;
         for index in 0..=max_index {
             let z_g_fix = index as f64 * delta;
@@ -285,7 +285,7 @@ impl CriterionComputer {
                     Rc::clone(&parameters),
                 )),
             )?
-            .create()?;
+            .create();
             let tmp: Vec<(usize, Option<f64>)> = tmp
                 .iter()
                 .map(|v| {

@@ -417,7 +417,7 @@ fn execute() -> Result<(), Error> {
     elapsed.insert("Completed", time.elapsed());
 
     let time = Instant::now();
-    send_stability_data(&mut api_server, ship_id, criterion.create()?)?; //
+    send_stability_data(&mut api_server, ship_id, criterion.create())?; //
     elapsed.insert("Write stability result", time.elapsed());
     send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //
 
