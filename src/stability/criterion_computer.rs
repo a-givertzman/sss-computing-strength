@@ -194,7 +194,7 @@ impl CriterionComputer {
         })
     }
     ///
-    pub fn calculate(&mut self) -> Result<(), Error> {
+    pub fn calculate(&mut self) -> Result<Vec<(usize, f64)>, Error> {
         let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
         // zg + Vec<id, delta>
         let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
@@ -323,6 +323,6 @@ impl CriterionComputer {
                 .value(0.)?,
             ));
         }
-        Ok(())
+        Ok(result)
     }
 }

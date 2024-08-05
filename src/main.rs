@@ -366,6 +366,7 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
     )?.calculate()?;
     elapsed.insert("CriterionComputer", time.elapsed());
+    dbg!(criterion_computer_results);
     let mut criterion = Criterion::new(
         data.ship_type,
         data.navigation_area,
