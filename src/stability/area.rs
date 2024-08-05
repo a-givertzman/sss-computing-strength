@@ -71,13 +71,11 @@ impl IArea for Area {
     /// Момент площади горизонтальных поверхностей
     fn moment_h(&self) -> Result<Moment, Error> {
         let mut moment_sum = self.area_const_h.iter().map(|v| v.moment()).sum::<Moment>();
-        dbg!(&moment_sum);
         for v in self.desks.iter() {
             moment_sum += Moment::from_pos(
                 Position::new(v.shift().x(), v.shift().y(), v.height()?),
                 v.horizontal_area(&Bound::Full, &Bound::Full)?,
             );
-            dbg!(&moment_sum);
         }
         Ok(moment_sum)
     }
