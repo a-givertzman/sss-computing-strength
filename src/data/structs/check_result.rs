@@ -84,6 +84,12 @@ impl ParsedShipData {
                 self.midship
             )));
         }
+        if self.overall_height <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: overall_height:{} <= 0",
+                self.overall_height
+            )));
+        }
         if self.velocity <= 0. {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: velocity:{} <= 0",

@@ -59,6 +59,8 @@ pub struct ParsedShipData {
     pub width: f64,
     /// Отстояние миделя от нулевого шпангоута
     pub midship: f64,
+    /// Overall height up to non-removable parts
+    pub overall_height: f64,
     /// Эксплуатационная скорость судна, m/s
     pub velocity: f64,
     /// Cуммарная габаритная площадь скуловых килей,
@@ -235,6 +237,10 @@ impl ParsedShipData {
             "ParsedShipData parse error: no midship for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
+        let overall_height = ship_data.get("Overall height up to non-removable parts").ok_or(format!(
+            "ParsedShipData parse error: no overall_height for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
         let velocity = ship_data.get("Ship operating speed").ok_or(format!(
             "ParsedShipData parse error: no velocity for ship id:{}",
             ship_id
@@ -337,6 +343,7 @@ impl ParsedShipData {
             length_loa,
             width,
             midship,
+            overall_height,
             velocity,
             keel_area,
             water_density,

@@ -3,10 +3,10 @@
 use std::rc::Rc;
 
 use crate::{
-    data::structs::{NavigationArea, ShipType}, Curve, Error, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight, IStability, IWind
+    data::structs::{NavigationArea, ShipType},
+    Curve, Error, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight,
+    IStability, IWind,
 };
-
-use super::{IAccelerationComputer, IGrainComputer, IStabilityComputer};
 ///
 #[derive(Hash, Eq, PartialEq)]
 pub enum CriterionID {
@@ -70,7 +70,7 @@ pub struct Criterion {
     have_timber: bool,
     /// Признак наличия сыпучего груза
     have_grain: bool,
-    /// Признак наличия груза или 
+    /// Признак наличия груза или
     #[allow(unused)]
     have_cargo: bool,
     /// Признак учета обледенения
@@ -82,7 +82,7 @@ pub struct Criterion {
     /// Ширина судна
     breadth: f64,
     /// Высота борта, м
-    moulded_depth: f64, 
+    moulded_depth: f64,
     /// Минимальная допустимая метацентрическая высота деления на отсеки
     h_subdivision: f64,
     /// Статический угол крена от действия постоянного ветра.
@@ -133,7 +133,7 @@ impl Criterion {
         flooding_angle: f64,
         ship_length: f64,
         breadth: f64,
-        moulded_depth: f64, 
+        moulded_depth: f64,
         h_subdivision: f64,
         wind: Rc<dyn IWind>,
         lever_diagram: Rc<dyn ILeverDiagram>,
@@ -144,8 +144,10 @@ impl Criterion {
         grain: Box<dyn IGrain>,
     ) -> Result<Self, Error> {
         if moulded_depth <= 0. {
-            return Err(Error::FromString("Criterion new error: moulded_depth <= 0.".to_string()));
-        } 
+            return Err(Error::FromString(
+                "Criterion new error: moulded_depth <= 0.".to_string(),
+            ));
+        }
         Ok(Self {
             ship_type,
             navigation_area,
@@ -185,9 +187,9 @@ impl Criterion {
             out_data.push(self.dso_lever_icing()?);
         }
         out_data.append(&mut self.dso_lever_max_angle()?);
- //       if self.have_cargo {
-            out_data.push(self.metacentric_height()?);
-    //    }
+        //       if self.have_cargo {
+        out_data.push(self.metacentric_height()?);
+        //    }
         if self.navigation_area == NavigationArea::R2Rsn
             || self.navigation_area == NavigationArea::R2Rsn45
             || self.metacentric_height.h_trans_fix()?.sqrt() / self.breadth > 0.08
@@ -228,7 +230,11 @@ impl Criterion {
             _ => 16.0f64.min(0.8 * self.flooding_angle),
         };
         if let Some(angle) = angle {
-            Ok(CriterionData::new_result(CriterionID::WindStaticHeel, *angle, target_value))
+            Ok(CriterionData::new_result(
+                CriterionID::WindStaticHeel,
+                *angle,
+                target_value,
+            ))
         } else {
             Ok(CriterionData::new_error(
                 CriterionID::WindStaticHeel,
@@ -264,7 +270,8 @@ impl Criterion {
     }
     /// Максимум диаграммы статической остойчивости
     pub fn dso_lever(&self) -> Result<CriterionData, Error> {
-        let target = Curve::new_linear(&vec![(105., 0.20), (80., 0.25)])?.value(self.ship_length)?;
+        let target =
+            Curve::new_linear(&vec![(105., 0.20), (80., 0.25)])?.value(self.ship_length)?;
         Ok(CriterionData::new_result(
             CriterionID::MaximumLC,
             self.lever_diagram.dso_lever_max(30., 90.)?,
@@ -272,7 +279,7 @@ impl Criterion {
         ))
     }
     /// Максимум диаграммы статической остойчивости для лесовозов
-    pub fn dso_lever_timber(&self) -> Result<CriterionData, Error>  {
+    pub fn dso_lever_timber(&self) -> Result<CriterionData, Error> {
         let target = 0.25;
         Ok(CriterionData::new_result(
             CriterionID::MaximumLcTimber,
@@ -281,7 +288,7 @@ impl Criterion {
         ))
     }
     /// Максимум диаграммы статической остойчивости с учетом обледенения
-    pub fn dso_lever_icing(&self) -> Result<CriterionData, Error>  {
+    pub fn dso_lever_icing(&self) -> Result<CriterionData, Error> {
         let target = 0.20;
         Ok(CriterionData::new_result(
             CriterionID::MaximumLcIcing,
@@ -290,7 +297,7 @@ impl Criterion {
         ))
     }
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
-    pub fn dso_lever_max_angle(&self) -> Result<Vec<CriterionData>, Error>  {
+    pub fn dso_lever_max_angle(&self) -> Result<Vec<CriterionData>, Error> {
         let mut result = Vec::new();
         let angles = self.lever_diagram.max_angles()?;
         let b_div_d = self.breadth / self.moulded_depth;
@@ -345,7 +352,7 @@ impl Criterion {
         Ok(result)
     }
     /// Метацентрическая высота
-    pub fn metacentric_height(&self) -> Result<CriterionData, Error>  {
+    pub fn metacentric_height(&self) -> Result<CriterionData, Error> {
         // Все суда
         let target = if self.have_grain {
             0.3
@@ -363,14 +370,22 @@ impl Criterion {
         ))
     }
     /// Критерий ускорения 𝐾∗
-    pub fn accelleration(&self) -> Result<CriterionData, Error>  {
-        Ok(CriterionData::new_result(CriterionID::Acceleration, self.acceleration.calculate()?, 1.))
+    pub fn accelleration(&self) -> Result<CriterionData, Error> {
+        Ok(CriterionData::new_result(
+            CriterionID::Acceleration,
+            self.acceleration.calculate()?,
+            1.,
+        ))
     }
     /// Критерий крена на циркуляции
-    pub fn circulation(&self) -> Result<CriterionData, Error>  {
+    pub fn circulation(&self) -> Result<CriterionData, Error> {
         let target = 16.0f64.min(self.flooding_angle / 2.);
         if let Some(angle) = self.circulation.angle()? {
-            Ok(CriterionData::new_result(CriterionID::HeelTurning, angle, target))
+            Ok(CriterionData::new_result(
+                CriterionID::HeelTurning,
+                angle,
+                target,
+            ))
         } else {
             Ok(CriterionData::new_error(
                 CriterionID::HeelTurning,
@@ -387,7 +402,7 @@ impl Criterion {
         // контейнеры выходят за пределы этого комингса).
     }
     /// Критерий при перевозки навалочных смещаемых грузов
-    pub fn grain(&mut self) -> Result<Vec<CriterionData>, Error>  {
+    pub fn grain(&mut self) -> Result<Vec<CriterionData>, Error> {
         let mut result = Vec::new();
         let (angle1, angle2) = self.grain.angle()?;
         result.push(CriterionData::new_result(

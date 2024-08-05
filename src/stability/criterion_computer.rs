@@ -3,11 +3,14 @@
 use std::{collections::HashMap, rc::Rc};
 
 use crate::{
-    data::structs::{NavigationArea, ShipType}, Error, IBulk, ICurve, IMass, Position
+    data::structs::{NavigationArea, ShipType},
+    Curve, Error, IBulk, ICurve, IMass, Position,
 };
 
 use super::{
-    Acceleration, Circulation, Criterion, CriterionID, FakeMetacentricHeight, Grain, ILeverDiagram, IMetacentricHeight, IParameters, IRollingAmplitude, IRollingPeriod, IShipMoment, IStability, IWind, LeverDiagram, Parameters, RollingAmplitude, RollingPeriod, Stability, Wind
+    Acceleration, Circulation, Criterion, CriterionID, FakeMetacentricHeight, Grain, ILeverDiagram,
+    IMetacentricHeight, IParameters, IRollingAmplitude, IRollingPeriod, IShipMoment, IStability,
+    IWind, LeverDiagram, Parameters, RollingAmplitude, RollingPeriod, Stability, Wind,
 };
 
 ///
@@ -95,7 +98,7 @@ impl CriterionComputer {
     /// * volume - Объемное водоизмещение
     /// * length_wl - Длина судна по ватерлинии при текущей осадке
     /// * width - Ширина судна полная
-    /// * breadth_wl - Ширина судна по ватерлинии ватерлинии при текущей 
+    /// * breadth_wl - Ширина судна по ватерлинии ватерлинии при текущей
     /// * velocity - Эксплуатационная скорость судна, m/s
     /// * ship_moment - Момент массы судна: сумма моментов конструкции, груз, экипаж и т.п. для расчета остойчивости
     /// * ship_mass - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
@@ -187,14 +190,14 @@ impl CriterionComputer {
             keel_area,
             roll_period,
             wind,
-            metacentric_height,  
+            metacentric_height,
         })
     }
     ///
     pub fn calculate(&mut self) -> Result<(), Error> {
-        let mut parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
+        let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
         // zg + Vec<id, delta>
-        let mut results = Vec::new();//<(f64, Vec<(usize, Option<f64>)>)>'
+        let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
         let delta = 0.001;
         let max_index = (self.max_zg / delta).ceil() as i32;
         for index in 0..=max_index {
@@ -283,25 +286,42 @@ impl CriterionComputer {
                 )),
             )?
             .create()?;
-            let tmp: Vec<(usize, Option<f64>)> = tmp.iter().map(|v| { 
-                let delta = if v.error_message.is_none() {
-                    Some(v.result - v.target)
-                } else {
-                   None
-                };
-                (v.criterion_id, delta)     
-            }).collect();
+            let tmp: Vec<(usize, Option<f64>)> = tmp
+                .iter()
+                .map(|v| {
+                    let delta = if v.error_message.is_none() {
+                        Some(v.result - v.target)
+                    } else {
+                        None
+                    };
+                    (v.criterion_id, delta)
+                })
+                .collect();
             results.push((z_g_fix, tmp));
         }
-        let mut values: HashMap<usize, Vec<(f64, f64)>> = HashMap::new();        
+        let mut values: HashMap<usize, Vec<(f64, f64)>> = HashMap::new();
         for (z_g_fix, tmp) in results.into_iter() {
-            tmp.into_iter().filter(|(_, value)| value.is_some() )
+            tmp.into_iter()
+                .filter(|(_, value)| value.is_some())
                 .for_each(|(id, value)| {
                     values
                         .entry(id)
-                        .and_modify(|v| v.push((z_g_fix, value.unwrap())) )
-                        .or_insert(vec![(z_g_fix, value.unwrap()),] );
-            });
+                        .and_modify(|v| v.push((z_g_fix, value.unwrap())))
+                        .or_insert(vec![(z_g_fix, value.unwrap())]);
+                });
+        }
+        let mut result = Vec::new();
+        for (id, values) in values.into_iter() {
+            result.push((
+                id,
+                Curve::new_linear(
+                    &values
+                        .into_iter()
+                        .map(|(zg, delta)| (delta, zg))
+                        .collect::<Vec<(f64, f64)>>(),
+                )?
+                .value(0.)?,
+            ));
         }
         Ok(())
     }

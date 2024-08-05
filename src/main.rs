@@ -313,7 +313,8 @@ fn execute() -> Result<(), Error> {
     let coefficient_k: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.coefficient_k.data())?);
     let multipler_x1: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_x1.data())?);
     let multipler_x2: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_x2.data())?);
-    let multipler_s: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area))?);            
+    let multipler_s: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area))?);    
+    let coefficient_k_theta: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())?);    
     let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&metacentric_height),
@@ -328,8 +329,43 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&multipler_s),
         Rc::clone(&roll_period),
     )?);
-    //dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
-    // Критерии остойчивости
+
+    let time = Instant::now();
+    // Критерии остойчивости   
+    let mut criterion_computer_results = CriterionComputer::new(
+        data.overall_height,
+        data.ship_type,
+        Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,
+        data.navigation_area,
+        loads.desks()?.iter().any(|v| v.is_timber()),
+        loads.bulks()?.iter().any(|v| v.moment() != 0.),
+        !loads.load_variable()?.is_empty(),
+        icing_stab.is_some(),
+        flooding_angle,
+        data.length_lbp,
+        data.moulded_depth,
+        mean_draught,
+        volume,
+        length_wl,
+        data.width,
+        breadth_wl,
+        data.velocity,
+        Rc::clone(&ship_moment),
+        Rc::clone(&ship_mass),
+        loads.bulks()?,
+        Rc::clone(&coefficient_k),
+        Rc::clone(&multipler_x1),
+        Rc::clone(&multipler_x2),
+        Rc::clone(&multipler_s),
+        Rc::clone(&coefficient_k_theta),
+        data.keel_area,
+        center_draught_shift.clone(),
+        data.pantocaren.clone(),
+        Rc::clone(&roll_period),
+        Rc::clone(&wind),
+        Rc::clone(&metacentric_height),
+    )?.calculate()?;
+    elapsed.insert("CriterionComputer", time.elapsed());
     let mut criterion = Criterion::new(
         data.ship_type,
         data.navigation_area,
@@ -344,24 +380,11 @@ fn execute() -> Result<(), Error> {
         Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,
         Rc::clone(&wind),
         Rc::clone(&lever_diagram),
-        Rc::new(StabilityComputer::new(
+        Rc::new(Stability::new(
             flooding_angle,
-            mean_draught,
-            volume,  
-            length_wl, 
-            data.width,
-            breadth_wl, 
-            Rc::clone(&ship_moment),
-            center_draught_shift.clone(),
-            data.pantocaren.clone(),
-            Rc::clone(&metacentric_height),
+            Rc::clone(&lever_diagram),
             Rc::clone(&roll_amplitude),
             Rc::clone(&wind),
-            Rc::clone(&coefficient_k),
-            Rc::clone(&multipler_x1),
-            Rc::clone(&multipler_x2),
-            Rc::clone(&multipler_s),
-            data.keel_area,
             Rc::clone(&parameters),
         )),
         Rc::clone(&metacentric_height),
@@ -394,14 +417,13 @@ fn execute() -> Result<(), Error> {
     elapsed.insert("Completed", time.elapsed());
 
     let time = Instant::now();
-    // criterion.create().iter().for_each(|v| println!("{v}"));
     send_stability_data(&mut api_server, ship_id, criterion.create()?)?; //
     elapsed.insert("Write stability result", time.elapsed());
     send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //
 
-    /*   for (key, e) in elapsed {
+    for (key, e) in elapsed {
         println!("{}:\t{:?}", key, e);
-    }*/
+    }
     Ok(())
 }
 
