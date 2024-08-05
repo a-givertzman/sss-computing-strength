@@ -1,13 +1,13 @@
 //!
 
-use std::rc::Rc;
+use std::{collections::HashMap, rc::Rc};
 
 use crate::{
     data::structs::{NavigationArea, ShipType}, Error, IBulk, ICurve, IMass, Position
 };
 
 use super::{
-    Acceleration, Circulation, Criterion, FakeMetacentricHeight, Grain, ILeverDiagram, IMetacentricHeight, IParameters, IRollingAmplitude, IRollingPeriod, IShipMoment, IStability, IWind, LeverDiagram, RollingAmplitude, RollingPeriod, Stability, Wind
+    Acceleration, Circulation, Criterion, CriterionID, FakeMetacentricHeight, Grain, ILeverDiagram, IMetacentricHeight, IParameters, IRollingAmplitude, IRollingPeriod, IShipMoment, IStability, IWind, LeverDiagram, Parameters, RollingAmplitude, RollingPeriod, Stability, Wind
 };
 
 ///
@@ -76,10 +76,6 @@ pub struct CriterionComputer {
     wind: Rc<dyn IWind>,
     /// Период качки судна
     roll_period: Rc<dyn IRollingPeriod>,
-    /// Набор результатов расчетов для записи в БД
-    parameters: Rc<dyn IParameters>,
-    /// zg + Vec<id, delta>
-    results: Vec<(f64, Vec<(usize, Option<f64>)>)>,
 }
 ///
 impl CriterionComputer {
@@ -149,7 +145,6 @@ impl CriterionComputer {
         roll_period: Rc<dyn IRollingPeriod>,
         wind: Rc<dyn IWind>,
         metacentric_height: Rc<dyn IMetacentricHeight>,
-        parameters: Rc<dyn IParameters>,
     ) -> Result<Self, Error> {
         if max_zg <= 0. {
             return Err(Error::FromString(
@@ -192,13 +187,14 @@ impl CriterionComputer {
             keel_area,
             roll_period,
             wind,
-            metacentric_height,
-            parameters,
-            results: Vec::new(),
+            metacentric_height,  
         })
     }
     ///
     pub fn calculate(&mut self) -> Result<(), Error> {
+        let mut parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
+        // zg + Vec<id, delta>
+        let mut results = Vec::new();//<(f64, Vec<(usize, Option<f64>)>)>'
         let delta = 0.001;
         let max_index = (self.max_zg / delta).ceil() as i32;
         for index in 0..=max_index {
@@ -216,7 +212,7 @@ impl CriterionComputer {
                 self.pantocaren.clone(),
                 self.mean_draught,
                 Rc::clone(&metacentric_height),
-                Rc::clone(&self.parameters),
+                Rc::clone(&parameters),
             ));
             // период качки судна
             let roll_period: Rc<dyn IRollingPeriod> = Rc::new(RollingPeriod::new(
@@ -239,7 +235,7 @@ impl CriterionComputer {
                 Rc::clone(&self.multipler_s_area),
                 Rc::clone(&self.roll_period),
             )?);
-            let results = Criterion::new(
+            let tmp = Criterion::new(
                 self.ship_type,
                 self.navigation_area,
                 self.have_timber,
@@ -258,7 +254,7 @@ impl CriterionComputer {
                     Rc::clone(&lever_diagram),
                     Rc::clone(&rolling_amplitude),
                     Rc::clone(&self.wind),
-                    Rc::clone(&self.parameters),
+                    Rc::clone(&parameters),
                 )),
                 Rc::clone(&metacentric_height),
                 Rc::new(Acceleration::new(
@@ -276,18 +272,18 @@ impl CriterionComputer {
                     Rc::clone(&self.ship_mass),
                     Rc::clone(&self.ship_moment),
                     Rc::clone(&lever_diagram),
-                    Rc::clone(&self.parameters),
+                    Rc::clone(&parameters),
                 )?),
                 Box::new(Grain::new(
                     self.flooding_angle,
                     self.loads_bulk.clone(),
                     Rc::clone(&self.ship_mass),
                     Rc::clone(&lever_diagram),
-                    Rc::clone(&self.parameters),
+                    Rc::clone(&parameters),
                 )),
             )?
             .create()?;
-            let results: Vec<(usize, Option<f64>)> = results.iter().map(|v| { 
+            let tmp: Vec<(usize, Option<f64>)> = tmp.iter().map(|v| { 
                 let delta = if v.error_message.is_none() {
                     Some(v.result - v.target)
                 } else {
@@ -295,7 +291,17 @@ impl CriterionComputer {
                 };
                 (v.criterion_id, delta)     
             }).collect();
-            self.results.push((z_g_fix, results));
+            results.push((z_g_fix, tmp));
+        }
+        let mut values: HashMap<usize, Vec<(f64, f64)>> = HashMap::new();        
+        for (z_g_fix, tmp) in results.into_iter() {
+            tmp.into_iter().filter(|(_, value)| value.is_some() )
+                .for_each(|(id, value)| {
+                    values
+                        .entry(id)
+                        .and_modify(|v| v.push((z_g_fix, value.unwrap())) )
+                        .or_insert(vec![(z_g_fix, value.unwrap()),] );
+            });
         }
         Ok(())
     }
