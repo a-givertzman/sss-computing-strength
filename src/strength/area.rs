@@ -61,10 +61,8 @@ impl IArea for Area {
     fn area_h(&self, bound: &Bound) -> Result<f64, Error> {
         let mut sum = 0.;
         for v in self.area_const_h.iter() {
-            dbg!(v.value(bound)?);
             sum += v.value(bound)?;
         }
-        dbg!(sum);
         Ok(sum)
     }
     /// Площадь горизонтальных поверхностей палубного лесного  

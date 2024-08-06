@@ -413,6 +413,7 @@ impl Criterion {
                     )),
                 };
             } else if angles.len() > 1 {
+        //        dbg!(&self.metacentric_height.z_g_fix(), &angles);
                 results.push(CriterionData::new_result(
                     CriterionID::HeelFirstMaximumLC,
                     angle.0,

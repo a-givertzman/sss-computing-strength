@@ -366,7 +366,7 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
     )?.calculate()?;
     elapsed.insert("CriterionComputer", time.elapsed());
-    dbg!(criterion_computer_results);
+
     let mut criterion = Criterion::new(
         data.ship_type,
         data.navigation_area,
@@ -418,6 +418,16 @@ fn execute() -> Result<(), Error> {
     elapsed.insert("Completed", time.elapsed());
 
     let time = Instant::now();
+    let criterion_res = criterion.create();
+
+    log::info!("Main criterion:");
+    for v in criterion_res.iter() {
+        log::info!("id:{} result:{} target:{}", v.criterion_id, v.result, v.target);
+    }
+    log::info!("Main criterion zg:");
+    for (id, zg, delta) in criterion_computer_results.iter() {
+        log::info!("id:{id} zg:{zg} delta:{delta}");
+    }
     send_stability_data(&mut api_server, ship_id, criterion.create())?; //
     elapsed.insert("Write stability result", time.elapsed());
     send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //
