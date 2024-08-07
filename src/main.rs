@@ -359,6 +359,7 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&multipler_s),
         Rc::clone(&coefficient_k_theta),
         data.keel_area,
+        rad_trans,
         center_draught_shift.clone(),
         data.pantocaren.clone(),
         Rc::clone(&roll_period),
@@ -391,7 +392,7 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
         Rc::new(Acceleration::new(
             data.width,
-            mean_draught,
+            data.moulded_depth,
             Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())?),
             Rc::clone(&roll_period),
             Rc::clone(&roll_amplitude),
@@ -419,15 +420,15 @@ fn execute() -> Result<(), Error> {
 
     let time = Instant::now();
     let criterion_res = criterion.create();
-
-    log::info!("Main criterion:");
-    for v in criterion_res.iter() {
-        log::info!("id:{} result:{} target:{}", v.criterion_id, v.result, v.target);
-    }
     log::info!("Main criterion zg:");
     for (id, zg, delta) in criterion_computer_results.iter() {
         log::info!("id:{id} zg:{zg} delta:{delta}");
     }
+    log::info!("Main criterion:");
+    for v in criterion_res.iter() {
+        log::info!("id:{} result:{} target:{}", v.criterion_id, v.result, v.target);
+    }
+
     send_stability_data(&mut api_server, ship_id, criterion.create())?; //
     elapsed.insert("Write stability result", time.elapsed());
     send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //

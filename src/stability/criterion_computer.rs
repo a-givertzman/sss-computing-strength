@@ -69,6 +69,8 @@ pub struct CriterionComputer {
     coefficient_k_theta: Rc<dyn ICurve>,
     /// Суммарная габаритная площадь скуловых килей
     keel_area: Option<f64>,
+    /// Поперечный метацентрические радиус
+    rad_trans: f64,
     /// Отстояние центра величины погруженной части судна
     center_draught_shift: Position,
     /// Кривая плечей остойчивости формы для разных осадок
@@ -110,6 +112,7 @@ impl CriterionComputer {
     /// * multipler_s_area - Безразмерный множитель S Табл. 2.1.5.1-3
     /// * coefficient_k_theta - Коэффициент, учитывающий особенности качки судов смешанного типа
     /// * keel_area - Суммарная габаритная площадь скуловых килей
+    /// * rad_trans - Поперечный метацентрические радиус
     /// * center_draught_shift - Отстояние центра величины погруженной части судна
     /// * pantocaren - Кривая плечей остойчивости формы для разных осадок
     /// * roll_period - Период качки судна
@@ -143,6 +146,7 @@ impl CriterionComputer {
         multipler_s_area: Rc<dyn ICurve>,
         coefficient_k_theta: Rc<dyn ICurve>,
         keel_area: Option<f64>,
+        rad_trans: f64,
         center_draught_shift: Position,
         pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
         roll_period: Rc<dyn IRollingPeriod>,
@@ -180,6 +184,7 @@ impl CriterionComputer {
             ship_moment,
             ship_mass,
             loads_bulk,
+            rad_trans,
             center_draught_shift,
             pantocaren,
             coefficient_k,
@@ -201,14 +206,14 @@ impl CriterionComputer {
         let delta = 0.01;
         let max_index = (self.max_zg / delta).ceil() as i32;
         for index in 0..=max_index {
-            //  let index = 228; {
+     //         let index = 241; {
             //  let index = 652; {
             let z_g_fix = index as f64 * delta;
             let metacentric_height: Rc<dyn IMetacentricHeight> =
                 Rc::new(FakeMetacentricHeight::new(
                     self.metacentric_height.h_long_fix()?,
                     self.metacentric_height.h_trans_0()?,
-                    self.metacentric_height.h_trans_fix()?,
+                    self.center_draught_shift.z() + self.rad_trans - z_g_fix,
                     z_g_fix,
                 ));
             let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
@@ -265,7 +270,7 @@ impl CriterionComputer {
                 Rc::clone(&metacentric_height),
                 Rc::new(Acceleration::new(
                     self.width,
-                    self.mean_draught,
+                    self.moulded_depth,
                     Rc::clone(&self.coefficient_k_theta),
                     Rc::clone(&roll_period),
                     Rc::clone(&rolling_amplitude),
@@ -316,7 +321,27 @@ impl CriterionComputer {
                         .or_insert(vec![(z_g_fix, value.unwrap())]);
                 });
         }
-        let mut result = Vec::new();
+ /*       log::info!("criterion_computer res 17:");
+        for v in values.get(&17).unwrap().iter() {
+            if v.1 != 2.4298045566533406 
+            {
+                log::info!("zg:{} delta:{}", v.0, v.1,);
+            }
+        }
+         log::info!("criterion_computer res 12:");
+        for v in values.get(&12).unwrap().iter() {
+            if v.1 != 4.82680455665334 
+            {
+                log::info!("zg:{} delta:{}", v.0, v.1,);
+            }
+        }
+       log::info!("criterion_computer res 13:");
+        for v in values.get(&13).unwrap().iter() {
+            if v.1 != 0.07925828918500555 {
+                log::info!("zg:{} delta:{}", v.0, v.1,);
+            }
+        }
+ */       let mut result = Vec::new();
         for (id, mut values) in values.into_iter() {
             // сортируем значения по увеличению дельты с целевым
             values.sort_by(|(_, v1), (_, v2)| {

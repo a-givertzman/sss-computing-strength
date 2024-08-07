@@ -172,6 +172,7 @@ impl Criterion {
     ///
     pub fn create(&mut self) -> Vec<CriterionData> {
         let mut out_data = Vec::new();
+//        dbg!(self.metacentric_height.z_g_fix().unwrap());
         if self.navigation_area != NavigationArea::R3Rsn {
             out_data.push(self.weather());
         }
@@ -186,8 +187,8 @@ impl Criterion {
         if self.navigation_area != NavigationArea::Unlimited && self.have_icing {
             out_data.push(self.dso_lever_icing());
         }
-        out_data.append(&mut self.dso_lever_max_angle());
-        //       if self.have_cargo {
+       out_data.append(&mut self.dso_lever_max_angle());
+         //       if self.have_cargo {
         out_data.push(self.metacentric_height());
         //    }
         if let Ok(h_trans_fix) = self.metacentric_height.h_trans_fix() {
@@ -368,7 +369,7 @@ impl Criterion {
             Ok(angles) => angles,
             Err(text) => {
                 results.push(CriterionData::new_error(
-                    CriterionID::MinMetacentricHight,
+                    CriterionID::HeelMaximumLC,
                     "Ошибка вычисления угла и плеча максимума диаграммы плеч статической остойчивости в расчете метацентрической высоты: ".to_owned() + &text.to_string(),
                 ));
                 return results;
