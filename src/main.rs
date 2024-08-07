@@ -362,7 +362,6 @@ fn execute() -> Result<(), Error> {
         rad_trans,
         center_draught_shift.clone(),
         data.pantocaren.clone(),
-        Rc::clone(&roll_period),
         Rc::clone(&wind),
         Rc::clone(&metacentric_height),
     )?.calculate()?;
@@ -392,7 +391,7 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
         Rc::new(Acceleration::new(
             data.width,
-            data.moulded_depth,
+            mean_draught,
             Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())?),
             Rc::clone(&roll_period),
             Rc::clone(&roll_amplitude),

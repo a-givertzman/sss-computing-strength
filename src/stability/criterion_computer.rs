@@ -79,8 +79,6 @@ pub struct CriterionComputer {
     metacentric_height: Rc<dyn IMetacentricHeight>,
     /// Расчет плеча кренящего момента от давления ветра
     wind: Rc<dyn IWind>,
-    /// Период качки судна
-    roll_period: Rc<dyn IRollingPeriod>,
 }
 ///
 impl CriterionComputer {
@@ -115,7 +113,6 @@ impl CriterionComputer {
     /// * rad_trans - Поперечный метацентрические радиус
     /// * center_draught_shift - Отстояние центра величины погруженной части судна
     /// * pantocaren - Кривая плечей остойчивости формы для разных осадок
-    /// * roll_period - Период качки судна
     /// * wind - Расчет плеча кренящего момента от давления ветра
     /// * metacentric_height - Продольная и поперечная исправленная метацентрическая высота
     /// * parameters - Набор результатов расчетов для записи в БД
@@ -149,7 +146,6 @@ impl CriterionComputer {
         rad_trans: f64,
         center_draught_shift: Position,
         pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
-        roll_period: Rc<dyn IRollingPeriod>,
         wind: Rc<dyn IWind>,
         metacentric_height: Rc<dyn IMetacentricHeight>,
     ) -> Result<Self, Error> {
@@ -193,7 +189,6 @@ impl CriterionComputer {
             multipler_s_area,
             coefficient_k_theta,
             keel_area,
-            roll_period,
             wind,
             metacentric_height,
         })
@@ -205,15 +200,16 @@ impl CriterionComputer {
         let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
         let delta = 0.01;
         let max_index = (self.max_zg / delta).ceil() as i32;
-        for index in 0..=max_index {
-     //         let index = 241; {
-            //  let index = 652; {
+       // for index in 0..=max_index {
+              let index = 666; {
+          //    let index = 847; {
             let z_g_fix = index as f64 * delta;
+            let h = self.center_draught_shift.z() + self.rad_trans - z_g_fix;
             let metacentric_height: Rc<dyn IMetacentricHeight> =
                 Rc::new(FakeMetacentricHeight::new(
                     self.metacentric_height.h_long_fix()?,
-                    self.metacentric_height.h_trans_0()?,
-                    self.center_draught_shift.z() + self.rad_trans - z_g_fix,
+                    h,
+                    h,
                     z_g_fix,
                 ));
             let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
@@ -243,7 +239,7 @@ impl CriterionComputer {
                 Rc::clone(&self.multipler_x1),
                 Rc::clone(&self.multipler_x2),
                 Rc::clone(&self.multipler_s_area),
-                Rc::clone(&self.roll_period),
+                Rc::clone(&roll_period),
             )?);
             // релузьтат расчета критериев для текущего zg
             let tmp = Criterion::new(
@@ -270,7 +266,7 @@ impl CriterionComputer {
                 Rc::clone(&metacentric_height),
                 Rc::new(Acceleration::new(
                     self.width,
-                    self.moulded_depth,
+                    self.mean_draught,
                     Rc::clone(&self.coefficient_k_theta),
                     Rc::clone(&roll_period),
                     Rc::clone(&rolling_amplitude),
@@ -335,13 +331,14 @@ impl CriterionComputer {
                 log::info!("zg:{} delta:{}", v.0, v.1,);
             }
         }
-       log::info!("criterion_computer res 13:");
+         log::info!("criterion_computer res 13:");
         for v in values.get(&13).unwrap().iter() {
-            if v.1 != 0.07925828918500555 {
+      //      if v.1 != 0.07925828918500555 
+            {
                 log::info!("zg:{} delta:{}", v.0, v.1,);
             }
         }
- */       let mut result = Vec::new();
+  */    let mut result = Vec::new();
         for (id, mut values) in values.into_iter() {
             // сортируем значения по увеличению дельты с целевым
             values.sort_by(|(_, v1), (_, v2)| {

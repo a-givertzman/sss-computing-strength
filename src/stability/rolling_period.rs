@@ -40,11 +40,11 @@ impl IRollingPeriod for RollingPeriod {
         let c = self.c();
         Ok(if self.metacentric_height.h_trans_fix()? > 0. {
             let h_sqrt = self.metacentric_height.h_trans_fix()?.sqrt();
-            
-  //          log::info!("\t RollingPeriod calculate c:{c} h_sqrt: {h_sqrt} T:{res}");
-            2. *  c * self.b / h_sqrt
+            let res= 2. *  c * self.b / h_sqrt;
+            log::info!("\t RollingPeriod calculate l_wl:{} b:{} d:{} c:{c} h_sqrt: {h_sqrt} T:{res}", self.l_wl, self.b, self.d);
+            res
         } else {
-  //          log::info!("\t RollingPeriod calculate error: h_trans_fix is negative!");
+            log::info!("\t RollingPeriod calculate error: h_trans_fix is negative!");
             0.
         })
     }
