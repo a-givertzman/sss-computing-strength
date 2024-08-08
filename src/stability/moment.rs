@@ -67,7 +67,7 @@ impl ShipMoment {
     /// Отстояние центра масс
     fn shift(&self) -> Result<Position, Error> {
         let res = self.moment_mass()?.to_pos(self.mass.sum()?);
-        //    log::info!("\t Mass shift:{res} ");
+        //   log::info!("\t Mass shift:{res} ");
         self.parameters.add(ParameterID::CenterMassX, res.x());
         self.parameters.add(ParameterID::CenterMassZ, res.z());
         Ok(res)

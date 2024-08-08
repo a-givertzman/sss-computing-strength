@@ -217,16 +217,17 @@ impl LeverDiagram {
             .zip(ddo.iter())
             .map(|((a1, v1), (_, v2))| (*a1, *v1, *v2))
             .collect::<Vec<_>>();
-   /*     log::info!(
-            "StabilityArm calculate dso:{} ddo:{} diagram:{}",
+  /*      log::info!(
+            "StabilityArm calculate z_g_fix:{} len dso:{} ddo:{} diagram:{}, [angle, dso, ddo]",
+            self.metacentric_height.z_g_fix()?,
             dso.len(),
             ddo.len(),
             diagram.len()
         );
         for &(angle, dso, ddo) in diagram.iter() {
-            log::info!("angle:{angle} dso:{dso} ddo:{ddo}");
-        }
-   */     *self.diagram.borrow_mut() = Some(diagram);
+            log::info!("[{angle}, {dso}, {ddo}],");
+        }*/
+        *self.diagram.borrow_mut() = Some(diagram);
         *self.ddo.borrow_mut() = Some(ddo);
         self.parameters
             .add(ParameterID::Roll, angle_zero * angle_zero_signum);

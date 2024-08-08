@@ -13,8 +13,8 @@ pub enum CriterionID {
     Wheather = 1,
     WindStaticHeel = 2,
     AreaLC0_30 = 3,
-    AreaLC0_40 = 4,
-    AreaLc0Thetalmax = 5,
+    AreaLc0Thetalmax = 4,    
+    AreaLC0_40 = 5,
     AreaLC30_40 = 6,
     MaximumLC = 7,
     MaximumLcTimber = 8,
@@ -288,7 +288,7 @@ impl Criterion {
                 "Ошибка расчета площади под положительной частью диаграммы статической остойчивости 0-40 градусов: ".to_owned() + &text.to_string(),
             )),
         };
-        match self.lever_diagram.dso_area(0., second_angle_40) {
+        match self.lever_diagram.dso_area(30., second_angle_40) {
             Ok(result) => results.push(CriterionData::new_result(
                 CriterionID::AreaLC30_40,
                 result,

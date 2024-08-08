@@ -420,8 +420,8 @@ fn execute() -> Result<(), Error> {
     let time = Instant::now();
     let criterion_res = criterion.create();
     log::info!("Main criterion zg:");
-    for (id, zg, delta) in criterion_computer_results.iter() {
-        log::info!("id:{id} zg:{zg} delta:{delta}");
+    for (id, zg, result, target) in criterion_computer_results.iter() {
+        log::info!("id:{id} zg:{zg} result:{result} delta:{}", result - target);
     }
     log::info!("Main criterion:");
     for v in criterion_res.iter() {

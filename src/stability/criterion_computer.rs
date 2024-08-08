@@ -193,16 +193,17 @@ impl CriterionComputer {
             metacentric_height,
         })
     }
-    /// criterion_id, zg, delta
-    pub fn calculate(&mut self) -> Result<Vec<(usize, f64, f64)>, Error> {
+    /// criterion_id, zg, result, target
+    pub fn calculate(&mut self) -> Result<Vec<(usize, f64, f64, f64)>, Error> {
         let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
         // zg + Vec<id, delta>
         let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
         let delta = 0.01;
         let max_index = (self.max_zg / delta).ceil() as i32;
-       // for index in 0..=max_index {
-              let index = 666; {
-          //    let index = 847; {
+     //   for index in 0..=max_index {
+   //           let index = 847; {
+              let index = 665; {
+   //     for index in vec![891, 821, 847] {
             let z_g_fix = index as f64 * delta;
             let h = self.center_draught_shift.z() + self.rad_trans - z_g_fix;
             let metacentric_height: Rc<dyn IMetacentricHeight> =
@@ -291,12 +292,13 @@ impl CriterionComputer {
             )?
             .create();
             // отбрасываем ошибки, оставляем только значения, считаем дельту с целевым значением 
-            let tmp: Vec<(usize, Option<f64>)> = tmp
+            let tmp: Vec<(usize, Option<(f64, f64)>)> = tmp
                 .iter()
                 .map(|v| {
                     let delta = if v.error_message.is_none() {
                         //                 dbg!(z_g_fix, v.criterion_id, v.result, v.target);
-                        Some(v.result - v.target)
+                      //  Some(v.result - v.target)
+                      Some((v.result, v.target))
                     } else {
                         None
                     };
@@ -306,7 +308,7 @@ impl CriterionComputer {
             results.push((z_g_fix, tmp));
         }
         // создаем коллекцию векторов, сортируем значения по id
-        let mut values: HashMap<usize, Vec<(f64, f64)>> = HashMap::new();
+        let mut values: HashMap<usize, Vec<(f64, (f64, f64))>> = HashMap::new();
         for (z_g_fix, tmp) in results.into_iter() {
             tmp.into_iter()
                 .filter(|(_, value)| value.is_some())
@@ -341,16 +343,16 @@ impl CriterionComputer {
   */    let mut result = Vec::new();
         for (id, mut values) in values.into_iter() {
             // сортируем значения по увеличению дельты с целевым
-            values.sort_by(|(_, v1), (_, v2)| {
-                v1.abs()
-                    .partial_cmp(&v2.abs())
+            values.sort_by(|&(_, v1), &(_, v2)| {
+                (v1.0 - v1.1).abs()
+                    .partial_cmp(&(v2.0 - v2.1).abs())
                     .expect("CriterionComputer calculate error: sort values!")
             });
             // берем первое значение как ближайшее значение к целевому
             let closest_value = values
                 .first()
                 .expect("CriterionComputer calculate error, no values!");
-            result.push((id, closest_value.0, closest_value.1));
+            result.push((id, closest_value.0, closest_value.1.0, closest_value.1.1));
         }
         Ok(result)
     }
