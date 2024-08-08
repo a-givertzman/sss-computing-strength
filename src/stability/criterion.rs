@@ -260,7 +260,11 @@ impl Criterion {
     /// Площади под диаграммой статической остойчивости
     pub fn dso(&self) -> Vec<CriterionData> {
         let mut results = Vec::new();
-        match self.lever_diagram.dso_area(0., 30.) {
+        let theta = self.lever_diagram.angle(0.).unwrap_or(vec![0., 0.]);
+        let theta_0 = *theta.first().unwrap_or(&0.);
+        let theta_max = *theta.last().unwrap_or(&0.);
+        let second_angle_30 = theta_max.min(30.).min(self.flooding_angle);
+        match self.lever_diagram.dso_area(theta_0, second_angle_30) {
             Ok(result) => results.push(CriterionData::new_result(
                 CriterionID::AreaLC0_30,
                 result,
@@ -271,13 +275,13 @@ impl Criterion {
                 "Ошибка расчета площади под положительной частью диаграммы статической остойчивости 0-30 градусов: ".to_owned() + &text.to_string(),
             )),
         };
-        let second_angle_40 = 40.0f64.min(self.flooding_angle);
+        let second_angle_40 = theta_max.min(40.).min(self.flooding_angle);
         let target_area = if self.ship_type != ShipType::TimberCarrier {
             0.09
         } else {
             0.08
         };
-        match self.lever_diagram.dso_area(0., second_angle_40) {
+        match self.lever_diagram.dso_area(theta_0, second_angle_40) {
             Ok(result) => results.push(CriterionData::new_result(
                 CriterionID::AreaLC0_40,
                 result,
@@ -288,7 +292,8 @@ impl Criterion {
                 "Ошибка расчета площади под положительной частью диаграммы статической остойчивости 0-40 градусов: ".to_owned() + &text.to_string(),
             )),
         };
-        match self.lever_diagram.dso_area(30., second_angle_40) {
+        let first_angle_30 = theta_0.max(30.);
+        match self.lever_diagram.dso_area(first_angle_30, second_angle_40) {
             Ok(result) => results.push(CriterionData::new_result(
                 CriterionID::AreaLC30_40,
                 result,
@@ -299,6 +304,7 @@ impl Criterion {
                 "Ошибка расчета площади под положительной частью диаграммы статической остойчивости 30-40 градусов: ".to_owned() + &text.to_string(),
             )),
         };
+        log::info!("Criterion dso: zg:{} theta_0:{theta_0} theta_max:{theta_max} first_angle_30:{first_angle_30} second_angle_30:{second_angle_30} second_angle_40:{second_angle_40}", self.metacentric_height.z_g_fix().unwrap_or(-1.));
         results
     }
     /// Максимум диаграммы статической остойчивости
