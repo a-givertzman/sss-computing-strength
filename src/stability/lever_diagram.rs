@@ -217,7 +217,7 @@ impl LeverDiagram {
             .zip(ddo.iter())
             .map(|((a1, v1), (_, v2))| (*a1, *v1, *v2))
             .collect::<Vec<_>>();
-  /*      log::info!(
+      /*  log::info!(
             "StabilityArm calculate z_g_fix:{} len dso:{} ddo:{} diagram:{}, [angle, dso, ddo]",
             self.metacentric_height.z_g_fix()?,
             dso.len(),

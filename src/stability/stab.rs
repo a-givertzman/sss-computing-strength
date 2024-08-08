@@ -86,8 +86,8 @@ impl IStability for Stability {
         let b = b_s1 - b_s2;  
         let k = b / a;
   //      log::info!("\t Stability k l_w1:{l_w1} l_w2:{l_w2} theta_w1:{theta_w1}  theta_w2:{theta_w2} theta_c:{theta_c} theta_f:{theta_f}
-  //          a_angle1:{a_angle_first} a_angle2:{l_w2_angle_first} a_s1:{a_s1} a_s2:{a_s2} a:{a} 
- //           b_angle1:{l_w2_angle_first} b_angle2:{b_angle_second} b_s1:{b_s1} b_s2:{b_s2} b:{b} k:{k}");
+    //        a_angle1:{a_angle_first} a_angle2:{l_w2_angle_first} a_s1:{a_s1} a_s2:{a_s2} a:{a} 
+   //         b_angle1:{l_w2_angle_first} b_angle2:{b_angle_second} b_s1:{b_s1} b_s2:{b_s2} b:{b} k:{k}");
         self.parameters.add(ParameterID::StaticWindageHeelingAngle, theta_w1);
         self.parameters.add(ParameterID::DynamicWindageHeelingAngle, l_w2_angle_first);
         self.parameters.add(ParameterID::HeelingAngleOfSecondPointOfIntersectionWith, theta_c);

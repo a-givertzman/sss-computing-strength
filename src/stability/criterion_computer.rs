@@ -200,9 +200,9 @@ impl CriterionComputer {
         let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
         let delta = 0.01;
         let max_index = (self.max_zg / delta).ceil() as i32;
-   //     for index in 0..=max_index {
-   //           let index = 847; {
-              let index = 665; {
+        for index in 0..=max_index {
+    //          let index = 894; {
+   //           let index = 665; {
    //     for index in vec![891, 821, 847] {
             let z_g_fix = index as f64 * delta;
             let h = self.center_draught_shift.z() + self.rad_trans - z_g_fix;
@@ -319,14 +319,14 @@ impl CriterionComputer {
                         .or_insert(vec![(z_g_fix, value.unwrap())]);
                 });
         }
- /*       log::info!("criterion_computer res 17:");
-        for v in values.get(&17).unwrap().iter() {
-            if v.1 != 2.4298045566533406 
+   /*    log::info!("criterion_computer res 11:");
+        for v in values.get(&11).unwrap().iter() {
+  //          if v.1.0 != 2.4298045566533406 
             {
-                log::info!("zg:{} delta:{}", v.0, v.1,);
+                log::info!("zg:{} result:{} target:{}", v.0, v.1.0, v.1.1,);
             }
         }
-         log::info!("criterion_computer res 12:");
+          log::info!("criterion_computer res 12:");
         for v in values.get(&12).unwrap().iter() {
             if v.1 != 4.82680455665334 
             {
