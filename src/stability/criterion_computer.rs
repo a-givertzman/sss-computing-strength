@@ -200,8 +200,8 @@ impl CriterionComputer {
         let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
         let delta = 0.01;
         let max_index = (self.max_zg / delta).ceil() as i32;
-        for index in 0..=max_index {
-    //          let index = 894; {
+    //    for index in 0..=max_index {
+              let index = 894; {
    //           let index = 665; {
    //     for index in vec![891, 821, 847] {
             let z_g_fix = index as f64 * delta;

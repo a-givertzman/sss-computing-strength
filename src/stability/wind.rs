@@ -48,8 +48,8 @@ impl IWind for Wind {
     /// Плечо кренящего момента постоянного ветра
     fn arm_wind_static(&self) -> Result<f64, Error> {
         let res = (self.p_v * self.windage.a_v()? * self.windage.z_v()?) / (1000. * self.g * self.mass.sum()?);
-    //    log::info!("\t Wind arm_wind_static mass_sum:{} p_v:{} a_v:{}  z_v:{} res:{res}",
-    //    self.mass.sum(), self.p_v, self.windage.a_v()?, self.windage.z_v()?,);
+        log::info!("\t Wind arm_wind_static mass_sum:{} p_v:{} a_v:{}  z_v:{} res:{res}",
+        self.mass.sum()?, self.p_v, self.windage.a_v()?, self.windage.z_v()?,);
         self.parameters.add(ParameterID::WindPressure, self.p_v);
         self.parameters.add(ParameterID::WindageArea, self.windage.a_v()?);
         self.parameters.add(ParameterID::WindageAreaLever, self.windage.z_v()?);
