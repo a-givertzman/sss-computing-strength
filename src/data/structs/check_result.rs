@@ -277,8 +277,16 @@ impl ParsedShipData {
         if self.draft_mark.data().is_empty() {
             return Err(Error::Parameter("Error check draft_mark: draft_mark.data().is_empty()".to_string()));
         }
+        if self.screw.is_empty() {
+            return Err(Error::Parameter("Error check screw: screw.data().is_empty()".to_string()));
+        }
+        if let Some(v) = self.screw.iter().find(|v| v.d <= 0.) {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: screw{v} diametr error!"
+            )));
+        }
         if self.compartments.is_empty() {
-            return Err(Error::Parameter("Error check draft_mark: compartments.is_empty()".to_string()));
+            return Err(Error::Parameter("Error check compartments: compartments.is_empty()".to_string()));
         }       
         if let Some(s) = self.compartments.iter().find(|s| s.mass.unwrap_or(0.) < 0.) {
             return Err(Error::Parameter(format!(

@@ -184,6 +184,10 @@ pub fn get_data(
         "SELECT name, x, y, z FROM draft_mark WHERE ship_id={};",
         ship_id
     ))?)?;
+    let screw = ScrewDataArray::parse(&api_server.fetch(&format!(
+        "SELECT name, x, y, z, d FROM screw WHERE ship_id={};",
+        ship_id
+    ))?)?;
     let cargo = LoadCargoArray::parse(&api_server.fetch(&format!(
         "SELECT 
             c.name AS name, \
@@ -300,6 +304,7 @@ pub fn get_data(
         bonjean_frame,
         frame_area,
         draft_mark,
+        screw,
         cargo,
         compartment,
         load_constant,

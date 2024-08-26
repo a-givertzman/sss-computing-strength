@@ -131,6 +131,8 @@ pub struct ParsedShipData {
     pub frame_area: Vec<ParsedFrameData>,
     /// Координаты отметок заглубления на корпусе судна
     pub draft_mark: DraftMarkDataArray,
+    /// Координаты и диаметр винтов судна
+    pub screw: Vec<ScrewParsedData>,
     /// Нагрузка судна без жидких грузов   
     pub cargoes: Vec<LoadCargo>,
     /// Нагрузка судна: цистерны и трюмы   
@@ -179,6 +181,7 @@ impl ParsedShipData {
         bonjean_frame: FrameIndexDataArray,
         frame_area: FrameAreaDataArray,
         draft_mark: DraftMarkDataArray,
+        screw: ScrewDataArray,
         cargo_src: LoadCargoArray,
         compartments_src: CompartmentArray,
         load_constant_src: LoadConstantArray,
@@ -387,6 +390,7 @@ impl ParsedShipData {
             delta_windage_moment_z: delta_windage_moment.z(),
             frame_area: parsed_frame_area,
             draft_mark,
+            screw: screw.data(),
             cargoes: cargo_src.data(),
             compartments: compartments_src.data(),
             load_constants: load_constant_src.data(),
