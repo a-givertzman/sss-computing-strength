@@ -158,9 +158,9 @@ fn execute() -> Result<(), Error> {
     parameters.add(ParameterID::DraughtMean, mean_draught);
     // Момент площади горизонтальных поверхностей и площади парусности судна для расчета остойчивости
     let area_stability: Rc<dyn crate::stability::IArea> = Rc::new(crate::stability::Area::new(
-        Curve::new_linear(&data.area_v_stab.area())?.value(mean_draught)?,
-        Curve::new_linear(&data.area_v_stab.moment_x())?.value(mean_draught)?,
-        Curve::new_linear(&data.area_v_stab.moment_z())?.value(mean_draught)?,
+        Curve::new_linear(&data.area_v_stab.area())?.value(data.draught_min)?,
+        Curve::new_linear(&data.area_v_stab.moment_x())?.value(data.draught_min)?,
+        Curve::new_linear(&data.area_v_stab.moment_z())?.value(data.draught_min)?,
         data.area_h_stab
             .iter()
             .map(|v| HAreaStability::new(v.value, Position::new(v.shift_x, v.shift_y, v.shift_z)))
@@ -362,13 +362,12 @@ fn execute() -> Result<(), Error> {
         rad_trans,
         center_draught_shift.clone(),
         data.pantocaren.clone(),
-        Rc::clone(&roll_period),
         Rc::clone(&wind),
         Rc::clone(&metacentric_height),
     )?.calculate()?;
     elapsed.insert("CriterionComputer", time.elapsed());
 
-    let mut criterion = Criterion::new(
+ /*   let mut criterion = Criterion::new(
         data.ship_type,
         data.navigation_area,
         loads.desks()?.iter().any(|v| v.is_timber()),
@@ -392,7 +391,7 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
         Rc::new(Acceleration::new(
             data.width,
-            data.moulded_depth,
+            mean_draught,
             Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())?),
             Rc::clone(&roll_period),
             Rc::clone(&roll_amplitude),
@@ -415,21 +414,21 @@ fn execute() -> Result<(), Error> {
             Rc::clone(&parameters),
         )),
     )?;
-
+*/
     elapsed.insert("Completed", time.elapsed());
 
     let time = Instant::now();
-    let criterion_res = criterion.create();
+ //   let criterion_res = criterion.create();
     log::info!("Main criterion zg:");
-    for (id, zg, delta) in criterion_computer_results.iter() {
-        log::info!("id:{id} zg:{zg} delta:{delta}");
+    for (id, zg, result, target) in criterion_computer_results.iter() {
+        log::info!("id:{id} zg:{zg} result:{result} delta:{}", result - target);
     }
-    log::info!("Main criterion:");
+  /*  log::info!("Main criterion:");
     for v in criterion_res.iter() {
         log::info!("id:{} result:{} target:{}", v.criterion_id, v.result, v.target);
     }
-
-    send_stability_data(&mut api_server, ship_id, criterion.create())?; //
+*/
+ //   send_stability_data(&mut api_server, ship_id, criterion.create())?; //
     elapsed.insert("Write stability result", time.elapsed());
     send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //
 

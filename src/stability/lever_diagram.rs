@@ -75,7 +75,9 @@ impl LeverDiagram {
     /// динамической остойчивости (13)
     fn calculate(&self) -> Result<(), Error> {
         if self.pantocaren.len() < 2 {
-            return Err(Error::FromString("LeverDiagram calculate error: pantocaren.len() < 2".to_string()));
+            return Err(Error::FromString(
+                "LeverDiagram calculate error: pantocaren.len() < 2".to_string(),
+            ));
         }
         // Проверяем есть ли пантокарены в отрицательной области углов
         // Если нет то считаем что судно симметорично и зеркально
@@ -96,7 +98,7 @@ impl LeverDiagram {
         }
         let curve = Curve2D::from_values_catmull_rom(pantocaren)?;
         // расчет диаграммы
-  //      log::info!("StabilityArm calculate mean_draught:{}, z_g_fix:{} ", self.mean_draught, self.metacentric_height.z_g_fix()?);
+        //      log::info!("StabilityArm calculate mean_draught:{}, z_g_fix:{} ", self.mean_draught, self.metacentric_height.z_g_fix()?);
         let theta: &dyn Fn(i32) -> Result<(f64, f64), Error> = &|angle_deg: i32| {
             let angle_deg = angle_deg as f64 * 0.1;
             let angle_rad = angle_deg * std::f64::consts::PI / 180.;
@@ -105,7 +107,7 @@ impl LeverDiagram {
             let v3 =
                 (self.ship_moment.shift()?.y() - self.center_draught_shift.y()) * angle_rad.cos();
             let value = v1 - v2 - v3;
-      //                log::info!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}");
+            //                log::info!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}");
             Ok((angle_deg, value))
         };
         let mut dso = (-900..=900)
@@ -121,12 +123,12 @@ impl LeverDiagram {
                     .expect("LeverDiagram calculate error: sort dso!")
             });
             angle_zero_signum = -1.; // сохраняем знак угла
-      /*      log::info!("StabilityArm rotate dso:");
-            for (angle, value) in dso.iter() {
-                log::info!("angle:{angle} value:{value}");
-            }*/
+                                     /*      log::info!("StabilityArm rotate dso:");
+                                     for (angle, value) in dso.iter() {
+                                         log::info!("angle:{angle} value:{value}");
+                                     }*/
         }
-  /*      log::info!("StabilityArm calculate dso:");
+        /*      log::info!("StabilityArm calculate dso:");
         for (angle, value) in dso.iter() {
             log::info!("angle:{angle} value:{value}");
         }*/
@@ -137,7 +139,10 @@ impl LeverDiagram {
                 .expect("LeverDiagram calculate error: sort dso!")
         });
         let curve = Curve::new_linear(&dso)?;
-        let mut angle = tmp_dso.first().expect("LeverDiagram calculate error, no dso values!").0;
+        let mut angle = tmp_dso
+            .first()
+            .expect("LeverDiagram calculate error, no dso values!")
+            .0;
         let mut max_angle = angle;
         let mut value = curve.value(angle)?;
         let mut max_value = value;
@@ -161,8 +166,8 @@ impl LeverDiagram {
                 angle = max_angle;
             }
             delta_angle *= 0.5;
-   //                log::info!("StabilityArm calculate: value:{value} angle:{angle} max_value:{max_value} max_angle:{max_angle} delta_angle:{delta_angle} i:{_i} ");
-        }        
+            //                log::info!("StabilityArm calculate: value:{value} angle:{angle} max_value:{max_value} max_angle:{max_angle} delta_angle:{delta_angle} i:{_i} ");
+        }
         *self.theta_max.borrow_mut() = Some(max_angle);
         *self.dso.borrow_mut() = Some(dso.clone());
         *self.dso_curve.borrow_mut() = Some(curve.clone());
@@ -173,7 +178,7 @@ impl LeverDiagram {
         let mut last_angle = 0.;
         for &(angle_deg, value) in dso.iter().filter(|(a, _)| *a >= 0.) {
             if value < last_value && last_value > last_value2 {
-     //           dbg!(last_value2, last_value, value, last_angle, angle_deg);
+                //           dbg!(last_value2, last_value, value, last_angle, angle_deg);
                 max_angles.push((last_angle, last_value));
             }
             if last_value != value {
@@ -189,7 +194,10 @@ impl LeverDiagram {
         //
         let angle_zero = *self.angle(0.)?.first().unwrap_or(&0.);
         let mut ddo = Vec::new();
-        for &(angle_deg, _) in dso.iter().filter(|(a, _)| *a >= 0. && a.fract() == 0.) {
+        for &(angle_deg, _) in dso
+            .iter()
+            .filter(|(a, _)| *a >= 0. && a.fract().abs() < 0.001)
+        {
             let value = if angle_deg < angle_zero {
                 curve.integral(angle_deg, angle_zero)? * std::f64::consts::PI / 180.
             } else if angle_deg > angle_zero {
@@ -199,16 +207,28 @@ impl LeverDiagram {
             };
             ddo.push((angle_deg, value));
         }
-    /*    log::info!("StabilityArm calculate ddo:");
-        for (angle, value) in ddo.iter() {
+        /*   log::info!("StabilityArm calculate ddo:");
+        for &(angle, value) in ddo.iter() {
             log::info!("angle:{angle} value:{value}");
-        }*/
-        *self.diagram.borrow_mut() = Some(
-            dso.iter()
-                .zip(ddo.iter())
-                .map(|((a1, v1), (_, v2))| (*a1, *v1, *v2))
-                .collect::<Vec<_>>(),
+        }  */
+        let diagram = dso
+            .iter()
+            .filter(|(a, _)| *a >= 0. && a.fract().abs() < 0.001)
+            .zip(ddo.iter())
+            .map(|((a1, v1), (_, v2))| (*a1, *v1, *v2))
+            .collect::<Vec<_>>();
+        log::info!(
+            "StabilityArm calculate z_g_fix:{} angle_zero:{} len dso:{} ddo:{} diagram:{}, [angle, dso, ddo]",
+            self.metacentric_height.z_g_fix()?,
+            angle_zero * angle_zero_signum,
+            dso.len(),
+            ddo.len(),
+            diagram.len(),
         );
+        for &(angle, dso, ddo) in diagram.iter() {
+            log::info!("{angle} {dso} {ddo};");
+        }
+        *self.diagram.borrow_mut() = Some(diagram);
         *self.ddo.borrow_mut() = Some(ddo);
         self.parameters
             .add(ParameterID::Roll, angle_zero * angle_zero_signum);
@@ -223,15 +243,16 @@ impl ILeverDiagram for LeverDiagram {
             self.calculate()?;
         }
         let binding = self.dso_curve.borrow();
-        let curve = binding
-            .as_ref()
-            .ok_or(Error::FromString("LeverDiagram angle error: no dso_curve!".to_string()))?;
-        let max_angle = self
-            .theta_max
-            .borrow()
-            .ok_or(Error::FromString("StabilityArm angle error: no max_angle!".to_string()))?;
+        let curve = binding.as_ref().ok_or(Error::FromString(
+            "LeverDiagram angle error: no dso_curve!".to_string(),
+        ))?;
+        let max_angle = self.theta_max.borrow().ok_or(Error::FromString(
+            "StabilityArm angle error: no max_angle!".to_string(),
+        ))?;
         if curve.value(max_angle)? < lever_moment {
-            return Err(Error::FromString("StabilityArm angle error: curve.value(max_angle) < lever_moment!".to_string()));
+            return Err(Error::FromString(
+                "StabilityArm angle error: curve.value(max_angle) < lever_moment!".to_string(),
+            ));
         }
         let mut delta_angle = 22.5;
         let mut angles = vec![max_angle - delta_angle, max_angle + delta_angle];
@@ -257,7 +278,9 @@ impl ILeverDiagram for LeverDiagram {
     /// Плечо кренящего момента соответствующие углу крена судна
     fn lever_moment(&self, angle: f64) -> Result<f64, Error> {
         if !(0. ..=90.).contains(&angle) {
-            return Err(Error::FromString(format!("FakeLeverDiagram lever_moment error: angle {angle} >= 0. && angle {angle} <= 90.")));
+            return Err(Error::FromString(format!(
+                "FakeLeverDiagram lever_moment error: angle {angle} >= 0. && angle {angle} <= 90."
+            )));
         }
         if self.dso_curve.borrow().is_none() {
             self.calculate()?;
@@ -265,21 +288,28 @@ impl ILeverDiagram for LeverDiagram {
         self.dso_curve
             .borrow()
             .as_ref()
-            .ok_or(Error::FromString("LeverDiagram angle error: no dso_curve!".to_string()))?
+            .ok_or(Error::FromString(
+                "LeverDiagram angle error: no dso_curve!".to_string(),
+            ))?
             .value(angle)
     }
     /// Площадь под положительной частью диаграммы статической остойчивости (rad^2)
     fn dso_area(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
         if angle1 > angle2 {
-            return Err(Error::FromString(format!("FakeLeverDiagram dso_area error: angle1 {angle1} > angle2 {angle2}")));
+            return Err(Error::FromString(format!(
+                "FakeLeverDiagram dso_area error: angle1 {angle1} > angle2 {angle2}"
+            )));
         }
         if self.dso_curve.borrow().is_none() {
             self.calculate()?;
         }
-        Ok(self.dso_curve
+        Ok(self
+            .dso_curve
             .borrow()
             .as_ref()
-            .ok_or(Error::FromString("LeverDiagram dso_area error: no dso_curve!".to_string()))?
+            .ok_or(Error::FromString(
+                "LeverDiagram dso_area error: no dso_curve!".to_string(),
+            ))?
             .integral(angle1, angle2)?
             * PI
             / 180.)
@@ -287,7 +317,9 @@ impl ILeverDiagram for LeverDiagram {
     /// Максимальное плечо диаграммы статической остойчивости в диапазонеб (м)
     fn dso_lever_max(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
         if angle1 > angle2 {
-            return Err(Error::FromString(format!("FakeLeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}")));
+            return Err(Error::FromString(format!(
+                "FakeLeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}"
+            )));
         }
         if self.dso.borrow().is_none() {
             self.calculate()?;
@@ -295,7 +327,9 @@ impl ILeverDiagram for LeverDiagram {
         let dso = self.dso.borrow();
         let mut segment = dso
             .as_ref()
-            .ok_or(Error::FromString("LeverDiagram dso_lever_max error: no dso!".to_string()))?
+            .ok_or(Error::FromString(
+                "LeverDiagram dso_lever_max error: no dso!".to_string(),
+            ))?
             .iter()
             .filter(|v| v.0 >= angle1 && v.0 <= angle2)
             .collect::<Vec<_>>();
@@ -305,7 +339,9 @@ impl ILeverDiagram for LeverDiagram {
         });
         Ok(segment
             .last()
-            .ok_or(Error::FromString("LeverDiagram dso_lever_max segment error: no values!".to_string()))?
+            .ok_or(Error::FromString(
+                "LeverDiagram dso_lever_max segment error: no values!".to_string(),
+            ))?
             .1)
     }
     /// Диаграммы остойчивости, зависимость от угла, градусы
@@ -313,20 +349,18 @@ impl ILeverDiagram for LeverDiagram {
         if self.diagram.borrow().is_none() {
             self.calculate()?;
         }
-        self.diagram
-            .borrow()
-            .clone()
-            .ok_or(Error::FromString("StabilityArm diagram error: no diagram!".to_string()))
+        self.diagram.borrow().clone().ok_or(Error::FromString(
+            "StabilityArm diagram error: no diagram!".to_string(),
+        ))
     }
     /// Углы максимумов диаграммы плеч статической остойчивости
     fn max_angles(&self) -> Result<Vec<(f64, f64)>, Error> {
         if self.max_angles.borrow().is_none() {
             self.calculate()?;
         }
-        self.max_angles
-            .borrow()
-            .clone()
-            .ok_or(Error::FromString("StabilityArm max_angles error: no max_angles!".to_string()))
+        self.max_angles.borrow().clone().ok_or(Error::FromString(
+            "StabilityArm max_angles error: no max_angles!".to_string(),
+        ))
     }
 }
 #[doc(hidden)]
@@ -388,14 +422,18 @@ impl ILeverDiagram for FakeLeverDiagram {
     /// Площадь под положительной частью диаграммы статической остойчивости, м*rad
     fn dso_area(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
         if angle1 > angle2 {
-            return Err(Error::FromString(format!("FakeLeverDiagram dso_area error: angle1 {angle1} > angle2 {angle2}")));
+            return Err(Error::FromString(format!(
+                "FakeLeverDiagram dso_area error: angle1 {angle1} > angle2 {angle2}"
+            )));
         }
         Ok(self.dso_area)
     }
     /// Максимальное плечо диаграммы статической остойчивости в диапазоне, м
     fn dso_lever_max(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
         if angle1 > angle2 {
-            return Err(Error::FromString(format!("FakeLeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}")));
+            return Err(Error::FromString(format!(
+                "FakeLeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}"
+            )));
         }
         Ok(self.dso_lever_max)
     }

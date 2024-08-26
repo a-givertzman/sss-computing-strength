@@ -8,7 +8,7 @@ use crate::{Error, ICurve, IMetacentricHeight, IRollingAmplitude, IRollingPeriod
 pub struct Acceleration {
     ///  Ширина судна B
     b: f64,
-    /// Осадка судна d
+    /// Осадка судна, м
     d: f64,
     /// Коэффициент, учитывающий особенности качки судов смешанного типа
     k_theta: Rc<dyn ICurve>,
@@ -23,7 +23,7 @@ pub struct Acceleration {
 impl Acceleration {
     /// Основной конструктор
     /// * b - Ширина судна, м
-    /// * d - Высота борта, м
+    /// * d - Осадка судна, м
     /// * k_theta - Коэффициент, учитывающий особенности качки судов смешанного типа
     /// * rolling_period - Период качки судна
     /// * rolling_amplitude - Амплитуда качки судна с круглой скулой (2.1.5)
@@ -56,7 +56,7 @@ impl IAcceleration for Acceleration {
         let (_, theta_1_r) = self.rolling_amplitude.calculate()?;
         let a = 0.0105 * h_trans_0/(c*c*self.b)*k_theta*theta_1_r;
         let k = 0.3/a; // >= 1;
-    //    log::info!("Acceleration calculate: zg_fix:{} b:{} d:{} h_trans_0:{h_trans_0} k_theta:{k_theta} c:{c} theta_1_r:{theta_1_r} a:{a} k:{k}",  self.metacentric_height.z_g_fix().unwrap(), self.b, self.d);
+     //   log::info!("Acceleration calculate: zg_fix:{} b:{} d:{} h_trans_0:{h_trans_0} k_theta:{k_theta} c:{c} theta_1_r:{theta_1_r} a:{a} k:{k}",  self.metacentric_height.z_g_fix().unwrap(), self.b, self.d);
         Ok(k)
     }
 }

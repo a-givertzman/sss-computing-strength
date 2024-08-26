@@ -79,8 +79,6 @@ pub struct CriterionComputer {
     metacentric_height: Rc<dyn IMetacentricHeight>,
     /// Расчет плеча кренящего момента от давления ветра
     wind: Rc<dyn IWind>,
-    /// Период качки судна
-    roll_period: Rc<dyn IRollingPeriod>,
 }
 ///
 impl CriterionComputer {
@@ -115,7 +113,6 @@ impl CriterionComputer {
     /// * rad_trans - Поперечный метацентрические радиус
     /// * center_draught_shift - Отстояние центра величины погруженной части судна
     /// * pantocaren - Кривая плечей остойчивости формы для разных осадок
-    /// * roll_period - Период качки судна
     /// * wind - Расчет плеча кренящего момента от давления ветра
     /// * metacentric_height - Продольная и поперечная исправленная метацентрическая высота
     /// * parameters - Набор результатов расчетов для записи в БД
@@ -149,7 +146,6 @@ impl CriterionComputer {
         rad_trans: f64,
         center_draught_shift: Position,
         pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
-        roll_period: Rc<dyn IRollingPeriod>,
         wind: Rc<dyn IWind>,
         metacentric_height: Rc<dyn IMetacentricHeight>,
     ) -> Result<Self, Error> {
@@ -193,27 +189,28 @@ impl CriterionComputer {
             multipler_s_area,
             coefficient_k_theta,
             keel_area,
-            roll_period,
             wind,
             metacentric_height,
         })
     }
-    /// criterion_id, zg, delta
-    pub fn calculate(&mut self) -> Result<Vec<(usize, f64, f64)>, Error> {
+    /// criterion_id, zg, result, target
+    pub fn calculate(&mut self) -> Result<Vec<(usize, f64, f64, f64)>, Error> {
         let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
         // zg + Vec<id, delta>
         let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
         let delta = 0.01;
         let max_index = (self.max_zg / delta).ceil() as i32;
-        for index in 0..=max_index {
-     //         let index = 241; {
-            //  let index = 652; {
+    //    for index in 0..=max_index {
+              let index = 894; {
+   //           let index = 665; {
+   //     for index in vec![891, 821, 847] {
             let z_g_fix = index as f64 * delta;
+            let h = self.center_draught_shift.z() + self.rad_trans - z_g_fix;
             let metacentric_height: Rc<dyn IMetacentricHeight> =
                 Rc::new(FakeMetacentricHeight::new(
                     self.metacentric_height.h_long_fix()?,
-                    self.metacentric_height.h_trans_0()?,
-                    self.center_draught_shift.z() + self.rad_trans - z_g_fix,
+                    h,
+                    h,
                     z_g_fix,
                 ));
             let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
@@ -243,7 +240,7 @@ impl CriterionComputer {
                 Rc::clone(&self.multipler_x1),
                 Rc::clone(&self.multipler_x2),
                 Rc::clone(&self.multipler_s_area),
-                Rc::clone(&self.roll_period),
+                Rc::clone(&roll_period),
             )?);
             // релузьтат расчета критериев для текущего zg
             let tmp = Criterion::new(
@@ -270,7 +267,7 @@ impl CriterionComputer {
                 Rc::clone(&metacentric_height),
                 Rc::new(Acceleration::new(
                     self.width,
-                    self.moulded_depth,
+                    self.mean_draught,
                     Rc::clone(&self.coefficient_k_theta),
                     Rc::clone(&roll_period),
                     Rc::clone(&rolling_amplitude),
@@ -295,12 +292,13 @@ impl CriterionComputer {
             )?
             .create();
             // отбрасываем ошибки, оставляем только значения, считаем дельту с целевым значением 
-            let tmp: Vec<(usize, Option<f64>)> = tmp
+            let tmp: Vec<(usize, Option<(f64, f64)>)> = tmp
                 .iter()
                 .map(|v| {
                     let delta = if v.error_message.is_none() {
                         //                 dbg!(z_g_fix, v.criterion_id, v.result, v.target);
-                        Some(v.result - v.target)
+                      //  Some(v.result - v.target)
+                      Some((v.result, v.target))
                     } else {
                         None
                     };
@@ -310,7 +308,7 @@ impl CriterionComputer {
             results.push((z_g_fix, tmp));
         }
         // создаем коллекцию векторов, сортируем значения по id
-        let mut values: HashMap<usize, Vec<(f64, f64)>> = HashMap::new();
+        let mut values: HashMap<usize, Vec<(f64, (f64, f64))>> = HashMap::new();
         for (z_g_fix, tmp) in results.into_iter() {
             tmp.into_iter()
                 .filter(|(_, value)| value.is_some())
@@ -321,39 +319,40 @@ impl CriterionComputer {
                         .or_insert(vec![(z_g_fix, value.unwrap())]);
                 });
         }
- /*       log::info!("criterion_computer res 17:");
-        for v in values.get(&17).unwrap().iter() {
-            if v.1 != 2.4298045566533406 
+   /*    log::info!("criterion_computer res 11:");
+        for v in values.get(&11).unwrap().iter() {
+  //          if v.1.0 != 2.4298045566533406 
             {
-                log::info!("zg:{} delta:{}", v.0, v.1,);
+                log::info!("zg:{} result:{} target:{}", v.0, v.1.0, v.1.1,);
             }
         }
-         log::info!("criterion_computer res 12:");
+          log::info!("criterion_computer res 12:");
         for v in values.get(&12).unwrap().iter() {
             if v.1 != 4.82680455665334 
             {
                 log::info!("zg:{} delta:{}", v.0, v.1,);
             }
         }
-       log::info!("criterion_computer res 13:");
+         log::info!("criterion_computer res 13:");
         for v in values.get(&13).unwrap().iter() {
-            if v.1 != 0.07925828918500555 {
+      //      if v.1 != 0.07925828918500555 
+            {
                 log::info!("zg:{} delta:{}", v.0, v.1,);
             }
         }
- */       let mut result = Vec::new();
+  */    let mut result = Vec::new();
         for (id, mut values) in values.into_iter() {
             // сортируем значения по увеличению дельты с целевым
-            values.sort_by(|(_, v1), (_, v2)| {
-                v1.abs()
-                    .partial_cmp(&v2.abs())
+            values.sort_by(|&(_, v1), &(_, v2)| {
+                (v1.0 - v1.1).abs()
+                    .partial_cmp(&(v2.0 - v2.1).abs())
                     .expect("CriterionComputer calculate error: sort values!")
             });
             // берем первое значение как ближайшее значение к целевому
             let closest_value = values
                 .first()
                 .expect("CriterionComputer calculate error, no values!");
-            result.push((id, closest_value.0, closest_value.1));
+            result.push((id, closest_value.0, closest_value.1.0, closest_value.1.1));
         }
         Ok(result)
     }
