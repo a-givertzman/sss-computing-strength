@@ -28,10 +28,10 @@ mod tests {
             2.,
             2.,
             1.,
-            Curve::new_linear(&vec![(0., 0.7), (1., 0.7)]).unwrap(),
-            Curve::new_linear(&vec![(0., 0.8), (1., 0.8)]).unwrap(),
-            Curve::new_linear(&vec![(0., 1.), (1., 1.)]).unwrap(),
-            Curve::new_linear(&vec![(0., 0.1), (10., 0.1)]).unwrap(),
+            Rc::new(Curve::new_linear(&vec![(0., 0.7), (1., 0.7)]).unwrap()),
+            Rc::new(Curve::new_linear(&vec![(0., 0.8), (1., 0.8)]).unwrap()),
+            Rc::new(Curve::new_linear(&vec![(0., 1.), (1., 1.)]).unwrap()),
+            Rc::new(Curve::new_linear(&vec![(0., 0.1), (10., 0.1)]).unwrap()),
             Rc::new(FakeRollingPeriod::new(5., 1.)),
         )
         .unwrap()
