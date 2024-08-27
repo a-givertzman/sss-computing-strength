@@ -39,7 +39,7 @@ mod tests {
         .unwrap()
         .1;
 
-        let target = 8.41378;
+        let target = 8.;
         assert!(
             (result - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",

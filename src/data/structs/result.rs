@@ -2,7 +2,7 @@
 //! в формат пригодный для создания объектов.
 
 use loads::{
-    CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData,
+    compartment, CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData
 };
 
 use crate::{error::Error, icing_stab::IcingStabType, icing_timber::IcingTimberType};
@@ -184,6 +184,7 @@ impl ParsedShipData {
         screw: ScrewDataArray,
         cargo_src: LoadCargoArray,
         compartments_src: CompartmentArray,
+        hold_compartments_src: CompartmentArray,
         load_constant_src: LoadConstantArray,
         area_h_stab: HStabAreaArray,
         area_h_str: HStrAreaArray,
@@ -332,6 +333,8 @@ impl ParsedShipData {
             "ParsedShipData parse error: no icing_coef_v_moment_zero for ship id:{}",
             ship_id
         ))?;
+        let mut compartments = Vec::from(compartments_src.data());
+        compartments.append(&mut hold_compartments_src.data());
         log::info!("result parse ok");
         Self {
             ship_type,
@@ -392,7 +395,7 @@ impl ParsedShipData {
             draft_mark,
             screw: screw.data(),
             cargoes: cargo_src.data(),
-            compartments: compartments_src.data(),
+            compartments,
             load_constants: load_constant_src.data(),
             area_h_stab: area_h_stab.data(),
             area_h_str: area_h_str.data(),

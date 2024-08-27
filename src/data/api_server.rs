@@ -219,7 +219,6 @@ pub fn get_data(
     ))?)?;
     let compartment = CompartmentArray::parse(&api_server.fetch(&format!(
         "SELECT 
-            c.space_id AS space_id, \
             c.name AS name, \
             c.mass AS mass, \
             cc.matter_type::TEXT AS matter_type, \
@@ -242,6 +241,29 @@ pub fn get_data(
             cargo_general_category AS cgc ON cc.general_category_id = cgc.id
         WHERE 
             ship_id={ship_id} AND active=TRUE AND mass>0;"
+    ))?)?;
+    let hold_compartment = CompartmentArray::parse(&api_server.fetch(&format!(
+        "SELECT 
+            c.name AS name, \
+            c.mass AS mass, \
+            cc.matter_type::TEXT AS matter_type, \
+            cgc.key::TEXT AS general_category, \
+            c.density AS density, \
+            c.volume AS volume, \
+            c.bound_x1 AS bound_x1, \
+            c.bound_x2 AS bound_x2, \
+            c.mass_shift_x AS mass_shift_x, \
+            c.mass_shift_y AS mass_shift_y, \
+            c.mass_shift_z AS mass_shift_z, \
+            c.grain_moment AS grain_moment \
+        FROM 
+            hold_compartment c
+        JOIN 
+            cargo_category AS cc ON c.category_id = cc.id
+        JOIN 
+            cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+        WHERE 
+            ship_id={ship_id} AND mass>0;"
     ))?)?;
     let load_constant = LoadConstantArray::parse(&api_server.fetch(&format!(
         "SELECT 
@@ -307,6 +329,7 @@ pub fn get_data(
         screw,
         cargo,
         compartment,
+        hold_compartment,
         load_constant,
         area_h_stab,
         area_h_str,
