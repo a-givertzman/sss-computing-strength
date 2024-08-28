@@ -13,7 +13,6 @@ mod bending_moment;
 mod bounds;
 mod metacentric_height;
 mod curve2d;
-mod computer;
 mod lever_diagram;
 mod wind;
 mod rolling_period;
