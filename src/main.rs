@@ -278,10 +278,52 @@ fn execute() -> Result<(), Error> {
             )?),
             Some(Rc::clone(&parameters)),
         )?),
-        data.draft_mark.data(),
+        data.draft_mark,
         Rc::clone(&parameters),
     );
     send_draft_mark(&mut api_server, ship_id, draft_mark.calculate()?)?;
+    // Расчет уровня заглубления для винтов судна
+    let mut screw = Screw::new(
+        Box::new(Draught::new(
+            data.length_lbp,
+            center_waterline_shift,
+            // Дифферент для остойчивости
+            Box::new(stability::Trim::new(
+                data.length_lbp,
+                mean_draught,
+                center_draught_shift.clone(),
+                Rc::clone(&metacentric_height),
+                Rc::clone(&ship_mass),
+                Rc::clone(&ship_moment),
+                Rc::clone(&parameters),
+            )?),
+            Some(Rc::clone(&parameters)),
+        )?),
+        data.screw,
+        Rc::clone(&parameters),
+    );
+    send_screw(&mut api_server, ship_id, screw.calculate()?)?;
+    // Проверка осадок судна
+    let mut load_line = LoadLine::new(
+        Box::new(Draught::new(
+            data.length_lbp,
+            center_waterline_shift,
+            // Дифферент для остойчивости
+            Box::new(stability::Trim::new(
+                data.length_lbp,
+                mean_draught,
+                center_draught_shift.clone(),
+                Rc::clone(&metacentric_height),
+                Rc::clone(&ship_mass),
+                Rc::clone(&ship_moment),
+                Rc::clone(&parameters),
+            )?),
+            Some(Rc::clone(&parameters)),
+        )?),
+        data.load_line,
+        Rc::clone(&parameters),
+    );
+    send_load_line(&mut api_server, ship_id, load_line.calculate()?)?;
     // влияние ветра на остойчивость
     let wind: Rc<dyn IWind> = Rc::new(Wind::new(
         data.navigation_area_param

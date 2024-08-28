@@ -274,8 +274,11 @@ impl ParsedShipData {
                 "Error check ParsedShipData: immersion_area frame{frame}: v.0 < 0 || v.1 < 0"
             )));
         }
-        if self.draft_mark.data().is_empty() {
-            return Err(Error::Parameter("Error check draft_mark: draft_mark.data().is_empty()".to_string()));
+        if self.draft_mark.is_empty() {
+            return Err(Error::Parameter("Error check draft_mark: draft_mark.is_empty()".to_string()));
+        }
+        if self.load_line.is_empty() {
+            return Err(Error::Parameter("Error check load_line: load_line.is_empty()".to_string()));
         }
         if self.screw.is_empty() {
             return Err(Error::Parameter("Error check screw: screw.data().is_empty()".to_string()));
