@@ -183,6 +183,7 @@ impl ParsedShipData {
         draft_mark: DraftMarkDataArray,
         screw: ScrewDataArray,
         cargo_src: LoadCargoArray,
+        bulkhead_src: LoadCargoArray,
         compartments_src: CompartmentArray,
         hold_compartments_src: CompartmentArray,
         load_constant_src: LoadConstantArray,
@@ -333,6 +334,8 @@ impl ParsedShipData {
             "ParsedShipData parse error: no icing_coef_v_moment_zero for ship id:{}",
             ship_id
         ))?;
+        let mut cargoes = Vec::from(cargo_src.data());
+        cargoes.append(&mut bulkhead_src.data());        
         let mut compartments = Vec::from(compartments_src.data());
         compartments.append(&mut hold_compartments_src.data());
         log::info!("result parse ok");
@@ -394,7 +397,7 @@ impl ParsedShipData {
             frame_area: parsed_frame_area,
             draft_mark,
             screw: screw.data(),
-            cargoes: cargo_src.data(),
+            cargoes,
             compartments,
             load_constants: load_constant_src.data(),
             area_h_stab: area_h_stab.data(),
