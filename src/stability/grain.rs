@@ -58,7 +58,7 @@ impl Grain {
         let second_point_ab = (40.0f64, 0.8*lambda_0);
         // Изменение апроксимирующей прямой на один градус угла крена
         let delta_ab = (second_point_ab.1 - first_point_ab.1)/(second_point_ab.0 - first_point_ab.0);
-        let precision = 0.1; // Точность определения пересечения в градусах
+        let precision = 0.05; // Точность определения пересечения в градусах
         // Точка пересечения кривых. Проходим по кривой плечей и ищем точку пересечения как  
         // точку, в которой значение кривой плеч момента зерна меньше чем значение dso
         // Если точка отсутствует (момент от зерна слишком большй) то принимаем
@@ -134,13 +134,13 @@ pub trait IGrain {
 }
 // заглушка для тестирования
 #[doc(hidden)]
-pub struct FakeAccelleration {
+pub struct FakeGrain {
     angle: (f64, f64),
     area: f64,
 }
 #[doc(hidden)]
 #[allow(dead_code)]
-impl FakeAccelleration {
+impl FakeGrain {
     pub fn new(
         angle: (f64, f64),
         area: f64,
@@ -152,7 +152,7 @@ impl FakeAccelleration {
     }
 }
 #[doc(hidden)]
-impl IGrain for FakeAccelleration {
+impl IGrain for FakeGrain  {
     ///
     fn angle(&mut self) -> Result<(f64, f64), Error> {
         Ok(self.angle)

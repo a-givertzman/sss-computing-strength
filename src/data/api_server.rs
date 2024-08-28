@@ -184,6 +184,10 @@ pub fn get_data(
         "SELECT name, x, y, z FROM draft_mark WHERE ship_id={};",
         ship_id
     ))?)?;
+    let screw = ScrewDataArray::parse(&api_server.fetch(&format!(
+        "SELECT name, x, y, z, d FROM screw WHERE ship_id={};",
+        ship_id
+    ))?)?;
     let cargo = LoadCargoArray::parse(&api_server.fetch(&format!(
         "SELECT 
             c.name AS name, \
@@ -215,7 +219,6 @@ pub fn get_data(
     ))?)?;
     let compartment = CompartmentArray::parse(&api_server.fetch(&format!(
         "SELECT 
-            c.space_id AS space_id, \
             c.name AS name, \
             c.mass AS mass, \
             cc.matter_type::TEXT AS matter_type, \
@@ -237,8 +240,52 @@ pub fn get_data(
         JOIN 
             cargo_general_category AS cgc ON cc.general_category_id = cgc.id
         WHERE 
-            ship_id={ship_id} AND active=TRUE AND mass>0;"
+            c.ship_id={ship_id} AND active=TRUE AND mass>0;"
     ))?)?;
+    let hold_compartment = CompartmentArray::parse(&api_server.fetch(&format!(
+        "SELECT 
+            c.name AS name, \
+            c.mass AS mass, \
+            cc.matter_type::TEXT AS matter_type, \
+            cgc.key::TEXT AS general_category, \
+            c.density AS density, \
+            c.volume AS volume, \
+            c.bound_x1 AS bound_x1, \
+            c.bound_x2 AS bound_x2, \
+            c.mass_shift_x AS mass_shift_x, \
+            c.mass_shift_y AS mass_shift_y, \
+            c.mass_shift_z AS mass_shift_z, \
+            c.grain_moment AS grain_moment \
+        FROM 
+            hold_compartment c
+        JOIN 
+            cargo_category AS cc ON c.category_id = cc.id
+        JOIN 
+            cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+        WHERE 
+            c.ship_id={ship_id} AND mass>0;"
+    ))?)?;
+    let bulkhead = LoadCargoArray::parse(&api_server.fetch(&format!(
+            "SELECT 
+                h.name AS name, \
+                h.mass AS mass, \
+                cgc.key::TEXT AS general_category, \
+                p.bound_x1 AS bound_x1, \
+                p.bound_x2 AS bound_x2, \
+                p.mass_shift_x AS mass_shift_x, \
+                p.mass_shift_y AS mass_shift_y, \
+                p.mass_shift_z AS mass_shift_z \
+            FROM 
+                bulkhead AS h
+            JOIN 
+                cargo_category AS cc ON h.category_id = cc.id
+            JOIN 
+                cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+            JOIN 
+                bulkhead_place AS p ON h.id = p.bulkhead_id
+            WHERE 
+                h.ship_id={ship_id};"
+        ))?)?;
     let load_constant = LoadConstantArray::parse(&api_server.fetch(&format!(
         "SELECT 
             l.mass AS mass, \
@@ -300,8 +347,11 @@ pub fn get_data(
         bonjean_frame,
         frame_area,
         draft_mark,
+        screw,
         cargo,
+        bulkhead,
         compartment,
+        hold_compartment,
         load_constant,
         area_h_stab,
         area_h_str,

@@ -51,14 +51,20 @@ impl Windage {
 impl IWindage for Windage {
     /// Площадь парусности, м^2
     fn a_v(&self) -> Result<f64, Error> {
-        Ok(self.area_stability.area_v()?*(1. + self.icing_stab.coef_v_area()) - self.delta_area)
+        let area_v = self.area_stability.area_v()?;
+        let coef = 1. + self.icing_stab.coef_v_area();
+        let result = self.area_stability.area_v()?*(1. + self.icing_stab.coef_v_area()) - self.delta_area;
+        log::info!("\t IWindage a_v area_v:{area_v} coef:{coef} delta_area:{} result:{result} ", self.delta_area);
+        Ok(result)
     }    
     /// Плечо парусности, м
     fn z_v(&self) -> Result<f64, Error> {
         let m_vz = self.moment()?.z() - self.delta_moment.z();
         let a_v = self.a_v()?;
         let z_v_bp = m_vz/a_v;
-        Ok(z_v_bp - self.volume_shift)
+        let result = z_v_bp - self.volume_shift;
+        log::info!("\t IWindage z_v moment:{} m_vz:{m_vz} a_v:{a_v} z_v_bp:{z_v_bp} volume_shift:{} result:{result} ", self.moment()?, self.volume_shift);
+        Ok(result)
     }
 }
 #[doc(hidden)]

@@ -11,10 +11,10 @@ use crate::{
 /// площади парусности судна
 #[derive(Clone)]
 pub struct Area {
-    /// Площадь парусности корпуса судна для текущей осадки
+    /// Площадь парусности корпуса судна для минимальной осадки
     av_cs_dmin1: f64,
     /// Cтатический момент площади парусности сплошных
-    /// поверхностей для текущей осадки, относительно миделя и относительно ОП
+    /// поверхностей для минимальной осадки, относительно миделя и относительно ОП
     mvx_cs_dmin1: f64,
     mvz_cs_dmin1: f64,
     /// Площадь горизонтальных поверхностей корпуса судна
@@ -71,13 +71,11 @@ impl IArea for Area {
     /// Момент площади горизонтальных поверхностей
     fn moment_h(&self) -> Result<Moment, Error> {
         let mut moment_sum = self.area_const_h.iter().map(|v| v.moment()).sum::<Moment>();
-        dbg!(&moment_sum);
         for v in self.desks.iter() {
             moment_sum += Moment::from_pos(
                 Position::new(v.shift().x(), v.shift().y(), v.height()?),
                 v.horizontal_area(&Bound::Full, &Bound::Full)?,
             );
-            dbg!(&moment_sum);
         }
         Ok(moment_sum)
     }

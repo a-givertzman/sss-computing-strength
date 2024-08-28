@@ -7,8 +7,6 @@ use super::{CargoGeneralCategory, MatterType};
 /// Помещения судна: цистерны и трюмы  
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CompartmentData {
-    /// ID груза
-    pub space_id: usize,
     /// Имя груза
     pub name: String,
     /// Общая масса, т
@@ -39,9 +37,8 @@ impl std::fmt::Display for CompartmentData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "CompartmentData(space_id:{} name:{} mass:{} density:{} volume:{} bound:({}, {}) \
+            "CompartmentData(name:{} mass:{} density:{} volume:{} bound:({}, {}) \
              mass_shift:({}, {}, {}) m_f_s_y:{} m_f_s_x:{} grain_moment:{} general_category:{} matter_type:{})",
-            self.space_id,
             self.name,
             self.mass.unwrap_or(0.),
             self.density.unwrap_or(0.),

@@ -2,7 +2,7 @@
 //! в формат пригодный для создания объектов.
 
 use loads::{
-    CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData,
+    compartment, CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData
 };
 
 use crate::{error::Error, icing_stab::IcingStabType, icing_timber::IcingTimberType};
@@ -59,6 +59,8 @@ pub struct ParsedShipData {
     pub width: f64,
     /// Отстояние миделя от нулевого шпангоута
     pub midship: f64,
+    /// Overall height up to non-removable parts
+    pub overall_height: f64,
     /// Эксплуатационная скорость судна, m/s
     pub velocity: f64,
     /// Cуммарная габаритная площадь скуловых килей,
@@ -129,6 +131,8 @@ pub struct ParsedShipData {
     pub frame_area: Vec<ParsedFrameData>,
     /// Координаты отметок заглубления на корпусе судна
     pub draft_mark: DraftMarkDataArray,
+    /// Координаты и диаметр винтов судна
+    pub screw: Vec<ScrewParsedData>,
     /// Нагрузка судна без жидких грузов   
     pub cargoes: Vec<LoadCargo>,
     /// Нагрузка судна: цистерны и трюмы   
@@ -177,8 +181,11 @@ impl ParsedShipData {
         bonjean_frame: FrameIndexDataArray,
         frame_area: FrameAreaDataArray,
         draft_mark: DraftMarkDataArray,
+        screw: ScrewDataArray,
         cargo_src: LoadCargoArray,
+        bulkhead_src: LoadCargoArray,
         compartments_src: CompartmentArray,
+        hold_compartments_src: CompartmentArray,
         load_constant_src: LoadConstantArray,
         area_h_stab: HStabAreaArray,
         area_h_str: HStrAreaArray,
@@ -227,12 +234,16 @@ impl ParsedShipData {
             "ParsedShipData parse error: no length_loa for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
-        let width = ship_data.get("Hull width").ok_or(format!(
+        let width = ship_data.get("MouldedBreadth").ok_or(format!(
             "ParsedShipData parse error: no width for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
         let midship = ship_data.get("X midship from Fr0").ok_or(format!(
             "ParsedShipData parse error: no midship for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let overall_height = ship_data.get("Overall height up to non-removable parts").ok_or(format!(
+            "ParsedShipData parse error: no overall_height for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
         let velocity = ship_data.get("Ship operating speed").ok_or(format!(
@@ -323,6 +334,10 @@ impl ParsedShipData {
             "ParsedShipData parse error: no icing_coef_v_moment_zero for ship id:{}",
             ship_id
         ))?;
+        let mut cargoes = Vec::from(cargo_src.data());
+        cargoes.append(&mut bulkhead_src.data());        
+        let mut compartments = Vec::from(compartments_src.data());
+        compartments.append(&mut hold_compartments_src.data());
         log::info!("result parse ok");
         Self {
             ship_type,
@@ -337,6 +352,7 @@ impl ParsedShipData {
             length_loa,
             width,
             midship,
+            overall_height,
             velocity,
             keel_area,
             water_density,
@@ -380,8 +396,9 @@ impl ParsedShipData {
             delta_windage_moment_z: delta_windage_moment.z(),
             frame_area: parsed_frame_area,
             draft_mark,
-            cargoes: cargo_src.data(),
-            compartments: compartments_src.data(),
+            screw: screw.data(),
+            cargoes,
+            compartments,
             load_constants: load_constant_src.data(),
             area_h_stab: area_h_stab.data(),
             area_h_str: area_h_str.data(),

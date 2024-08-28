@@ -8,7 +8,6 @@ mod tests {
     use crate::{stability::grain::*, Bulk, FakeLeverDiagram, FakeMass, FakeParameters};
 
     #[test]
-    #[ignore = "TODO"]
     fn grain() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
@@ -34,7 +33,7 @@ mod tests {
         .area()
         .unwrap();
 
-        let target = 0.3 / 0.0105;
+        let target = 2.013;
         assert!(
             (result - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",

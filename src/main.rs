@@ -83,10 +83,7 @@ fn execute() -> Result<(), Error> {
         let data = block_on(data)?;
         elapsed.insert("ParsedShipData async", time.elapsed());
     */
-    //  dbg!(&data.pantocaren);
-
     let time = Instant::now();
-    //   dbg!(&data);
 
     // ускорение свободного падения
     let gravity_g = 9.81;
@@ -161,9 +158,9 @@ fn execute() -> Result<(), Error> {
     parameters.add(ParameterID::DraughtMean, mean_draught);
     // Момент площади горизонтальных поверхностей и площади парусности судна для расчета остойчивости
     let area_stability: Rc<dyn crate::stability::IArea> = Rc::new(crate::stability::Area::new(
-        Curve::new_linear(&data.area_v_stab.area())?.value(mean_draught)?,
-        Curve::new_linear(&data.area_v_stab.moment_x())?.value(mean_draught)?,
-        Curve::new_linear(&data.area_v_stab.moment_z())?.value(mean_draught)?,
+        Curve::new_linear(&data.area_v_stab.area())?.value(data.draught_min)?,
+        Curve::new_linear(&data.area_v_stab.moment_x())?.value(data.draught_min)?,
+        Curve::new_linear(&data.area_v_stab.moment_z())?.value(data.draught_min)?,
         data.area_h_stab
             .iter()
             .map(|v| HAreaStability::new(v.value, Position::new(v.shift_x, v.shift_y, v.shift_z)))
@@ -258,8 +255,7 @@ fn execute() -> Result<(), Error> {
     let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
         Rc::clone(&ship_moment),
         center_draught_shift.clone(),
-        data.pantocaren,
-        // Curve2D::from_values_linear(data.pantocaren),
+        data.pantocaren.clone(),
         mean_draught,
         Rc::clone(&metacentric_height),
         Rc::clone(&parameters),
@@ -313,7 +309,12 @@ fn execute() -> Result<(), Error> {
         mean_draught,
         Rc::clone(&metacentric_height),
     ));
-    // амплитуда качки судна
+    // амплитуда качки судна    
+    let coefficient_k: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.coefficient_k.data())?);
+    let multipler_x1: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_x1.data())?);
+    let multipler_x2: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_x2.data())?);
+    let multipler_s: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area))?);    
+    let coefficient_k_theta: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())?);    
     let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&metacentric_height),
@@ -322,15 +323,51 @@ fn execute() -> Result<(), Error> {
         data.width, // ширина полная
         breadth_wl, // ширина по ватерлинии при текущей осадке
         mean_draught,
-        Curve::new_linear(&data.coefficient_k.data())?,
-        Curve::new_linear(&data.multipler_x1.data())?,
-        Curve::new_linear(&data.multipler_x2.data())?,
-        Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area))?,
+        Rc::clone(&coefficient_k),
+        Rc::clone(&multipler_x1),
+        Rc::clone(&multipler_x2),
+        Rc::clone(&multipler_s),
         Rc::clone(&roll_period),
     )?);
-    //dbg!(wind.arm_wind_dynamic(), roll_amplitude.calculate());
-    // Критерии остойчивости
-    let mut criterion = Criterion::new(
+
+    let time = Instant::now();
+    // Критерии остойчивости   
+    let mut criterion_computer_results = CriterionComputer::new(
+        data.overall_height,
+        data.ship_type,
+        Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,
+        data.navigation_area,
+        loads.desks()?.iter().any(|v| v.is_timber()),
+        loads.bulks()?.iter().any(|v| v.moment() != 0.),
+        !loads.load_variable()?.is_empty(),
+        icing_stab.is_some(),
+        flooding_angle,
+        data.length_lbp,
+        data.moulded_depth,
+        mean_draught,
+        volume,
+        length_wl,
+        data.width,
+        breadth_wl,
+        data.velocity,
+        Rc::clone(&ship_moment),
+        Rc::clone(&ship_mass),
+        loads.bulks()?,
+        Rc::clone(&coefficient_k),
+        Rc::clone(&multipler_x1),
+        Rc::clone(&multipler_x2),
+        Rc::clone(&multipler_s),
+        Rc::clone(&coefficient_k_theta),
+        data.keel_area,
+        rad_trans,
+        center_draught_shift.clone(),
+        data.pantocaren.clone(),
+        Rc::clone(&wind),
+        Rc::clone(&metacentric_height),
+    )?.calculate()?;
+    elapsed.insert("CriterionComputer", time.elapsed());
+
+ /*   let mut criterion = Criterion::new(
         data.ship_type,
         data.navigation_area,
         loads.desks()?.iter().any(|v| v.is_timber()),
@@ -345,13 +382,9 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&wind),
         Rc::clone(&lever_diagram),
         Rc::new(Stability::new(
-            // Угол заливания отверстий
             flooding_angle,
-            // Диаграмма плеч статической остойчивости
             Rc::clone(&lever_diagram),
-            // Амплитуда качки судна с круглой скулой (2.1.5)
             Rc::clone(&roll_amplitude),
-            // Расчет плеча кренящего момента от давления ветра
             Rc::clone(&wind),
             Rc::clone(&parameters),
         )),
@@ -381,18 +414,27 @@ fn execute() -> Result<(), Error> {
             Rc::clone(&parameters),
         )),
     )?;
-
+*/
     elapsed.insert("Completed", time.elapsed());
 
     let time = Instant::now();
-    // criterion.create().iter().for_each(|v| println!("{v}"));
-    send_stability_data(&mut api_server, ship_id, criterion.create()?)?; //
+ //   let criterion_res = criterion.create();
+    log::info!("Main criterion zg:");
+    for (id, zg, result, target) in criterion_computer_results.iter() {
+        log::info!("id:{id} zg:{zg} result:{result} delta:{}", result - target);
+    }
+  /*  log::info!("Main criterion:");
+    for v in criterion_res.iter() {
+        log::info!("id:{} result:{} target:{}", v.criterion_id, v.result, v.target);
+    }
+*/
+ //   send_stability_data(&mut api_server, ship_id, criterion.create())?; //
     elapsed.insert("Write stability result", time.elapsed());
     send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //
 
-    /*   for (key, e) in elapsed {
+    for (key, e) in elapsed {
         println!("{}:\t{:?}", key, e);
-    }*/
+    }
     Ok(())
 }
 
