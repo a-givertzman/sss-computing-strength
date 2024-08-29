@@ -30,6 +30,10 @@ mod tests {
                 4.994720390444311,
                 4.976147740632071,
                 5.090317945969997,
+                DeltaMH {
+                    long: 0.,
+                    trans: 0.,
+                },
             )),
             Rc::new(FakeMass::new(2354.10, vec![0.])),
             Rc::new(FakeShipMoment::new(Position::new(

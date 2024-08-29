@@ -28,6 +28,9 @@ pub struct MetacentricHeight {
     h_trans_fix: Rc<RefCell<Option<f64>>>,
     /// Исправленное отстояние центра масс судна по высоте
     z_g_fix: Rc<RefCell<Option<f64>>>,
+    /// Поправка к продольной метацентрической высоте на влияние
+    /// свободной поверхности жидкости в цистернах балласта и запасов (2)
+    delta_m_h: Rc<RefCell<Option<DeltaMH>>>,
 }
 ///
 impl  MetacentricHeight {
@@ -60,6 +63,7 @@ impl  MetacentricHeight {
             h_trans_0: Rc::new(RefCell::new(None)),
             h_trans_fix: Rc::new(RefCell::new(None)),
             z_g_fix: Rc::new(RefCell::new(None)),
+            delta_m_h: Rc::new(RefCell::new(None)),
         }
     }
     /// Вычисление значений
@@ -102,6 +106,7 @@ impl  MetacentricHeight {
         *self.h_trans_0.borrow_mut() = Some(h_trans_0);
         *self.h_trans_fix.borrow_mut() = Some(h_trans_fix);
         *self.z_g_fix.borrow_mut() = Some(z_g_fix);
+        *self.delta_m_h.borrow_mut() = Some(delta_m_h);
         self.parameters.add(ParameterID::CenterMassZFix, z_g_fix);
         self.parameters.add(ParameterID::MetacentricLongRadZ, Z_m);
         self.parameters.add(ParameterID::MetacentricTransRadZ, z_m);
@@ -158,6 +163,16 @@ impl IMetacentricHeight for MetacentricHeight {
             .borrow()
             .expect("MetacentricHeight z_g_fix error"))
     }
+    /// Поправка к продольной метацентрической высоте на влияние
+    /// свободной поверхности жидкости в цистернах балласта и запасов (2)
+    fn delta_m_h(&self) -> Result<DeltaMH, Error> {
+        if self.delta_m_h.borrow().is_none() {
+            self.calculate()?;
+        }
+        Ok(self.delta_m_h
+            .borrow()
+            .expect("MetacentricHeight delta_m_h error"))
+    }
 }
 ///
 #[doc(hidden)]
@@ -171,6 +186,9 @@ pub trait IMetacentricHeight {
     fn h_trans_fix(&self) -> Result<f64, Error>;
     /// Исправленное отстояние центра масс судна по высоте
     fn z_g_fix(&self) -> Result<f64, Error>;
+    /// Поправка к продольной метацентрической высоте на влияние
+    /// свободной поверхности жидкости в цистернах балласта и запасов (2)
+    fn delta_m_h(&self) -> Result<DeltaMH, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -184,18 +202,22 @@ pub struct FakeMetacentricHeight {
     h_trans_fix: f64,
     /// Исправленное отстояние центра масс судна по высоте
     z_g_fix: f64,
+    /// Поправка к продольной метацентрической высоте на влияние
+    /// свободной поверхности жидкости в цистернах балласта и запасов (2)
+    delta_m_h: DeltaMH,
 }
 ///
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeMetacentricHeight {
     /// Основной конструктор
-    pub fn new(h_long_fix: f64, h_trans_0: f64, h_trans_fix: f64, z_g_fix: f64) -> Self {
+    pub fn new(h_long_fix: f64, h_trans_0: f64, h_trans_fix: f64, z_g_fix: f64, delta_m_h: DeltaMH) -> Self {
         Self {
             h_long_fix,
             h_trans_0,
             h_trans_fix,
             z_g_fix,
+            delta_m_h,
         }
     }
 }
@@ -219,5 +241,10 @@ impl IMetacentricHeight for FakeMetacentricHeight {
     /// Исправленное отстояние центра масс судна по высоте
     fn z_g_fix(&self) -> Result<f64, Error> {
         Ok(self.z_g_fix)
+    }
+    /// Поправка к продольной метацентрической высоте на влияние
+    /// свободной поверхности жидкости в цистернах балласта и запасов (2)
+    fn delta_m_h(&self) -> Result<DeltaMH, Error> {
+        Ok(self.delta_m_h)
     }
 }

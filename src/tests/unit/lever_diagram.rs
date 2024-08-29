@@ -9,7 +9,7 @@ mod tests {
     use crate::{
         math::*,
         stability::{lever_diagram::*, metacentric_height::*},
-        FakeShipMoment, FakeParameters,
+        FakeParameters, FakeShipMoment,
     };
 
     static INIT: Once = Once::new();
@@ -19,14 +19,21 @@ mod tests {
 
     fn init_once() {
         INIT.call_once(|| {
-            let moment = Rc::new(FakeShipMoment::new(
-                Position::new(0., 2., 0.),
-            ));
+            let moment = Rc::new(FakeShipMoment::new(Position::new(0., 2., 0.)));
 
             let center_draught_shift = Position::new(0., 1., 0.);
 
             let metacentric_height: Rc<dyn IMetacentricHeight> =
-                Rc::new(FakeMetacentricHeight::new(0., 0., 0., 1.));
+                Rc::new(FakeMetacentricHeight::new(
+                    0.,
+                    0.,
+                    0.,
+                    1.,
+                    DeltaMH {
+                        long: 0.,
+                        trans: 0.,
+                    },
+                ));
 
             let pantocaren = vec![
                 (
@@ -60,7 +67,7 @@ mod tests {
                 pantocaren,
                 2.,
                 metacentric_height,
-                Rc::new(FakeParameters{}),
+                Rc::new(FakeParameters {}),
             );
             let _ = lever_diagram.max_angles();
             unsafe {
@@ -81,7 +88,7 @@ mod tests {
 
         let angle = 30.0;
         let angle_rad = angle * std::f64::consts::PI / 180.;
-        let moment = 2. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos();
+        let moment = 2. - 1. * angle_rad.sin() - (2. - 1.) * angle_rad.cos();
         let result = unsafe { LEVER_DIAGRAM.clone().unwrap().angle(moment).unwrap() };
         let target = [angle, 90. - angle];
         result.iter().zip(target.iter()).for_each(|(r, t)| {
@@ -104,8 +111,13 @@ mod tests {
         let angle = 30.0;
         let result = unsafe { LEVER_DIAGRAM.clone().unwrap().lever_moment(angle).unwrap() };
         let angle_rad = angle * std::f64::consts::PI / 180.;
-        let target = 2. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos();
-        assert!((result - target).abs() < 0.001, "\nresult: {:?}\ntarget: {:?}", result, target);
+        let target = 2. - 1. * angle_rad.sin() - (2. - 1.) * angle_rad.cos();
+        assert!(
+            (result - target).abs() < 0.001,
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
 
         test_duration.exit();
     }
@@ -120,10 +132,16 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = unsafe { LEVER_DIAGRAM.clone().unwrap().dso_lever_max(15., 90.,).unwrap() };
+        let result = unsafe {
+            LEVER_DIAGRAM
+                .clone()
+                .unwrap()
+                .dso_lever_max(15., 90.)
+                .unwrap()
+        };
         let angle = 45.0;
         let angle_rad = angle * std::f64::consts::PI / 180.;
-        let target = 3. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos();
+        let target = 3. - 1. * angle_rad.sin() - (2. - 1.) * angle_rad.cos();
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",
@@ -146,7 +164,7 @@ mod tests {
 
         let result = unsafe { LEVER_DIAGRAM.clone().unwrap().max_angles().unwrap() };
         let angle_rad = 45.0 * std::f64::consts::PI / 180.;
-        let target = vec![(45., 3. - 1.*angle_rad.sin() - (2.-1.)*angle_rad.cos()),];
+        let target = vec![(45., 3. - 1. * angle_rad.sin() - (2. - 1.) * angle_rad.cos())];
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",

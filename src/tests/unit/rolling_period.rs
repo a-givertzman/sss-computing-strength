@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::stability::{metacentric_height::*, rolling_period::*};
+    use crate::{stability::{metacentric_height::*, rolling_period::*}, DeltaMH};
 
     #[test]
     fn rolling_period() {
@@ -20,7 +20,16 @@ mod tests {
             10.,
             4.,
             1.,
-            Rc::new(FakeMetacentricHeight::new(0., 0., 1., 0.)),
+            Rc::new(FakeMetacentricHeight::new(
+                0.,
+                0.,
+                1.,
+                0.,
+                DeltaMH {
+                    long: 0.,
+                    trans: 0.,
+                },
+            )),
         )
         .calculate()
         .unwrap();
