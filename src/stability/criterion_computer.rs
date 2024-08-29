@@ -3,7 +3,7 @@
 use std::{collections::HashMap, rc::Rc};
 
 use crate::{
-    data::structs::{NavigationArea, ShipType}, delta_m_h, Error, IBulk, ICurve, IMass, Position
+    data::structs::{NavigationArea, ShipType}, Error, IBulk, ICurve, IMass, Position
 };
 
 use super::{
