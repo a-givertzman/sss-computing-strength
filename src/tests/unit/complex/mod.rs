@@ -1,16 +1,12 @@
 /// Комплексный тест с реальными значениями
 mod input_data;
-mod ship;
-mod frames;
-mod loads;
-mod tanks;
 
 #[cfg(test)]
 mod tests {
     use std::{rc::Rc, time::Duration};
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::{bending_moment::BendingMoment, displacement::Displacement, draught::Draught, frame::Frame, load::ILoad, mass::{IMass, Mass}, math::{bound::Bound, curve::Curve, inertia_shift::*, pos_shift::PosShift}, shear_force::{IShearForce, ShearForce}, tank::Tank, total_force::TotalForce, trim::Trim};
+    use crate::{bending_moment::BendingMoment, displacement::Displacement, draught::Draught, frame::Frame, load::ILoad, mass::{IMass, Mass}, math::{bound::Bound, curve::Curve, inertia_shift::*, pos_shift::PosShift}, shear_force::{IShearForce, ShearForce}, tank::Tank, tests::unit::complex::input_data, total_force::TotalForce, trim::Trim};
     
     #[test]
     #[ignore = "TODO"]
@@ -23,11 +19,7 @@ mod tests {
         test_duration.run().unwrap();
 
 
-        let input_data = crate::tests::unit::complex::input_data::input_data();
-        let ship = crate::tests::unit::complex::ship::ship();
-        let mut frames = crate::tests::unit::complex::frames::frames();
-        let loads = crate::tests::unit::complex::loads::loads();
-        let tanks = crate::tests::unit::complex::tanks::tanks();
+        let input_data = input_data::input_data();
 
         // длинна судна
         let ship_length = ship.ship_length;

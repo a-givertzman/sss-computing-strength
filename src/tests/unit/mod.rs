@@ -1,4 +1,5 @@
 //! Юнит-тесты
+mod complex;
 mod bound;
 mod vec;
 mod curve;

@@ -13,13 +13,13 @@ pub enum ShipType {
     #[serde(alias="container ship")]
     ContainerShip,    
     /// Суда, предназначенные для перевозки сухих генеральных грузов
-    #[serde(alias="bulk carrier")]
+    #[serde(alias="general dry cargo ship")]
     GeneralDryCargoShip, 
     /// Лесовоз
-    #[serde(alias="general dry cargo ship")]
+    #[serde(alias="timber carrier")]
     TimberCarrier,  
     /// Наливное судно    
-    #[serde(alias="timber carrier")]
+    #[serde(alias="tanker")]
     Tanker,
     /// Ролкер
     #[serde(alias="ro-ro ship")]
