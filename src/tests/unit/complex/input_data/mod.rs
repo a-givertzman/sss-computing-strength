@@ -10,6 +10,29 @@ mod bounds;
 mod delta_windage_area;
 mod delta_windage_moment;
 mod center_waterline;
+mod waterline_length;
+mod waterline_breadth;
+mod waterline_area;
+mod volume_shift;
+mod rad_long;
+mod rad_trans;
+mod h_subdivision;
+mod mean_draught;
+mod center_draught_shift;
+mod pantocaren;
+mod flooding_angle;
+mod entry_angle;
+mod frame_area;
+mod draft_mark;
+mod load_line;
+mod screw;
+mod cargoes;
+mod compartments;
+mod load_constants;
+mod area_h_stab;
+mod area_h_str;
+mod area_v_stab;
+mod area_v_str;
 
 use crate::{data::structs::{
     navigation_area_data::NavigationAreaData, NavigationArea, NavigationAreaArray, ParsedShipData,
