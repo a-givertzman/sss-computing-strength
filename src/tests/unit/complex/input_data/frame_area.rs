@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
+use crate::data::structs::{FrameAreaData, FrameAreaDataArray};
+
 ///
-impl FrameAreaDataArray {
-    /// Преобразование данных в массив ключ + значение
-    pub fn from(src: Vec<(usize, f64, f64)>) -> Self {
+impl From<Vec<(i32, f64, f64)>> for FrameAreaDataArray {
+    fn from(src: Vec<(i32, f64, f64)>) -> Self {
         Self{data: src.into_iter().map(|(frame_index, draft, area)| FrameAreaData{frame_index, draft, area} ).collect(), error: HashMap::new() }
     }
 }
@@ -2339,6 +2342,6 @@ pub(crate) fn frame_area() -> FrameAreaDataArray {
         (20, 3.700, 6.38),
         (20, 5.600, 14.96),
         (20, 7.500, 26.29),
-        (20, 9.400, 38.48)
+        (20, 9.400, 38.48),
     ])
 }

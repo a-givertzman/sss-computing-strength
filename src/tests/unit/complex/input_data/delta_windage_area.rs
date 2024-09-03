@@ -1,6 +1,8 @@
+use crate::data::structs::DeltaWindageAreaDataArray;
+
 #[allow(dead_code)]
-pub(crate) fn delta_windage_area() -> Vec<(f64, f64)> {
-    vec![
+pub(crate) fn delta_windage_area() -> DeltaWindageAreaDataArray {
+    DeltaWindageAreaDataArray::from(vec![
         (0.5, -98.3),
         (1., -44.2),
         (1.5, 11.186),
@@ -15,5 +17,5 @@ pub(crate) fn delta_windage_area() -> Vec<(f64, f64)> {
         (6., 542.846),
         (6.5, 602.762),
         (6.8, 638.716),
-    ]
+    ])
 }

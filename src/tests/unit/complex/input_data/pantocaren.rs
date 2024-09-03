@@ -1,6 +1,16 @@
+use std::collections::HashMap;
+
+use crate::data::structs::{PantocarenData, PantocarenDataArray};
+///
+impl From<Vec<(f64, f64, f64)>> for PantocarenDataArray {
+    fn from(src: Vec<(f64, f64, f64)>) -> Self {
+        Self{data: src.into_iter().map(|(draught, roll, moment)| PantocarenData{draught, roll, moment} ).collect(), error: HashMap::new() }
+    }
+}
+///
 #[allow(dead_code)]
-pub(crate) fn pantocaren() -> Vec<(f64, f64)> {
-    vec![
+pub(crate) fn pantocaren() -> PantocarenDataArray {
+    PantocarenDataArray::from(vec![
         (6.55, 0.0, 0.000),
         (6.60, 0.0, 0.000),
         (6.65, 0.0, 0.000),
@@ -1873,5 +1883,5 @@ pub(crate) fn pantocaren() -> Vec<(f64, f64)> {
         (1.15, 90.0, 3.909),
         (1.20, 90.0, 3.924),
         (1.25, 90.0, 3.937)
-    ]
+    ])
 }

@@ -1,6 +1,8 @@
+use crate::data::structs::CenterWaterlineArray;
+
 #[allow(dead_code)]
-pub(crate) fn center_waterline() -> Vec<(f64, f64)> {
-    vec![
+pub(crate) fn center_waterline() -> CenterWaterlineArray {
+    CenterWaterlineArray::from(vec![
         (11.50, -0.193),
         (23.20, -0.099),
         (35.10, -0.044),
@@ -972,5 +974,5 @@ pub(crate) fn center_waterline() -> Vec<(f64, f64)> {
         (12122.50, 49.011),
         (12123.30, 48.998),
         (12123.90, 48.977),
-    ]
+    ])
 }

@@ -1,6 +1,8 @@
+use crate::data::structs::MeanDraughtDataArray;
+
 #[allow(dead_code)]
-pub(crate) fn mean_draught() -> Vec<(f64, f64)> {
-    vec![
+pub(crate) fn mean_draught() -> MeanDraughtDataArray {
+    MeanDraughtDataArray::from(vec![
         (11.50, 0.00),
         (23.20, 0.01),
         (35.10, 0.02),
@@ -972,5 +974,5 @@ pub(crate) fn mean_draught() -> Vec<(f64, f64)> {
         (12122.50, 9.68),
         (12123.30, 9.69),
         (12123.90, 9.70),
-    ]
+    ])
 }
