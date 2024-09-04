@@ -30,8 +30,8 @@ mod frame_area;
 mod draft_mark;
 mod load_line;
 mod screw;
-mod cargoes;
-mod compartments;
+mod cargo;
+mod compartment;
 mod load_constants;
 mod area_h_stab;
 mod area_h_str;
@@ -73,9 +73,9 @@ pub(crate) fn input_data() -> ParsedShipData {
         draft_mark::draft_mark(),
         load_line::load_line(),
         screw::screw(),
-        cargo_src::cargo_src(),
+        cargo::cargo(),
         bulkhead_src::bulkhead_src(),
-        compartments_src::compartments_src(),
+        compartment::compartment(),
         hold_compartments_src::hold_compartments_src(),
         load_constant_src::load_constant_src(),
         area_h_stab::area_h_stab(),
