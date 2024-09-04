@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::data::structs::loads::{LoadCargo, LoadCargoArray};
+use crate::data::structs::loads::{CargoGeneralCategory, LoadCargo, LoadCargoArray};
 ///
 impl From<Vec<(&str, f64, f64, f64, f64)>> for LoadCargoArray {
     fn from(src: Vec<(&str, f64, f64, f64, f64)>) -> Self {
