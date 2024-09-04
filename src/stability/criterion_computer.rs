@@ -3,8 +3,7 @@
 use std::{collections::HashMap, rc::Rc};
 
 use crate::{
-    data::structs::{NavigationArea, ShipType},
-    Error, IBulk, ICurve, IMass, Position,
+    data::structs::{NavigationArea, ShipType}, Error, IBulk, ICurve, IMass, Position
 };
 
 use super::{
@@ -202,13 +201,17 @@ impl CriterionComputer {
         let max_index = (self.max_zg / delta).ceil() as i32;
         for index in 0..=max_index {
             let z_g_fix = index as f64 * delta;
-            let h = self.center_draught_shift.z() + self.rad_trans - z_g_fix;
+            let z_m = self.center_draught_shift.z() + self.rad_trans;
+            let delta_m_h = self.metacentric_height.delta_m_h()?;
+            let h = z_m - z_g_fix;            
+            let h_0 = h + delta_m_h.trans();
             let metacentric_height: Rc<dyn IMetacentricHeight> =
                 Rc::new(FakeMetacentricHeight::new(
                     self.metacentric_height.h_long_fix()?,
-                    h,
+                    h_0,
                     h,
                     z_g_fix,
+                    delta_m_h,
                 ));
             let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
                 Rc::clone(&self.ship_moment),

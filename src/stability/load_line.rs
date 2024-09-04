@@ -1,27 +1,27 @@
-//! Расчет уровня заглубления для координат отметок заглубления на корпусе судна
+/// Проверка осадок судна
+use std::{collections::HashMap, f64::consts::PI, rc::Rc};
 
-use std::{f64::consts::PI, rc::Rc};
+use crate::{data::structs::LoadLineParsedData, draught::IDraught, Error, IParameters, ParameterID};
 
-use crate::{data::structs::ScrewParsedData, draught::IDraught, Error, IParameters, ParameterID};
-
-/// Расчет уровня заглубления для винтов судна
-pub struct Screw {
+/// Расчет уровня заглубления для осадок судна
+pub struct LoadLine {
     /// Осадка судна
     draught: Box<dyn IDraught>,
-    /// Координаты винтов судна относительно центра
-    data: Vec<ScrewParsedData>,
+    /// Координаты осадок судна
+    /// относительно центра
+    data: Vec<LoadLineParsedData>,
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>,
 }
 ///
-impl Screw {
+impl LoadLine {
     /// Конструктор по умолчанию.
     /// * draught - Осадка судна
-    /// * data - Координаты винтов судна относительно центра
+    /// * data - Координаты осадок судна относительно центра
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         draught: Box<dyn IDraught>,
-        data: Vec<ScrewParsedData>,
+        data: Vec<LoadLineParsedData>,
         parameters: Rc<dyn IParameters>,
     ) -> Self {
         Self {
@@ -30,7 +30,7 @@ impl Screw {
             parameters, 
         }
     }
-    /// Расчет процента заглубления винта
+    /// Расчет заглубления точки осадки
     pub fn calculate(&mut self) -> Result<Vec<(String, f64)>, Error> {
         let roll = self
             .parameters
@@ -39,9 +39,7 @@ impl Screw {
         let mut result = Vec::new();
         for v in self.data.iter() {
             let z_fix = v.pos.z()  - v.pos.y() * (roll * PI / 180.).sin() - self.draught.value(v.pos.x())?;
-            let percent = (1. - z_fix/v.d).min(2.).max(0.)*50.;
-            dbg!(&v.pos, v.pos.y() * (roll * PI / 180.).sin(), self.draught.value(v.pos.x())?, z_fix, percent);
-            result.push((v.name.clone(), percent));
+            result.push((v.name.clone(), z_fix));
         }
         Ok(result)
     }
