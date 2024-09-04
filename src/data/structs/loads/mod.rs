@@ -1,10 +1,12 @@
 pub mod load_constant;
 pub mod compartment;
 pub mod cargo;
+pub mod bulkhead;
 
 pub use load_constant::*;
 pub use compartment::*;
 pub use cargo::*;
+pub use bulkhead::*;
 
 use serde::{Deserialize, Serialize};
 

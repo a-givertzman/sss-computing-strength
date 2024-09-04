@@ -8,7 +8,7 @@ use crate::{
     CriterionData,
 };
 use api_tools::client::{api_query::*, api_request::ApiRequest};
-use loads::{CompartmentArray, LoadCargoArray};
+use loads::{BulkheadArray, CompartmentArray, LoadCargoArray};
 use std::{thread, time};
 
 pub struct ApiServer {
@@ -269,7 +269,7 @@ pub fn get_data(
         WHERE 
             c.ship_id={ship_id} AND mass>0;"
     ))?)?;
-    let bulkhead = LoadCargoArray::parse(&api_server.fetch(&format!(
+    let bulkhead = BulkheadArray::parse(&api_server.fetch(&format!(
             "SELECT 
                 h.name AS name, \
                 h.mass AS mass, \

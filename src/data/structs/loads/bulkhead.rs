@@ -1,78 +1,70 @@
-//! Промежуточные структуры для serde_json для парсинга данных груза
+//! Промежуточные структуры для serde_json для парсинга данных зерновой перегородки
 use serde::{Deserialize, Serialize};
 use crate::data::structs::DataArray;
 
-use super::CargoGeneralCategory;
+use super::{CargoGeneralCategory, LoadCargo};
 
-/// Груз без привязки к помещению, всегда твердый
+/// Зерновая перегородка
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct LoadCargo {
-    /// Имя груза
+pub struct Bulkhead {
+    /// Имя 
     pub name: String,
     /// Общая масса, т
     pub mass: Option<f64>,
-    /// Классификация груза
+    /// Классификация
     pub general_category: CargoGeneralCategory,
-    /// Груз - лес и может намокать и обмерзать
-    pub timber: bool,
     /// Диапазон по длинне, м
     pub bound_x1: f64,
     pub bound_x2: f64,
-    /// Диапазон по ширине
-    pub bound_y1: Option<f64>,
-    pub bound_y2: Option<f64>,
-    /// Диапазон по высоте
-    pub bound_z1: Option<f64>,
-    pub bound_z2: Option<f64>,
     /// Отстояние центра величины, м
     pub mass_shift_x: Option<f64>,
     pub mass_shift_y: Option<f64>,
     pub mass_shift_z: Option<f64>,
-    /// Площадь горизонтальной поверхности, м^2
-    pub horizontal_area: Option<f64>,
-    /// Площадь вертикальной поверхности, м^2
-    pub vertical_area: Option<f64>,
-    /// Смещение центра площади вертикальной поверхности, м
-    pub vertical_area_shift_x: Option<f64>,
-    pub vertical_area_shift_y: Option<f64>,
-    pub vertical_area_shift_z: Option<f64>,
 }
 
 ///
-impl std::fmt::Display for LoadCargo {
+impl std::fmt::Display for Bulkhead {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadCargo(name:{} mass:{} loading_type:{} timber:{} bound_x:({}, {}) bound_y:({}, {}) bound_z:({}, {}) 
-            mass_shift:({}, {}, {}) horizontal_area:{} vertical_area:{} vertical_area_shift_y:({}, {}, {}) )",
+            "Bulkhead(name:{} mass:{} loading_type:{} bound_x:({}, {}) mass_shift:({}, {}, {}) )",
             self.name,
-            self.mass.unwrap_or(0.),            
+            self.mass.unwrap_or(0.),
             self.general_category,
-            self.timber,
             self.bound_x1,
             self.bound_x2,
-            self.bound_y1.unwrap_or(0.),
-            self.bound_y2.unwrap_or(0.),
-            self.bound_z1.unwrap_or(0.),
-            self.bound_z2.unwrap_or(0.),
             self.mass_shift_x.unwrap_or(0.),
             self.mass_shift_y.unwrap_or(0.),
             self.mass_shift_z.unwrap_or(0.),
-            self.horizontal_area.unwrap_or(0.),
-            self.vertical_area.unwrap_or(0.),
-            self.vertical_area_shift_x.unwrap_or(0.),
-            self.vertical_area_shift_y.unwrap_or(0.),
-            self.vertical_area_shift_z.unwrap_or(0.),
         )
     }
 }
 /// Массив данных по грузам
-pub type LoadCargoArray = DataArray<LoadCargo>;
+pub type BulkheadArray = DataArray<Bulkhead>;
 ///
-impl LoadCargoArray {
+impl BulkheadArray {
     /// 
     pub fn data(self) -> Vec<LoadCargo> {
-        self.data
+        self.data.into_iter().map(|v| LoadCargo{
+            name: v.name,
+            mass: v.mass,
+            general_category: v.general_category,
+            timber: false,
+            bound_x1: v.bound_x1,
+            bound_x2: v.bound_x2,
+            bound_y1: None,
+            bound_y2: None,
+            bound_z1: None,
+            bound_z2: None,
+            mass_shift_x: v.mass_shift_x,
+            mass_shift_y: v.mass_shift_y,
+            mass_shift_z: v.mass_shift_z,
+            horizontal_area: None,
+            vertical_area: None,
+            vertical_area_shift_x: None,
+            vertical_area_shift_y: None,
+            vertical_area_shift_z: None,
+        }).collect()
     }
 }
 /*
@@ -105,7 +97,7 @@ impl std::fmt::Display for ParsedCargoData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadCargoData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} mass_shift:({}, {}, {}) 
+            "BulkheadData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} mass_shift:({}, {}, {}) 
             horizontal_area:{} horizontal_area_shift:({}, {}, {})
             vertical_area:{} vertical_area_shift:({}, {}, {}) type:{}) ",
             self.name,

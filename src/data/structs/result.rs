@@ -2,7 +2,7 @@
 //! в формат пригодный для создания объектов.
 
 use loads::{
-    compartment, CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData
+    compartment, BulkheadArray, CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData
 };
 
 use crate::{error::Error, icing_stab::IcingStabType, icing_timber::IcingTimberType};
@@ -186,7 +186,7 @@ impl ParsedShipData {
         load_line: LoadLineDataArray,
         screw: ScrewDataArray,
         cargo_src: LoadCargoArray,
-        bulkhead_src: LoadCargoArray,
+        bulkhead_src: BulkheadArray,
         compartments_src: CompartmentArray,
         hold_compartments_src: CompartmentArray,
         load_constant_src: LoadConstantArray,
