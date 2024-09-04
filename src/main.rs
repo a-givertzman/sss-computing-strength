@@ -372,7 +372,7 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&roll_period),
     )?);
 
-    let time = Instant::now();
+  /* let time = Instant::now();
     // Критерии остойчивости   
     let mut criterion_computer_results = CriterionComputer::new(
         data.overall_height,
@@ -407,9 +407,11 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&wind),
         Rc::clone(&metacentric_height),
     )?.calculate()?;
+    send_stability_data(&mut api_server, ship_id, criterion_computer_results)?; //
     elapsed.insert("CriterionComputer", time.elapsed());
-
- /*   let mut criterion = Criterion::new(
+*/
+    let time = Instant::now();
+    let mut criterion = Criterion::new(
         data.ship_type,
         data.navigation_area,
         loads.desks()?.iter().any(|v| v.is_timber()),
@@ -456,26 +458,23 @@ fn execute() -> Result<(), Error> {
             Rc::clone(&parameters),
         )),
     )?;
-*/
-    elapsed.insert("Completed", time.elapsed());
+    send_stability_data(&mut api_server, ship_id, criterion.create())?; //
+    elapsed.insert("Criterion", time.elapsed());
 
-    let time = Instant::now();
  //   let criterion_res = criterion.create();
-    log::info!("Main criterion zg:");
-    for (id, zg, result, target) in criterion_computer_results.iter() {
+  /*   log::info!("Main criterion zg:");
+   for (id, zg, result, target) in criterion_computer_results.iter() {
         log::info!("id:{id} zg:{zg} result:{result} delta:{}", result - target);
     }
-  /*  log::info!("Main criterion:");
+    log::info!("Main criterion:");
     for v in criterion_res.iter() {
         log::info!("id:{} result:{} target:{}", v.criterion_id, v.result, v.target);
     }
 */
- //   send_stability_data(&mut api_server, ship_id, criterion.create())?; //
-    elapsed.insert("Write stability result", time.elapsed());
     send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //
 
     for (key, e) in elapsed {
-        println!("{}:\t{:?}", key, e);
+        log::info!("{}:\t{:?}", key, e);
     }
     Ok(())
 }

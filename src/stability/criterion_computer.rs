@@ -200,9 +200,6 @@ impl CriterionComputer {
         let delta = 0.01;
         let max_index = (self.max_zg / delta).ceil() as i32;
         for index in 0..=max_index {
-    //    let index = 894; {
-    //           let index = 665; {
-    //     for index in vec![891, 821, 847] {
             let z_g_fix = index as f64 * delta;
             let z_m = self.center_draught_shift.z() + self.rad_trans;
             let delta_m_h = self.metacentric_height.delta_m_h()?;
@@ -322,28 +319,7 @@ impl CriterionComputer {
                         .or_insert(vec![(z_g_fix, value.unwrap())]);
                 });
         }
-   /*    log::info!("criterion_computer res 11:");
-        for v in values.get(&11).unwrap().iter() {
-  //          if v.1.0 != 2.4298045566533406 
-            {
-                log::info!("zg:{} result:{} target:{}", v.0, v.1.0, v.1.1,);
-            }
-        }
-          log::info!("criterion_computer res 12:");
-        for v in values.get(&12).unwrap().iter() {
-            if v.1 != 4.82680455665334 
-            {
-                log::info!("zg:{} delta:{}", v.0, v.1,);
-            }
-        }
-         log::info!("criterion_computer res 13:");
-        for v in values.get(&13).unwrap().iter() {
-      //      if v.1 != 0.07925828918500555 
-            {
-                log::info!("zg:{} delta:{}", v.0, v.1,);
-            }
-        }
-  */    let mut result = Vec::new();
+        let mut result = Vec::new();
         for (id, mut values) in values.into_iter() {
             // сортируем значения по увеличению дельты с целевым
             values.sort_by(|&(_, v1), &(_, v2)| {
