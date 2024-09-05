@@ -1,6 +1,6 @@
 //! Расчет уровня заглубления для координат отметок заглубления на корпусе судна
 
-use std::{collections::HashMap, f64::consts::PI, rc::Rc};
+use std::{f64::consts::PI, rc::Rc};
 
 use crate::{data::structs::DraftMarkParsedData, draught::IDraught, Curve, Error, ICurve, IParameters, ParameterID};
 

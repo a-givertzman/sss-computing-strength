@@ -1,5 +1,5 @@
 /// Проверка осадок судна
-use std::{collections::HashMap, f64::consts::PI, rc::Rc};
+use std::{f64::consts::PI, rc::Rc};
 
 use crate::{data::structs::LoadLineParsedData, draught::IDraught, Error, IParameters, ParameterID};
 

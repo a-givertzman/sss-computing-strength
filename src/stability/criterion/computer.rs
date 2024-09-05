@@ -6,8 +6,8 @@ use crate::{
     data::structs::{NavigationArea, ShipType}, Error, IBulk, ICurve, IMass, Position
 };
 
-use super::{
-    Acceleration, Circulation, Criterion, FakeMetacentricHeight, Grain, ILeverDiagram,
+use crate::{
+    Acceleration, Circulation, CriterionStability, FakeMetacentricHeight, Grain, ILeverDiagram,
     IMetacentricHeight, IParameters, IRollingAmplitude, IRollingPeriod, IShipMoment, 
     IWind, LeverDiagram, Parameters, RollingAmplitude, RollingPeriod, Stability, 
 };
@@ -243,7 +243,7 @@ impl CriterionComputer {
                 Rc::clone(&roll_period),
             )?);
             // релузьтат расчета критериев для текущего zg
-            let tmp = Criterion::new(
+            let tmp = CriterionStability::new(
                 self.ship_type,
                 self.navigation_area,
                 self.have_timber,

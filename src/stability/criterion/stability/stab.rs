@@ -2,9 +2,7 @@
 
 use std::{f64::consts::PI, rc::Rc};
 
-use crate::{Error, IParameters, ParameterID};
-
-use super::{rolling_amplitude::IRollingAmplitude, lever_diagram::ILeverDiagram, wind::IWind};
+use crate::{Error, ILeverDiagram, IParameters, IRollingAmplitude, IWind, ParameterID};
 
 /// Расчет критерия погоды К
 pub struct Stability {

@@ -411,7 +411,7 @@ fn execute() -> Result<(), Error> {
     elapsed.insert("CriterionComputer", time.elapsed());
 */
     let time = Instant::now();
-    let mut criterion = Criterion::new(
+    let mut criterion = CriterionStability::new(
         data.ship_type,
         data.navigation_area,
         loads.desks()?.iter().any(|v| v.is_timber()),
