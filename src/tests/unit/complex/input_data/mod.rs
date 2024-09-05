@@ -38,7 +38,9 @@ mod area_h_str;
 mod area_v_stab;
 mod area_v_str;
 
-use crate::data::structs::ParsedShipData;
+use std::collections::HashMap;
+
+use crate::data::structs::{loads::LoadCargoArray, ParsedShipData};
 
 #[allow(dead_code)]
 pub(crate) fn input_data() -> ParsedShipData {
@@ -73,7 +75,7 @@ pub(crate) fn input_data() -> ParsedShipData {
         draft_mark::draft_mark(),
         load_line::load_line(),
         screw::screw(),
-        cargo::cargo(),
+        LoadCargoArray{data: Vec::new(), error: HashMap::new()},
         bulkhead_src::bulkhead_src(),
         compartment::compartment(),
         hold_compartments_src::hold_compartments_src(),
