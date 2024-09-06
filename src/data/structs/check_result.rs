@@ -96,6 +96,12 @@ impl ParsedShipData {
                 self.velocity
             )));
         }
+        if self.deadweight <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: deadweight:{} <= 0",
+                self.deadweight
+            )));
+        }
         if let Some(keel_area) = self.keel_area {
             if keel_area < 0. {
                 return Err(Error::Parameter(format!(

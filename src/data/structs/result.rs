@@ -63,6 +63,8 @@ pub struct ParsedShipData {
     pub overall_height: f64,
     /// Эксплуатационная скорость судна, m/s
     pub velocity: f64,
+    /// Дедвейт
+    pub deadweight: f64,
     /// Cуммарная габаритная площадь скуловых килей,
     /// либо площадь боковой проекции брускового киля
     pub keel_area: Option<f64>,
@@ -253,6 +255,10 @@ impl ParsedShipData {
             "ParsedShipData parse error: no velocity for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
+        let deadweight = ship_data.get("DWT").ok_or(format!(
+            "ParsedShipData parse error: no deadweight for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
         let keel_area = ship_data.get("Keel area").ok_or(format!(
             "ParsedShipData parse error: no keel_area for ship id:{}",
             ship_id
@@ -357,6 +363,7 @@ impl ParsedShipData {
             midship,
             overall_height,
             velocity,
+            deadweight,
             keel_area,
             water_density,
             const_mass_shift_x,

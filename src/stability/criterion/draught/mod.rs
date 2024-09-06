@@ -16,12 +16,16 @@ use super::{CriterionData, CriterionID};
 use crate::{
     data::structs::{NavigationArea, ShipType},
     trim::ITrim,
-    Curve, Error, ICurve, ILeverDiagram, IMetacentricHeight, IWind,
+    Curve, Error, ICurve, 
 };
 use std::rc::Rc;
 
 /// Критерии проверки посадки судна
 pub struct CriterionDraught {
+    /// Тип судна
+    ship_type: ShipType,
+    /// Дедвейт
+    deadweight: f64,
     /// Расчет уровня заглубления для осадок судна
     load_line: LoadLine,
     /// Вычисление средней осадки и дифферента
@@ -32,6 +36,8 @@ pub struct CriterionDraught {
     trim_max: f64,
     /// Высота на носовом перпендикуляре
     depth_forward: DepthAtForwardPerpendicular,
+    /// Расчетная минимальная высота в носу
+    bow_h_min: f64,
     /// Расчет уровня заглубления для винтов судна
     screw: Screw,
     /// Запас плавучести в носу
@@ -42,59 +48,43 @@ pub struct CriterionDraught {
 ///
 impl CriterionDraught {
     /// Главный конструктор:
+    /// * ship_type - Тип судна
+    /// * deadweight -Дедвейт
     /// * load_line - Расчет уровня заглубления для осадок судна
     /// * trim - Cредняя осадка и дифферент
     /// * trim_min - Минимально допустимый дифферент с точки зрения расчета вероятностного индекса деления на отсеки  
     /// * trim_max - Максимально допустимый дифферент с точки зрения расчета вероятностного индекса деления на отсеки  
     /// * depth_forward - Высота на носовом перпендикуляре
+    /// * bow_h_min - Расчетная минимальная высота в носу
     /// * screw - Расчет уровня заглубления для винтов судна
     /// * reserve_buoyncy - Запас плавучести в носу
     /// * minimum_draft - Минимальная осадка
     pub fn new(
         ship_type: ShipType,
-        navigation_area: NavigationArea,
-        have_timber: bool,
-        have_grain: bool,
-        have_cargo: bool,
-        have_icing: bool,
-        flooding_angle: f64,
-        ship_length: f64,
-        breadth: f64,
-        moulded_depth: f64,
-        h_subdivision: f64,
-        wind: Rc<dyn IWind>,
-        lever_diagram: Rc<dyn ILeverDiagram>,
-        stability: Rc<dyn IStability>,
-        metacentric_height: Rc<dyn IMetacentricHeight>,
-        acceleration: Rc<dyn IAcceleration>,
-        circulation: Rc<dyn ICirculation>,
-        grain: Box<dyn IGrain>,
-    ) -> Result<Self, Error> {
-        if moulded_depth <= 0. {
-            return Err(Error::FromString(
-                "Criterion new error: moulded_depth <= 0.".to_string(),
-            ));
-        }
-        Ok(Self {
+        deadweight: f64,
+        load_line: LoadLine,
+        trim: Rc<dyn ITrim>,
+        trim_min: f64,
+        trim_max: f64,
+        depth_forward: DepthAtForwardPerpendicular,
+        bow_h_min: f64,
+        screw: Screw,
+        reserve_buoyncy: ReserveBuoyncyInBow,
+        minimum_draft: MinimumDraft,
+    ) -> Self {
+        Self {
             ship_type,
-            navigation_area,
-            have_timber,
-            have_grain,
-            have_cargo,
-            have_icing,
-            flooding_angle,
-            ship_length,
-            breadth,
-            moulded_depth,
-            h_subdivision,
-            wind,
-            stability,
-            lever_diagram,
-            metacentric_height,
-            acceleration,
-            circulation,
-            grain,
-        })
+            deadweight,
+            load_line,
+            trim,
+            trim_min,
+            trim_max,
+            depth_forward,
+            bow_h_min,
+            screw,
+            reserve_buoyncy,
+            minimum_draft,
+        }
     }
     ///
     pub fn create(&mut self) -> Vec<CriterionData> {
