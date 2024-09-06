@@ -372,9 +372,9 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&roll_period),
     )?);
 
-  /* let time = Instant::now();
-    // Критерии остойчивости   
-    let mut criterion_computer_results = CriterionComputer::new(
+    // Критерии остойчивости       
+    let time = Instant::now();
+    let criterion_computer_results = CriterionComputer::new(
         data.overall_height,
         data.ship_type,
         Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,
@@ -407,9 +407,8 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&wind),
         Rc::clone(&metacentric_height),
     )?.calculate()?;
-    send_stability_data(&mut api_server, ship_id, criterion_computer_results)?; //
     elapsed.insert("CriterionComputer", time.elapsed());
-*/
+
     let time = Instant::now();
     let mut criterion = CriterionStability::new(
         data.ship_type,
@@ -458,7 +457,7 @@ fn execute() -> Result<(), Error> {
             Rc::clone(&parameters),
         )),
     )?;
-    send_stability_data(&mut api_server, ship_id, criterion.create())?; //
+    send_stability_data(&mut api_server, ship_id, criterion.create(), criterion_computer_results)?; //
     elapsed.insert("Criterion", time.elapsed());
 
  //   let criterion_res = criterion.create();

@@ -9,7 +9,7 @@ use crate::{
 };
 use api_tools::client::{api_query::*, api_request::ApiRequest};
 use loads::{BulkheadArray, CompartmentArray, LoadCargoArray};
-use std::{thread, time};
+use std::{collections::HashMap, thread, time};
 
 pub struct ApiServer {
     database: String,
@@ -406,18 +406,21 @@ pub fn send_strenght_data(
 pub fn send_stability_data(
     api_server: &mut ApiServer,
     ship_id: usize,
-    data: Vec<CriterionData>,
+    criterion_data: Vec<CriterionData>,
+    zg_data: HashMap<usize, f64>,
 ) -> Result<(), error::Error> {
     log::info!("send_stability_data begin");
     let mut full_sql = "DO $$ BEGIN ".to_owned();
-    full_sql += &format!("DELETE FROM result_stability WHERE ship_id={ship_id};");
-    data.into_iter().for_each(|v| {
-        full_sql += " INSERT INTO result_stability "; 
-            if let Some(error) = v.error_message {
-                full_sql += &format!("(ship_id, criterion_id, result, target, error_message) VALUES ({ship_id}, {}, {}, {}, '{}');", v.criterion_id, v.result, v.target, error);
-            } else {
-                full_sql += &format!("(ship_id, criterion_id, result, target) VALUES ({ship_id}, {}, {}, {});", v.criterion_id, v.result, v.target);
-            }
+    full_sql += &format!("DELETE FROM criterion_values WHERE ship_id={ship_id};");
+    criterion_data.into_iter().for_each(|v| {
+        let zg = zg_data.get(&v.criterion_id);
+        full_sql += " INSERT INTO criterion_values "; 
+        full_sql += &match (v.error_message, zg) {
+            (None, None) => format!("(ship_id, criterion_id, actual_value, limit_value) VALUES ({ship_id}, {}, {}, {});", v.criterion_id, v.result, v.target),
+            (None, Some(zg_value)) => format!("(ship_id, criterion_id, actual_value, limit_value, zg_value) VALUES ({ship_id}, {}, {}, {}, {zg_value});", v.criterion_id, v.result, v.target),
+            (Some(error), None) => format!("(ship_id, criterion_id, actual_value, limit_value, error_message) VALUES ({ship_id}, {}, {}, {}, '{}');", v.criterion_id, v.result, v.target, error),
+            (Some(error), Some(zg_value)) => format!("(ship_id, criterion_id, actual_value, limit_value, error_message) VALUES ({ship_id}, {}, {}, {}, {zg_value}, '{}');", v.criterion_id, v.result, v.target, error),
+        };
     });
     full_sql += " END$$;";
     api_server.fetch(&full_sql)?;

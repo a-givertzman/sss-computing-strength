@@ -36,7 +36,7 @@ impl DraftMark {
         let roll = self
             .parameters
             .get(ParameterID::Roll)
-            .ok_or(Error::FromString("DraftMark calculate error: no ParameterID::Roll!".to_string()))?;
+            .ok_or(Error::FromString("DraftMark calculate error: no ParameterID::Roll!".to_string()))? * PI / 180.;
         let mut result = Vec::new();
         for p in self.points.iter() {
             if p.data.len() <= 2 {
@@ -48,7 +48,7 @@ impl DraftMark {
                     v.x(),
                     v.y(),
                     v.z(),
-                    v.z() - v.y() * (roll * PI / 180.).sin() - self.draught.value(v.x())?,
+                    v.z() - v.y() * roll.sin() - self.draught.value(v.x())?,
                 ));
             }
             z_fix.sort_by(|a, b| {
