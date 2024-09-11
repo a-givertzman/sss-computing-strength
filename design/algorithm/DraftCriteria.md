@@ -22,9 +22,9 @@
 | 109 | Заглубление винта ЛБ                 | [%]         |
 |     | Screw immersion SB                   | [%]         |
 | 110 | Заглубление винта (резерв)           | [%]         |
-|     | Screw immersion PS                   | [%]         |
+|     | Screw immersion (reserve)            | [%]         |
 | 111 | Заглубление винта (резерв)           | [%]         |
-|     | Screw immersion SB                   | [%]         |
+|     | Screw immersion (reserve)            | [%]         |
 | 112 | Запас плавучести в носу              | $[м^2]$     |
 |     | Reserve buoyncy in bow               | $[m^2]$     |
 | 113 | Минимальная осадка на миделе         | [м]         |
