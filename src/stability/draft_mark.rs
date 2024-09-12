@@ -7,7 +7,7 @@ use crate::{data::structs::DraftMarkParsedData, draught::IDraught, Curve, Error,
 /// Расчет уровня заглубления для координат отметок заглубления на корпусе судна
 pub struct DraftMark {
     /// Осадка судна
-    draught: Box<dyn IDraught>,
+    draught: Rc<dyn IDraught>,
     /// Координаты отметок заглубления на корпусе судна
     /// относительно центра
     points: Vec<DraftMarkParsedData>,
@@ -21,7 +21,7 @@ impl DraftMark {
     /// * points - Координаты отметок заглубления на корпусе судна относительно центра
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
-        draught: Box<dyn IDraught>,
+        draught: Rc<dyn IDraught>,
         points: Vec<DraftMarkParsedData>,
         parameters: Rc<dyn IParameters>,
     ) -> Self {
@@ -32,7 +32,7 @@ impl DraftMark {
         }
     }
     /// Расчет координат точек с уровнем заглубления 0
-    pub fn calculate(&mut self) -> Result<Vec<(String, (f64, f64, f64))>, Error> {
+    pub fn calculate(&self) -> Result<Vec<(String, (f64, f64, f64))>, Error> {
         let roll = self
             .parameters
             .get(ParameterID::Roll)

@@ -34,7 +34,7 @@ mod tests {
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 0.);
         let result = Screw::new(
-            Box::new(FakeDraught::new(2., 0.)),
+            Rc::new(FakeDraught::new(2., 0.)),
             data,
             Rc::new(parameters),
         )
@@ -42,14 +42,14 @@ mod tests {
         .unwrap();
         let target = 50.;
         assert!(
-            (result[0].1 - target).abs() < 0.0001,
+            (result[0].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         let target = 50.;
         assert!(
-            (result[1].1 - target).abs() < 0.0001,
+            (result[1].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -80,7 +80,7 @@ mod tests {
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 10.);
         let result = Screw::new(
-            Box::new(FakeDraught::new(2., 0.)),
+            Rc::new(FakeDraught::new(2., 0.)),
             data,
             Rc::new(parameters),
         )
@@ -88,14 +88,14 @@ mod tests {
         .unwrap();
         let target = 50. - 50. * (10. * PI / 180.).sin();
         assert!(
-            (result[0].1 - target).abs() < 0.0001,
+            (result[0].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         let target = 50. + 50. * (10. * PI / 180.).sin();
         assert!(
-            (result[1].1 - target).abs() < 0.0001,
+            (result[1].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -126,7 +126,7 @@ mod tests {
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, -10.);
         let result = Screw::new(
-            Box::new(FakeDraught::new(2., 0.)),
+            Rc::new(FakeDraught::new(2., 0.)),
             data,
             Rc::new(parameters),
         )
@@ -134,14 +134,14 @@ mod tests {
         .unwrap();
         let target = 50. + 50. * (10. * PI / 180.).sin();
         assert!(
-            (result[0].1 - target).abs() < 0.0001,
+            (result[0].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         let target = 50. - 50. * (10. * PI / 180.).sin();
         assert!(
-            (result[1].1 - target).abs() < 0.0001,
+            (result[1].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -172,7 +172,7 @@ mod tests {
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 0.);
         let result = Screw::new(
-            Box::new(FakeDraught::new(2., 0.1)),
+            Rc::new(FakeDraught::new(2., 0.1)),
             data,
             Rc::new(parameters),
         )
@@ -180,14 +180,14 @@ mod tests {
         .unwrap();
         let target = 0.;
         assert!(
-            (result[0].1 - target).abs() < 0.0001,
+            (result[0].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         let target = 0.;
         assert!(
-            (result[1].1 - target).abs() < 0.0001,
+            (result[1].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -218,7 +218,7 @@ mod tests {
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 0.);
         let result = Screw::new(
-            Box::new(FakeDraught::new(2., -0.1)),
+            Rc::new(FakeDraught::new(2., -0.1)),
             data,
             Rc::new(parameters),
         )
@@ -226,14 +226,14 @@ mod tests {
         .unwrap();
         let target = 100.;
         assert!(
-            (result[0].1 - target).abs() < 0.0001,
+            (result[0].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         let target = 100.;
         assert!(
-            (result[1].1 - target).abs() < 0.0001,
+            (result[1].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -264,7 +264,7 @@ mod tests {
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, -10.);
         let result = Screw::new(
-            Box::new(FakeDraught::new(2., -0.1)),
+            Rc::new(FakeDraught::new(2., -0.1)),
             data,
             Rc::new(parameters),
         )
@@ -272,14 +272,14 @@ mod tests {
         .unwrap();
         let target = 100.;
         assert!(
-            (result[0].1 - target).abs() < 0.0001,
+            (result[0].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         let target = 100. - 50. * (10. * PI / 180.).sin();
         assert!(
-            (result[1].1 - target).abs() < 0.0001,
+            (result[1].2 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target

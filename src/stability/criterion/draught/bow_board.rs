@@ -1,7 +1,7 @@
 /// Высота на носовом перпендикуляре
 use std::{f64::consts::PI, rc::Rc};
 
-use crate::{data::structs::LoadLineParsedData, draught::IDraught, Error, IParameters, ParameterID};
+use crate::{data::structs::BowBoardParsedData, draught::IDraught, Error, IParameters, ParameterID};
 
 /// Высота в носу, определяемая как расстояние по вертикали  
 /// на носовом перпендикуляре между ватерлинией и верхней кромкой  
@@ -9,10 +9,10 @@ use crate::{data::structs::LoadLineParsedData, draught::IDraught, Error, IParame
 /// минимальной высоты в носу F_b
 pub struct DepthAtForwardPerpendicular {
     /// Осадка судна
-    draught: Box<dyn IDraught>,
+    draught: Rc<dyn IDraught>,
     /// Координаты носового перпендикуляра судна
     /// относительно центра
-    data: Vec<LoadLineParsedData>,
+    bow_board: Vec<BowBoardParsedData>,
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>,
 }
@@ -23,18 +23,19 @@ impl DepthAtForwardPerpendicular {
     /// * data - Координаты носового перпендикуляра судна относительно центра
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
-        draught: Box<dyn IDraught>,
-        data: Vec<LoadLineParsedData>,
+        draught: Rc<dyn IDraught>,
+        bow_board: Vec<BowBoardParsedData>,
         parameters: Rc<dyn IParameters>,
     ) -> Self {
         Self {
             draught,
-            data,
+            bow_board,
             parameters, 
         }
     }
     /// Расчет расстояние по вертикали в точке носового перпендикуляра
-    pub fn calculate(&mut self) -> Result<Vec<(String, f64)>, Error> {
+    /// (name, y, delta_h)
+    pub fn calculate(&self) -> Result<Vec<(String, f64, f64)>, Error> {
         let roll = self
             .parameters
             .get(ParameterID::Roll)
@@ -44,9 +45,9 @@ impl DepthAtForwardPerpendicular {
             .get(ParameterID::Trim)
             .ok_or(Error::FromString("DepthAtForwardPerpendicular calculate error: no ParameterID::Trim!".to_string()))? * PI / 180.;
         let mut result = Vec::new();
-        for v in self.data.iter() {
+        for v in self.bow_board.iter() {
             let delta_h = (v.pos.z() - v.pos.y() * roll.sin() - self.draught.value(v.pos.x())?)*trim.cos();
-            result.push((v.name.clone(), delta_h));
+            result.push((v.name.clone(), v.pos.y(), delta_h));
         }
         Ok(result)
     }

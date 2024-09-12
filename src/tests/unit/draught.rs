@@ -3,7 +3,7 @@
 mod tests {
 
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-    use std::time::Duration;
+    use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
     use crate::{
@@ -20,10 +20,10 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
         let ship_length = 118.39;
-        let mut draught = Draught::new(
+        let draught = Draught::new(
             ship_length,
             -0.862,
-            Box::new(FakeTrim::from_angle(
+            Rc::new(FakeTrim::from_angle(
                 1.6562565987303715,
                 -0.3013717957692749,
                 ship_length,
