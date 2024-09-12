@@ -82,7 +82,7 @@ impl
 }
 ///
 #[allow(dead_code)]
-pub(crate) fn compartment() -> CompartmentArray {                                                                                                                                                                                                         
+pub fn compartment() -> CompartmentArray {                                                                                                                                                                                                         
     CompartmentArray::from(vec![                                                                                                                                                                                                                
     //      name,                                     mass,     matter_type,        general_category,               density,volume,         bound_x1, bound_x2, mass_shift_x,mass_shift_y,mass_shift_z,m_f_s_y,  m_f_s_x,     grain_moment
             ("Цистерна питьевой воды 2 ЛБ",             3.71,     MatterType::Liquid, CargoGeneralCategory::Stores,   Some(1.),   Some(3.71),          -24.744,   42.556,  41.44,     -1.325,       5.02,          Some(0.),             Some(0.),          ),

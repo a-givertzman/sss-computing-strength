@@ -19,7 +19,6 @@ mod waterline_area;
 mod volume_shift;
 mod rad_long;
 mod rad_trans;
-mod h_subdivision;
 mod mean_draught;
 mod center_draught_shift;
 mod pantocaren;
@@ -30,9 +29,10 @@ mod frame_area;
 mod draft_mark;
 mod load_line;
 mod screw;
-mod cargo;
 mod compartment;
+mod hold_compartment;
 mod load_constants;
+mod bulkhead;
 mod area_h_stab;
 mod area_h_str;
 mod area_v_stab;
@@ -40,7 +40,7 @@ mod area_v_str;
 
 use std::collections::HashMap;
 
-use crate::data::structs::{loads::LoadCargoArray, ParsedShipData};
+use crate::data::structs::{loads::{CompartmentArray, LoadCargoArray}, ParsedShipData};
 
 #[allow(dead_code)]
 pub(crate) fn input_data() -> ParsedShipData {
@@ -76,10 +76,10 @@ pub(crate) fn input_data() -> ParsedShipData {
         load_line::load_line(),
         screw::screw(),
         LoadCargoArray{data: Vec::new(), error: HashMap::new()},
-        bulkhead_src::bulkhead_src(),
+        bulkhead::bulkhead(),
         compartment::compartment(),
-        hold_compartments_src::hold_compartments_src(),
-        load_constant_src::load_constant_src(),
+        CompartmentArray{data: Vec::new(), error: HashMap::new()},
+        load_constant::load_constant_src(),
         area_h_stab::area_h_stab(),
         area_h_str::area_h_str(),
         area_v_stab::area_v_stab(),
