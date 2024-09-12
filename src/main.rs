@@ -10,11 +10,12 @@ use crate::{
     windage::Windage,
 };
 use data::api_server::*;
-use draught::Draught;
+use draught::{Draught, IDraught};
 pub use error::Error;
 use icing_timber::IcingTimberBound;
 use log::info;
 use std::{collections::HashMap, io, rc::Rc, time::Instant};
+use trim::ITrim;
 
 mod area;
 mod data;
@@ -135,14 +136,10 @@ fn execute() -> Result<(), Error> {
         Rc::new(strength::IcingMass::new(
             Rc::clone(&icing_stab),
             Rc::new(crate::strength::Area::new(
-                area_const_v, 
+                area_const_v,
                 area_const_h,
                 loads.desks()?,
-                IcingTimberBound::new(
-                    data.width,
-                    data.length_loa,
-                    data.icing_timber_stab,
-                ),
+                IcingTimberBound::new(data.width, data.length_loa, data.icing_timber_stab),
             )),
         )),
         Rc::new(WettingMass::new(data.wetting_timber, loads.load_timber()?)),
@@ -166,11 +163,7 @@ fn execute() -> Result<(), Error> {
             .map(|v| HAreaStability::new(v.value, Position::new(v.shift_x, v.shift_y, v.shift_z)))
             .collect(),
         loads.desks()?,
-        IcingTimberBound::new(
-            data.width,
-            data.length_loa,
-            data.icing_timber_stab,
-        ),
+        IcingTimberBound::new(data.width, data.length_loa, data.icing_timber_stab),
     ));
     // Момент массы нагрузки на корпус судна
     let ship_moment: Rc<dyn stability::IShipMoment> = Rc::new(stability::ShipMoment::new(
@@ -261,69 +254,6 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&parameters),
     ));
     send_stability_diagram(&mut api_server, ship_id, lever_diagram.diagram()?)?;
-    // Марки заглубления
-    let mut draft_mark = DraftMark::new(
-        Box::new(Draught::new(
-            data.length_lbp,
-            center_waterline_shift,
-            // Дифферент для остойчивости
-            Box::new(stability::Trim::new(
-                data.length_lbp,
-                mean_draught,
-                center_draught_shift.clone(),
-                Rc::clone(&metacentric_height),
-                Rc::clone(&ship_mass),
-                Rc::clone(&ship_moment),
-                Rc::clone(&parameters),
-            )?),
-            Some(Rc::clone(&parameters)),
-        )?),
-        data.draft_mark,
-        Rc::clone(&parameters),
-    );
-    send_draft_mark(&mut api_server, ship_id, draft_mark.calculate()?)?;
-    // Расчет уровня заглубления для винтов судна
-    let mut screw = Screw::new(
-        Box::new(Draught::new(
-            data.length_lbp,
-            center_waterline_shift,
-            // Дифферент для остойчивости
-            Box::new(stability::Trim::new(
-                data.length_lbp,
-                mean_draught,
-                center_draught_shift.clone(),
-                Rc::clone(&metacentric_height),
-                Rc::clone(&ship_mass),
-                Rc::clone(&ship_moment),
-                Rc::clone(&parameters),
-            )?),
-            Some(Rc::clone(&parameters)),
-        )?),
-        data.screw,
-        Rc::clone(&parameters),
-    );
-    send_screw(&mut api_server, ship_id, screw.calculate()?)?;
-    // Проверка осадок судна
-    let mut load_line = LoadLine::new(
-        Box::new(Draught::new(
-            data.length_lbp,
-            center_waterline_shift,
-            // Дифферент для остойчивости
-            Box::new(stability::Trim::new(
-                data.length_lbp,
-                mean_draught,
-                center_draught_shift.clone(),
-                Rc::clone(&metacentric_height),
-                Rc::clone(&ship_mass),
-                Rc::clone(&ship_moment),
-                Rc::clone(&parameters),
-            )?),
-            Some(Rc::clone(&parameters)),
-        )?),
-        data.load_line,
-        Rc::clone(&parameters),
-    );
-    send_load_line(&mut api_server, ship_id, load_line.calculate()?)?;
     // влияние ветра на остойчивость
     let wind: Rc<dyn IWind> = Rc::new(Wind::new(
         data.navigation_area_param
@@ -351,12 +281,15 @@ fn execute() -> Result<(), Error> {
         mean_draught,
         Rc::clone(&metacentric_height),
     ));
-    // амплитуда качки судна    
+    // амплитуда качки судна
     let coefficient_k: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.coefficient_k.data())?);
     let multipler_x1: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_x1.data())?);
     let multipler_x2: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_x2.data())?);
-    let multipler_s: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area))?);    
-    let coefficient_k_theta: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())?);    
+    let multipler_s: Rc<dyn ICurve> = Rc::new(Curve::new_linear(
+        &data.multipler_s.get_area(&data.navigation_area),
+    )?);
+    let coefficient_k_theta: Rc<dyn ICurve> =
+        Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())?);
     let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
         data.keel_area,
         Rc::clone(&metacentric_height),
@@ -372,9 +305,9 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&roll_period),
     )?);
 
-  /* let time = Instant::now();
-    // Критерии остойчивости   
-    let mut criterion_computer_results = CriterionComputer::new(
+    // Критерии остойчивости
+    let time = Instant::now();
+    let criterion_computer_results = CriterionComputer::new(
         data.overall_height,
         data.ship_type,
         Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,
@@ -406,12 +339,12 @@ fn execute() -> Result<(), Error> {
         data.pantocaren.clone(),
         Rc::clone(&wind),
         Rc::clone(&metacentric_height),
-    )?.calculate()?;
-    send_stability_data(&mut api_server, ship_id, criterion_computer_results)?; //
+    )?
+    .calculate()?;
     elapsed.insert("CriterionComputer", time.elapsed());
-*/
+
     let time = Instant::now();
-    let mut criterion = CriterionStability::new(
+    let mut criterion_result = CriterionStability::new(
         data.ship_type,
         data.navigation_area,
         loads.desks()?.iter().any(|v| v.is_timber()),
@@ -457,20 +390,70 @@ fn execute() -> Result<(), Error> {
             Rc::clone(&lever_diagram),
             Rc::clone(&parameters),
         )),
-    )?;
-    send_stability_data(&mut api_server, ship_id, criterion.create())?; //
+    )?.create();
     elapsed.insert("Criterion", time.elapsed());
 
- //   let criterion_res = criterion.create();
-  /*   log::info!("Main criterion zg:");
-   for (id, zg, result, target) in criterion_computer_results.iter() {
-        log::info!("id:{id} zg:{zg} result:{result} delta:{}", result - target);
-    }
-    log::info!("Main criterion:");
-    for v in criterion_res.iter() {
-        log::info!("id:{} result:{} target:{}", v.criterion_id, v.result, v.target);
-    }
-*/
+    let trim: Rc<dyn ITrim> = Rc::new(stability::Trim::new(
+        data.length_lbp,
+        mean_draught,
+        center_draught_shift.clone(),
+        Rc::clone(&metacentric_height),
+        Rc::clone(&ship_mass),
+        Rc::clone(&ship_moment),
+        Rc::clone(&parameters),
+    )?);
+    let draught: Rc<dyn IDraught> = Rc::new(Draught::new(
+        data.length_lbp,
+        center_waterline_shift,
+        Rc::clone(&trim),
+        Some(Rc::clone(&parameters)),
+    )?);
+    // Марки заглубления
+    let draft_mark =
+        DraftMark::new(Rc::clone(&draught), data.draft_mark, Rc::clone(&parameters));
+    send_draft_mark(&mut api_server, ship_id, draft_mark.calculate()?)?;
+    //
+    let criterion_draught = CriterionDraught::new(
+        data.ship_type,
+        data.deadweight,
+        data.freeboard_type,
+        data.bow_area_min,
+        data.aft_trim,
+        data.forward_trim,
+        data.bow_h_min,
+        Rc::clone(&draught),
+        Rc::clone(&trim),
+        Rc::clone(&parameters),
+        LoadLine::new(Rc::clone(&draught), data.load_line, Rc::clone(&parameters)),
+        DepthAtForwardPerpendicular::new(
+            Rc::clone(&draught),
+            data.bow_board.clone(),
+            Rc::clone(&parameters),
+        ),
+        Screw::new(Rc::clone(&draught), data.screw, Rc::clone(&parameters)),
+        ReserveBuoyncyInBow::new(Rc::clone(&draught), data.length_lbp, data.bow_area.clone()),
+        MinimumDraft::new(data.length_lbp),
+    );
+    criterion_result.append(&mut criterion_draught.create());
+    send_stability_data(
+        &mut api_server,
+        ship_id,
+        criterion_result,
+        criterion_computer_results,
+    )?;
+  //  send_screw(&mut api_server, ship_id, criterion_draught.screw()?)?;
+  //  send_load_line(&mut api_server, ship_id, criterion_draught.load_line()?)?;
+  //  send_bow_board(&mut api_server, ship_id, criterion_draught.bow_board()?)?;
+    //   let criterion_res = criterion.create();
+    /*   log::info!("Main criterion zg:");
+       for (id, zg, result, target) in criterion_computer_results.iter() {
+            log::info!("id:{id} zg:{zg} result:{result} delta:{}", result - target);
+        }
+        log::info!("Main criterion:");
+        for v in criterion_res.iter() {
+            log::info!("id:{} result:{} target:{}", v.criterion_id, v.result, v.target);
+        }
+    */
     send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //
 
     for (key, e) in elapsed {

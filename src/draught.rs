@@ -1,5 +1,5 @@
 //! Осадка судна
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{trim::ITrim, Error, IParameters, ParameterID};
 
@@ -11,13 +11,13 @@ pub struct Draught {
     ///  отстояние центра тяжести ватерлинии по длине от миделя
     center_waterline_shift: f64, 
     /// Дифферент судна
-    trim: Box<dyn ITrim>,     
+    trim: Rc<dyn ITrim>,     
     /// Набор результатов расчетов для записи в БД
     parameters: Option<Rc<dyn IParameters>>, 
     /// Осадка на миделе в ДП, м
-    draught_mid: Option<f64>,
+    draught_mid: RefCell<Option<f64>>,
     /// Изменение осадки
-    delta_draught: Option<f64>,
+    delta_draught: RefCell<Option<f64>>,
 }
 ///
 impl Draught {
@@ -29,7 +29,7 @@ impl Draught {
     pub fn new(
         ship_length: f64,               
         center_waterline_shift: f64,    
-        trim: Box<dyn ITrim>,               
+        trim: Rc<dyn ITrim>,               
         parameters: Option<Rc<dyn IParameters>>, 
     ) -> Result<Self, Error> {
         if ship_length <= 0. {
@@ -40,13 +40,13 @@ impl Draught {
             center_waterline_shift,
             trim,
             parameters,
-            draught_mid: None,
-            delta_draught: None,
+            draught_mid: RefCell::new(None),
+            delta_draught: RefCell::new(None),
         })
     }
     /// Вычисление осадки на миделе и изменения осадки
     #[allow(non_snake_case)]
-    fn calculate(&mut self) -> Result<(), Error> {
+    fn calculate(&self) -> Result<(), Error> {
         let (mean_draught, trim) = self.trim.value()?;
         // Осадка на носовом перпендикуляре длины L в ДП dн, м (6)
         let draught_bow = mean_draught + (0.5 - self.center_waterline_shift/self.ship_length)*trim;
@@ -64,8 +64,8 @@ impl Draught {
             parameters.add(ParameterID::DraughtBow, draught_bow);
             parameters.add(ParameterID::DraughtStern, draught_stern);
         }
-        self.draught_mid = Some(draught_mid);
-        self.delta_draught = Some(delta_draught);
+        self.draught_mid.borrow_mut().replace(draught_mid);
+        self.delta_draught.borrow_mut().replace(delta_draught);
         Ok(())
     }
 }
@@ -73,12 +73,12 @@ impl Draught {
 impl IDraught for Draught {
     /// Значение осадки в точке
     #[allow(non_snake_case)]
-    fn value(&mut self, pos_x: f64) -> Result<f64, Error> {
-        if self.draught_mid.is_none() {
+    fn value(&self, pos_x: f64) -> Result<f64, Error> {
+        if self.draught_mid.borrow().is_none() {
             self.calculate()?;
         }        
-        Ok(self.draught_mid.ok_or("Draught value error: no draught_mid!".to_string())?
-            + self.delta_draught.ok_or("Draught value error: no draught_mid!".to_string())?
+        Ok(self.draught_mid.borrow().ok_or("Draught value error: no draught_mid!".to_string())?
+            + self.delta_draught.borrow().ok_or("Draught value error: no draught_mid!".to_string())?
             * pos_x)
     }
 }
@@ -86,7 +86,7 @@ impl IDraught for Draught {
 #[doc(hidden)]
 pub trait IDraught {
     /// Вычисление дифферента
-    fn value(&mut self, pos_x: f64) -> Result<f64, Error>;
+    fn value(&self, pos_x: f64) -> Result<f64, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -103,7 +103,7 @@ impl FakeDraught {
 }
 #[doc(hidden)]
 impl IDraught for FakeDraught {
-    fn value(&mut self, pos_x: f64) -> Result<f64, Error> {
+    fn value(&self, pos_x: f64) -> Result<f64, Error> {
         Ok(self.draught_mid
         + self.delta_draught 
         * pos_x)

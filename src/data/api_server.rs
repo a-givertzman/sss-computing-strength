@@ -9,7 +9,7 @@ use crate::{
 };
 use api_tools::client::{api_query::*, api_request::ApiRequest};
 use loads::{BulkheadArray, CompartmentArray, LoadCargoArray};
-use std::{thread, time};
+use std::{collections::HashMap, thread, time};
 
 pub struct ApiServer {
     database: String,
@@ -192,6 +192,10 @@ pub fn get_data(
         "SELECT name, x, y, z, d FROM screw WHERE ship_id={};",
         ship_id
     ))?)?;
+    let bow_board = BowBoardDataArray::parse(&api_server.fetch(&format!(
+        "SELECT name, x, y, z FROM bow_board WHERE ship_id={};",
+        ship_id
+    ))?)?;
     let cargo = LoadCargoArray::parse(&api_server.fetch(&format!(
         "SELECT 
             c.name AS name, \
@@ -320,7 +324,10 @@ pub fn get_data(
     let area_v_stab = stability::VerticalAreaArray::parse(&api_server.fetch(
         &format!("SELECT draught, area, moment_x, moment_z FROM vertical_area_stability WHERE ship_id={};", ship_id)
     )?)?;
-    log::info!("input_api_server area_v_stab read ok");
+    let bow_area = BowAreaDataArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM bow_area WHERE ship_id={};",
+        ship_id
+    ))?)?;
     log::info!("input_api_server read ok");
     ParsedShipData::parse(
         navigation_area_param,
@@ -353,6 +360,7 @@ pub fn get_data(
         draft_mark,
         load_line,
         screw,
+        bow_board,
         cargo,
         bulkhead,
         compartment,
@@ -362,6 +370,7 @@ pub fn get_data(
         area_h_str,
         area_v_stab,
         area_v_str,
+        bow_area,
     )
 }
 
@@ -406,18 +415,21 @@ pub fn send_strenght_data(
 pub fn send_stability_data(
     api_server: &mut ApiServer,
     ship_id: usize,
-    data: Vec<CriterionData>,
+    criterion_data: Vec<CriterionData>,
+    zg_data: HashMap<usize, f64>,
 ) -> Result<(), error::Error> {
     log::info!("send_stability_data begin");
     let mut full_sql = "DO $$ BEGIN ".to_owned();
-    full_sql += &format!("DELETE FROM result_stability WHERE ship_id={ship_id};");
-    data.into_iter().for_each(|v| {
-        full_sql += " INSERT INTO result_stability "; 
-            if let Some(error) = v.error_message {
-                full_sql += &format!("(ship_id, criterion_id, result, target, error_message) VALUES ({ship_id}, {}, {}, {}, '{}');", v.criterion_id, v.result, v.target, error);
-            } else {
-                full_sql += &format!("(ship_id, criterion_id, result, target) VALUES ({ship_id}, {}, {}, {});", v.criterion_id, v.result, v.target);
-            }
+    full_sql += &format!("DELETE FROM criterion_values WHERE ship_id={ship_id};");
+    criterion_data.into_iter().for_each(|v| {
+        let zg = zg_data.get(&v.criterion_id);
+        full_sql += " INSERT INTO criterion_values "; 
+        full_sql += &match (v.error_message, zg) {
+            (None, None) => format!("(ship_id, criterion_id, actual_value, limit_value) VALUES ({ship_id}, {}, {}, {});", v.criterion_id, v.result, v.target),
+            (None, Some(zg_value)) => format!("(ship_id, criterion_id, actual_value, limit_value, zg_value) VALUES ({ship_id}, {}, {}, {}, {zg_value});", v.criterion_id, v.result, v.target),
+            (Some(error), None) => format!("(ship_id, criterion_id, actual_value, limit_value, error_message) VALUES ({ship_id}, {}, {}, {}, '{}');", v.criterion_id, v.result, v.target, error),
+            (Some(error), Some(zg_value)) => format!("(ship_id, criterion_id, actual_value, limit_value, error_message) VALUES ({ship_id}, {}, {}, {}, {zg_value}, '{}');", v.criterion_id, v.result, v.target, error),
+        };
     });
     full_sql += " END$$;";
     api_server.fetch(&full_sql)?;
@@ -466,7 +478,7 @@ pub fn send_parameters_data(
     log::info!("send_parameters_data end");
     Ok(())
 }
-/// Запись данных расчета расчет уровня заглубления 
+/// Запись данных расчета уровня заглубления 
 /// для координат отметок заглубления на корпусе судна
 pub fn send_draft_mark(
     api_server: &mut ApiServer,
@@ -486,16 +498,18 @@ pub fn send_draft_mark(
     }
     full_sql += " END$$;";
     api_server.fetch(&full_sql)?;
-    log::info!("send_parameters_data end");
+    log::info!("send_draft_mark end");
     Ok(())
 }
-/// Запись данных расчета расчет уровня заглубления винтов
+
+/*
+/// Запись данных расчета уровня заглубления винтов
 pub fn send_screw(
     api_server: &mut ApiServer,
     ship_id: usize,
     data: Vec<(String, f64)>,
 ) -> Result<(), error::Error> {
-    log::info!("send_draft_mark begin");
+    log::info!("send_screw begin");
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM screw_result WHERE ship_id={ship_id};");
     if !data.is_empty() {
@@ -508,17 +522,17 @@ pub fn send_screw(
     }
     full_sql += " END$$;";
     api_server.fetch(&full_sql)?;
-    log::info!("send_parameters_data end");
+    log::info!("send_screw end");
     Ok(())
 }
-/// Запись данных расчета расчета 
+/// Запись данных расчета  
 /// заглубления точкек осадки на корпусе судна
 pub fn send_load_line(
     api_server: &mut ApiServer,
     ship_id: usize,
     data: Vec<(String, f64)>,
 ) -> Result<(), error::Error> {
-    log::info!("send_draft_mark begin");
+    log::info!("send_load_line begin");
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM load_line_result WHERE ship_id={ship_id};");
     if !data.is_empty() {
@@ -531,9 +545,33 @@ pub fn send_load_line(
     }
     full_sql += " END$$;";
     api_server.fetch(&full_sql)?;
-    log::info!("send_parameters_data end");
+    log::info!("send_load_line end");
     Ok(())
 }
+/// Запись данных расчета высоты
+/// борта на носовом перпендикуляре
+pub fn send_bow_board(
+    api_server: &mut ApiServer,
+    ship_id: usize,
+    data: Vec<(String, f64)>,
+) -> Result<(), error::Error> {
+    log::info!("send_bow_board begin");
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM load_line_result WHERE ship_id={ship_id};");
+    if !data.is_empty() {
+        full_sql += " INSERT INTO load_line_result (ship_id, name, value) VALUES";
+        data.into_iter().for_each(|(name, value)| {
+            full_sql += &format!(" ({ship_id}, '{name}', {value}),");
+        });
+        full_sql.pop();
+        full_sql.push(';');
+    }
+    full_sql += " END$$;";
+    api_server.fetch(&full_sql)?;
+    log::info!("send_bow_board end");
+    Ok(())
+}
+*/
 /*
 /// Чтение данных из БД. Функция читает данные за несколько запросов,
 /// парсит их и проверяет данные на корректность.

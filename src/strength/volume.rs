@@ -1,5 +1,5 @@
 //! Распределение объема вытесненной воды по шпациям
-use std::{borrow::BorrowMut, rc::Rc};
+use std::rc::Rc;
 use crate::{draught::IDraught, math::Bounds, Error};
 use super::displacement::Displacement;
 
@@ -11,7 +11,7 @@ pub struct Volume {
     /// водоизмещение судна
     displacement: Rc<Displacement>,
     /// Осадка судна
-    draught: Box<dyn IDraught>,
+    draught: Rc<dyn IDraught>,
 }
 ///
 impl Volume {
@@ -21,7 +21,7 @@ impl Volume {
     /// * draught - Осадка судна
     pub fn new(  
         displacement: Rc<Displacement>,   
-        draught: Box<dyn IDraught>,
+        draught: Rc<dyn IDraught>,
         bounds: Rc<Bounds>,
     ) -> Self {
         Self {
@@ -34,13 +34,13 @@ impl Volume {
 ///
 impl IVolume for Volume {
     /// Распределение объема вытесненной воды по шпациям
-    fn values(&mut self) -> Result<Vec<f64>, Error> {
+    fn values(&self) -> Result<Vec<f64>, Error> {
         let mut result: Vec<f64> = Vec::new();
         for v in self.bounds.iter() {
             if !v.is_value() {
                 return Err(Error::FromString("Volume value error: bound is no value".to_owned()));
             }
-            result.push(self.displacement.borrow_mut().value(
+            result.push(self.displacement.value(
                     v,
                     self.draught.value(v.start().unwrap())?,
                     self.draught.value(v.end().unwrap())?,
@@ -54,7 +54,7 @@ impl IVolume for Volume {
 
 #[doc(hidden)]
 pub trait IVolume {
-    fn values(&mut self) -> Result<Vec<f64>, Error>;
+    fn values(&self) -> Result<Vec<f64>, Error>;
 }
 // заглушка для тестирования
 #[doc(hidden)]
@@ -70,7 +70,7 @@ impl FakeVolume {
 }
 #[doc(hidden)]
 impl IVolume for FakeVolume {
-    fn values(&mut self) -> Result<Vec<f64>, Error> {
+    fn values(&self) -> Result<Vec<f64>, Error> {
         Ok(self.data.clone())
     }
 }

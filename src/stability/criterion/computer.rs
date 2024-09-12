@@ -192,8 +192,8 @@ impl CriterionComputer {
             metacentric_height,
         })
     }
-    /// criterion_id, zg, result, target
-    pub fn calculate(&mut self) -> Result<Vec<(usize, f64, f64, f64)>, Error> {
+    /// Расчет zg, возвращяет результат в виде HashMap<criterion_id, zg>
+    pub fn calculate(&mut self) -> Result<HashMap<usize, f64>, Error> {
         let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
         // zg + Vec<id, delta>
         let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
@@ -319,7 +319,7 @@ impl CriterionComputer {
                         .or_insert(vec![(z_g_fix, value.unwrap())]);
                 });
         }
-        let mut result = Vec::new();
+        let mut result = HashMap::new();
         for (id, mut values) in values.into_iter() {
             // сортируем значения по увеличению дельты с целевым
             values.sort_by(|&(_, v1), &(_, v2)| {
@@ -331,7 +331,8 @@ impl CriterionComputer {
             let closest_value = values
                 .first()
                 .expect("CriterionComputer calculate error, no values!");
-            result.push((id, closest_value.0, closest_value.1.0, closest_value.1.1));
+            //result.insert(id, (closest_value.0, closest_value.1.0, closest_value.1.1));
+            result.insert(id, closest_value.0);
         }
         Ok(result)
     }
