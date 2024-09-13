@@ -111,13 +111,15 @@ impl CriterionDraught {
         out_data.append(&mut self.trim());
         out_data.append(&mut self.bow_board());
         out_data.append(&mut self.screw());
-        if self.freeboard_type == "B"
+
+  /*       if self.freeboard_type == "B"
             && self.ship_type == ShipType::Tanker
             && self.ship_type == ShipType::ChemicalTanker
             && self.ship_type == ShipType::GasCarrier
         {
             out_data.push(self.reserve_buoyncy());
         }
+*/
         if (self.ship_type == ShipType::Tanker && self.deadweight >= 20000.)
             || (self.ship_type == ShipType::OilTanker && self.deadweight >= 30000.)
         {
