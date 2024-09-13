@@ -37,6 +37,7 @@ mod area_h_stab;
 mod area_h_str;
 mod area_v_stab;
 mod area_v_str;
+mod h_subdivision;
 
 use std::collections::HashMap;
 
@@ -79,7 +80,7 @@ pub(crate) fn input_data() -> ParsedShipData {
         bulkhead::bulkhead(),
         compartment::compartment(),
         CompartmentArray{data: Vec::new(), error: HashMap::new()},
-        load_constant::load_constant_src(),
+        load_constants::load_constants(),
         area_h_stab::area_h_stab(),
         area_h_str::area_h_str(),
         area_v_stab::area_v_stab(),
