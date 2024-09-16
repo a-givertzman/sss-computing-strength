@@ -7,7 +7,7 @@ impl From<Vec<(&str, f64, f64, f64, f64)>> for VerticalAreaArray {
         Self {
             data: src
                 .into_iter()
-                .map(|(name, value, shift_z, bound_x1, bound_x2)| VerticalArea {
+                .map(|(name, shift_z, value, bound_x1, bound_x2)| VerticalArea {
                     name: name.to_owned(),
                     value,
                     shift_z,

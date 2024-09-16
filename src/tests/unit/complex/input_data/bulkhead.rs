@@ -10,7 +10,7 @@ pub(crate) fn bulkhead() -> LoadCargoArray {
             LoadCargo {
                 name: "Зерновая переборка №1".to_string(),
                 mass: Some(12.),
-                general_category: CargoGeneralCategory::Lightship,
+                general_category: CargoGeneralCategory::Bulkhead,
                 timber: false,
                 bound_x1: -42.749,
                 bound_x2: -42.359,
@@ -30,7 +30,7 @@ pub(crate) fn bulkhead() -> LoadCargoArray {
             LoadCargo {
                 name: "Зерновая переборка №2".to_string(),
                 mass: Some(12.),
-                general_category: CargoGeneralCategory::Lightship,
+                general_category: CargoGeneralCategory::Bulkhead,
                 timber: false,
                 bound_x1: -43.204,
                 bound_x2: -42.814,

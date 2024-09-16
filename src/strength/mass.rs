@@ -88,7 +88,15 @@ impl Mass {
         {
             cargo += v.value(&Bound::Full)?;
         }
-        let deadweight = ballast + stores + cargo;
+        let mut bulkhead = 0.;
+        for v in self
+            .loads_variable
+            .iter()
+            .filter(|v| v.load_type() == LoadingType::Bulkhead)
+        {
+            bulkhead += v.value(&Bound::Full)?;
+        }
+        let deadweight = ballast + stores + cargo + bulkhead;
         let mut lightship = 0.;
         for v in self.loads_const.iter() {
             lightship += v.value(&Bound::Full)?;
@@ -112,6 +120,7 @@ impl Mass {
     fn values(&self) -> Result<Vec<f64>, Error> {
         let mut vec_hull = Vec::new();
         let mut vec_equipment = Vec::new();
+        let mut vec_bulkhead = Vec::new();
         let mut vec_ballast = Vec::new();
         let mut vec_store = Vec::new();
         let mut vec_cargo = Vec::new();
@@ -138,6 +147,15 @@ impl Mass {
                 equipment += v.value(b)?;
             }
             vec_equipment.push(equipment);
+            let mut bulkhead = 0.;
+            for v in self
+                .loads_variable
+                .iter()
+                .filter(|v| v.load_type() == LoadingType::Bulkhead)
+            {
+                bulkhead += v.value(b)?;
+            }
+            vec_bulkhead.push(bulkhead);
             let mut ballast = 0.;
             for v in self
                 .loads_variable
@@ -170,10 +188,11 @@ impl Mass {
             let wetting = self.wetting_mass.mass(b)?;
             vec_wetting.push(wetting);
 
-            res.push(hull + equipment + ballast + store + cargo + icing + wetting);
+            res.push(hull + equipment + bulkhead + ballast + store + cargo + icing + wetting);
         }
         vec_hull.push(vec_hull.iter().sum());
         vec_equipment.push(vec_equipment.iter().sum());
+        vec_bulkhead.push(vec_bulkhead.iter().sum());
         vec_ballast.push(vec_ballast.iter().sum());
         vec_store.push(vec_store.iter().sum());
         vec_cargo.push(vec_cargo.iter().sum());
@@ -181,10 +200,12 @@ impl Mass {
         vec_wetting.push(vec_wetting.iter().sum());
         vec_sum.append(&mut res.clone());
         vec_sum.push(res.iter().sum());
-    //    log::info!("\t Mass values:{:?} ", res);
+        // log::info!("\t Mass values:{:?} ", res);
         self.results.add("value_mass_hull".to_owned(), vec_hull);
         self.results
             .add("value_mass_equipment".to_owned(), vec_equipment);
+        self.results
+            .add("value_mass_bulkhead".to_owned(), vec_bulkhead);
         self.results
             .add("value_mass_ballast".to_owned(), vec_ballast);
         self.results.add("value_mass_store".to_owned(), vec_store);

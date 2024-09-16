@@ -22,6 +22,7 @@ impl From<Vec<(&str, &str, &str, &str)>> for ShipArray {
 pub(crate) fn ship_parameters() -> ShipArray {
     ShipArray::from(vec![
         ("Name of ship", "Belogorodskaya ARK-20231", "text", ""),
+    //    ("Type of icing", "full", "text", ""),
         ("Type of icing", "none", "text", ""),
         ("Type of icing timber", "full", "text", ""),
         ("Wetting of deck timber", "10", "real", ""),
