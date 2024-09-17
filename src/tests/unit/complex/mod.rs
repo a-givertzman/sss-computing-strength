@@ -28,9 +28,10 @@ mod tests {
         println!("");
         let self_id = "test complex";
         println!("{}", self_id);
-        let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
+        let test_duration = TestDuration::new(self_id, Duration::from_secs(60));
         test_duration.run().unwrap();
 
+        let precision = 1./20.; // 5%
         let data = input_data::input_data();
         let results: Rc<dyn IResults> = Rc::new(Results::new());
         let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
@@ -181,7 +182,6 @@ mod tests {
         parameters.add(ParameterID::TonesPerCm, 0.01 * area_wl * data.water_density);
         // Для расчета прочности дифферент находится подбором
         // как условие для схождения изгибающего момента в 0
-
         Computer::new(
             gravity_g,
             data.water_density,
@@ -200,8 +200,12 @@ mod tests {
             results.take_data().into_iter().map(|v| v).collect();
 
         let mut displacement_result = map_results.get("value_displacement").unwrap().clone();
-        displacement_result = displacement_result.into_iter().rev().map(|v| v*1.025 ).collect(); // переводим м^3 в тонны
-        //displacement_result.remove(0);
+        displacement_result = displacement_result
+            .into_iter()
+            .rev()
+            .map(|v| v * 1.025)
+            .collect(); // переводим м^3 в тонны
+                        //displacement_result.remove(0);
         let mut displacement_target = vec![
             23.41, 67.76, 98.35, 107.89, 112.13, 115.65, 119.04, 122.78, 126.55, 130.33, 134.17,
             137.98, 141.71, 145.46, 149.23, 153.00, 156.77, 156.75, 114.95, 40.45,
@@ -210,7 +214,7 @@ mod tests {
 
         let mut mass_values_result = map_results.get("value_mass_sum").unwrap().clone();
         mass_values_result = mass_values_result.into_iter().rev().collect();
-       // mass_values_result.remove(0);
+        // mass_values_result.remove(0);
         let mut mass_values_target = vec![
             139.14, 182.25, 188.06, 137.06, 83.66, 70.46, 70.46, 70.46, 70.46, 70.46, 70.46, 70.46,
             70.46, 70.46, 70.46, 70.46, 70.46, 235.42, 286.06, 257.20,
@@ -219,7 +223,7 @@ mod tests {
 
         let mut total_force_result = map_results.get("value_total_force").unwrap().clone();
         total_force_result = total_force_result.into_iter().rev().collect();
-       // total_force_result.remove(0);
+        // total_force_result.remove(0);
         let total_force_target = vec![
             115.73, 114.50, 89.71, 29.17, -28.47, -45.19, -48.58, -52.32, -56.09, -59.87, -63.71,
             -67.52, -71.25, -75.00, -78.77, -82.54, -86.31, 78.67, 171.10, 216.74,
@@ -257,433 +261,369 @@ mod tests {
                 println!("{i}: {r} {t}");
             });
         println!("total_force: index: result  target");
-  /*      total_force_result
-            .iter()
-            .zip(total_force_target.iter())
-            .enumerate()
-            .for_each(|(i, (r, t))| {
-                println!("{i}: {r} {t}");
-            });
-        println!("shear_force: index: result  target");
-        shear_force_result
-            .iter()
-            .zip(shear_force_target.iter())
-            .enumerate()
-            .for_each(|(i, (r, t))| {
-                println!("{i}: {r} {t}");
-            });
-        println!("bending_moment: index: result  target");
-        bending_moment_result
-            .iter()
-            .zip(bending_moment_target.iter())
-            .enumerate()
-            .for_each(|(i, (r, t))| {
-                println!("{i}: {r} {t}");
-            });
+        /*      total_force_result
+                    .iter()
+                    .zip(total_force_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        println!("{i}: {r} {t}");
+                    });
+                println!("shear_force: index: result  target");
+                shear_force_result
+                    .iter()
+                    .zip(shear_force_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        println!("{i}: {r} {t}");
+                    });
+                println!("bending_moment: index: result  target");
+                bending_moment_result
+                    .iter()
+                    .zip(bending_moment_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        println!("{i}: {r} {t}");
+                    });
 
-        displacement_result
-            .iter()
-            .zip(displacement_target.iter())
-            .enumerate()
-            .for_each(|(i, (r, t))| {
-                assert!(
-                    (r - t).abs() < 1. + t / 5.,
-                    "\ndisplacement i:{i} result:{r} target:{t}"
-                );
-            });
-        mass_values_result
-            .iter()
-            .zip(mass_values_target.iter())
-            .enumerate()
-            .for_each(|(i, (r, t))| {
-                assert!(
-                    (r - t).abs() < 1. + t / 20.,
-                    "\nmass_values i:{i} result:{r} target:{t}"
-                );
-            });
-       total_force_result
-            .iter()
-            .zip(total_force_target.iter())
-            .enumerate()
-            .for_each(|(i, (r, t))| {
-                assert!(
-                    (r - t).abs() < 1. + t / 20.,
-                    "\total_force i:{i} result:{r} target:{t}"
-                );
-            });
-        shear_force_result
-            .iter()
-            .zip(shear_force_target.iter())
-            .enumerate()
-            .for_each(|(i, (r, t))| {
-                assert!(
-                    (r - t).abs() < 1. + t / 20.,
-                    "\nshear_force i:{i} result:{r} target:{t}"
-                );
-            });
-        bending_moment_result
-            .iter()
-            .zip(bending_moment_target.iter())
-            .enumerate()
-            .for_each(|(i, (r, t))| {
-                assert!(
-                    (r - t).abs() < 1. + t / 20.,
-                    "\nbending_moment i:{i} result:{r} target:{t}"
-                );
-            });
-*/
+                displacement_result
+                    .iter()
+                    .zip(displacement_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        assert!(
+                            (r - t).abs() < t.abs()*precision,
+                            "\ndisplacement i:{i} result:{r} target:{t}"
+                        );
+                    });
+                mass_values_result
+                    .iter()
+                    .zip(mass_values_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        assert!(
+                            (r - t).abs() < t.abs()*precision,
+                            "\nmass_values i:{i} result:{r} target:{t}"
+                        );
+                    });
+               total_force_result
+                    .iter()
+                    .zip(total_force_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        assert!(
+                            (r - t).abs() < t.abs()*precision,
+                            "\total_force i:{i} result:{r} target:{t}"
+                        );
+                    });
+                shear_force_result
+                    .iter()
+                    .zip(shear_force_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        assert!(
+                            (r - t).abs() < t.abs()*precision,
+                            "\nshear_force i:{i} result:{r} target:{t}"
+                        );
+                    });
+                bending_moment_result
+                    .iter()
+                    .zip(bending_moment_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        assert!(
+                            (r - t).abs() < t.abs()*precision,
+                            "\nbending_moment i:{i} result:{r} target:{t}"
+                        );
+                    });
+        */
 
- /*        let mass_icing_result = parameters.get(ParameterID::MassIcing).unwrap();
-        let mass_icing_target = 67.5;
-        assert!(
-            (mass_icing_result - mass_icing_target).abs() < mass_icing_target / 20.,
-            "\nmass_icing result:{mass_icing_result} target:{mass_icing_target}"
+        /*        let mass_icing_result = parameters.get(ParameterID::MassIcing).unwrap();
+                let mass_icing_target = 67.5;
+                assert!(
+                    (mass_icing_result - mass_icing_target).abs() < mass_icing_target.abs()*precision,
+                    "\nmass_icing result:{mass_icing_result} target:{mass_icing_target}"
+                );
+        */
+
+        // Угол заливания отверстий
+        let flooding_angle = Curve::new_linear(&data.flooding_angle)
+            .unwrap()
+            .value(mean_draught)
+            .unwrap();
+        parameters.add(ParameterID::AngleOfDownFlooding, flooding_angle);
+        // Угол входа в воду кромки палубы
+        let entry_angle = Curve::new_linear(&data.entry_angle)
+            .unwrap()
+            .value(mean_draught)
+            .unwrap();
+        parameters.add(ParameterID::OpenDeckEdgeImmersionAngle, entry_angle);
+        // метацентрическая высота
+        let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
+            center_draught_shift.clone(), // отстояние центра величины погруженной части судна
+            rad_long,                     // продольный метацентрические радиус
+            rad_trans,                    // поперечный метацентрические радиус
+            loads.tanks().unwrap(),
+            Rc::clone(&ship_mass),
+            Rc::clone(&ship_moment),
+            Rc::clone(&parameters),
+        ));
+        // Момент кренящий на 1 градус MH1deg, т∙м
+        parameters.add(
+            ParameterID::MomentRollPerDeg,
+            ship_mass.sum().unwrap()
+                * metacentric_height.h_trans_fix().unwrap()
+                * (std::f64::consts::PI / 180.).sin(),
         );
-*/   
-
-                // Угол заливания отверстий
-                let flooding_angle = Curve::new_linear(&data.flooding_angle)
+        // Длинна по ватерлинии при текущей осадке
+        let length_wl = Curve::new_linear(&data.waterline_length)
+            .unwrap()
+            .value(mean_draught)
+            .unwrap();
+        // Ширина по ватерлинии при текущей осадке
+        let breadth_wl = Curve::new_linear(&data.waterline_breadth)
+            .unwrap()
+            .value(mean_draught)
+            .unwrap();
+        // Отстояние по вертикали центра площади проекции подводной части корпуса
+        let volume_shift = Curve::new_linear(&data.volume_shift)
+            .unwrap()
+            .value(mean_draught)
+            .unwrap();
+        // Диаграмма плечей остойчивости
+        let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
+            Rc::clone(&ship_moment),
+            center_draught_shift.clone(),
+            data.pantocaren.clone(),
+            mean_draught,
+            Rc::clone(&metacentric_height),
+            Rc::clone(&parameters),
+        ));
+        // влияние ветра на остойчивость
+        let wind: Rc<dyn IWind> = Rc::new(Wind::new(
+            data.navigation_area_param
+                .get_area(&data.navigation_area)
+                .ok_or("main error no area data!".to_string())
+                .unwrap(),
+            Rc::new(Windage::new(
+                Rc::clone(&icing_stab),
+                Rc::clone(&area_stability),
+                Curve::new_linear(&data.delta_windage_area)
                     .unwrap()
                     .value(mean_draught)
-                    .unwrap();
-                parameters.add(ParameterID::AngleOfDownFlooding, flooding_angle);
-                // Угол входа в воду кромки палубы
-                let entry_angle = Curve::new_linear(&data.entry_angle)
-                    .unwrap()
-                    .value(mean_draught)
-                    .unwrap();
-                parameters.add(ParameterID::OpenDeckEdgeImmersionAngle, entry_angle);
-                // метацентрическая высота
-                let metacentric_height: Rc<dyn IMetacentricHeight> = Rc::new(MetacentricHeight::new(
-                    center_draught_shift.clone(), // отстояние центра величины погруженной части судна
-                    rad_long,                     // продольный метацентрические радиус
-                    rad_trans,                    // поперечный метацентрические радиус
-                    loads.tanks().unwrap(),
-                    Rc::clone(&ship_mass),
-                    Rc::clone(&ship_moment),
-                    Rc::clone(&parameters),
-                ));
-                // Момент кренящий на 1 градус MH1deg, т∙м
-                parameters.add(
-                    ParameterID::MomentRollPerDeg,
-                    ship_mass.sum().unwrap()
-                        * metacentric_height.h_trans_fix().unwrap()
-                        * (std::f64::consts::PI / 180.).sin(),
-                );
-                // Длинна по ватерлинии при текущей осадке
-                let length_wl = Curve::new_linear(&data.waterline_length)
-                    .unwrap()
-                    .value(mean_draught)
-                    .unwrap();
-                // Ширина по ватерлинии при текущей осадке
-                let breadth_wl = Curve::new_linear(&data.waterline_breadth)
-                    .unwrap()
-                    .value(mean_draught)
-                    .unwrap();
-                // Отстояние по вертикали центра площади проекции подводной части корпуса
-                let volume_shift = Curve::new_linear(&data.volume_shift)
-                    .unwrap()
-                    .value(mean_draught)
-                    .unwrap();
-                // Диаграмма плечей остойчивости
-                let lever_diagram: Rc<dyn ILeverDiagram> = Rc::new(LeverDiagram::new(
-                    Rc::clone(&ship_moment),
-                    center_draught_shift.clone(),
-                    data.pantocaren.clone(),
-                    mean_draught,
-                    Rc::clone(&metacentric_height),
-                    Rc::clone(&parameters),
-                ));
-   //             send_stability_diagram(&mut api_server, ship_id, lever_diagram.diagram().unwrap()).unwrap();
-
-                
-                // Марки заглубления
-                let mut draft_mark = DraftMark::new(
-                    Box::new(
-                        Draught::new(
-                            data.length_lbp,
-                            center_waterline_shift,
-                            // Дифферент для остойчивости
-                            Box::new(
-                                stability::Trim::new(
-                                    data.length_lbp,
-                                    mean_draught,
-                                    center_draught_shift.clone(),
-                                    Rc::clone(&metacentric_height),
-                                    Rc::clone(&ship_mass),
-                                    Rc::clone(&ship_moment),
-                                    Rc::clone(&parameters),
-                                )
-                                .unwrap(),
-                            ),
-                            Some(Rc::clone(&parameters)),
-                        )
-                        .unwrap(),
-                    ),
-                    data.draft_mark,
-                    Rc::clone(&parameters),
-                );
-     //           send_draft_mark(&mut api_server, ship_id, draft_mark.calculate().unwrap()).unwrap();
-                // Расчет уровня заглубления для винтов судна
-                let mut screw = Screw::new(
-                    Box::new(
-                        Draught::new(
-                            data.length_lbp,
-                            center_waterline_shift,
-                            // Дифферент для остойчивости
-                            Box::new(
-                                stability::Trim::new(
-                                    data.length_lbp,
-                                    mean_draught,
-                                    center_draught_shift.clone(),
-                                    Rc::clone(&metacentric_height),
-                                    Rc::clone(&ship_mass),
-                                    Rc::clone(&ship_moment),
-                                    Rc::clone(&parameters),
-                                )
-                                .unwrap(),
-                            ),
-                            Some(Rc::clone(&parameters)),
-                        )
-                        .unwrap(),
-                    ),
-                    data.screw,
-                    Rc::clone(&parameters),
-                );
-   //             send_screw(&mut api_server, ship_id, screw.calculate().unwrap()).unwrap();
-                // Проверка осадок судна
-                let mut load_line = LoadLine::new(
-                    Box::new(
-                        Draught::new(
-                            data.length_lbp,
-                            center_waterline_shift,
-                            // Дифферент для остойчивости
-                            Box::new(
-                                stability::Trim::new(
-                                    data.length_lbp,
-                                    mean_draught,
-                                    center_draught_shift.clone(),
-                                    Rc::clone(&metacentric_height),
-                                    Rc::clone(&ship_mass),
-                                    Rc::clone(&ship_moment),
-                                    Rc::clone(&parameters),
-                                )
-                                .unwrap(),
-                            ),
-                            Some(Rc::clone(&parameters)),
-                        )
-                        .unwrap(),
-                    ),
-                    data.load_line,
-                    Rc::clone(&parameters),
-                );
-    //            send_load_line(&mut api_server, ship_id, load_line.calculate().unwrap()).unwrap();
-                // влияние ветра на остойчивость
-                let wind: Rc<dyn IWind> = Rc::new(Wind::new(
-                    data.navigation_area_param
-                        .get_area(&data.navigation_area)
-                        .ok_or("main error no area data!".to_string())
-                        .unwrap(),
-                    Rc::new(Windage::new(
-                        Rc::clone(&icing_stab),
-                        Rc::clone(&area_stability),
-                        Curve::new_linear(&data.delta_windage_area)
-                            .unwrap()
-                            .value(mean_draught)
-                            .unwrap(),
-                        Moment::new(
-                            Curve::new_linear(&data.delta_windage_moment_x)
-                                .unwrap()
-                                .value(mean_draught)
-                                .unwrap(),
-                            0.,
-                            Curve::new_linear(&data.delta_windage_moment_z)
-                                .unwrap()
-                                .value(mean_draught)
-                                .unwrap(),
-                        ),
-                        volume_shift,
-                    )),
-                    gravity_g,
-                    Rc::clone(&ship_mass),
-                    Rc::clone(&parameters),
-                ));
-                // период качки судна
-                let roll_period: Rc<dyn IRollingPeriod> = Rc::new(RollingPeriod::new(
-                    length_wl,
-                    data.width,
-                    mean_draught,
-                    Rc::clone(&metacentric_height),
-                ));
-                // амплитуда качки судна
-                let coefficient_k: Rc<dyn ICurve> =
-                    Rc::new(Curve::new_linear(&data.coefficient_k.data()).unwrap());
-                let multipler_x1: Rc<dyn ICurve> =
-                    Rc::new(Curve::new_linear(&data.multipler_x1.data()).unwrap());
-                let multipler_x2: Rc<dyn ICurve> =
-                    Rc::new(Curve::new_linear(&data.multipler_x2.data()).unwrap());
-                let multipler_s: Rc<dyn ICurve> =
-                    Rc::new(Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area)).unwrap());
-                let coefficient_k_theta: Rc<dyn ICurve> =
-                    Rc::new(Curve::new_linear(&data.coefficient_k_theta.data()).unwrap());
-                let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(
-                    RollingAmplitude::new(
-                        data.keel_area,
-                        Rc::clone(&metacentric_height),
-                        volume,     // Объемное водоизмещение (1)
-                        length_wl,  // длинна по ватерлинии при текущей осадке
-                        data.width, // ширина полная
-                        breadth_wl, // ширина по ватерлинии при текущей осадке
-                        mean_draught,
-                        Rc::clone(&coefficient_k),
-                        Rc::clone(&multipler_x1),
-                        Rc::clone(&multipler_x2),
-                        Rc::clone(&multipler_s),
-                        Rc::clone(&roll_period),
-                    )
                     .unwrap(),
-                );
-                // Критерии остойчивости
-                let mut criterion_computer_results = CriterionComputer::new(
-                    data.overall_height,
-                    data.ship_type,
-                    Curve::new_linear(&data.h_subdivision)
+                Moment::new(
+                    Curve::new_linear(&data.delta_windage_moment_x)
                         .unwrap()
                         .value(mean_draught)
                         .unwrap(),
-                    data.navigation_area,
-                    loads.desks().unwrap().iter().any(|v| v.is_timber()),
-                    loads.bulks().unwrap().iter().any(|v| v.moment() != 0.),
-                    !loads.load_variable().unwrap().is_empty(),
-                    icing_stab.is_some(),
-                    flooding_angle,
-                    data.length_lbp,
-                    data.moulded_depth,
-                    mean_draught,
-                    volume,
-                    length_wl,
-                    data.width,
-                    breadth_wl,
+                    0.,
+                    Curve::new_linear(&data.delta_windage_moment_z)
+                        .unwrap()
+                        .value(mean_draught)
+                        .unwrap(),
+                ),
+                volume_shift,
+            )),
+            gravity_g,
+            Rc::clone(&ship_mass),
+            Rc::clone(&parameters),
+        ));
+        // период качки судна
+        let roll_period: Rc<dyn IRollingPeriod> = Rc::new(RollingPeriod::new(
+            length_wl,
+            data.width,
+            mean_draught,
+            Rc::clone(&metacentric_height),
+        ));
+        // амплитуда качки судна
+        let coefficient_k: Rc<dyn ICurve> =
+            Rc::new(Curve::new_linear(&data.coefficient_k.data()).unwrap());
+        let multipler_x1: Rc<dyn ICurve> =
+            Rc::new(Curve::new_linear(&data.multipler_x1.data()).unwrap());
+        let multipler_x2: Rc<dyn ICurve> =
+            Rc::new(Curve::new_linear(&data.multipler_x2.data()).unwrap());
+        let multipler_s: Rc<dyn ICurve> =
+            Rc::new(Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area)).unwrap());
+        let coefficient_k_theta: Rc<dyn ICurve> =
+            Rc::new(Curve::new_linear(&data.coefficient_k_theta.data()).unwrap());
+        let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(
+            RollingAmplitude::new(
+                data.keel_area,
+                Rc::clone(&metacentric_height),
+                volume,     // Объемное водоизмещение (1)
+                length_wl,  // длинна по ватерлинии при текущей осадке
+                data.width, // ширина полная
+                breadth_wl, // ширина по ватерлинии при текущей осадке
+                mean_draught,
+                Rc::clone(&coefficient_k),
+                Rc::clone(&multipler_x1),
+                Rc::clone(&multipler_x2),
+                Rc::clone(&multipler_s),
+                Rc::clone(&roll_period),
+            )
+            .unwrap(),
+        );
+        // Критерии остойчивости
+        let mut criterion_computer_results = CriterionComputer::new(
+            data.overall_height,
+            data.ship_type,
+            Curve::new_linear(&data.h_subdivision)
+                .unwrap()
+                .value(mean_draught)
+                .unwrap(),
+            data.navigation_area,
+            loads.desks().unwrap().iter().any(|v| v.is_timber()),
+            loads.bulks().unwrap().iter().any(|v| v.moment() != 0.),
+            !loads.load_variable().unwrap().is_empty(),
+            icing_stab.is_some(),
+            flooding_angle,
+            data.length_lbp,
+            data.moulded_depth,
+            mean_draught,
+            volume,
+            length_wl,
+            data.width,
+            breadth_wl,
+            data.velocity,
+            Rc::clone(&ship_moment),
+            Rc::clone(&ship_mass),
+            loads.bulks().unwrap(),
+            Rc::clone(&coefficient_k),
+            Rc::clone(&multipler_x1),
+            Rc::clone(&multipler_x2),
+            Rc::clone(&multipler_s),
+            Rc::clone(&coefficient_k_theta),
+            data.keel_area,
+            rad_trans,
+            center_draught_shift.clone(),
+            data.pantocaren.clone(),
+            Rc::clone(&wind),
+            Rc::clone(&metacentric_height),
+        )
+        .unwrap()
+        .calculate()
+        .unwrap();
+        let criterion_res = Criterion::new(
+            data.ship_type,
+            data.navigation_area,
+            loads.desks().unwrap().iter().any(|v| v.is_timber()),
+            loads.bulks().unwrap().iter().any(|v| v.moment() != 0.),
+            !loads.load_variable().unwrap().is_empty(),
+            icing_stab.is_some(),
+            flooding_angle,
+            data.length_lbp,
+            data.width,
+            data.moulded_depth,
+            Curve::new_linear(&data.h_subdivision)
+                .unwrap()
+                .value(mean_draught)
+                .unwrap(),
+            Rc::clone(&wind),
+            Rc::clone(&lever_diagram),
+            Rc::new(Stability::new(
+                flooding_angle,
+                Rc::clone(&lever_diagram),
+                Rc::clone(&roll_amplitude),
+                Rc::clone(&wind),
+                Rc::clone(&parameters),
+            )),
+            Rc::clone(&metacentric_height),
+            Rc::new(Acceleration::new(
+                data.width,
+                mean_draught,
+                Rc::new(Curve::new_linear(&data.coefficient_k_theta.data()).unwrap()),
+                Rc::clone(&roll_period),
+                Rc::clone(&roll_amplitude),
+                Rc::clone(&metacentric_height),
+            )),
+            Rc::new(
+                Circulation::new(
                     data.velocity,
-                    Rc::clone(&ship_moment),
+                    length_wl,
+                    mean_draught,
                     Rc::clone(&ship_mass),
-                    loads.bulks().unwrap(),
-                    Rc::clone(&coefficient_k),
-                    Rc::clone(&multipler_x1),
-                    Rc::clone(&multipler_x2),
-                    Rc::clone(&multipler_s),
-                    Rc::clone(&coefficient_k_theta),
-                    data.keel_area,
-                    rad_trans,
-                    center_draught_shift.clone(),
-                    data.pantocaren.clone(),
-                    Rc::clone(&wind),
-                    Rc::clone(&metacentric_height),
-                )
-                .unwrap()
-                .calculate()
-                .unwrap();
-
-                let criterion_res = Criterion::new(
-                    data.ship_type,
-                    data.navigation_area,
-                    loads.desks().unwrap().iter().any(|v| v.is_timber()),
-                    loads.bulks().unwrap().iter().any(|v| v.moment() != 0.),
-                    !loads.load_variable().unwrap().is_empty(),
-                    icing_stab.is_some(),
-                    flooding_angle,
-                    data.length_lbp,
-                    data.width,
-                    data.moulded_depth,
-                    Curve::new_linear(&data.h_subdivision)
-                        .unwrap()
-                        .value(mean_draught)
-                        .unwrap(),
-                    Rc::clone(&wind),
+                    Rc::clone(&ship_moment),
                     Rc::clone(&lever_diagram),
-                    Rc::new(Stability::new(
-                        flooding_angle,
-                        Rc::clone(&lever_diagram),
-                        Rc::clone(&roll_amplitude),
-                        Rc::clone(&wind),
-                        Rc::clone(&parameters),
-                    )),
-                    Rc::clone(&metacentric_height),
-                    Rc::new(Acceleration::new(
-                        data.width,
-                        mean_draught,
-                        Rc::new(Curve::new_linear(&data.coefficient_k_theta.data()).unwrap()),
-                        Rc::clone(&roll_period),
-                        Rc::clone(&roll_amplitude),
-                        Rc::clone(&metacentric_height),
-                    )),
-                    Rc::new(
-                        Circulation::new(
-                            data.velocity,
-                            length_wl,
-                            mean_draught,
-                            Rc::clone(&ship_mass),
-                            Rc::clone(&ship_moment),
-                            Rc::clone(&lever_diagram),
-                            Rc::clone(&parameters),
-                        )
-                        .unwrap(),
-                    ),
-                    Box::new(Grain::new(
-                        flooding_angle,
-                        loads.bulks().unwrap(),
-                        Rc::clone(&ship_mass),
-                        Rc::clone(&lever_diagram),
-                        Rc::clone(&parameters),
-                    )),
+                    Rc::clone(&parameters),
                 )
-                .unwrap()
-                .create();
-/*
+                .unwrap(),
+            ),
+            Box::new(Grain::new(
+                flooding_angle,
+                loads.bulks().unwrap(),
+                Rc::clone(&ship_mass),
+                Rc::clone(&lever_diagram),
+                Rc::clone(&parameters),
+            )),
+        )
+        .unwrap()
+        .create();
+
+        // Марки заглубления
+        let mut draft_mark = DraftMark::new(
+            Box::new(Draught::new(
+                data.length_lbp,
+                center_waterline_shift,
+                // Дифферент для остойчивости
+                Box::new(stability::Trim::new(
+                    data.length_lbp,
+                    mean_draught,
+                    center_draught_shift.clone(),
+                    Rc::clone(&metacentric_height),
+                    Rc::clone(&ship_mass),
+                    Rc::clone(&ship_moment),
+                    Rc::clone(&parameters),
+                ).unwrap()),
+                Some(Rc::clone(&parameters)),
+            ).unwrap()),
+            data.draft_mark,
+            Rc::clone(&parameters),
+        ).calculate();
+
+
         let x_g_result = parameters.get(ParameterID::CenterMassX).unwrap();
         let x_g_target = -3.53;
         assert!(
-            (x_g_result - x_g_target).abs() < x_g_target / 20.,
+            (x_g_result - x_g_target).abs() < x_g_target.abs()*precision,
             "\nx_g result:{x_g_result} target:{x_g_target}"
         );
 
         let z_g_result = parameters.get(ParameterID::CenterMassZ).unwrap();
         let z_g_target = 5.07;
         assert!(
-            (z_g_result - z_g_target).abs() < z_g_target / 20.,
+            (z_g_result - z_g_target).abs() < z_g_target.abs()*precision,
             "\nz_g result:{z_g_result} target:{z_g_target}"
         );
 
-        let d_м_result = parameters.get(ParameterID::DraughtMean).unwrap();
-        let d_м_target = 1.65;
+        let d_result = parameters.get(ParameterID::DraughtMean).unwrap();
+        let d_target = 1.65;
         assert!(
-            (d_м_result - d_м_target).abs() < d_м_target / 20.,
-            "\nd_м result:{d_м_result} target:{d_м_target}"
+            (d_result - d_target).abs() < d_target.abs()*precision,
+            "\nd result:{d_result} target:{d_target}"
         );
 
         let d_b_result = parameters.get(ParameterID::DraughtBow).unwrap();
         let d_b_target = 1.34;
         assert!(
-            (d_b_result - d_b_target).abs() < d_b_target / 20.,
+            (d_b_result - d_b_target).abs() < d_b_target.abs()*precision,
             "\nd_b result:{d_b_result} target:{d_b_target}"
         );
 
         let d_s_result = parameters.get(ParameterID::DraughtStern).unwrap();
         let d_s_target = 1.96;
         assert!(
-            (d_s_result - d_s_target).abs() < d_s_target / 20.,
+            (d_s_result - d_s_target).abs() < d_s_target.abs()*precision,
             "\nd_s result:{d_s_result} target:{d_s_target}"
         );
 
         let h_result = parameters.get(ParameterID::MetacentricTransHeight).unwrap();
-        let h_target = 4.887 ;
+        let h_target = 4.887;
         assert!(
-            (h_result - h_target).abs() < h_target / 20.,
+            (h_result - h_target).abs() < h_target.abs()*precision,
             "\nh result:{h_result} target:{h_target}"
         );
 
-*/
-     /*            log::info!("Main criterion zg:");
+        /*            log::info!("Main criterion zg:");
                 for (id, zg, result, target) in criterion_computer_results.iter() {
                     log::info!("id:{id} zg:{zg} result:{result} delta:{}", result - target);
                 }
