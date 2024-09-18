@@ -17,6 +17,8 @@ pub enum CargoGeneralCategory {
     Lightship,
     #[serde(alias="ballast")]
     Ballast,
+    #[serde(alias="bulkhead")]
+    Bulkhead,
     #[serde(alias="stores")]
     Stores,
     #[serde(alias="cargo")]
@@ -31,6 +33,7 @@ impl std::fmt::Display for CargoGeneralCategory {
             match self {
                 CargoGeneralCategory::Lightship => "Lightship", 
                 CargoGeneralCategory::Ballast => "Ballast", 
+                CargoGeneralCategory::Bulkhead => "Bulkhead", 
                 CargoGeneralCategory::Stores => "Stores", 
                 CargoGeneralCategory::Cargo => "Cargo", 
             },

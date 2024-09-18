@@ -32,7 +32,7 @@ mod tests {
                 vec![24., 25., 25., 26.,],
             )),
             Rc::new(Displacement::new(frame_area_data,).unwrap()), 
-            Rc::new(Bounds::from_n(ship_length, 4).unwrap()),
+            Rc::new(Bounds::from_n(ship_length, ship_length/2.,4).unwrap()),
         ).value().unwrap();
         let target_mean_draught = 0.8;
         let target_trim = 0.06;

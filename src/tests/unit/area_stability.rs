@@ -1,7 +1,7 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::area::{HAreaStability, VerticalArea};
+    use crate::area::HAreaStability;
     use crate::icing_timber::{IcingTimberBound, IcingTimberType};
     use crate::stability::{Area, IArea};
     use crate::{Bound, Desk, Moment, Position};
@@ -129,6 +129,7 @@ mod tests {
     #[test]
     fn moment_timber_h() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
+        init_once();
         println!();
         let self_id = "test area stability moment_timber_h";
         println!("{}", self_id);
@@ -153,6 +154,7 @@ mod tests {
     #[test]
     fn delta_moment_timber_h() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
+        init_once();
         println!();
         let self_id = "test area stability delta_moment_timber_h";
         println!("{}", self_id);

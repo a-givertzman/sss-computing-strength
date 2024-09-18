@@ -15,7 +15,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
 
-        let result = Bounds::from_n(20., 4).unwrap();
+        let result = Bounds::from_n(20., 10., 4).unwrap();
         let target = Bounds::new(vec![
             Bound::new(-10., -5.).unwrap(),
             Bound::new(-5., 0.).unwrap(),

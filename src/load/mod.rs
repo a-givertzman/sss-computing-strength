@@ -23,6 +23,7 @@ pub use tank::*;
 pub enum LoadingType {
     Hull,
     Equipment,
+    Bulkhead,
     Ballast,
     Stores,
     Cargo,
@@ -36,6 +37,7 @@ impl std::fmt::Display for LoadingType {
             match self {
                 LoadingType::Hull => "Hull",
                 LoadingType::Equipment => "Equipment",
+                LoadingType::Bulkhead => "Bulkhead",
                 LoadingType::Ballast => "Ballast",
                 LoadingType::Stores => "Stores",
                 LoadingType::Cargo => "Cargo",
@@ -49,6 +51,7 @@ impl From<CargoGeneralCategory> for LoadingType {
         match value {
             CargoGeneralCategory::Lightship => LoadingType::Hull,
             CargoGeneralCategory::Ballast => LoadingType::Ballast,
+            CargoGeneralCategory::Bulkhead => LoadingType::Bulkhead,
             CargoGeneralCategory::Stores => LoadingType::Stores,
             CargoGeneralCategory::Cargo => LoadingType::Cargo,
         }

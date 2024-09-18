@@ -59,7 +59,7 @@ impl Draught {
      //   log::info!("\t Draught mean_draught:{:?} center_waterline_shift:{:?} ship_length:{:?}, trim:{}, 
       //      draught_bow:{draught_bow} draught_stern:{draught_stern} draught_mid:{draught_mid}", 
      //       mean_draught, self.center_waterline_shift, self.ship_length, trim);
-     //   dbg!(mean_draught, trim, draught_bow, draught_stern, draught_mid);
+        dbg!(mean_draught, trim, draught_bow, draught_stern, draught_mid);
         if let Some(parameters) = &self.parameters {
             parameters.add(ParameterID::DraughtBow, draught_bow);
             parameters.add(ParameterID::DraughtStern, draught_stern);

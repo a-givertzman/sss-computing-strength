@@ -105,8 +105,8 @@ impl IRollingAmplitude for RollingAmplitude {
         let s = self.s.value(t)?;
         // (2.1.5.1)
         let res = 109. * k * x_1 * x_2 * (r * s).sqrt();
-              log::info!("\t RollingAmplitude l:{} b:{} d:{} z_g_fix:{} c_b:{} k:{k} x_1:{x_1} x_2:{x_2} r:{r} t:{t} s:{s} angle:{res}",
-             self.l_wl, self.b, self.d, self.metacentric_height.z_g_fix()?, c_b);
+        //           log::info!("\t RollingAmplitude l:{} b:{} d:{} z_g_fix:{} c_b:{} k:{k} x_1:{x_1} x_2:{x_2} r:{r} t:{t} s:{s} angle:{res}",
+        //          self.l_wl, self.b, self.d, self.metacentric_height.z_g_fix()?, c_b);
         Ok((t, res.round()))
     }
 }

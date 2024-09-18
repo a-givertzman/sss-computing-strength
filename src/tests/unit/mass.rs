@@ -45,7 +45,7 @@ mod tests {
                     Rc::new(FakeIcingMass::new(0.,)),
                     Rc::new(FakeWettingMass::new(0.,)),
                     loads_cargo,
-                    Rc::new(Bounds::from_n(20., 4).unwrap()),
+                    Rc::new(Bounds::from_n(20., 10., 4).unwrap()),
                     Rc::new(FakeResults{}),
                     Rc::new(FakeParameters{}),
                 )));
