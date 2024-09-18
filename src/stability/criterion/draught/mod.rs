@@ -119,12 +119,13 @@ impl CriterionDraught {
         {
             out_data.push(self.reserve_buoyncy());
         }
-*/
+
         if (self.ship_type == ShipType::Tanker && self.deadweight >= 20000.)
             || (self.ship_type == ShipType::OilTanker && self.deadweight >= 30000.)
         {
             out_data.append(&mut self.draught_min());
         }
+ */       
         out_data
     }
     /// Осадка по грузовой марке
@@ -132,23 +133,16 @@ impl CriterionDraught {
         let mut res = Vec::new();
         match self.load_line.calculate() {
             Ok(load_line) => {
-                for (_, y, z_fix) in load_line {
-                    res.push(if y <= 0. {
-                        CriterionData::new_result(
-                            CriterionID::LoadLineDraftPS,
-                            z_fix,
-                            self.forward_trim,
-                        )
-                    } else {
-                        CriterionData::new_result(
-                            CriterionID::LoadLineDraftSB,
-                            z_fix,
-                            self.aft_trim,
-                        )
-                    });
+                for (name, y, z_fix) in load_line {
+                    res.push(CriterionData::new_result(
+                        CriterionID::from(name),
+                        z_fix,
+                        self.forward_trim,
+                    ));
                 }
             }
-            Err(err) => {
+            Err(err) => (),
+    /*        Err(err) => {
                 res.push(CriterionData::new_error(
                     CriterionID::LoadLineDraftSB,
                     "Ошибка расчета уровня заглубления для осадок судна: ".to_owned()
@@ -159,7 +153,7 @@ impl CriterionDraught {
                     "Ошибка расчета уровня заглубления для осадок судна: ".to_owned()
                         + &err.to_string(),
                 ));
-            }
+            }*/
         };
         res
     }
@@ -265,7 +259,7 @@ impl CriterionDraught {
             ),
         }
     }
-    /// Минимальная осадка
+ /*   /// Минимальная осадка
     pub fn draught_min(&self) -> Vec<CriterionData> {
         let minimum_draft_middle = match self.parameters.get(ParameterID::DraughtMean) {
             Some(draught_mean) => CriterionData::new_result(
@@ -290,5 +284,5 @@ impl CriterionDraught {
             ),
         };
         vec![minimum_draft_middle, minimum_draft_bow]
-    }
+    }*/
 }
