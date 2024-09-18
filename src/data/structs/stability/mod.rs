@@ -13,6 +13,7 @@ pub mod point;
 pub mod draft_mark;
 pub mod screw;
 pub mod load_line;
+pub mod bow_board;
 
 pub use horizontal_area::*;
 pub use pantocaren::*;
@@ -25,6 +26,7 @@ pub use point::*;
 pub use draft_mark::*;
 pub use screw::*;
 pub use load_line::*;
+pub use bow_board::*;
 
 ///
 use super::{DataArray, Pair};

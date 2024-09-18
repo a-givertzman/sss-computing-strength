@@ -1,12 +1,12 @@
 //! Класс для расчета дифферента и средней осадки в расчете прочности
 
-use crate::{draught::Draught, math::Bounds, trim::{FakeTrim, ITrim}, Error, IVolume, MultipleSingle};
+use crate::{draught::{Draught, IDraught}, math::Bounds, trim::{FakeTrim, ITrim}, Error, IVolume, MultipleSingle};
 
 use super::{
     displacement::Displacement,
     volume::Volume, IMass,
 };
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 /// Класс для расчета дифферента и средней осадки в расчете прочности метором перебора
 /// Используются только эпюра масс и Бонжан. Данные по остойчивости не используются.
@@ -115,14 +115,15 @@ impl ITrim for Trim {
         for _i in 0..50 {
             mean_draught = self.mean_draught;
             for _j in 0..50 {
-                let mut volume_values = Volume::new(
-                    Rc::clone(&self.displacement),
-                    Box::new(Draught::new(
+                let draught: Rc<dyn IDraught> = Rc::new(Draught::new(
                         self.ship_length,           
                         self.center_waterline_shift,    
-                        Box::new(FakeTrim::new(mean_draught, trim)),               
+                        Rc::new(FakeTrim::new(mean_draught, trim)),               
                         None,                       
-                    )?),
+                    )?);
+                let mut volume_values = Volume::new(
+                    Rc::clone(&self.displacement),
+                    Rc::clone(&draught),
                     Rc::clone(&self.bounds),
                 ).values()?;
                 volume_values.mul_single(self.water_density);

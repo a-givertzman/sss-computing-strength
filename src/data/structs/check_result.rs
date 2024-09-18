@@ -90,10 +90,45 @@ impl ParsedShipData {
                 self.overall_height
             )));
         }
+        if self.bow_h_min <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: overall_height:{} <= 0",
+                self.bow_h_min
+            )));
+        }
+        if self.aft_trim <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: aft_trim:{} <= 0",
+                self.aft_trim
+            )));
+        }
+        if self.forward_trim <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: forward_trim:{} <= 0",
+                self.forward_trim
+            )));
+        }
         if self.velocity <= 0. {
             return Err(Error::Parameter(format!(
                 "Error check ParsedShipData: velocity:{} <= 0",
                 self.velocity
+            )));
+        }
+        if self.deadweight <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: deadweight:{} <= 0",
+                self.deadweight
+            )));
+        }
+        if self.freeboard_type.len() == 0 {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: freeboard_type.len() == 0"
+            )));
+        }
+        if self.bow_area_min <= 0. {
+            return Err(Error::Parameter(format!(
+                "Error check ParsedShipData: bow_area_min:{} <= 0",
+                self.bow_area_min
             )));
         }
         if let Some(keel_area) = self.keel_area {
@@ -288,6 +323,9 @@ impl ParsedShipData {
                 "Error check ParsedShipData: screw{v} diametr error!"
             )));
         }
+        if self.bow_board.is_empty() {
+            return Err(Error::Parameter("Error check bow_board: bow_board.is_empty()".to_string()));
+        }
         if self.compartments.is_empty() {
             return Err(Error::Parameter("Error check compartments: compartments.is_empty()".to_string()));
         }       
@@ -356,6 +394,10 @@ impl ParsedShipData {
                 v.0, v.1
             )));
         }
+        if self.bow_area.is_empty() {
+            return Err(Error::Parameter("Error check ParsedShipData: bow_area.is_empty()".to_string()));
+        }
+
         log::info!("result check ok");
         Ok(self)
     }

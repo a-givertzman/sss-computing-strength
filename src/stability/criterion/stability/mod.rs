@@ -1,67 +1,23 @@
-//! Критерии проверки остойчивости
+//! Критерии проверки остойчивости судна
+pub(crate) mod acceleration;
+pub(crate) mod circulation;
+pub(crate) mod grain;
+pub(crate) mod stab;
 
+pub use acceleration::*;
+pub use circulation::*;
+pub use grain::*;
+pub use stab::*;
 use std::rc::Rc;
 
 use crate::{
     data::structs::{NavigationArea, ShipType},
-    Curve, Error, IAcceleration, ICirculation, ICurve, IGrain, ILeverDiagram, IMetacentricHeight,
-    IStability, IWind,
+    Curve, Error, ICurve, ILeverDiagram, IMetacentricHeight, IWind,
 };
-///
-#[derive(Hash, Eq, PartialEq)]
-pub enum CriterionID {
-    Wheather = 1,
-    WindStaticHeel = 2,
-    AreaLC0_30 = 3,
-    AreaLc0Thetalmax = 4,    
-    AreaLC0_40 = 5,
-    AreaLC30_40 = 6,
-    MaximumLC = 7,
-    MaximumLcTimber = 8,
-    MaximumLcIcing = 9,
-    HeelMaximumLC = 10,
-    HeelFirstMaximumLC = 11,
-    MinMetacentricHight = 12,
-    Acceleration = 13,
-    HeelTurning = 14,
-    HeelGrainDisplacement = 15,
-    AreaLcGrainDisplacement = 16,
-    MinMetacentricHeightSubdivIndex = 17,
-}
-/// Результат проверки критерия
-pub struct CriterionData {
-    /// id критерия
-    pub criterion_id: usize,
-    /// Результат расчета
-    pub result: f64,
-    /// Пороговое значение критерия
-    pub target: f64,
-    /// Текст ошибки
-    pub error_message: Option<String>,
-}
-///
-impl CriterionData {
-    /// Конструктор при наличии результата
-    pub fn new_result(criterion_id: CriterionID, result: f64, target: f64) -> Self {
-        Self {
-            criterion_id: criterion_id as usize,
-            result,
-            target,
-            error_message: None,
-        }
-    }
-    /// Конструктор при ошибке расчета
-    pub fn new_error(criterion_id: CriterionID, error_message: String) -> Self {
-        Self {
-            criterion_id: criterion_id as usize,
-            result: 0.,
-            target: 0.,
-            error_message: Some(error_message),
-        }
-    }
-}
-/// Критерии проверки остойчивости
-pub struct Criterion {
+
+use super::{CriterionData, CriterionID};
+/// Критерии проверки остойчивости судна
+pub struct CriterionStability {
     /// Тип судна
     ship_type: ShipType,
     /// Район плавания судна
@@ -103,7 +59,7 @@ pub struct Criterion {
     grain: Box<dyn IGrain>,
 }
 ///
-impl Criterion {
+impl CriterionStability {
     /// Главный конструктор:
     /// * ship_type - Тип судна
     /// * breadth - Ширина судна
@@ -172,7 +128,7 @@ impl Criterion {
     ///
     pub fn create(&mut self) -> Vec<CriterionData> {
         let mut out_data = Vec::new();
-//        dbg!(self.metacentric_height.z_g_fix().unwrap());
+        //        dbg!(self.metacentric_height.z_g_fix().unwrap());
         if self.navigation_area != NavigationArea::R3Rsn {
             out_data.push(self.weather());
         }
@@ -187,8 +143,8 @@ impl Criterion {
         if self.navigation_area != NavigationArea::Unlimited && self.have_icing {
             out_data.push(self.dso_lever_icing());
         }
-       out_data.append(&mut self.dso_lever_max_angle());
-         //       if self.have_cargo {
+        out_data.append(&mut self.dso_lever_max_angle());
+        //       if self.have_cargo {
         out_data.push(self.metacentric_height());
         //    }
         if let Ok(h_trans_fix) = self.metacentric_height.h_trans_fix() {
@@ -226,10 +182,13 @@ impl Criterion {
         // статического угла крена θ𝑤1, вызванного постоянным ветром
         let wind_lever = match self.wind.arm_wind_static() {
             Ok(wind_lever) => wind_lever,
-            Err(text) => return CriterionData::new_error(
-                CriterionID::WindStaticHeel,
-                "Ошибка расчета кренящего момента постоянного ветра: ".to_owned() + &text.to_string(),
-            ),
+            Err(text) => {
+                return CriterionData::new_error(
+                    CriterionID::WindStaticHeel,
+                    "Ошибка расчета кренящего момента постоянного ветра: ".to_owned()
+                        + &text.to_string(),
+                )
+            }
         };
         let binding = match self.lever_diagram.angle(wind_lever) {
             Ok(binding) => binding,
@@ -245,11 +204,7 @@ impl Criterion {
             _ => 16.0f64.min(0.8 * self.flooding_angle),
         };
         if let Some(angle) = angle {
-            CriterionData::new_result(
-                CriterionID::WindStaticHeel,
-                *angle,
-                target_value,
-            )
+            CriterionData::new_result(CriterionID::WindStaticHeel, *angle, target_value)
         } else {
             CriterionData::new_error(
                 CriterionID::WindStaticHeel,
@@ -304,7 +259,7 @@ impl Criterion {
                 "Ошибка расчета площади под положительной частью диаграммы статической остойчивости 30-40 градусов: ".to_owned() + &text.to_string(),
             )),
         };
-    //    log::info!("Criterion dso: zg:{} theta_0:{theta_0} theta_max:{theta_max} first_angle_30:{first_angle_30} second_angle_30:{second_angle_30} second_angle_40:{second_angle_40}", self.metacentric_height.z_g_fix().unwrap_or(-1.));
+        //    log::info!("Criterion dso: zg:{} theta_0:{theta_0} theta_max:{theta_max} first_angle_30:{first_angle_30} second_angle_30:{second_angle_30} second_angle_40:{second_angle_40}", self.metacentric_height.z_g_fix().unwrap_or(-1.));
         results
     }
     /// Максимум диаграммы статической остойчивости
@@ -313,7 +268,9 @@ impl Criterion {
             Ok(curve) => curve,
             Err(text) => return CriterionData::new_error(
                 CriterionID::MaximumLC,
-                "Ошибка создания кривой в расчете максимума диаграммы статической остойчивости: ".to_owned() + &text.to_string(),
+                "Ошибка создания кривой в расчете максимума диаграммы статической остойчивости: "
+                    .to_owned()
+                    + &text.to_string(),
             ),
         };
         let target = match curve.value(self.ship_length) {
@@ -330,15 +287,11 @@ impl Criterion {
                 "Ошибка вычисления максимального плеча диаграммы статической остойчивости в расчете максимума диаграммы статической остойчивости: ".to_owned() + &text.to_string(),
             ),
         };
-        CriterionData::new_result(
-            CriterionID::MaximumLC,
-            result,
-            target,
-        )
+        CriterionData::new_result(CriterionID::MaximumLC, result, target)
     }
     /// Максимум диаграммы статической остойчивости для лесовозов
     pub fn dso_lever_timber(&self) -> CriterionData {
-        let target = 0.25;        
+        let target = 0.25;
         let result = match self.lever_diagram.dso_lever_max(0., 90.) {
             Ok(value) => value,
             Err(text) => return CriterionData::new_error(
@@ -346,11 +299,7 @@ impl Criterion {
                 "Ошибка вычисления максимального плеча диаграммы статической остойчивости в расчете максимума диаграммы статической остойчивости для лесовозов: ".to_owned() + &text.to_string(),
             ),
         };
-        CriterionData::new_result(
-            CriterionID::MaximumLcTimber,
-            result,
-            target,
-        )
+        CriterionData::new_result(CriterionID::MaximumLcTimber, result, target)
     }
     /// Максимум диаграммы статической остойчивости с учетом обледенения
     pub fn dso_lever_icing(&self) -> CriterionData {
@@ -362,11 +311,7 @@ impl Criterion {
                 "Ошибка вычисления максимального плеча диаграммы статической остойчивости в расчете максимума диаграммы статической остойчивости с учетом обледенения: ".to_owned() + &text.to_string(),
             ),
         };
-        CriterionData::new_result(
-            CriterionID::MaximumLcIcing,
-            result,
-            target,
-        )
+        CriterionData::new_result(CriterionID::MaximumLcIcing, result, target)
     }
     /// Угол, соответствующий максимуму диаграммы статической остойчивости
     pub fn dso_lever_max_angle(&self) -> Vec<CriterionData> {
@@ -379,7 +324,7 @@ impl Criterion {
                     "Ошибка вычисления угла и плеча максимума диаграммы плеч статической остойчивости в расчете метацентрической высоты: ".to_owned() + &text.to_string(),
                 ));
                 return results;
-            },
+            }
         };
         let b_div_d = self.breadth / self.moulded_depth;
         let mut target = 30.;
@@ -420,7 +365,7 @@ impl Criterion {
                     )),
                 };
             } else if angles.len() > 1 {
-        //        dbg!(&self.metacentric_height.z_g_fix(), &angles);
+                //        dbg!(&self.metacentric_height.z_g_fix(), &angles);
                 results.push(CriterionData::new_result(
                     CriterionID::HeelFirstMaximumLC,
                     angle.0,
@@ -459,43 +404,35 @@ impl Criterion {
                 "Ошибка вычисления поперечной исправленной метацентрической высоты в расчете метацентрической высоты: ".to_owned() + &text.to_string(),
             ),
         };
-        CriterionData::new_result(
-            CriterionID::MinMetacentricHight,
-            result,
-            target,
-        )
+        CriterionData::new_result(CriterionID::MinMetacentricHight, result, target)
     }
     /// Критерий ускорения 𝐾∗
     pub fn accelleration(&self) -> CriterionData {
         let result = match self.acceleration.calculate() {
             Ok(value) => value,
-            Err(text) => return CriterionData::new_error(
-                CriterionID::Acceleration,
-                "Ошибка вычисления критерия ускорения: ".to_owned() + &text.to_string(),
-            ),
+            Err(text) => {
+                return CriterionData::new_error(
+                    CriterionID::Acceleration,
+                    "Ошибка вычисления критерия ускорения: ".to_owned() + &text.to_string(),
+                )
+            }
         };
-        CriterionData::new_result(
-            CriterionID::Acceleration,
-            result,
-            1.,
-        )
+        CriterionData::new_result(CriterionID::Acceleration, result, 1.)
     }
     /// Критерий крена на циркуляции
     pub fn circulation(&self) -> CriterionData {
         let target = 16.0f64.min(self.flooding_angle / 2.);
         let angle = match self.circulation.angle() {
             Ok(value) => value,
-            Err(text) => return CriterionData::new_error(
-                CriterionID::HeelTurning,
-                "Ошибка вычисления крена на циркуляции: ".to_owned() + &text.to_string(),
-            ),
+            Err(text) => {
+                return CriterionData::new_error(
+                    CriterionID::HeelTurning,
+                    "Ошибка вычисления крена на циркуляции: ".to_owned() + &text.to_string(),
+                )
+            }
         };
         if let Some(angle) = angle {
-            CriterionData::new_result(
-                CriterionID::HeelTurning,
-                angle,
-                target,
-            )
+            CriterionData::new_result(CriterionID::HeelTurning, angle, target)
         } else {
             return match self.circulation.velocity(target) {
                 Ok(velocity) => CriterionData::new_error(
@@ -505,10 +442,12 @@ impl Criterion {
                         velocity,
                     ),
                 ),
-                Err(text) => return CriterionData::new_error(
-                    CriterionID::HeelTurning,
-                    "Ошибка вычисления рекомендуемой скорости: ".to_owned() + &text.to_string(),
-                ),
+                Err(text) => {
+                    return CriterionData::new_error(
+                        CriterionID::HeelTurning,
+                        "Ошибка вычисления рекомендуемой скорости: ".to_owned() + &text.to_string(),
+                    )
+                }
             };
         }
         // TODO: В случаях, когда палубный груз контейнеров размещается только на крышках грузовых
@@ -544,10 +483,14 @@ impl Criterion {
         // Все суда
         let result = match self.metacentric_height.h_trans_fix() {
             Ok(value) => value,
-            Err(text) => return CriterionData::new_error(
-                CriterionID::MinMetacentricHeightSubdivIndex,
-                "Ошибка вычисления поперечной исправленной метацентрической высоты: ".to_owned() + &text.to_string(),
-            ),
+            Err(text) => {
+                return CriterionData::new_error(
+                    CriterionID::MinMetacentricHeightSubdivIndex,
+                    "Ошибка вычисления поперечной исправленной метацентрической высоты: "
+                        .to_owned()
+                        + &text.to_string(),
+                )
+            }
         };
         CriterionData::new_result(
             CriterionID::MinMetacentricHeightSubdivIndex,

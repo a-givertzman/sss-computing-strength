@@ -70,10 +70,10 @@ impl Computer {
         let mut total_force_values;     
         let mut volume = Volume::new(
             Rc::clone(&self.displacement),
-            Box::new(Draught::new(
+            Rc::new(Draught::new(
                 self.ship_length,
                 self.center_waterline_shift,
-                Box::new(Trim::new(
+                Rc::new(Trim::new(
                     self.ship_length, 
                     self.water_density,   
                     self.center_waterline_shift,
