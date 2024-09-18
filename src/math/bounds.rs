@@ -28,11 +28,14 @@ impl Bounds {
         Ok(Self { values })
     }
     /// Вспомогательный конструктор
+    /// * loa - L.O.A
+    /// * middle_x - X midship from Fr0
+    /// * n - Number of Parts
     #[allow(unused)]
-    pub fn from_n(ship_length: f64, n: usize) -> Result<Self, Error> {
-        if ship_length <= 0. {
+    pub fn from_n(loa: f64, middle_x: f64, n: usize) -> Result<Self, Error> {
+        if loa <= 0. {
             return Err(Error::FromString(format!(
-                "Bounds from_n error: ship_length {ship_length} <= 0."
+                "Bounds from_n error: loa {loa} <= 0."
             )));
         }
         if n <= 1 {
@@ -40,13 +43,11 @@ impl Bounds {
                 "Bounds from_n error: n {n} <= 1"
             )));
         }
-        let delta = ship_length / n as f64;
-        let start = -ship_length / 2.;
-        // вектор разбиения судна на отрезки
+        let n_parts = n as f64;
         let mut values = Vec::new();
         for i in 0..n {
             let i = i as f64;
-            values.push(Bound::new(start + delta * i, start + delta * (i + 1.))?);
+            values.push(Bound::new(loa*i/n_parts - middle_x, loa*(i+1.)/n_parts - middle_x)?);
         }
         Self::new(values)
     }

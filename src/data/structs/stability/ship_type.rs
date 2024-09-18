@@ -17,8 +17,8 @@ pub enum ShipType {
     ContainerShip,    
     /// Лесовоз
     #[serde(alias="timber carrier")]
-    TimberCarrier,
-    /// Наливное судно   
+    TimberCarrier,  
+    /// Наливное судно    
     #[serde(alias="tanker")]
     Tanker,
     /// Нефтепродуктовоз   
