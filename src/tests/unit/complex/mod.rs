@@ -706,7 +706,7 @@ mod tests {
         );
         //ДABЛEHИE BETPA, KГ/KB.M
         let wind_pressure_result = parameters.get(ParameterID::WindPressure).unwrap();
-        let wind_pressure_target = 25.69;
+        let wind_pressure_target = 25.69*9.81;
         assert!(
             (wind_pressure_result - wind_pressure_target).abs()
                 < wind_pressure_target.abs() * precision,
