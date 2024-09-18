@@ -1,58 +1,61 @@
 //! Структура с входными данными для тестирования.  
-//! Инициализируется данными для 'Belogorodskaya ARK-20231' 
+//! Инициализируется данными для 'Belogorodskaya ARK-20231'
 //! 66 вариант расчета Судно порожнем без балласта. Отход (море)
 
-mod data;
-mod navigation_area;
-mod multipler_x1;
-mod multipler_x2;
-mod multipler_s;
-mod coefficient_k;
-mod coefficient_k_theta;
-mod icing;
-mod ship_parameters;
-mod bounds;
-mod delta_windage_area;
-mod delta_windage_moment;
-mod center_waterline;
-mod waterline_length;
-mod waterline_breadth;
-mod waterline_area;
-mod volume_shift;
-mod rad_long;
-mod rad_trans;
-mod mean_draught;
-mod center_draught_shift;
-mod pantocaren;
-mod flooding_angle;
-mod entry_angle;
-mod bonjean_frame;
-mod frame_area;
-mod draft_mark;
-mod load_line;
-mod screw;
-mod compartment;
-mod hold_compartment;
-mod load_constants;
-mod bulkhead;
 mod area_h_stab;
 mod area_h_str;
 mod area_v_stab;
 mod area_v_str;
-mod h_subdivision;
-mod bow_board;
+mod bonjean_frame;
+mod bounds;
 mod bow_area;
+mod bow_board;
+mod bulkhead;
+mod center_draught_shift;
+mod center_waterline;
+mod coefficient_k;
+mod coefficient_k_theta;
+mod compartment;
+mod data;
+mod delta_windage_area;
+mod delta_windage_moment;
+mod draft_mark;
+mod entry_angle;
+mod flooding_angle;
+mod frame_area;
+mod h_subdivision;
+mod hold_compartment;
+mod icing;
+mod load_constants;
+mod load_line;
+mod mean_draught;
+mod multipler_s;
+mod multipler_x1;
+mod multipler_x2;
+mod navigation_area;
+mod pantocaren;
+mod rad_long;
+mod rad_trans;
+mod screw;
+mod ship_parameters;
+mod volume_shift;
+mod waterline_area;
+mod waterline_breadth;
+mod waterline_length;
 
 use std::collections::HashMap;
 
-use crate::data::structs::{loads::{CompartmentArray, LoadCargoArray}, ParsedShipData};
+use crate::data::structs::{
+    loads::{CompartmentArray, LoadCargoArray},
+    ParsedShipData,
+};
 
 #[allow(dead_code)]
 pub(crate) fn input_data() -> ParsedShipData {
     ParsedShipData::parse(
         navigation_area::navigation_area(),
         multipler_x1::multipler_x1(),
-        multipler_x2::multipler_x2(),    
+        multipler_x2::multipler_x2(),
         multipler_s::multipler_s(),
         coefficient_k::coefficient_k(),
         coefficient_k_theta::coefficient_k_theta(),
@@ -81,15 +84,22 @@ pub(crate) fn input_data() -> ParsedShipData {
         load_line::load_line(),
         screw::screw(),
         bow_board::bow_board(),
-        LoadCargoArray{data: Vec::new(), error: HashMap::new()},
+        LoadCargoArray {
+            data: Vec::new(),
+            error: HashMap::new(),
+        },
         bulkhead::bulkhead(),
         compartment::compartment(),
-        CompartmentArray{data: Vec::new(), error: HashMap::new()},
+        CompartmentArray {
+            data: Vec::new(),
+            error: HashMap::new(),
+        },
         load_constants::load_constants(),
         area_h_stab::area_h_stab(),
         area_h_str::area_h_str(),
         area_v_stab::area_v_stab(),
         area_v_str::area_v_str(),
-        bow_area::bow_area(), BowAreaDataArray,
-    ).unwrap()
+        bow_area::bow_area(),
+    )
+    .unwrap()
 }

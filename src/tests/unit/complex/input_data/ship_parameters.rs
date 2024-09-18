@@ -51,7 +51,8 @@ pub(crate) fn ship_parameters() -> ShipArray {
         ("Calculated minimum bow height", "4.113", "real", "m"),
         ("freeboardType", "B", "text", ""),
         ("Calculated minimum bow area", "84", "real", "m^2"),
-        ("Minimum allowable trim", "-1.7", "real", "m"),
-        ("Maximum allowable trim", "0.7", "real", "m"),
+        ("Maximum aft trim", "-1.7", "real", "m"),
+        ("Maximum forward trim", "0.7", "real", "m"),
+        ("DWT", "4886.4", "real", "t"), 
       ])
 }

@@ -1,6 +1,6 @@
 //! Расчет плеча кренящего момента от давления ветра
-use std::rc::Rc;
 use crate::{windage::IWindage, Error, IMass, IParameters, ParameterID};
+use std::rc::Rc;
 
 /// Расчет плеча кренящего момента от давления ветра
 pub struct Wind {
@@ -15,7 +15,7 @@ pub struct Wind {
     /// Все грузы судна
     mass: Rc<dyn IMass>,
     /// Набор результатов расчетов для записи в БД
-    parameters: Rc<dyn IParameters>, 
+    parameters: Rc<dyn IParameters>,
 }
 ///
 impl Wind {
@@ -27,11 +27,11 @@ impl Wind {
     /// * mass: Rc<dyn IMass>, Все грузы судна
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
-        p_v_m: (f64, f64),          
+        p_v_m: (f64, f64),
         windage: Rc<dyn IWindage>,
-        g: f64,             
-        mass: Rc<dyn IMass>, 
-        parameters: Rc<dyn IParameters>, 
+        g: f64,
+        mass: Rc<dyn IMass>,
+        parameters: Rc<dyn IParameters>,
     ) -> Self {
         Self {
             p_v: p_v_m.0,
@@ -47,19 +47,24 @@ impl Wind {
 impl IWind for Wind {
     /// Плечо кренящего момента постоянного ветра
     fn arm_wind_static(&self) -> Result<f64, Error> {
-        let res = (self.p_v * self.windage.a_v()? * self.windage.z_v()?) / (1000. * self.g * self.mass.sum()?);
-    //    log::info!("\t Wind arm_wind_static mass_sum:{} p_v:{} a_v:{}  z_v:{} res:{res}",
-    //    self.mass.sum()?, self.p_v, self.windage.a_v()?, self.windage.z_v()?,);
+        let res = (self.p_v * self.windage.a_v()? * self.windage.z_v()?)
+            / (1000. * self.g * self.mass.sum()?);
+        //    log::info!("\t Wind arm_wind_static mass_sum:{} p_v:{} a_v:{}  z_v:{} res:{res}",
+        //    self.mass.sum()?, self.p_v, self.windage.a_v()?, self.windage.z_v()?,);
         self.parameters.add(ParameterID::WindPressure, self.p_v);
-        self.parameters.add(ParameterID::WindageArea, self.windage.a_v()?);
-        self.parameters.add(ParameterID::WindageAreaLever, self.windage.z_v()?);
-        self.parameters.add(ParameterID::StaticWindageHeelingLever, res);
+        self.parameters
+            .add(ParameterID::WindageArea, self.windage.a_v()?);
+        self.parameters
+            .add(ParameterID::WindageAreaLever, self.windage.z_v()?);
+        self.parameters
+            .add(ParameterID::StaticWindageHeelingLever, res);
         Ok(res)
     }
     /// Плечо кренящего момента порыва ветра
-    fn arm_wind_dynamic(&self) -> Result<f64, Error> {        
+    fn arm_wind_dynamic(&self) -> Result<f64, Error> {
         let res = (1. + self.m) * self.arm_wind_static()?;
-        self.parameters.add(ParameterID::DynamicWindageHeelingLever, res);
+        self.parameters
+            .add(ParameterID::DynamicWindageHeelingLever, res);
         Ok(res)
     }
 }
@@ -80,10 +85,7 @@ pub struct FakeWind {
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeWind {
-    pub fn new(
-        arm_wind_static: f64,
-        arm_wind_dynamic: f64,
-    ) -> Self {
+    pub fn new(arm_wind_static: f64, arm_wind_dynamic: f64) -> Self {
         Self {
             arm_wind_static,
             arm_wind_dynamic,
@@ -101,4 +103,3 @@ impl IWind for FakeWind {
         Ok(self.arm_wind_dynamic)
     }
 }
-

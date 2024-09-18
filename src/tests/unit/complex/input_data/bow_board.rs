@@ -1,3 +1,4 @@
+use crate::data::structs::BowBoardDataArray;
 
 #[allow(dead_code)]
 pub(crate) fn bow_board() -> BowBoardDataArray {

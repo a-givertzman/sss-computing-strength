@@ -390,7 +390,8 @@ fn execute() -> Result<(), Error> {
             Rc::clone(&lever_diagram),
             Rc::clone(&parameters),
         )),
-    )?.create();
+    )?
+    .create();
     elapsed.insert("Criterion", time.elapsed());
 
     let trim: Rc<dyn ITrim> = Rc::new(stability::Trim::new(
@@ -409,8 +410,7 @@ fn execute() -> Result<(), Error> {
         Some(Rc::clone(&parameters)),
     )?);
     // Марки заглубления
-    let draft_mark =
-        DraftMark::new(Rc::clone(&draught), data.draft_mark, Rc::clone(&parameters));
+    let draft_mark = DraftMark::new(Rc::clone(&draught), data.draft_mark, Rc::clone(&parameters));
     send_draft_mark(&mut api_server, ship_id, draft_mark.calculate()?)?;
     //
     let criterion_draught = CriterionDraught::new(
@@ -441,9 +441,9 @@ fn execute() -> Result<(), Error> {
         criterion_result,
         criterion_computer_results,
     )?;
-  //  send_screw(&mut api_server, ship_id, criterion_draught.screw()?)?;
-  //  send_load_line(&mut api_server, ship_id, criterion_draught.load_line()?)?;
-  //  send_bow_board(&mut api_server, ship_id, criterion_draught.bow_board()?)?;
+    //  send_screw(&mut api_server, ship_id, criterion_draught.screw()?)?;
+    //  send_load_line(&mut api_server, ship_id, criterion_draught.load_line()?)?;
+    //  send_bow_board(&mut api_server, ship_id, criterion_draught.bow_board()?)?;
     //   let criterion_res = criterion.create();
     /*   log::info!("Main criterion zg:");
        for (id, zg, result, target) in criterion_computer_results.iter() {
