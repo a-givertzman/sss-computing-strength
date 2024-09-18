@@ -1,6 +1,7 @@
 //! Структуры для преобразования данных из формата данных DB
 //! в формат пригодный для создания объектов.
 
+use bow_board::BowBoardParsedData;
 use loads::{
     BulkheadArray, CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData
 };
@@ -57,12 +58,24 @@ pub struct ParsedShipData {
     pub length_loa: f64,
     /// Ширина корпуса судна
     pub width: f64,
+    /// Тип надводного борта
+    pub freeboard_type: String,
+    /// Суммарая площадь проекции носа судна на диаметральную плоскость
+    pub bow_area_min: f64,
     /// Отстояние миделя от нулевого шпангоута
     pub midship: f64,
     /// Overall height up to non-removable parts
     pub overall_height: f64,
+    /// Calculated minimum bow height
+    pub bow_h_min: f64,
+    /// Minimum allowable trim
+    pub aft_trim: f64,
+    /// Maximum allowable trim
+    pub forward_trim: f64,        
     /// Эксплуатационная скорость судна, m/s
     pub velocity: f64,
+    /// Дедвейт
+    pub deadweight: f64,
     /// Cуммарная габаритная площадь скуловых килей,
     /// либо площадь боковой проекции брускового киля
     pub keel_area: Option<f64>,
@@ -135,6 +148,8 @@ pub struct ParsedShipData {
     pub load_line: Vec<LoadLineParsedData>,
     /// Координаты и диаметр винтов судна
     pub screw: Vec<ScrewParsedData>,
+    /// Высота борта на носовом перпендикуляре
+    pub bow_board: Vec<BowBoardParsedData>,
     /// Нагрузка судна без жидких грузов   
     pub cargoes: Vec<LoadCargo>,
     /// Нагрузка судна: цистерны и трюмы   
@@ -149,6 +164,8 @@ pub struct ParsedShipData {
     pub area_v_stab: stability::VerticalAreaArray,
     /// Площадь поверхности парусности для прочности
     pub area_v_str: Vec<strength::VerticalArea>,
+    /// Cуммарая площадь проекции на диаметральную плоскость от осадки, м^2
+    pub bow_area: Vec<(f64, f64)>,
 }
 ///
 impl ParsedShipData {
@@ -185,6 +202,7 @@ impl ParsedShipData {
         draft_mark: DraftMarkDataArray,
         load_line: LoadLineDataArray,
         screw: ScrewDataArray,
+        bow_board: BowBoardDataArray,
         cargo_src: LoadCargoArray,
         bulkhead_src: BulkheadArray,
         compartments_src: CompartmentArray,
@@ -194,6 +212,7 @@ impl ParsedShipData {
         area_h_str: HStrAreaArray,
         area_v_stab: stability::VerticalAreaArray,
         area_v_str: strength::VerticalAreaArray,
+        bow_area: BowAreaDataArray,
     ) -> Result<Self, Error> {
         log::info!("result parse begin");
         let ship_data = ship_parameters.data();
@@ -241,6 +260,14 @@ impl ParsedShipData {
             "ParsedShipData parse error: no width for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
+        let freeboard_type = ship_data.get("freeboardType").ok_or(format!(
+            "ParsedShipData parse error: no freeboardType for ship id:{}",
+            ship_id
+        ))?.0.clone();
+        let bow_area_min = ship_data.get("Calculated minimum bow area").ok_or(format!(
+            "ParsedShipData parse error: no bow_area_min for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
         let midship = ship_data.get("X midship from Fr0").ok_or(format!(
             "ParsedShipData parse error: no midship for ship id:{}",
             ship_id
@@ -249,8 +276,24 @@ impl ParsedShipData {
             "ParsedShipData parse error: no overall_height for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
+        let bow_h_min = ship_data.get("Calculated minimum bow height").ok_or(format!(
+            "ParsedShipData parse error: no bow_h_min for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let aft_trim = ship_data.get("Maximum aft trim").ok_or(format!(
+            "ParsedShipData parse error: no aft_trim for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let forward_trim = ship_data.get("Maximum forward trim").ok_or(format!(
+            "ParsedShipData parse error: no forward_trim for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
         let velocity = ship_data.get("Ship operating speed").ok_or(format!(
             "ParsedShipData parse error: no velocity for ship id:{}",
+            ship_id
+        ))?.0.parse::<f64>()?;
+        let deadweight = ship_data.get("DWT").ok_or(format!(
+            "ParsedShipData parse error: no deadweight for ship id:{}",
             ship_id
         ))?.0.parse::<f64>()?;
         let keel_area = ship_data.get("Keel area").ok_or(format!(
@@ -354,9 +397,15 @@ impl ParsedShipData {
             length_lbp,
             length_loa,
             width,
+            freeboard_type, 
+            bow_area_min,
             midship,
             overall_height,
+            bow_h_min,
+            aft_trim,
+            forward_trim,
             velocity,
+            deadweight,
             keel_area,
             water_density,
             const_mass_shift_x,
@@ -401,6 +450,7 @@ impl ParsedShipData {
             draft_mark: draft_mark.draft_data(),
             load_line: load_line.load_line_data(),
             screw: screw.data(),
+            bow_board: bow_board.bow_board_data(),
             cargoes,
             compartments,
             load_constants: load_constant_src.data(),
@@ -408,6 +458,7 @@ impl ParsedShipData {
             area_h_str: area_h_str.data(),
             area_v_stab,
             area_v_str: area_v_str.data(),
+            bow_area: bow_area.data(),
         }
         .check()
     }

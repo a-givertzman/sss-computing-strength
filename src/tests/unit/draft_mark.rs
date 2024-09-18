@@ -48,7 +48,7 @@ mod tests {
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 0.);
         let result = DraftMark::new(
-            Box::new(FakeDraught::new(2., 0.)),
+            Rc::new(FakeDraught::new(2., 0.)),
             data,
             Rc::new(parameters),
         )
@@ -113,7 +113,7 @@ mod tests {
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 10.);
         let result = DraftMark::new(
-            Box::new(FakeDraught::new(2., 0.)),
+            Rc::new(FakeDraught::new(2., 0.)),
             data,
             Rc::new(parameters),
         )
@@ -178,7 +178,7 @@ mod tests {
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 10.);
         let result = DraftMark::new(
-            Box::new(FakeDraught::new(2., 0.)),
+            Rc::new(FakeDraught::new(2., 0.)),
             data,
             Rc::new(parameters),
         )
@@ -228,7 +228,7 @@ mod tests {
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 10.);
         let result = DraftMark::new(
-            Box::new(FakeDraught::new(2., 0.1)),
+            Rc::new(FakeDraught::new(2., 0.1)),
             data,
             Rc::new(parameters),
         )
@@ -266,7 +266,7 @@ mod tests {
             ],
         });
         let result = DraftMark::new(
-            Box::new(FakeDraught::new(2., -0.1)),
+            Rc::new(FakeDraught::new(2., -0.1)),
             data,
             Rc::new(parameters),
         )
@@ -304,7 +304,7 @@ mod tests {
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, -10.);
         let result = DraftMark::new(
-            Box::new(FakeDraught::new(2., -0.1)),
+            Rc::new(FakeDraught::new(2., -0.1)),
             data,
             Rc::new(parameters),
         )

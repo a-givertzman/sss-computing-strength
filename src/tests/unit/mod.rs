@@ -34,4 +34,5 @@ mod area_strength;
 mod area_stability;
 mod wetting_mass;
 mod wetting_moment;
+mod bow_board;
 

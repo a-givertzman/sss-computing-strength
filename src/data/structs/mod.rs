@@ -35,5 +35,6 @@ pub type WaterlineBreadthArray = DataArray<Pair>;
 pub type WaterlineAreaArray = DataArray<Pair>;
 pub type VolumeShiftArray = DataArray<Pair>;
 pub type DeltaWindageAreaDataArray = DataArray<Pair>;
+pub type BowAreaDataArray = DataArray<Pair>;
 
 

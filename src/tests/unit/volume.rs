@@ -25,8 +25,8 @@ mod tests {
         ];
         let result = Volume::new(
             Rc::new(Displacement::new(frame_area_data).unwrap()),
-            Box::new(FakeDraught::new(1., 0.)),
-            Rc::new(Bounds::from_n(4., 0., 4).unwrap()),
+            Rc::new(FakeDraught::new(1., 0.)),
+            Rc::new(Bounds::from_n(4., 2., 4).unwrap()),
         ).values().unwrap();
 
         let target = vec![2., 2., 2., 2.,];

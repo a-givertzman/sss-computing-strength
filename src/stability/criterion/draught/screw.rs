@@ -1,4 +1,4 @@
-//! Расчет уровня заглубления для координат отметок заглубления на корпусе судна
+//! Расчет уровня заглубления для винтов судна
 
 use std::{f64::consts::PI, rc::Rc};
 
@@ -7,7 +7,7 @@ use crate::{data::structs::ScrewParsedData, draught::IDraught, Error, IParameter
 /// Расчет уровня заглубления для винтов судна
 pub struct Screw {
     /// Осадка судна
-    draught: Box<dyn IDraught>,
+    draught: Rc<dyn IDraught>,
     /// Координаты винтов судна относительно центра
     data: Vec<ScrewParsedData>,
     /// Набор результатов расчетов для записи в БД
@@ -20,7 +20,7 @@ impl Screw {
     /// * data - Координаты винтов судна относительно центра
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
-        draught: Box<dyn IDraught>,
+        draught: Rc<dyn IDraught>,
         data: Vec<ScrewParsedData>,
         parameters: Rc<dyn IParameters>,
     ) -> Self {
@@ -31,7 +31,8 @@ impl Screw {
         }
     }
     /// Расчет процента заглубления винта
-    pub fn calculate(&mut self) -> Result<Vec<(String, f64)>, Error> {
+    /// (name, y, percent)
+    pub fn calculate(&self) -> Result<Vec<(String, f64, f64)>, Error> {
         let roll = self
             .parameters
             .get(ParameterID::Roll)
@@ -41,7 +42,7 @@ impl Screw {
             let z_fix = v.pos.z()  - v.pos.y() * (roll * PI / 180.).sin() - self.draught.value(v.pos.x())?;
             let percent = (1. - z_fix/v.d).min(2.).max(0.)*50.;
    //         dbg!(&v.pos, v.pos.y() * (roll * PI / 180.).sin(), self.draught.value(v.pos.x())?, z_fix, percent);
-            result.push((v.name.clone(), percent));
+            result.push((v.name.clone(), v.pos.y(), percent));
         }
         Ok(result)
     }
