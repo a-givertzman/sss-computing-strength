@@ -2,7 +2,7 @@
 //! в формат пригодный для создания объектов.
 
 use loads::{
-    compartment, BulkheadArray, CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData
+    BulkheadArray, CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData
 };
 
 use crate::{error::Error, icing_stab::IcingStabType, icing_timber::IcingTimberType};

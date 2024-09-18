@@ -40,6 +40,8 @@ mod area_h_str;
 mod area_v_stab;
 mod area_v_str;
 mod h_subdivision;
+mod bow_board;
+mod bow_area;
 
 use std::collections::HashMap;
 
@@ -78,6 +80,7 @@ pub(crate) fn input_data() -> ParsedShipData {
         draft_mark::draft_mark(),
         load_line::load_line(),
         screw::screw(),
+        bow_board::bow_board(),
         LoadCargoArray{data: Vec::new(), error: HashMap::new()},
         bulkhead::bulkhead(),
         compartment::compartment(),
@@ -87,5 +90,6 @@ pub(crate) fn input_data() -> ParsedShipData {
         area_h_str::area_h_str(),
         area_v_stab::area_v_stab(),
         area_v_str::area_v_str(),
+        bow_area::bow_area(), BowAreaDataArray,
     ).unwrap()
 }
