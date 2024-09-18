@@ -15,11 +15,12 @@ mod tests {
         stability, strength,
         tests::unit::complex::input_data,
         windage::Windage,
-        Acceleration, Bound, Bounds, Circulation, Computer, Criterion, CriterionComputer, Curve,
-        Displacement, DraftMark, Grain, ICurve, ILeverDiagram, IMetacentricHeight, IParameters,
-        IPosShift, IResults, IRollingAmplitude, IRollingPeriod, IWind, LeverDiagram, LoadLine,
-        Loads, MetacentricHeight, Moment, ParameterID, Parameters, PosShift, Position, Results,
-        RollingAmplitude, RollingPeriod, Screw, Stability, WettingMass, WettingMoment, Wind,
+        Acceleration, Bound, Bounds, Circulation, Computer, Criterion, CriterionComputer,
+        CriterionID, Curve, Displacement, DraftMark, Grain, ICurve, ILeverDiagram,
+        IMetacentricHeight, IParameters, IPosShift, IResults, IRollingAmplitude, IRollingPeriod,
+        IWind, LeverDiagram, LoadLine, Loads, MetacentricHeight, Moment, ParameterID, Parameters,
+        PosShift, Position, Results, RollingAmplitude, RollingPeriod, Screw, Stability,
+        WettingMass, WettingMoment, Wind,
     };
 
     #[test]
@@ -31,7 +32,7 @@ mod tests {
         let test_duration = TestDuration::new(self_id, Duration::from_secs(60));
         test_duration.run().unwrap();
 
-        let precision = 1./20.; // 5%
+        let precision = 1. / 20.; // 5%
         let data = input_data::input_data();
         let results: Rc<dyn IResults> = Rc::new(Results::new());
         let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
@@ -195,7 +196,7 @@ mod tests {
         )
         .calculate()
         .unwrap();
-
+        /*
         let map_results: HashMap<String, Vec<f64>> =
             results.take_data().into_iter().map(|v| v).collect();
 
@@ -261,7 +262,7 @@ mod tests {
                 println!("{i}: {r} {t}");
             });
         println!("total_force: index: result  target");
-        /*      total_force_result
+             total_force_result
                     .iter()
                     .zip(total_force_target.iter())
                     .enumerate()
@@ -464,46 +465,47 @@ mod tests {
             .unwrap(),
         );
         // Критерии остойчивости
-        let mut criterion_computer_results = CriterionComputer::new(
-            data.overall_height,
-            data.ship_type,
-            Curve::new_linear(&data.h_subdivision)
-                .unwrap()
-                .value(mean_draught)
-                .unwrap(),
-            data.navigation_area,
-            loads.desks().unwrap().iter().any(|v| v.is_timber()),
-            loads.bulks().unwrap().iter().any(|v| v.moment() != 0.),
-            !loads.load_variable().unwrap().is_empty(),
-            icing_stab.is_some(),
-            flooding_angle,
-            data.length_lbp,
-            data.moulded_depth,
-            mean_draught,
-            volume,
-            length_wl,
-            data.width,
-            breadth_wl,
-            data.velocity,
-            Rc::clone(&ship_moment),
-            Rc::clone(&ship_mass),
-            loads.bulks().unwrap(),
-            Rc::clone(&coefficient_k),
-            Rc::clone(&multipler_x1),
-            Rc::clone(&multipler_x2),
-            Rc::clone(&multipler_s),
-            Rc::clone(&coefficient_k_theta),
-            data.keel_area,
-            rad_trans,
-            center_draught_shift.clone(),
-            data.pantocaren.clone(),
-            Rc::clone(&wind),
-            Rc::clone(&metacentric_height),
-        )
-        .unwrap()
-        .calculate()
-        .unwrap();
-        let criterion_res = Criterion::new(
+        /*      let mut criterion_computer_results = CriterionComputer::new(
+                 data.overall_height,
+                 data.ship_type,
+                 Curve::new_linear(&data.h_subdivision)
+                     .unwrap()
+                     .value(mean_draught)
+                     .unwrap(),
+                 data.navigation_area,
+                 loads.desks().unwrap().iter().any(|v| v.is_timber()),
+                 loads.bulks().unwrap().iter().any(|v| v.moment() != 0.),
+                 !loads.load_variable().unwrap().is_empty(),
+                 icing_stab.is_some(),
+                 flooding_angle,
+                 data.length_lbp,
+                 data.moulded_depth,
+                 mean_draught,
+                 volume,
+                 length_wl,
+                 data.width,
+                 breadth_wl,
+                 data.velocity,
+                 Rc::clone(&ship_moment),
+                 Rc::clone(&ship_mass),
+                 loads.bulks().unwrap(),
+                 Rc::clone(&coefficient_k),
+                 Rc::clone(&multipler_x1),
+                 Rc::clone(&multipler_x2),
+                 Rc::clone(&multipler_s),
+                 Rc::clone(&coefficient_k_theta),
+                 data.keel_area,
+                 rad_trans,
+                 center_draught_shift.clone(),
+                 data.pantocaren.clone(),
+                 Rc::clone(&wind),
+                 Rc::clone(&metacentric_height),
+             )
+             .unwrap()
+             .calculate()
+             .unwrap();
+        */
+        let criterion_res: HashMap<usize, f64> = Criterion::new(
             data.ship_type,
             data.navigation_area,
             loads.desks().unwrap().iter().any(|v| v.is_timber()),
@@ -557,71 +559,289 @@ mod tests {
             )),
         )
         .unwrap()
-        .create();
-
-        // Марки заглубления
-        let mut draft_mark = DraftMark::new(
-            Box::new(Draught::new(
-                data.length_lbp,
-                center_waterline_shift,
-                // Дифферент для остойчивости
-                Box::new(stability::Trim::new(
+        .create()
+        .into_iter()
+        .map(|v| (v.criterion_id, v.result))
+        .collect();
+        // Для расчета и записи осадок в параметры
+        let _ = DraftMark::new(
+            Box::new(
+                Draught::new(
                     data.length_lbp,
-                    mean_draught,
-                    center_draught_shift.clone(),
-                    Rc::clone(&metacentric_height),
-                    Rc::clone(&ship_mass),
-                    Rc::clone(&ship_moment),
-                    Rc::clone(&parameters),
-                ).unwrap()),
-                Some(Rc::clone(&parameters)),
-            ).unwrap()),
+                    center_waterline_shift,
+                    // Дифферент для остойчивости
+                    Box::new(
+                        stability::Trim::new(
+                            data.length_lbp,
+                            mean_draught,
+                            center_draught_shift.clone(),
+                            Rc::clone(&metacentric_height),
+                            Rc::clone(&ship_mass),
+                            Rc::clone(&ship_moment),
+                            Rc::clone(&parameters),
+                        )
+                        .unwrap(),
+                    ),
+                    Some(Rc::clone(&parameters)),
+                )
+                .unwrap(),
+            ),
             data.draft_mark,
             Rc::clone(&parameters),
-        ).calculate();
-
+        )
+        .calculate();
 
         let x_g_result = parameters.get(ParameterID::CenterMassX).unwrap();
         let x_g_target = -3.53;
         assert!(
-            (x_g_result - x_g_target).abs() < x_g_target.abs()*precision,
+            (x_g_result - x_g_target).abs() < x_g_target.abs() * precision,
             "\nx_g result:{x_g_result} target:{x_g_target}"
         );
 
         let z_g_result = parameters.get(ParameterID::CenterMassZ).unwrap();
         let z_g_target = 5.07;
         assert!(
-            (z_g_result - z_g_target).abs() < z_g_target.abs()*precision,
+            (z_g_result - z_g_target).abs() < z_g_target.abs() * precision,
             "\nz_g result:{z_g_result} target:{z_g_target}"
         );
-
+        //OCAДKA HA MИДEЛE, M
         let d_result = parameters.get(ParameterID::DraughtMean).unwrap();
         let d_target = 1.65;
         assert!(
-            (d_result - d_target).abs() < d_target.abs()*precision,
+            (d_result - d_target).abs() < d_target.abs() * precision,
             "\nd result:{d_result} target:{d_target}"
         );
-
+        //OCAДKA HOCOM, M
         let d_b_result = parameters.get(ParameterID::DraughtBow).unwrap();
         let d_b_target = 1.34;
         assert!(
-            (d_b_result - d_b_target).abs() < d_b_target.abs()*precision,
+            (d_b_result - d_b_target).abs() < d_b_target.abs() * precision,
             "\nd_b result:{d_b_result} target:{d_b_target}"
         );
-
+        //OCAДKA KOPMOЙ, M
         let d_s_result = parameters.get(ParameterID::DraughtStern).unwrap();
         let d_s_target = 1.96;
         assert!(
-            (d_s_result - d_s_target).abs() < d_s_target.abs()*precision,
+            (d_s_result - d_s_target).abs() < d_s_target.abs() * precision,
             "\nd_s result:{d_s_result} target:{d_s_target}"
         );
-
-        let h_result = parameters.get(ParameterID::MetacentricTransHeight).unwrap();
-        let h_target = 4.887;
+        //ПOПEPEЧHAЯ MЦB C УЧETOM ПOПPABOK, M
+        let h_fix_result = parameters.get(ParameterID::MetacentricTransHeight).unwrap();
+        let h_fix_target = 4.887;
         assert!(
-            (h_result - h_target).abs() < h_target.abs()*precision,
-            "\nh result:{h_result} target:{h_target}"
+            (h_fix_result - h_fix_target).abs() < h_fix_target.abs() * precision,
+            "\nh_fix result:{h_fix_result} target:{h_fix_target}"
         );
+        //ЧИCЛO TOHH HA 1 CM. OCAДKИ
+        let t_per_sm_result = parameters.get(ParameterID::TonesPerCm).unwrap();
+        let t_per_sm_target = 14.92;
+        assert!(
+            (t_per_sm_result - t_per_sm_target).abs() < t_per_sm_target.abs() * precision,
+            "\nt_per_sm result:{t_per_sm_result} target:{t_per_sm_target}"
+        );
+        //MOMEHT, KPEHЯЩИЙ HA 1 ГPAДУC, TM
+        let roll_per_deg_result = parameters.get(ParameterID::MomentRollPerDeg).unwrap();
+        let roll_per_deg_target = 200.82;
+        assert!(
+            (roll_per_deg_result - roll_per_deg_target).abs()
+                < roll_per_deg_target.abs() * precision,
+            "\nroll_per_deg result:{roll_per_deg_result} target:{roll_per_deg_target}"
+        );
+        //MOMEHT, ДИФФEPEHTУЮЩИЙ HA 1 CM., TM
+        let moment_trim_result = parameters.get(ParameterID::MomentTrimPerCm).unwrap();
+        let moment_trim_target = 123.37;
+        assert!(
+            (moment_trim_result - moment_trim_target).abs() < t_per_sm_target.abs() * precision,
+            "\nmoment_trim result:{moment_trim_result} target:{moment_trim_target}"
+        );
+        //УГOЛ MAKCИMУMA 1, ГPAД
+        let heel_max_result = criterion_res
+            .get(&(CriterionID::HeelMaximumLC as usize))
+            .unwrap();
+        let heel_max_target = 24.80;
+        assert!(
+            (heel_max_result - heel_max_target).abs() < heel_max_target.abs() * precision,
+            "\nheel_max result:{heel_max_result} target:{heel_max_target}"
+        );
+        //УГOЛ ЗAKATA, ГPAД.
+        let sunset_angle_result = parameters.get(ParameterID::SunsetAngle).unwrap();
+        let sunset_angle_target = 67.98;
+        assert!(
+            (sunset_angle_result - sunset_angle_target).abs()
+                < sunset_angle_target.abs() * precision,
+            "\nsunset_angle result:{sunset_angle_result} target:{sunset_angle_target}"
+        );
+        //MAKCИMAЛЬHOE ПЛEЧO, M
+        let max_lc_result = criterion_res
+            .get(&(CriterionID::MaximumLC as usize))
+            .unwrap();
+        let max_lc_target = 1.626;
+        assert!(
+            (max_lc_result - max_lc_target).abs() < max_lc_target.abs() * precision,
+            "\nmax_lc result:{max_lc_result} target:{max_lc_target}"
+        );
+        //УГOЛ KPEHA, ГPAД.
+        let roll_result = parameters.get(ParameterID::Roll).unwrap();
+        let roll_target = -0.3166;
+        assert!(
+            (roll_result - roll_target).abs() < roll_target.abs() * precision,
+            "\nroll result:{roll_result} target:{roll_target}"
+        );
+        //ДИHAMИЧECKИЙ УГOЛ KPEHA, ГPAД.
+        let dynamic_angle_result = parameters
+            .get(ParameterID::DynamicWindageHeelingAngle)
+            .unwrap();
+        let dynamic_angle_target = 20.30;
+        assert!(
+            (dynamic_angle_result - dynamic_angle_target).abs()
+                < dynamic_angle_target.abs() * precision,
+            "\ndynamic_angle result:{dynamic_angle_result} target:{dynamic_angle_target}"
+        );
+        //AMПЛИTУДA KAЧKИ, ГPAД.
+        let roll_amplitude_result = parameters.get(ParameterID::RollAmplitude).unwrap();
+        let roll_amplitude_target = 19.00;
+        assert!(
+            (roll_amplitude_result - roll_amplitude_target).abs()
+                < roll_amplitude_target.abs() * precision,
+            "\nroll_amplitude result:{roll_amplitude_result} target:{roll_amplitude_target}"
+        );
+        //ДABЛEHИE BETPA, KГ/KB.M
+        let wind_pressure_result = parameters.get(ParameterID::WindPressure).unwrap();
+        let wind_pressure_target = 25.69;
+        assert!(
+            (wind_pressure_result - wind_pressure_target).abs()
+                < wind_pressure_target.abs() * precision,
+            "\nwind_pressure result:{wind_pressure_result} target:{wind_pressure_target}"
+        );
+        //ПЛOЩAДЬ ПAPУCHOCTИ, KB.M
+        let windage_area_result = parameters.get(ParameterID::WindageArea).unwrap();
+        let windage_area_target = 1036.07;
+        assert!(
+            (windage_area_result - windage_area_target).abs()
+                < windage_area_target.abs() * precision,
+            "\nwindage_area result:{windage_area_result} target:{windage_area_target}"
+        );
+        //BOЗBЫШEHИE ЦEHTPA ПAPУCHOCTИ HAД BЛ, M
+        let windage_area_lever_result = parameters.get(ParameterID::WindageAreaLever).unwrap();
+        let windage_area_lever_target = 4.86;
+        assert!(
+            (windage_area_lever_result - windage_area_lever_target).abs() < windage_area_lever_target.abs()*precision,
+            "\nwindage_area_lever result:{windage_area_lever_result} target:{windage_area_lever_target}"
+        );
+        //ПEPИOД БOPTOBOЙ KAЧKИ, C
+        let roll_pariod_result = parameters.get(ParameterID::RollPeriod).unwrap();
+        let roll_pariod_target = 6.17;
+        assert!(
+            (roll_pariod_result - roll_pariod_target).abs() < roll_pariod_target.abs() * precision,
+            "\nroll_pariod result:{roll_pariod_result} target:{roll_pariod_target}"
+        );
+        //KPИTEPИЙ ПOГOДЫ
+        let wheather_result = criterion_res
+            .get(&(CriterionID::Wheather as usize))
+            .unwrap();
+        let wheather_target = 3.20;
+        assert!(
+            (wheather_result - wheather_target).abs() < wheather_target.abs() * precision,
+            "\nwheather result:{wheather_result} target:{wheather_target}"
+        );
+        //KPИTEPИЙ УCKOPEHИЯ
+        let acceleration_result = criterion_res
+            .get(&(CriterionID::Acceleration as usize))
+            .unwrap();
+        let acceleration_target = 0.65;
+        assert!(
+            (acceleration_result - acceleration_target).abs()
+                < acceleration_target.abs() * precision,
+            "\nacceleration result:{acceleration_result} target:{acceleration_target}"
+        );
+        //ПЛOЩAДИ ПOД ДИAГPAMMOЙ,M*PAД: ДO 30 ГPAД
+        let area_lc0_30_result = criterion_res
+            .get(&(CriterionID::AreaLC0_30 as usize))
+            .unwrap();
+        let area_lc0_30_target = 0.585;
+        assert!(
+            (area_lc0_30_result - area_lc0_30_target).abs() < area_lc0_30_target.abs() * precision,
+            "\narea_lc0_30 result:{area_lc0_30_result} target:{area_lc0_30_target}"
+        );
+        //ПЛOЩAДИ ПOД ДИAГPAMMOЙ,M*PAД: ДO 40 ГPAД
+        let area_lc0_40_result = criterion_res
+            .get(&(CriterionID::AreaLC0_40 as usize))
+            .unwrap();
+        let area_lc0_40_target = 0.841;
+        assert!(
+            (area_lc0_40_result - area_lc0_40_target).abs() < area_lc0_40_target.abs() * precision,
+            "\narea_lc0_40 result:{area_lc0_40_result} target:{area_lc0_40_target}"
+        );
+        //ПЛOЩAДИ ПOД ДИAГPAMMOЙ,M*PAД: OT 30 ДO 40 ГPAД
+        let area_lc30_40_result = criterion_res
+            .get(&(CriterionID::AreaLC30_40 as usize))
+            .unwrap();
+        let area_lc30_40_target = 0.256;
+        assert!(
+            (area_lc30_40_result - area_lc30_40_target).abs()
+                < area_lc30_40_target.abs() * precision,
+            "\narea_lc30_40 result:{area_lc30_40_result} target:{area_lc30_40_target}"
+        );
+        //KPEH OT CTATИЧECKOГO ДEЙCTBИЯ BETPA,ГPAД
+        let static_wind_angle_result = parameters
+            .get(ParameterID::StaticWindageHeelingAngle)
+            .unwrap();
+        let static_wind_angle_target = 0.40;
+        assert!(
+            (static_wind_angle_result - static_wind_angle_target).abs() < static_wind_angle_target.abs()*precision,
+            "\nstatic_wind_angle result:{static_wind_angle_result} target:{static_wind_angle_target}"
+        );
+        //ПЛOЩAДЬ A, M*PAД
+        let area_a_result = parameters.get(ParameterID::AreaA).unwrap();
+        let area_a_target = 0.2992;
+        assert!(
+            (area_a_result - area_a_target).abs() < area_a_target.abs() * precision,
+            "\narea_a result:{area_a_result} target:{area_a_target}"
+        );
+        //ПЛOЩAДЬ B, M*PAД
+        let area_b_result = parameters.get(ParameterID::AreaB).unwrap();
+        let area_b_target = 0.9568;
+        assert!(
+            (area_b_result - area_b_target).abs() < area_b_target.abs() * precision,
+            "\narea_b result:{area_b_result} target:{area_b_target}"
+        );
+        //Диаграмма плечей остойчивости
+        let diagram_result: HashMap<i32, (f64, f64)> = lever_diagram
+            .diagram()
+            .unwrap()
+            .into_iter()
+            .filter(|(a, _, _)| (a / 5.).fract() <= 0.001)
+            .map(|(a, dso, ddo)| (a.round() as i32, (dso, ddo)))
+            .collect();
+        let diagram_target = vec![
+            (0, 0.030, 0.000),
+            (5, 0.458, 0.021),
+            (10, 0.896, 0.080),
+            (15, 1.319, 0.177),
+            (20, 1.563, 0.305),
+            (25, 1.626, 0.445),
+            (30, 1.581, 0.585),
+            (35, 1.473, 0.719),
+            (40, 1.324, 0.841),
+            (45, 1.151, 0.949),
+            (50, 0.956, 1.042),
+            (55, 0.716, 1.115),
+            (60, 0.445, 1.166),
+            (70, -0.116, 1.194),
+            (80, -0.627, 1.129),
+            (90, -1.144, 0.975),
+        ];
+        diagram_target.iter().for_each(|(a, dso_trg, ddo_trg)| {
+            let (dso_res, ddo_res) = diagram_result.get(a).unwrap();
+            assert!(
+                (dso_res - dso_trg).abs() < dso_trg.abs() * precision,
+                "\ndso a:{a} result:{dso_res} target:{dso_trg}"
+            );
+            assert!(
+                (ddo_res - ddo_trg).abs() < ddo_trg.abs() * precision,
+                "\nddo a:{a} result:{ddo_res} target:{ddo_trg}"
+            );
+        });
 
         /*            log::info!("Main criterion zg:");
                 for (id, zg, result, target) in criterion_computer_results.iter() {
