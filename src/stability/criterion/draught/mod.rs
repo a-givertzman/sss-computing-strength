@@ -107,7 +107,7 @@ impl CriterionDraught {
     ///
     pub fn create(&self) -> Vec<CriterionData> {
         let mut out_data = Vec::new();
-        out_data.append(&mut self.load_line());
+   //     out_data.append(&mut self.load_line());
         out_data.append(&mut self.trim());
         out_data.append(&mut self.bow_board());
         out_data.append(&mut self.screw());

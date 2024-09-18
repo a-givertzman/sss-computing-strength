@@ -441,19 +441,6 @@ fn execute() -> Result<(), Error> {
         criterion_result,
         criterion_computer_results,
     )?;
-    //  send_screw(&mut api_server, ship_id, criterion_draught.screw()?)?;
-    //  send_load_line(&mut api_server, ship_id, criterion_draught.load_line()?)?;
-    //  send_bow_board(&mut api_server, ship_id, criterion_draught.bow_board()?)?;
-    //   let criterion_res = criterion.create();
-    /*   log::info!("Main criterion zg:");
-       for (id, zg, result, target) in criterion_computer_results.iter() {
-            log::info!("id:{id} zg:{zg} result:{result} delta:{}", result - target);
-        }
-        log::info!("Main criterion:");
-        for v in criterion_res.iter() {
-            log::info!("id:{} result:{} target:{}", v.criterion_id, v.result, v.target);
-        }
-    */
     send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //
 
     for (key, e) in elapsed {

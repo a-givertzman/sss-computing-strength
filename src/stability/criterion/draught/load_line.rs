@@ -7,7 +7,7 @@ use crate::{data::structs::LoadLineParsedData, draught::IDraught, Error, IParame
 pub struct LoadLine {
     /// Осадка судна
     draught: Rc<dyn IDraught>,
-    /// Координаты осадок судна
+    /// Координаты осадок судна 
     /// относительно центра
     data: Vec<LoadLineParsedData>,
     /// Набор результатов расчетов для записи в БД
