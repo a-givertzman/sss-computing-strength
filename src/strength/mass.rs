@@ -112,8 +112,9 @@ impl Mass {
         self.parameters.add(ParameterID::MassLightship, lightship);
         self.parameters.add(ParameterID::MassIcing, icing);
         self.parameters.add(ParameterID::MassWetting, wetting);
-        //    log::info!("\t Mass sum:{:?} ", mass_sum);
-        //    dbg!(ballast, stores, cargo, deadweight, lightship, icing);
+        log::info!("\t Mass ballast:{ballast}, stores:{stores}, 
+            cargo:{cargo}, deadweight:{deadweight}, lightship:{lightship}, 
+            icing:{icing}, wetting:{wetting} sum:{mass_sum}");
         Ok(mass_sum)
     }
     /// Распределение массы по вектору разбиения
