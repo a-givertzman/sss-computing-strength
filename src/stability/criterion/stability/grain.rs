@@ -70,10 +70,10 @@ impl Grain {
             // значение угла крена в текущей точке
             let angle = i * precision;  
             // значение апроксимирующей прямой плеч момента зерна в текущей точке
-            let lever_ab = delta_ab * angle; 
+            let lever_ab = lambda_0 + delta_ab * angle; 
             // значение восстанавливающего момента в текущей точке
             let lever_dso = self.lever_diagram.lever_moment(angle).unwrap_or(f64::MIN);
-  //          log::info!("\t Grain area first_angle i:{i} angle:{angle} lever_ab:{lever_ab} lever_dso:{lever_dso}");
+            // log::info!("\t Grain area first_angle i:{i} angle:{angle} lever_ab:{lever_ab} lever_dso:{lever_dso}");
             lever_dso >= lever_ab
         }).unwrap_or((90./precision) as usize) as f64 * precision;
         // угол соответствующий максимальной разности между ординатами двух кривых
@@ -82,7 +82,7 @@ impl Grain {
             // значение угла крена в текущей точке
             let angle = i * precision;  
             // значение апроксимирующей прямой плеч момента зерна в текущей точке
-            let lever_ab = delta_ab * angle; 
+            let lever_ab = lambda_0 + delta_ab * angle; 
             // значение восстанавливающего момента в текущей точке
             let lever_dso = self.lever_diagram.lever_moment(angle).unwrap_or(lever_ab);
             (angle, lever_dso - lever_ab)
