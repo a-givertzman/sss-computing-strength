@@ -58,7 +58,7 @@ impl Grain {
         let second_point_ab = (40.0f64, 0.8*lambda_0);
         // Изменение апроксимирующей прямой на один градус угла крена
         let delta_ab = (second_point_ab.1 - first_point_ab.1)/(second_point_ab.0 - first_point_ab.0);
-        let precision = 0.05; // Точность определения пересечения в градусах
+        let precision = 0.01; // Точность определения пересечения в градусах
         // Точка пересечения кривых. Проходим по кривой плечей и ищем точку пересечения как  
         // точку, в которой значение кривой плеч момента зерна меньше чем значение dso
         // Если точка отсутствует (момент от зерна слишком большй) то принимаем
@@ -99,12 +99,12 @@ impl Grain {
         let grain_area = (first_grain_lever + (second_grain_lever - first_grain_lever)/2.) * (second_angle - first_angle) * PI/180.;
         let result_area = dso_area - grain_area;
         self.area = Some(result_area);
-      /*  log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} 
+        log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} 
             first_point_ab:{:?} second_point_ab:{:?}
             first_angle:{first_angle} angle_delta_max:{angle_delta_max} second_angle:{second_angle} 
             delta_ab:{delta_ab} dso_area:{dso_area} first_grain_lever:{first_grain_lever} second_grain_lever:{second_grain_lever}
             grain_area:{grain_area} result_area:{result_area}", first_point_ab, second_point_ab);
-        */  self.parameters.add(ParameterID::HeelingMomentDueToTheTransverseShiftOfGrain, m_grain);
+        self.parameters.add(ParameterID::HeelingMomentDueToTheTransverseShiftOfGrain, m_grain);
         self.parameters.add(ParameterID::HeelingAngleWithMaximumDifference, angle_delta_max);
         Ok(())
     }
