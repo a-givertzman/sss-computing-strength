@@ -107,6 +107,7 @@ impl Mass {
         self.parameters.add(ParameterID::Displacement, mass_sum);
         self.parameters.add(ParameterID::MassBallast, ballast);
         self.parameters.add(ParameterID::MassStores, stores);
+        self.parameters.add(ParameterID::MassBulkhead, bulkhead);
         self.parameters.add(ParameterID::MassCargo, cargo);
         self.parameters.add(ParameterID::MassDeadweight, deadweight);
         self.parameters.add(ParameterID::MassLightship, lightship);

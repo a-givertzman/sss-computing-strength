@@ -81,7 +81,8 @@ impl ITrim for Trim {
             self.center_draught_shift.x()
         );
   */      self.parameters.add(ParameterID::MomentTrimPerCm, trim_moment);
-        self.parameters.add(ParameterID::Trim, trim_angle);
+        self.parameters.add(ParameterID::TrimDeg, trim_angle);
+        self.parameters.add(ParameterID::TrimMeter, t);
         Ok((self.mean_draught, t))
     }
 }

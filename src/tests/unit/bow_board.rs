@@ -30,7 +30,7 @@ mod tests {
         });
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 0.);
-        parameters.add(ParameterID::Trim, 0.);
+        parameters.add(ParameterID::TrimDeg, 0.);
         let result = DepthAtForwardPerpendicular::new(
             Rc::new(FakeDraught::new(2., 0.)),
             data,
@@ -75,7 +75,7 @@ mod tests {
         });
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 10.);
-        parameters.add(ParameterID::Trim, 0.);
+        parameters.add(ParameterID::TrimDeg, 0.);
         let result = DepthAtForwardPerpendicular::new(
             Rc::new(FakeDraught::new(2., 0.)),
             data,
@@ -120,7 +120,7 @@ mod tests {
         });
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, -10.);
-        parameters.add(ParameterID::Trim, 0.);
+        parameters.add(ParameterID::TrimDeg, 0.);
         let result = DepthAtForwardPerpendicular::new(
             Rc::new(FakeDraught::new(2., 0.)),
             data,
@@ -165,7 +165,7 @@ mod tests {
         });
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 0.);
-        parameters.add(ParameterID::Trim, 10.);
+        parameters.add(ParameterID::TrimDeg, 10.);
         let result = DepthAtForwardPerpendicular::new(
             Rc::new(FakeDraught::new(2., 0.1)),
             data,
@@ -210,7 +210,7 @@ mod tests {
         });
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 0.);
-        parameters.add(ParameterID::Trim, -10.);
+        parameters.add(ParameterID::TrimDeg, -10.);
         let result = DepthAtForwardPerpendicular::new(
             Rc::new(FakeDraught::new(2., -0.1)),
             data,
@@ -255,7 +255,7 @@ mod tests {
         });
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 10.);
-        parameters.add(ParameterID::Trim, 10.);
+        parameters.add(ParameterID::TrimDeg, 10.);
         let result = DepthAtForwardPerpendicular::new(
             Rc::new(FakeDraught::new(2., 0.1)),
             data,
@@ -300,7 +300,7 @@ mod tests {
         });
         let parameters = Parameters::new();
         parameters.add(ParameterID::Roll, 10.);
-        parameters.add(ParameterID::Trim, -10.);
+        parameters.add(ParameterID::TrimDeg, -10.);
         let result = DepthAtForwardPerpendicular::new(
             Rc::new(FakeDraught::new(2., -0.1)),
             data,

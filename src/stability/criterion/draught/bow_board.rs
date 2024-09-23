@@ -42,7 +42,7 @@ impl DepthAtForwardPerpendicular {
             .ok_or(Error::FromString("DepthAtForwardPerpendicular calculate error: no ParameterID::Roll!".to_string()))? * PI / 180.;
         let trim = self
             .parameters
-            .get(ParameterID::Trim)
+            .get(ParameterID::TrimDeg)
             .ok_or(Error::FromString("DepthAtForwardPerpendicular calculate error: no ParameterID::Trim!".to_string()))? * PI / 180.;
         let mut result = Vec::new();
         for v in self.bow_board.iter() {

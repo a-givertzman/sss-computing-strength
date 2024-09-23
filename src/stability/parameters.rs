@@ -10,7 +10,7 @@ pub enum ParameterID {
     DraughtMean = 3,
     DraughtBow = 4,
     DraughtStern = 5,
-    Trim = 6,
+    TrimDeg = 6,
     Roll = 7,
     TonesPerCm = 8,
     MomentRollPerDeg = 9,
@@ -55,6 +55,9 @@ pub enum ParameterID {
     HeelingMomentDueToTheTransverseShiftOfGrain = 48,
     HeelingAngleWithMaximumDifference = 49,
     VesselSpeed = 50,
+    TrimMeter = 51,
+    MassBulkhead = 52,
+
 }
 /// Набор результатов расчетов для записи в БД
 pub struct Parameters {
