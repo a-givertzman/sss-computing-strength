@@ -1,15 +1,14 @@
 //! Давление ветра p_v и добавка на порывистость m 
 //! в зависимости от района плавания судна, Табл. 2.1.4.1
-use crate::data::structs::{navigation_area, DataArray};
-use navigation_area::NavigationArea;
+use crate::data::structs::DataArray;
 use serde::{Deserialize, Serialize};
 
 /// Давление ветра p_v и добавка на порывистость m 
 /// в зависимости от района плавания судна, Табл. 2.1.4.1
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct NavigationAreaData {
-    /// Район плавания суджна
-    pub area: NavigationArea,
+    /// Район плавания судна
+    pub area: String,
     /// Предполагаемое давление ветра
     pub p_v: f64,
     /// Добавка на порывистость ветра

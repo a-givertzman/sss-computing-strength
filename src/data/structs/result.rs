@@ -172,7 +172,6 @@ impl ParsedShipData {
     /// Парсинг данных в общую структуру. Включает в себя  
     /// проверку данных на корректность.
     pub fn parse(
-        navigation_area_param: NavigationAreaArray,
         multipler_x1: MultiplerX1Array,
         multipler_x2: MultiplerX2Array,
         multipler_s: MultiplerSArray,
@@ -180,6 +179,7 @@ impl ParsedShipData {
         coefficient_k_theta: CoefficientKThetaArray,
         icing: IcingArray,
         ship_id: usize,
+        ship: Ship,
         ship_parameters: ShipArray,
         bounds: ComputedFrameDataArray,
         center_waterline: CenterWaterlineArray,

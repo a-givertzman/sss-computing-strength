@@ -2,6 +2,7 @@
 pub mod result;
 pub mod check_result;
 pub mod ship;
+pub mod ship_data;
 pub mod data_array;
 pub mod loads;
 pub mod stability;
@@ -10,6 +11,7 @@ pub mod serde_parser;
 
 pub use data_array::*;
 pub use ship::*;
+pub use ship_data::*;
 pub use result::*;
 pub use stability::*;
 pub use strength::*;
