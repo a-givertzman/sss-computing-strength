@@ -95,16 +95,16 @@ impl Grain {
         let dso_area = self.lever_diagram.dso_area(first_angle, second_angle)?;
         // Площадь кривой кренящих плеч от смещения зерна
         let first_grain_lever = self.lever_diagram.lever_moment(first_angle)?;
-        let second_grain_lever = delta_ab * second_angle;
-        let grain_area = ((second_grain_lever - first_grain_lever).abs()/2.) * (second_angle - first_angle) * PI/180.;
+        let second_grain_lever = lambda_0 + delta_ab * second_angle;
+        let grain_area = (first_grain_lever + (second_grain_lever - first_grain_lever)/2.) * (second_angle - first_angle) * PI/180.;
         let result_area = dso_area - grain_area;
         self.area = Some(result_area);
-        log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} 
+   /*     log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} 
             first_point_ab:{:?} second_point_ab:{:?}
             first_angle:{first_angle} angle_delta_max:{angle_delta_max} second_angle:{second_angle} 
             delta_ab:{delta_ab} dso_area:{dso_area} first_grain_lever:{first_grain_lever} second_grain_lever:{second_grain_lever}
             grain_area:{grain_area} result_area:{result_area}", first_point_ab, second_point_ab);
-        self.parameters.add(ParameterID::HeelingMomentDueToTheTransverseShiftOfGrain, m_grain);
+    */  self.parameters.add(ParameterID::HeelingMomentDueToTheTransverseShiftOfGrain, m_grain);
         self.parameters.add(ParameterID::HeelingAngleWithMaximumDifference, angle_delta_max);
         Ok(())
     }
