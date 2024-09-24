@@ -62,6 +62,7 @@ pub struct CriterionStability {
 impl CriterionStability {
     /// Главный конструктор:
     /// * ship_type - Тип судна
+    /// * navigation_area - Район плавания судна
     /// * breadth - Ширина судна
     /// * moulded_depth - Высота борта, м
     /// * h_subdivision - Минимальная допустимая метацентрическая высота деления на отсеки
@@ -82,15 +83,15 @@ impl CriterionStability {
     pub fn new(
         ship_type: ShipType,
         navigation_area: NavigationArea,
+        breadth: f64,
+        moulded_depth: f64,
+        h_subdivision: f64,
         have_timber: bool,
         have_grain: bool,
         have_cargo: bool,
         have_icing: bool,
         flooding_angle: f64,
         ship_length: f64,
-        breadth: f64,
-        moulded_depth: f64,
-        h_subdivision: f64,
         wind: Rc<dyn IWind>,
         lever_diagram: Rc<dyn ILeverDiagram>,
         stability: Rc<dyn IStability>,

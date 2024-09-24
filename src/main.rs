@@ -256,9 +256,7 @@ fn execute() -> Result<(), Error> {
     send_stability_diagram(&mut api_server, ship_id, lever_diagram.diagram()?)?;
     // влияние ветра на остойчивость
     let wind: Rc<dyn IWind> = Rc::new(Wind::new(
-        data.navigation_area_param
-            .get_area(&data.navigation_area)
-            .ok_or("main error no area data!".to_string())?,
+        data.navigation_area.clone(),
         Rc::new(Windage::new(
             Rc::clone(&icing_stab),
             Rc::clone(&area_stability),
@@ -286,7 +284,7 @@ fn execute() -> Result<(), Error> {
     let multipler_x1: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_x1.data())?);
     let multipler_x2: Rc<dyn ICurve> = Rc::new(Curve::new_linear(&data.multipler_x2.data())?);
     let multipler_s: Rc<dyn ICurve> = Rc::new(Curve::new_linear(
-        &data.multipler_s.get_area(&data.navigation_area),
+        &data.multipler_s.get_area(&data.navigation_area.area),
     )?);
     let coefficient_k_theta: Rc<dyn ICurve> =
         Rc::new(Curve::new_linear(&data.coefficient_k_theta.data())?);
@@ -311,7 +309,7 @@ fn execute() -> Result<(), Error> {
         data.overall_height,
         data.ship_type,
         Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,
-        data.navigation_area,
+        data.navigation_area.area,
         loads.desks()?.iter().any(|v| v.is_timber()),
         loads.bulks()?.iter().any(|v| v.moment() != 0.),
         !loads.load_variable()?.is_empty(),
@@ -346,16 +344,16 @@ fn execute() -> Result<(), Error> {
     let time = Instant::now();
     let mut criterion_result = CriterionStability::new(
         data.ship_type,
-        data.navigation_area,
+        data.navigation_area.area,
+        data.width,
+        data.moulded_depth,    
+        Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,            
         loads.desks()?.iter().any(|v| v.is_timber()),
         loads.bulks()?.iter().any(|v| v.moment() != 0.),
         !loads.load_variable()?.is_empty(),
         icing_stab.is_some(),
         flooding_angle,
         data.length_lbp,
-        data.width,
-        data.moulded_depth,
-        Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,
         Rc::clone(&wind),
         Rc::clone(&lever_diagram),
         Rc::new(Stability::new(

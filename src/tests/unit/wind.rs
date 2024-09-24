@@ -5,7 +5,7 @@ mod tests {
     use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
 
-    use crate::{stability::wind::*, windage::FakeWindage, FakeMass, Parameters};
+    use crate::{data::structs::{NavigationArea, NavigationAreaData}, stability::wind::*, windage::FakeWindage, FakeMass, Parameters};
 
     #[test]
     fn wind() {
@@ -17,7 +17,7 @@ mod tests {
         test_duration.run().unwrap();
 
         let result = Wind::new(
-            (200., 0.50),
+            NavigationAreaData{area: NavigationArea::R2Rsn45, p_v: 200., m: 0.50},
             Rc::new(FakeWindage::new(1000.,5.)),
             9.81,
             Rc::new(FakeMass::new(

@@ -1,5 +1,5 @@
 //! Расчет плеча кренящего момента от давления ветра
-use crate::{windage::IWindage, Error, IMass, IParameters, ParameterID};
+use crate::{data::structs::NavigationAreaData, windage::IWindage, Error, IMass, IParameters, ParameterID};
 use std::rc::Rc;
 
 /// Расчет плеча кренящего момента от давления ветра
@@ -20,22 +20,22 @@ pub struct Wind {
 ///
 impl Wind {
     /// Основной конструктор
-    /// * p_v_m: (f64, f64):  Предполагаемое давление ветра + добавка на порывистость ветра
+    /// * navigation_area: Параметры района плавания
     /// * a_v: f64, Площадь парусности
     /// * z_v: f64, Плечо парусности
     /// * g: f64,   Ускорение свободного падения
     /// * mass: Rc<dyn IMass>, Все грузы судна
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
-        p_v_m: (f64, f64),
+        navigation_area: NavigationAreaData,
         windage: Rc<dyn IWindage>,
         g: f64,
         mass: Rc<dyn IMass>,
         parameters: Rc<dyn IParameters>,
     ) -> Self {
         Self {
-            p_v: p_v_m.0,
-            m: p_v_m.1,
+            p_v: navigation_area.p_v,
+            m: navigation_area.m,
             windage,
             g,
             mass,

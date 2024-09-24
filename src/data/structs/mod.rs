@@ -17,7 +17,6 @@ pub use stability::*;
 pub use strength::*;
 
 
-pub use stability::navigation_area_data::NavigationAreaArray as NavigationAreaArray;
 pub use stability::multipler_s::MultiplerSArray as MultiplerSArray;
 pub use stability::MultiplerX1Array as MultiplerX1Array;
 pub use stability::MultiplerX2Array as MultiplerX2Array;
