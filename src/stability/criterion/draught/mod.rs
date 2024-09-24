@@ -133,11 +133,11 @@ impl CriterionDraught {
         let mut res = Vec::new();
         match self.load_line.calculate() {
             Ok(load_line) => {
-                for (name, y, z_fix) in load_line {
+                for (name, z_fix, z_target) in load_line {
                     res.push(CriterionData::new_result(
                         CriterionID::from(name),
                         z_fix,
-                        self.forward_trim,
+                        z_target,
                     ));
                 }
             }

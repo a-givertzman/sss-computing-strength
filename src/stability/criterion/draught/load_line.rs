@@ -31,7 +31,7 @@ impl LoadLine {
         }
     }
     /// Расчет заглубления точки осадки
-    /// (name, y, z)
+    /// (name, z_fix, z_target)
     pub fn calculate(&self) -> Result<Vec<(String, f64, f64)>, Error> {
         let roll = self
             .parameters
@@ -39,8 +39,9 @@ impl LoadLine {
             .ok_or(Error::FromString("LoadLine calculate error: no ParameterID::Roll!".to_string()))? * PI / 180.;        
         let mut result = Vec::new();
         for v in self.data.iter() {
-            let z_fix = v.pos.z() - v.pos.y() * roll.sin() - self.draught.value(v.pos.x())?;
-            result.push((v.name.clone(),  v.pos.y(), z_fix));
+            let z_fix = self.draught.value(v.pos.x())? + v.pos.y() * roll.sin();
+            let z_target = self.draught.value(v.pos.x())?;
+            result.push((v.name.clone(), z_fix, z_target));
         }
         Ok(result)
     }
