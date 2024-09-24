@@ -58,7 +58,7 @@ impl Grain {
         let second_point_ab = (40.0f64, 0.8*lambda_0);
         // Изменение апроксимирующей прямой на один градус угла крена
         let delta_ab = (second_point_ab.1 - first_point_ab.1)/(second_point_ab.0 - first_point_ab.0);
-        let precision = 0.05; // Точность определения пересечения в градусах
+        let precision = 0.01; // Точность определения пересечения в градусах
         // Точка пересечения кривых. Проходим по кривой плечей и ищем точку пересечения как  
         // точку, в которой значение кривой плеч момента зерна меньше чем значение dso
         // Если точка отсутствует (момент от зерна слишком большй) то принимаем
@@ -70,9 +70,10 @@ impl Grain {
             // значение угла крена в текущей точке
             let angle = i * precision;  
             // значение апроксимирующей прямой плеч момента зерна в текущей точке
-            let lever_ab = delta_ab * angle; 
+            let lever_ab = lambda_0 + delta_ab * angle; 
             // значение восстанавливающего момента в текущей точке
             let lever_dso = self.lever_diagram.lever_moment(angle).unwrap_or(f64::MIN);
+            // log::info!("\t Grain area first_angle i:{i} angle:{angle} lever_ab:{lever_ab} lever_dso:{lever_dso}");
             lever_dso >= lever_ab
         }).unwrap_or((90./precision) as usize) as f64 * precision;
         // угол соответствующий максимальной разности между ординатами двух кривых
@@ -81,7 +82,7 @@ impl Grain {
             // значение угла крена в текущей точке
             let angle = i * precision;  
             // значение апроксимирующей прямой плеч момента зерна в текущей точке
-            let lever_ab = delta_ab * angle; 
+            let lever_ab = lambda_0 + delta_ab * angle; 
             // значение восстанавливающего момента в текущей точке
             let lever_dso = self.lever_diagram.lever_moment(angle).unwrap_or(lever_ab);
             (angle, lever_dso - lever_ab)
@@ -94,17 +95,19 @@ impl Grain {
         let dso_area = self.lever_diagram.dso_area(first_angle, second_angle)?;
         // Площадь кривой кренящих плеч от смещения зерна
         let first_grain_lever = self.lever_diagram.lever_moment(first_angle)?;
-        let second_grain_lever = delta_ab * second_angle;
-        let grain_area = ((second_grain_lever - first_grain_lever)/2.) * (second_angle - first_angle) * PI/180.;
+        let second_grain_lever = lambda_0 + delta_ab * second_angle;
+        let grain_area = (first_grain_lever + (second_grain_lever - first_grain_lever)/2.) * (second_angle - first_angle) * PI/180.;
         let result_area = dso_area - grain_area;
         self.area = Some(result_area);
-    //    log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} first_angle:{first_angle} angle_delta_max:{angle_delta_max}
-    //        second_angle:{second_angle} dso_area:{dso_area} grain_area:{grain_area} result_area:{result_area}");
+        log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} 
+            first_point_ab:{:?} second_point_ab:{:?}
+            first_angle:{first_angle} angle_delta_max:{angle_delta_max} second_angle:{second_angle} 
+            delta_ab:{delta_ab} dso_area:{dso_area} first_grain_lever:{first_grain_lever} second_grain_lever:{second_grain_lever}
+            grain_area:{grain_area} result_area:{result_area}", first_point_ab, second_point_ab);
         self.parameters.add(ParameterID::HeelingMomentDueToTheTransverseShiftOfGrain, m_grain);
         self.parameters.add(ParameterID::HeelingAngleWithMaximumDifference, angle_delta_max);
         Ok(())
     }
-
 }
 ///
 impl IGrain for Grain {

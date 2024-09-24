@@ -46,12 +46,12 @@ mod waterline_length;
 use std::collections::HashMap;
 
 use crate::data::structs::{
-    loads::{CompartmentArray, LoadCargoArray},
+    loads::LoadCargoArray,
     ParsedShipData,
 };
 
 #[allow(dead_code)]
-pub(crate) fn input_data() -> ParsedShipData {
+pub(crate) fn input_data_66() -> ParsedShipData {
     ParsedShipData::parse(
         multipler_x1::multipler_x1(),
         multipler_x2::multipler_x2(),
@@ -88,12 +88,60 @@ pub(crate) fn input_data() -> ParsedShipData {
             data: Vec::new(),
             error: HashMap::new(),
         },
-        bulkhead::bulkhead(),
-        compartment::compartment(),
-        CompartmentArray {
+        bulkhead::bulkhead_27_28(),
+        compartment::compartment_100_sea(),
+        hold_compartment::hold_compartment_empty(),
+        load_constants::load_constants(),
+        area_h_stab::area_h_stab(),
+        area_h_str::area_h_str(),
+        area_v_stab::area_v_stab(),
+        area_v_str::area_v_str(),
+        bow_area::bow_area(),
+    )
+    .unwrap()
+}
+
+#[allow(dead_code)]
+pub(crate) fn input_data_grain() -> ParsedShipData {
+    ParsedShipData::parse(
+        navigation_area::navigation_area(),
+        multipler_x1::multipler_x1(),
+        multipler_x2::multipler_x2(),
+        multipler_s::multipler_s(),
+        coefficient_k::coefficient_k(),
+        coefficient_k_theta::coefficient_k_theta(),
+        icing::icing(),
+        1,
+        ship_parameters::ship_parameters(),
+        bounds::bounds(119.95, 59.194, 20),
+        center_waterline::center_waterline(),
+        waterline_length::waterline_length(),
+        waterline_breadth::waterline_breadth(),
+        waterline_area::waterline_area(),
+        volume_shift::volume_shift(),
+        rad_long::rad_long(),
+        rad_trans::rad_trans(),
+        h_subdivision::h_subdivision(),
+        mean_draught::mean_draught(),
+        center_draught_shift::center_draught_shift(),
+        pantocaren::pantocaren(),
+        flooding_angle::flooding_angle(),
+        entry_angle::entry_angle(),
+        delta_windage_area::delta_windage_area(),
+        delta_windage_moment::delta_windage_moment(),
+        bonjean_frame::bonjean_frame(),
+        frame_area::frame_area(),
+        draft_mark::draft_mark(),
+        load_line::load_line(),
+        screw::screw(),
+        bow_board::bow_board(),
+        LoadCargoArray {
             data: Vec::new(),
             error: HashMap::new(),
         },
+        bulkhead::bulkhead_27_51(),
+        compartment::compartment_100_sea_grain(),
+        hold_compartment::hold_compartment_grain(),
         load_constants::load_constants(),
         area_h_stab::area_h_stab(),
         area_h_str::area_h_str(),
