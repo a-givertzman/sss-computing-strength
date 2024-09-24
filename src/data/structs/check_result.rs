@@ -6,9 +6,14 @@ impl ParsedShipData {
     /// Проверка данных на корректность
     pub fn check(self) -> Result<Self, Error> {
         log::info!("result check begin");
-        if self.navigation_area_param.data.is_empty() {
+        if self.navigation_area.m <= 0. {
             return Err(Error::Parameter(
-                "Error check NavigationAreaArray: no data".to_string(),
+                "Error check navigation_area: m <= 0".to_string(),
+            ));
+        }
+        if self.navigation_area.p_v <= 0. {
+            return Err(Error::Parameter(
+                "Error check navigation_area: p_v <= 0".to_string(),
             ));
         }
         if self.icing_m_timber <= 0. {

@@ -32,11 +32,11 @@ mod mean_draught;
 mod multipler_s;
 mod multipler_x1;
 mod multipler_x2;
-mod navigation_area;
 mod pantocaren;
 mod rad_long;
 mod rad_trans;
 mod screw;
+mod ship;
 mod ship_parameters;
 mod volume_shift;
 mod waterline_area;
@@ -53,7 +53,6 @@ use crate::data::structs::{
 #[allow(dead_code)]
 pub(crate) fn input_data_66() -> ParsedShipData {
     ParsedShipData::parse(
-        navigation_area::navigation_area(),
         multipler_x1::multipler_x1(),
         multipler_x2::multipler_x2(),
         multipler_s::multipler_s(),
@@ -61,6 +60,7 @@ pub(crate) fn input_data_66() -> ParsedShipData {
         coefficient_k_theta::coefficient_k_theta(),
         icing::icing(),
         1,
+        ship::ship(),
         ship_parameters::ship_parameters(),
         bounds::bounds(119.95, 59.194, 20),
         center_waterline::center_waterline(),

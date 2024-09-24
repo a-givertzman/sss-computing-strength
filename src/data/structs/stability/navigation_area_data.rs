@@ -1,14 +1,14 @@
 //! Давление ветра p_v и добавка на порывистость m 
 //! в зависимости от района плавания судна, Табл. 2.1.4.1
-use crate::data::structs::{navigation_area, DataArray};
-use navigation_area::NavigationArea;
 use serde::{Deserialize, Serialize};
+
+use super::NavigationArea;
 
 /// Давление ветра p_v и добавка на порывистость m 
 /// в зависимости от района плавания судна, Табл. 2.1.4.1
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct NavigationAreaData {
-    /// Район плавания суджна
+    /// Район плавания судна
     pub area: NavigationArea,
     /// Предполагаемое давление ветра
     pub p_v: f64,
@@ -25,16 +25,4 @@ impl std::fmt::Display for NavigationAreaData {
         )
     }
 }
-///
-pub type NavigationAreaArray = DataArray<NavigationAreaData>;
-///
-impl NavigationAreaArray {
-    /// Условия района плавания
-    pub fn get_area(&self, navigation_area: &NavigationArea) -> Option<(f64, f64)> {
-        self.data
-            .iter()
-            .filter(|data| *navigation_area == data.area)
-            .map(|data| (data.p_v, data.m))
-            .next()
-    }
-}
+

@@ -85,13 +85,35 @@ pub fn get_data(
     ship_id: usize,
 ) -> Result<ParsedShipData, Error> {
     log::info!("input_api_server read begin");
-    let ship_parameters = ShipArray::parse(&api_server.fetch(&format!(
-        "SELECT key, value, value_type FROM ship_parameters WHERE ship_id={};",
+    let ship = ShipArray::parse(&api_server.fetch(&format!(
+        "SELECT             
+            s.name AS name,            
+            tr.title_eng AS ship_type,            
+            i.icing_type::TEXT AS icing_type,            
+            it.icing_type::TEXT AS icing_timber_type,            
+            n.area::TEXT AS area,
+            n.p_v AS p_v,
+            n.m AS m,   
+            s.freeboard_type AS freeboard_type        
+        FROM             
+            ship AS s        
+        JOIN             
+            ship_type AS t ON s.ship_type_id = t.id        
+        JOIN             
+            ship_type_rmrs AS tr ON t.type_rmrs = tr.id        
+        JOIN             
+            ship_icing AS i ON s.icing_type_id = i.id        
+        JOIN             
+            ship_icing_timber AS it ON s.icing_timber_type_id = it.id        
+        JOIN             
+            navigation_area AS n ON s.navigation_area_id = n.id        
+        WHERE  
+            s.id={ship_id};"
+    ))?)?.data[0].clone();
+    let ship_parameters = ShipParametersArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM ship_parameters WHERE ship_id={};",
         ship_id
     ))?)?;
-    let navigation_area_param = NavigationAreaArray::parse(
-        &api_server.fetch("SELECT area, p_v, m FROM navigation_area;")?,
-    )?;
     let multipler_x1 = MultiplerX1Array::parse(
         &api_server.fetch("SELECT key, value FROM multipler_x1;")?,
     )?;
@@ -330,7 +352,6 @@ pub fn get_data(
     ))?)?;
     log::info!("input_api_server read ok");
     ParsedShipData::parse(
-        navigation_area_param,
         multipler_x1,
         multipler_x2,
         multipler_s,
@@ -338,6 +359,7 @@ pub fn get_data(
         coefficient_k_theta,
         icing,
         ship_id,
+        ship,
         ship_parameters,
         bounds,
         center_waterline,

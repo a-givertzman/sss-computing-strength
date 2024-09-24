@@ -2,6 +2,7 @@
 pub mod result;
 pub mod check_result;
 pub mod ship;
+pub mod ship_data;
 pub mod data_array;
 pub mod loads;
 pub mod stability;
@@ -10,12 +11,12 @@ pub mod serde_parser;
 
 pub use data_array::*;
 pub use ship::*;
+pub use ship_data::*;
 pub use result::*;
 pub use stability::*;
 pub use strength::*;
 
 
-pub use stability::navigation_area_data::NavigationAreaArray as NavigationAreaArray;
 pub use stability::multipler_s::MultiplerSArray as MultiplerSArray;
 pub use stability::MultiplerX1Array as MultiplerX1Array;
 pub use stability::MultiplerX2Array as MultiplerX2Array;

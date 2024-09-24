@@ -1,37 +1,56 @@
 //! Промежуточные структуры для serde_json для парсинга данных судна
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
-use super::DataArray;
+use crate::Error;
+
+use super::{DataArray, NavigationArea, NavigationAreaData};
 
 /// Общие по судну и расчету
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct ShipData {
-    /// Параметр в виде текста
-    pub key: String,
-    /// Величина параметра
-    pub value: String,
-    /// Тип параметра
-    pub value_type: String,
+pub struct Ship {
+    /// Имя судна
+    pub name: String,
+    /// Тип судна
+    pub ship_type: String,
+    /// Тип облединения корпуса судна
+    pub icing_type: String,
+    /// Тип облединения палубного груза - леса
+    pub icing_timber_type: String,
+    /// Район плавания судна
+    pub area: String,
+    /// Предполагаемое давление ветра
+    pub p_v: f64,
+    /// Добавка на порывистость ветра
+    pub m: f64,
+    /// Тип надводного борта судна
+    pub freeboard_type: String,
 }
 ///
-impl std::fmt::Display for ShipData {
+pub type ShipArray = DataArray<Ship>;
+///
+impl std::fmt::Display for Ship {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "ShipData(key:{}, value:{} value_type:{})",
-            self.key,
-            self.value,
-            self.value_type,
+            "Ship(name:{}, ship_type:{}, icing_type:{}, icing_timber_type:{}, area:{}, p_v:{}, m:{}, freeboard_type:{})",
+            self.name,
+            self.ship_type,
+            self.icing_type,
+            self.icing_timber_type,
+            self.area,
+            self.p_v,
+            self.m,
+            self.freeboard_type,
         )
     }
 }
-/// Массив данных по расчету
-pub type ShipArray = DataArray<ShipData>;
 ///
-impl ShipArray {
-    /// Преобразование и возвращает данные в виде мапы ключ/значение
-    pub fn data(self) -> HashMap<String, (String, String)> {
-        self.data.into_iter().map(|v| (v.key, (v.value, v.value_type))).collect()
+impl Ship {
+    pub fn navigation_area(&self) -> Result<NavigationAreaData, Error> {
+        Ok(NavigationAreaData {
+            area: NavigationArea::from_str(&self.area)?,
+            p_v: self.p_v,
+            m: self.m,
+        })
     }
 }

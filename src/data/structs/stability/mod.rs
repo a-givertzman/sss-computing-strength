@@ -1,6 +1,5 @@
 //! Промежуточные структуры для serde_json для парсинга данных
 //! для расчета остойчивости
-pub mod navigation_area_data;
 pub mod multipler_s;
 pub mod horizontal_area;
 mod pantocaren;
@@ -8,6 +7,7 @@ pub mod delta_windage_moment;
 pub mod vertical_area;
 pub mod ship_type;
 pub mod navigation_area;
+pub mod navigation_area_data;
 pub mod icing;
 pub mod point;
 pub mod draft_mark;
@@ -21,6 +21,7 @@ pub use delta_windage_moment::*;
 pub use vertical_area::*;
 pub use ship_type::*;
 pub use navigation_area::*;
+pub use navigation_area_data::*;
 pub use icing::*;
 pub use point::*;
 pub use draft_mark::*;

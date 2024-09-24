@@ -246,15 +246,15 @@ impl CriterionComputer {
             let tmp = CriterionStability::new(
                 self.ship_type,
                 self.navigation_area,
+                self.width,
+                self.moulded_depth,
+                self.h_subdivision,
                 self.have_timber,
                 self.have_grain,
                 self.have_cargo,
                 self.have_icing,
                 self.flooding_angle,
                 self.ship_length,
-                self.width,
-                self.moulded_depth,
-                self.h_subdivision,
                 Rc::clone(&self.wind),
                 Rc::clone(&lever_diagram),
                 Rc::new(Stability::new(
