@@ -40,7 +40,7 @@ impl LoadLine {
         let mut result = Vec::new();
         for v in self.data.iter() {
             let z_fix = self.draught.value(v.pos.x())? + v.pos.y() * roll.sin();
-            let z_target = self.draught.value(v.pos.x())?;
+            let z_target = v.pos.z();
             result.push((v.name.clone(), z_fix, z_target));
         }
         Ok(result)
