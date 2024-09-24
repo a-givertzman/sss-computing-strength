@@ -179,7 +179,7 @@ impl ParsedShipData {
         icing: IcingArray,
         ship_id: usize,
         ship: Ship,
-        ship_parameters: ShipArray,
+        ship_parameters: ShipParametersArray,
         bounds: ComputedFrameDataArray,
         center_waterline: CenterWaterlineArray,
         waterline_length: WaterlineLengthArray,
@@ -230,7 +230,7 @@ impl ParsedShipData {
         parsed_frame_area.sort_by(|a, b| a.x.partial_cmp(&b.x).expect("result parsed_frame_area cpm error!"));
         let icing = icing.data();
         let ship_type = ShipType::from_str(&ship.ship_type)?;
-        let navigation_area = ship.navigation_area;
+        let navigation_area = ship.navigation_area()?;
         let length_lbp = *ship_data.get("LBP").ok_or(format!(
             "ParsedShipData parse error: no length for ship id:{}",
             ship_id

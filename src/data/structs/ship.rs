@@ -1,9 +1,9 @@
 //! Промежуточные структуры для serde_json для парсинга данных судна
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
 
-use super::{navigation_area_data::NavigationAreaData, serde_parser::IFromJson};
+use crate::Error;
+
+use super::{DataArray, NavigationArea, NavigationAreaData};
 
 /// Общие по судну и расчету
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -16,32 +16,41 @@ pub struct Ship {
     pub icing_type: String,
     /// Тип облединения палубного груза - леса
     pub icing_timber_type: String,
-    /// Параметры района плавания судна
-    pub navigation_area: NavigationAreaData,
+    /// Район плавания судна
+    pub area: String,
+    /// Предполагаемое давление ветра
+    pub p_v: f64,
+    /// Добавка на порывистость ветра
+    pub m: f64,
     /// Тип надводного борта судна
     pub freeboard_type: String,
-    /// Текст ошибки
-    pub error: HashMap<String, String>,
 }
 ///
-impl IFromJson for Ship {
-    ///
-    fn error(&self) -> Option<&String> {
-        self.error.values().next()
-    }
-}
+pub type ShipArray = DataArray<Ship>;
 ///
 impl std::fmt::Display for Ship {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Ship(name:{}, ship_type:{}, icing_type:{}, icing_timber_type:{}, navigation_area:{}, freeboard_type:{})",
+            "Ship(name:{}, ship_type:{}, icing_type:{}, icing_timber_type:{}, area:{}, p_v:{}, m:{}, freeboard_type:{})",
             self.name,
             self.ship_type,
             self.icing_type,
             self.icing_timber_type,
-            self.navigation_area,
+            self.area,
+            self.p_v,
+            self.m,
             self.freeboard_type,
         )
+    }
+}
+///
+impl Ship {
+    pub fn navigation_area(&self) -> Result<NavigationAreaData, Error> {
+        Ok(NavigationAreaData {
+            area: NavigationArea::from_str(&self.area)?,
+            p_v: self.p_v,
+            m: self.m,
+        })
     }
 }

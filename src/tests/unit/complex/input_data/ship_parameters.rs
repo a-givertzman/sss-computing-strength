@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use crate::data::structs::{ShipArray, ShipData};
+use crate::data::structs::{ShipParametersArray, ShipData};
 
 ///
-impl From<Vec<(&str, f64)>> for ShipArray {
+impl From<Vec<(&str, f64)>> for ShipParametersArray {
     fn from(src: Vec<(&str, f64)>) -> Self {
         Self {
             data: src
@@ -18,8 +18,8 @@ impl From<Vec<(&str, f64)>> for ShipArray {
     }
 }
 #[allow(dead_code)]
-pub(crate) fn ship_parameters() -> ShipArray {
-    ShipArray::from(vec![
+pub(crate) fn ship_parameters() -> ShipParametersArray {
+    ShipParametersArray::from(vec![
         ("Wetting of deck timber", 10.),
         ("Ship operating speed", 16.),
         ("Water Density", 1.025),

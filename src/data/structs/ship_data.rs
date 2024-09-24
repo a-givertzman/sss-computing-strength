@@ -24,9 +24,9 @@ impl std::fmt::Display for ShipData {
     }
 }
 /// Массив данных по расчету
-pub type ShipArray = DataArray<ShipData>;
+pub type ShipParametersArray = DataArray<ShipData>;
 ///
-impl ShipArray {
+impl ShipParametersArray {
     /// Преобразование и возвращает данные в виде мапы ключ/значение
     pub fn data(self) -> HashMap<String, f64> {
         self.data.into_iter().map(|v| (v.key, v.value)).collect()
