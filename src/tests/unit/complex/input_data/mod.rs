@@ -104,7 +104,6 @@ pub(crate) fn input_data_66() -> ParsedShipData {
 #[allow(dead_code)]
 pub(crate) fn input_data_grain() -> ParsedShipData {
     ParsedShipData::parse(
-        navigation_area::navigation_area(),
         multipler_x1::multipler_x1(),
         multipler_x2::multipler_x2(),
         multipler_s::multipler_s(),
@@ -112,6 +111,7 @@ pub(crate) fn input_data_grain() -> ParsedShipData {
         coefficient_k_theta::coefficient_k_theta(),
         icing::icing(),
         1,
+        ship::ship(),
         ship_parameters::ship_parameters(),
         bounds::bounds(119.95, 59.194, 20),
         center_waterline::center_waterline(),

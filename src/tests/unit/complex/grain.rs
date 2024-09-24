@@ -19,7 +19,7 @@ mod tests {
         IParameters, IPosShift, IResults, IRollingAmplitude, IRollingPeriod, IWind, LeverDiagram,
         Loads, MetacentricHeight, Moment, ParameterID, Parameters, PosShift, Position, Results,
         RollingAmplitude, RollingPeriod, Stability, WettingMass, WettingMoment, Wind,
-    };   
+    };
     #[test]
     fn complex_grain() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
@@ -398,10 +398,7 @@ mod tests {
         ));
         // влияние ветра на остойчивость
         let wind: Rc<dyn IWind> = Rc::new(Wind::new(
-            data.navigation_area_param
-                .get_area(&data.navigation_area)
-                .ok_or("main error no area data!".to_string())
-                .unwrap(),
+            data.navigation_area.clone(),
             Rc::new(Windage::new(
                 Rc::clone(&icing_stab),
                 Rc::clone(&area_stability),
@@ -441,7 +438,7 @@ mod tests {
         let multipler_x2: Rc<dyn ICurve> =
             Rc::new(Curve::new_linear(&data.multipler_x2.data()).unwrap());
         let multipler_s: Rc<dyn ICurve> =
-            Rc::new(Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area)).unwrap());
+            Rc::new(Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area.area)).unwrap());
         let coefficient_k_theta: Rc<dyn ICurve> =
             Rc::new(Curve::new_linear(&data.coefficient_k_theta.data()).unwrap());
         let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(
@@ -504,19 +501,19 @@ mod tests {
         */
         let criterion_res: HashMap<usize, f64> = CriterionStability::new(
             data.ship_type,
-            data.navigation_area,
-            loads.desks().unwrap().iter().any(|v| v.is_timber()),
-            loads.bulks().unwrap().iter().any(|v| v.moment() != 0.),
-            !loads.load_variable().unwrap().is_empty(),
-            icing_stab.is_some(),
-            flooding_angle,
-            data.length_lbp,
+            data.navigation_area.area,
             data.width,
             data.moulded_depth,
             Curve::new_linear(&data.h_subdivision)
                 .unwrap()
                 .value(mean_draught)
                 .unwrap(),
+            loads.desks().unwrap().iter().any(|v| v.is_timber()),
+            loads.bulks().unwrap().iter().any(|v| v.moment() != 0.),
+            !loads.load_variable().unwrap().is_empty(),
+            icing_stab.is_some(),
+            flooding_angle,
+            data.length_lbp,
             Rc::clone(&wind),
             Rc::clone(&lever_diagram),
             Rc::new(Stability::new(
