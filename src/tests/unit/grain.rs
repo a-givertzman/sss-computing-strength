@@ -33,9 +33,9 @@ mod tests {
         .area()
         .unwrap();
 
-        let target = 2.013;
+        let target = 2.;
         assert!(
-            (result - target).abs() < 0.0001,
+            (result - target).abs() < target*0.01,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target

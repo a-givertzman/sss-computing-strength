@@ -38,16 +38,16 @@ mod tests {
         )
         .calculate()
         .unwrap();
-        let target = 1.;
+        let target = 2.;
         assert!(
-            (result[0].2 - target).abs() < 0.0001,
+            (result[0].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
-        let target = -1.;
+        let target = 2.;
         assert!(
-            (result[1].2 - target).abs() < 0.0001,
+            (result[1].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -82,16 +82,16 @@ mod tests {
         )
         .calculate()
         .unwrap();
-        let target = (10. * PI / 180.).sin();
+        let target = 2. - (10. * PI / 180.).sin();
         assert!(
-            (result[0].2 - target).abs() < 0.0001,
+            (result[0].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
-        let target = -(10. * PI / 180.).sin();
+        let target = 2. + (10. * PI / 180.).sin();
         assert!(
-            (result[1].2 - target).abs() < 0.0001,
+            (result[1].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -126,16 +126,16 @@ mod tests {
         )
         .calculate()
         .unwrap();
-        let target = -(10. * PI / 180.).sin();
+        let target = 2. + (10. * PI / 180.).sin();
         assert!(
-            (result[0].2 - target).abs() < 0.0001,
+            (result[0].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
-        let target = (10. * PI / 180.).sin();
+        let target = 2. - (10. * PI / 180.).sin();
         assert!(
-            (result[1].2 - target).abs() < 0.0001,
+            (result[1].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -170,16 +170,16 @@ mod tests {
         )
         .calculate()
         .unwrap();
-        let target = 1.;
+        let target = 2. - 1.;
         assert!(
-            (result[0].2 - target).abs() < 0.0001,
+            (result[0].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
-        let target = -1.;
+        let target = 2. + 1.;
         assert!(
-            (result[1].2 - target).abs() < 0.0001,
+            (result[1].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -214,16 +214,16 @@ mod tests {
         )
         .calculate()
         .unwrap();
-        let target = -1.;
+        let target = 2. + 1.;
         assert!(
-            (result[0].2 - target).abs() < 0.0001,
+            (result[0].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
-        let target = 1.;
+        let target = 2. - 1.;
         assert!(
-            (result[1].2 - target).abs() < 0.0001,
+            (result[1].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -258,16 +258,16 @@ mod tests {
         )
         .calculate()
         .unwrap();
-        let target = 1. + (10. * PI / 180.).sin();
+        let target = 2. - 1. - (10. * PI / 180.).sin();
         assert!(
-            (result[0].2 - target).abs() < 0.0001,
+            (result[0].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
-        let target = -1. - (10. * PI / 180.).sin();
+        let target = 2. + 1. + (10. * PI / 180.).sin();
         assert!(
-            (result[1].2 - target).abs() < 0.0001,
+            (result[1].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -302,16 +302,16 @@ mod tests {
         )
         .calculate()
         .unwrap();
-        let target = -1. + (10. * PI / 180.).sin();
+        let target = 2. + 1. - (10. * PI / 180.).sin();
         assert!(
-            (result[0].2 - target).abs() < 0.0001,
+            (result[0].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
-        let target = 1. - (10. * PI / 180.).sin();
+        let target = 2. - 1. + (10. * PI / 180.).sin();
         assert!(
-            (result[1].2 - target).abs() < 0.0001,
+            (result[1].1 - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
