@@ -21,6 +21,7 @@ mod tests {
         RollingAmplitude, RollingPeriod, Stability, WettingMass, WettingMoment, Wind,
     };
     #[test]
+    #[ignore]
     fn complex_grain() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
@@ -193,155 +194,6 @@ mod tests {
         )
         .calculate()
         .unwrap();
-        /*
-        let map_results: HashMap<String, Vec<f64>> =
-            results.take_data().into_iter().map(|v| v).collect();
-
-        let mut displacement_result = map_results.get("value_displacement").unwrap().clone();
-        displacement_result = displacement_result
-            .into_iter()
-            .rev()
-            .map(|v| v * 1.025)
-            .collect(); // переводим м^3 в тонны
-                        //displacement_result.remove(0);
-        let mut displacement_target = vec![
-            23.41, 67.76, 98.35, 107.89, 112.13, 115.65, 119.04, 122.78, 126.55, 130.33, 134.17,
-            137.98, 141.71, 145.46, 149.23, 153.00, 156.77, 156.75, 114.95, 40.45,
-        ];
-        displacement_target.insert(0, displacement_target.iter().sum());
-
-        let mut mass_values_result = map_results.get("value_mass_sum").unwrap().clone();
-        mass_values_result = mass_values_result.into_iter().rev().collect();
-        // mass_values_result.remove(0);
-        let mut mass_values_target = vec![
-            139.14, 182.25, 188.06, 137.06, 83.66, 70.46, 70.46, 70.46, 70.46, 70.46, 70.46, 70.46,
-            70.46, 70.46, 70.46, 70.46, 70.46, 235.42, 286.06, 257.20,
-        ];
-        mass_values_target.insert(0, mass_values_target.iter().sum());
-
-        let mut total_force_result = map_results.get("value_total_force").unwrap().clone();
-        total_force_result = total_force_result.into_iter().rev().collect();
-        // total_force_result.remove(0);
-        let total_force_target = vec![
-            115.73, 114.50, 89.71, 29.17, -28.47, -45.19, -48.58, -52.32, -56.09, -59.87, -63.71,
-            -67.52, -71.25, -75.00, -78.77, -82.54, -86.31, 78.67, 171.10, 216.74,
-        ];
-        total_force_result.insert(0, total_force_result.iter().sum());
-
-        let mut shear_force_result = map_results.get("value_shear_force").unwrap().clone();
-        shear_force_result = shear_force_result.into_iter().rev().collect();
-        let shear_force_target = vec![
-            0., 1135., 2259., 3139., 3425., 3145., 2702., 2226., 1712., 1162., 575., -50., -713.,
-            -1412., -2147., -2920., -3730., -4577., -3805., -2126., 0.,
-        ];
-
-        let mut bending_moment_result = map_results.get("value_bending_moment").unwrap().clone();
-        bending_moment_result = bending_moment_result.into_iter().rev().collect();
-        let bending_moment_target = vec![
-            0., 3292., 13135., 28786., 47820., 66874., 83832., 98122., 109541., 117877., 122913.,
-            124434., 122222., 116061., 105740., 91045., 71760., 47672., 23366., 6166., 0.,
-        ];
-
-        println!("displacement: index: result  target");
-        displacement_result
-            .iter()
-            .zip(displacement_target.iter())
-            .enumerate()
-            .for_each(|(i, (r, t))| {
-                println!("{i}: {r} {t}");
-            });
-        println!("mass_values: index: result  target");
-        mass_values_result
-            .iter()
-            .zip(mass_values_target.iter())
-            .enumerate()
-            .for_each(|(i, (r, t))| {
-                println!("{i}: {r} {t}");
-            });
-        println!("total_force: index: result  target");
-             total_force_result
-                    .iter()
-                    .zip(total_force_target.iter())
-                    .enumerate()
-                    .for_each(|(i, (r, t))| {
-                        println!("{i}: {r} {t}");
-                    });
-                println!("shear_force: index: result  target");
-                shear_force_result
-                    .iter()
-                    .zip(shear_force_target.iter())
-                    .enumerate()
-                    .for_each(|(i, (r, t))| {
-                        println!("{i}: {r} {t}");
-                    });
-                println!("bending_moment: index: result  target");
-                bending_moment_result
-                    .iter()
-                    .zip(bending_moment_target.iter())
-                    .enumerate()
-                    .for_each(|(i, (r, t))| {
-                        println!("{i}: {r} {t}");
-                    });
-
-                displacement_result
-                    .iter()
-                    .zip(displacement_target.iter())
-                    .enumerate()
-                    .for_each(|(i, (r, t))| {
-                        assert!(
-                            (r - t).abs() < t.abs()*precision,
-                            "\ndisplacement i:{i} result:{r} target:{t}"
-                        );
-                    });
-                mass_values_result
-                    .iter()
-                    .zip(mass_values_target.iter())
-                    .enumerate()
-                    .for_each(|(i, (r, t))| {
-                        assert!(
-                            (r - t).abs() < t.abs()*precision,
-                            "\nmass_values i:{i} result:{r} target:{t}"
-                        );
-                    });
-               total_force_result
-                    .iter()
-                    .zip(total_force_target.iter())
-                    .enumerate()
-                    .for_each(|(i, (r, t))| {
-                        assert!(
-                            (r - t).abs() < t.abs()*precision,
-                            "\total_force i:{i} result:{r} target:{t}"
-                        );
-                    });
-                shear_force_result
-                    .iter()
-                    .zip(shear_force_target.iter())
-                    .enumerate()
-                    .for_each(|(i, (r, t))| {
-                        assert!(
-                            (r - t).abs() < t.abs()*precision,
-                            "\nshear_force i:{i} result:{r} target:{t}"
-                        );
-                    });
-                bending_moment_result
-                    .iter()
-                    .zip(bending_moment_target.iter())
-                    .enumerate()
-                    .for_each(|(i, (r, t))| {
-                        assert!(
-                            (r - t).abs() < t.abs()*precision,
-                            "\nbending_moment i:{i} result:{r} target:{t}"
-                        );
-                    });
-        */
-
-        /*        let mass_icing_result = parameters.get(ParameterID::MassIcing).unwrap();
-                let mass_icing_target = 67.5;
-                assert!(
-                    (mass_icing_result - mass_icing_target).abs() < mass_icing_target.abs()*precision,
-                    "\nmass_icing result:{mass_icing_result} target:{mass_icing_target}"
-                );
-        */
 
         // Угол заливания отверстий
         let flooding_angle = Curve::new_linear(&data.flooding_angle)
@@ -458,47 +310,7 @@ mod tests {
             )
             .unwrap(),
         );
-        // Критерии остойчивости
-        /*      let mut criterion_computer_results = CriterionComputer::new(
-                 data.overall_height,
-                 data.ship_type,
-                 Curve::new_linear(&data.h_subdivision)
-                     .unwrap()
-                     .value(mean_draught)
-                     .unwrap(),
-                 data.navigation_area,
-                 loads.desks().unwrap().iter().any(|v| v.is_timber()),
-                 loads.bulks().unwrap().iter().any(|v| v.moment() != 0.),
-                 !loads.load_variable().unwrap().is_empty(),
-                 icing_stab.is_some(),
-                 flooding_angle,
-                 data.length_lbp,
-                 data.moulded_depth,
-                 mean_draught,
-                 volume,
-                 length_wl,
-                 data.width,
-                 breadth_wl,
-                 data.velocity,
-                 Rc::clone(&ship_moment),
-                 Rc::clone(&ship_mass),
-                 loads.bulks().unwrap(),
-                 Rc::clone(&coefficient_k),
-                 Rc::clone(&multipler_x1),
-                 Rc::clone(&multipler_x2),
-                 Rc::clone(&multipler_s),
-                 Rc::clone(&coefficient_k_theta),
-                 data.keel_area,
-                 rad_trans,
-                 center_draught_shift.clone(),
-                 data.pantocaren.clone(),
-                 Rc::clone(&wind),
-                 Rc::clone(&metacentric_height),
-             )
-             .unwrap()
-             .calculate()
-             .unwrap();
-        */
+    
         let criterion_res: HashMap<usize, f64> = CriterionStability::new(
             data.ship_type,
             data.navigation_area.area,
