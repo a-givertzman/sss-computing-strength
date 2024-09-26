@@ -68,7 +68,7 @@ impl Computer {
     pub fn calculate(&mut self) -> Result<(), Error> {
         let mut displacement_values;
         let mut total_force_values;     
-        let mut volume = Volume::new(
+        let volume = Volume::new(
             Rc::clone(&self.displacement),
             Rc::new(Draught::new(
                 self.ship_length,
