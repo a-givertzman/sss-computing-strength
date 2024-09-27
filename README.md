@@ -140,7 +140,10 @@ classDiagram
 
 ```mermaid
 classDiagram
-
+    class CriterionComputer{
+        Расчет допустимого z_g 
+        для критериев остойчивости
+    }
     class Criterion{   
         Критерии проверки 
         остойчивости
@@ -163,7 +166,7 @@ classDiagram
         Момент массы судна
     }
     class IcingMoment{
-        Статический момент массы льда
+        Учет обледенения судна
     }
     class WettingMoment{
         Статический момент массы 
@@ -248,6 +251,12 @@ classDiagram
         Дифферент
     } 
 
+    CriterionComputer <|-- Criterion
+    CriterionComputer <|-- ShipMoment
+    CriterionComputer <|-- Mass
+    CriterionComputer <|-- Bulk
+    CriterionComputer <|-- MetacentricHeight
+
     Criterion <|-- Grain  
         Grain <|-- Bulk
         Grain <|-- Mass 
@@ -308,5 +317,5 @@ classDiagram
                 ShipMoment <|-- IcingMoment
                     IcingMoment <|-- Area        
                     IcingMoment <|-- IcingStab                                                          
-            Trim <|-- MetacentricHeight 
+            Trim <|-- MetacentricHeight
 ```  
