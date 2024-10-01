@@ -14,6 +14,7 @@ use draught::{Draught, IDraught};
 pub use error::Error;
 use icing_timber::IcingTimberBound;
 use log::info;
+use log2::*;
 use std::{collections::HashMap, io, rc::Rc, time::Instant};
 use trim::ITrim;
 
@@ -32,7 +33,8 @@ mod trim;
 
 fn main() {
     //    std::env::set_var("RUST_LOG", "info");
-    env_logger::init();
+    // env_logger::init();
+    let _log2 = log2::start();
     info!("starting up");
 
     let reply = if let Err(error) = execute() {
