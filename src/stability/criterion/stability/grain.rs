@@ -1,7 +1,7 @@
 //! Критерий крена от смещения зерна
 
 use core::f64;
-use std::{f64::consts::PI, rc::Rc};
+use std::{f64::consts::PI, rc::Rc, sync::Arc};
 use crate::{Error, IBulk, ILeverDiagram, IMass, IParameters, ParameterID};
 
 /// Критерий крена от смещения зерна
@@ -13,9 +13,9 @@ pub struct Grain {
     /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     mass: Rc<dyn IMass>,  
     /// Диаграмма плеч статической и динамической остойчивости
-    lever_diagram: Rc<dyn ILeverDiagram>, 
+    lever_diagram: Arc<dyn ILeverDiagram>, 
     /// Набор результатов расчетов для записи в БД
-    parameters: Rc<dyn IParameters>, 
+    parameters: Arc<dyn IParameters>, 
     /// Угол крена от смещения зерна
     angle: Option<(f64, f64)>,   
     /// Остаточная площадь между кривой кренящих и
@@ -34,8 +34,8 @@ impl Grain {
         flooding_angle: f64, 
         loads_bulk: Rc<Vec<Rc<dyn IBulk>>>,
         mass: Rc<dyn IMass>,  
-        lever_diagram: Rc<dyn ILeverDiagram>, 
-        parameters: Rc<dyn IParameters>,
+        lever_diagram: Arc<dyn ILeverDiagram>, 
+        parameters: Arc<dyn IParameters>,
     ) -> Self {
         Self {
             flooding_angle,

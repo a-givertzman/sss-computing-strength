@@ -8,7 +8,7 @@ pub use acceleration::*;
 pub use circulation::*;
 pub use grain::*;
 pub use stab::*;
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::{
     data::structs::{NavigationArea, ShipType},
@@ -46,11 +46,11 @@ pub struct CriterionStability {
     /// неограниченного района плавания судна.
     wind: Rc<dyn IWind>,
     /// Диаграмма плеч статической и динамической остойчивости
-    lever_diagram: Rc<dyn ILeverDiagram>,
+    lever_diagram: Arc<dyn ILeverDiagram>,
     /// Критерий погоды K
     stability: Rc<dyn IStability>,
     /// Продольная и поперечная исправленная метацентрическая высота
-    metacentric_height: Rc<dyn IMetacentricHeight>,
+    metacentric_height: Arc<dyn IMetacentricHeight>,
     /// Расчет критерия ускорения
     acceleration: Rc<dyn IAcceleration>,
     /// Расчет крена на циркуляции
@@ -93,9 +93,9 @@ impl CriterionStability {
         flooding_angle: f64,
         ship_length: f64,
         wind: Rc<dyn IWind>,
-        lever_diagram: Rc<dyn ILeverDiagram>,
+        lever_diagram: Arc<dyn ILeverDiagram>,
         stability: Rc<dyn IStability>,
-        metacentric_height: Rc<dyn IMetacentricHeight>,
+        metacentric_height: Arc<dyn IMetacentricHeight>,
         acceleration: Rc<dyn IAcceleration>,
         circulation: Rc<dyn ICirculation>,
         grain: Box<dyn IGrain>,

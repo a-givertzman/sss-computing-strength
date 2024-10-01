@@ -1,6 +1,6 @@
 //! Расчет критерия ускорения
 
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::{Error, ICurve, IMetacentricHeight, IRollingAmplitude, IRollingPeriod};
 
@@ -17,7 +17,7 @@ pub struct Acceleration {
     /// Амплитуда качки судна с круглой скулой (2.1.5)
     rolling_amplitude: Rc<dyn IRollingAmplitude>,    
     /// Продольная и поперечная исправленная метацентрическая высота.
-    metacentric_height: Rc<dyn IMetacentricHeight>,   
+    metacentric_height: Arc<dyn IMetacentricHeight>,   
 }
 /// 
 impl Acceleration {
@@ -34,7 +34,7 @@ impl Acceleration {
         k_theta: Rc<dyn ICurve>,
         rolling_period: Rc<dyn IRollingPeriod>,  
         rolling_amplitude: Rc<dyn IRollingAmplitude>,    
-        metacentric_height: Rc<dyn IMetacentricHeight>,   
+        metacentric_height: Arc<dyn IMetacentricHeight>,   
     ) -> Self {
         Self {
             b,

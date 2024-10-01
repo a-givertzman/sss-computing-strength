@@ -1,6 +1,6 @@
 //! Расчет критерия погоды К
 
-use std::{f64::consts::PI, rc::Rc};
+use std::{f64::consts::PI, rc::Rc, sync::Arc};
 
 use crate::{Error, ILeverDiagram, IParameters, IRollingAmplitude, IWind, ParameterID};
 
@@ -9,13 +9,13 @@ pub struct Stability {
     /// Угол заливания отверстий
     flooding_angle: f64,
     /// Диаграмма плеч статической и динамической остойчивости
-    lever_diagram: Rc<dyn ILeverDiagram>,
+    lever_diagram: Arc<dyn ILeverDiagram>,
     /// Амплитуда качки судна с круглой скулой (2.1.5)
     rolling_amplitude: Rc<dyn IRollingAmplitude>,
     /// Расчет плеча кренящего момента от давления ветра
     wind: Rc<dyn IWind>,
     /// Набор результатов расчетов для записи в БД
-    parameters: Rc<dyn IParameters>, 
+    parameters: Arc<dyn IParameters>, 
 }
 ///
 impl Stability {
@@ -27,10 +27,10 @@ impl Stability {
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
         flooding_angle: f64,
-        lever_diagram: Rc<dyn ILeverDiagram>,
+        lever_diagram: Arc<dyn ILeverDiagram>,
         rolling_amplitude: Rc<dyn IRollingAmplitude>,
         wind: Rc<dyn IWind>,
-        parameters: Rc<dyn IParameters>,
+        parameters: Arc<dyn IParameters>,
     ) -> Self {
         Self {
             flooding_angle,

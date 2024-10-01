@@ -1,5 +1,5 @@
 //! Амплитуда качки судна
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::{
     math::{Curve, ICurve},
@@ -13,7 +13,7 @@ pub struct RollingAmplitude {
     /// Суммарная габаритная площадь скуловых килей
     a_k: Option<f64>,
     /// Продольная и поперечная исправленная метацентрическая высота.
-    metacentric_height: Rc<dyn IMetacentricHeight>,
+    metacentric_height: Arc<dyn IMetacentricHeight>,
     /// Объемное водоизмещение
     volume: f64,
     /// Длина судна по ватерлинии при текущей осадке
@@ -54,7 +54,7 @@ impl RollingAmplitude {
     /// * t - Период качки судна
     pub fn new(
         a_k: Option<f64>,
-        metacentric_height: Rc<dyn IMetacentricHeight>,
+        metacentric_height: Arc<dyn IMetacentricHeight>,
         volume: f64,
         l_wl: f64,
         b: f64,

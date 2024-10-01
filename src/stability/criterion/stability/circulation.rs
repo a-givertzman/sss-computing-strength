@@ -1,6 +1,6 @@
 //! Расчет угла крена на циркуляции
 
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::{Error, ILeverDiagram, IMass, IParameters, IShipMoment, ParameterID};
 
@@ -15,11 +15,11 @@ pub struct Circulation {
     /// Масса судна
     mass: Rc<dyn IMass>,
     /// Момент массы судна
-    moment: Rc<dyn IShipMoment>,
+    moment: Arc<dyn IShipMoment>,
     /// Диаграмма плеч статической и динамической остойчивости
-    lever_diagram: Rc<dyn ILeverDiagram>,
+    lever_diagram: Arc<dyn ILeverDiagram>,
     /// Набор результатов расчетов для записи в БД
-    parameters: Rc<dyn IParameters>,
+    parameters: Arc<dyn IParameters>,
 }
 ///
 impl Circulation {
@@ -36,9 +36,9 @@ impl Circulation {
         l_wl: f64,
         d: f64,
         mass: Rc<dyn IMass>,
-        moment: Rc<dyn IShipMoment>,
-        lever_diagram: Rc<dyn ILeverDiagram>,
-        parameters: Rc<dyn IParameters>,
+        moment: Arc<dyn IShipMoment>,
+        lever_diagram: Arc<dyn ILeverDiagram>,
+        parameters: Arc<dyn IParameters>,
     ) -> Result<Self, Error> {
         if l_wl <= 0. {
             return Err(Error::FromString("Circulation new error: l_wl <= 0.".to_string()));

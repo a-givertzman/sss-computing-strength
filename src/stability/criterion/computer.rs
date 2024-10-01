@@ -1,7 +1,7 @@
 //!
 
-use std::{collections::HashMap, rc::Rc};
-
+use std::{collections::HashMap, rc::Rc, sync::Arc};
+use rayon::prelude::*;
 use crate::{
     data::structs::{NavigationArea, ShipType}, Error, IBulk, ICurve, IMass, Position
 };
@@ -11,7 +11,6 @@ use crate::{
     IMetacentricHeight, IParameters, IRollingAmplitude, IRollingPeriod, IShipMoment, 
     IWind, LeverDiagram, Parameters, RollingAmplitude, RollingPeriod, Stability, 
 };
-
 ///
 pub struct CriterionComputer {
     /// Максимальное исправленное отстояние центра масс судна по высоте
@@ -50,7 +49,7 @@ pub struct CriterionComputer {
     /// Эксплуатационная скорость судна, m/s
     velocity: f64,
     /// Момент массы судна: сумма моментов конструкции, груз, экипаж и т.п. для расчета остойчивости
-    ship_moment: Rc<dyn IShipMoment>,
+    ship_moment: Arc<dyn IShipMoment>,
     /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
     ship_mass: Rc<dyn IMass>,
     /// Все навалочные смещаемые грузы судна
@@ -75,7 +74,7 @@ pub struct CriterionComputer {
     /// Кривая плечей остойчивости формы для разных осадок
     pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
     /// Продольная и поперечная исправленная метацентрическая высота
-    metacentric_height: Rc<dyn IMetacentricHeight>,
+    metacentric_height: Arc<dyn IMetacentricHeight>,
     /// Расчет плеча кренящего момента от давления ветра
     wind: Rc<dyn IWind>,
 }
@@ -133,7 +132,7 @@ impl CriterionComputer {
         width: f64,
         breadth_wl: f64,
         velocity: f64,
-        ship_moment: Rc<dyn IShipMoment>,
+        ship_moment: Arc<dyn IShipMoment>,
         ship_mass: Rc<dyn IMass>,
         loads_bulk: Rc<Vec<Rc<dyn IBulk>>>,
         coefficient_k: Rc<dyn ICurve>,
@@ -146,7 +145,7 @@ impl CriterionComputer {
         center_draught_shift: Position,
         pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
         wind: Rc<dyn IWind>,
-        metacentric_height: Rc<dyn IMetacentricHeight>,
+        metacentric_height: Arc<dyn IMetacentricHeight>,
     ) -> Result<Self, Error> {
         if max_zg <= 0. {
             return Err(Error::FromString(
@@ -194,11 +193,163 @@ impl CriterionComputer {
     }
     /// Расчет zg, возвращяет результат в виде HashMap<criterion_id, zg>
     pub fn calculate(&mut self) -> Result<HashMap<usize, f64>, Error> {
+        let parameters: Arc<dyn IParameters> = Arc::new(Parameters::new());
+        let mut h_long_fix = self.metacentric_height.h_long_fix()?;
+        let delta_m_h = self.metacentric_height.delta_m_h()?;
+        let z_m = self.center_draught_shift.z() + self.rad_trans;
+        // zg + (metacentric_height + lever_diagram)
+        let mut temp_h_ld = Vec::new();
+        // zg + Vec<id, delta>
+        let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
+        let delta = 0.01;
+        let max_index = (self.max_zg / delta).ceil() as i32;        
+        (0..=max_index).into_par_iter().for_each(|index| {            
+            let z_g_fix = index as f64 * delta;
+            let h: f64 = z_m - z_g_fix;            
+            let h_0 = h + delta_m_h.trans();
+            let metacentric_height: Arc<dyn IMetacentricHeight> =
+            Arc::new(FakeMetacentricHeight::new(
+                    h_long_fix,
+                    h_0,
+                    h,
+                    z_g_fix,
+                    delta_m_h,
+                ));
+            let lever_diagram: Arc<dyn ILeverDiagram> = Arc::new(LeverDiagram::new(
+                Arc::clone(&self.ship_moment),
+                self.center_draught_shift.clone(),
+                self.pantocaren.clone(),
+                self.mean_draught,
+                Arc::clone(&metacentric_height),
+                Arc::clone(&parameters),
+            ));
+            temp_h_ld.push((z_g_fix, (metacentric_height, lever_diagram)));
+        });
+        for (z_g_fix, (metacentric_height, lever_diagram)) in temp_h_ld {
+            // период качки судна
+            let roll_period: Rc<dyn IRollingPeriod> = Rc::new(RollingPeriod::new(
+                self.length_wl,
+                self.width,
+                self.mean_draught,
+                Arc::clone(&metacentric_height),
+            ));
+            let rolling_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(RollingAmplitude::new(
+                self.keel_area,
+                Arc::clone(&metacentric_height),
+                self.volume,     // Объемное водоизмещение (1)
+                self.length_wl,  // длинна по ватерлинии при текущей осадке
+                self.width,      // ширина полная
+                self.breadth_wl, // ширина по ватерлинии при текущей осадке
+                self.mean_draught,
+                Rc::clone(&self.coefficient_k),
+                Rc::clone(&self.multipler_x1),
+                Rc::clone(&self.multipler_x2),
+                Rc::clone(&self.multipler_s_area),
+                Rc::clone(&roll_period),
+            )?);
+            // релузьтат расчета критериев для текущего zg
+            let tmp = CriterionStability::new(
+                self.ship_type,
+                self.navigation_area,
+                self.width,
+                self.moulded_depth,
+                self.h_subdivision,
+                self.have_timber,
+                self.have_grain,
+                self.have_cargo,
+                self.have_icing,
+                self.flooding_angle,
+                self.ship_length,
+                Rc::clone(&self.wind),
+                Arc::clone(&lever_diagram),
+                Rc::new(Stability::new(
+                    self.flooding_angle,
+                    Arc::clone(&lever_diagram),
+                    Rc::clone(&rolling_amplitude),
+                    Rc::clone(&self.wind),
+                    Arc::clone(&parameters),
+                )),
+                Arc::clone(&metacentric_height),
+                Rc::new(Acceleration::new(
+                    self.width,
+                    self.mean_draught,
+                    Rc::clone(&self.coefficient_k_theta),
+                    Rc::clone(&roll_period),
+                    Rc::clone(&rolling_amplitude),
+                    Arc::clone(&metacentric_height),
+                )),
+                Rc::new(Circulation::new(
+                    self.velocity,
+                    self.length_wl,
+                    self.mean_draught,
+                    Rc::clone(&self.ship_mass),
+                    Arc::clone(&self.ship_moment),
+                    Arc::clone(&lever_diagram),
+                    Arc::clone(&parameters),
+                )?),
+                Box::new(Grain::new(
+                    self.flooding_angle,
+                    self.loads_bulk.clone(),
+                    Rc::clone(&self.ship_mass),
+                    Arc::clone(&lever_diagram),
+                    Arc::clone(&parameters),
+                )),
+            )?
+            .create();
+            // отбрасываем ошибки, оставляем только значения, считаем дельту с целевым значением 
+            let tmp: Vec<(usize, Option<(f64, f64)>)> = tmp
+                .iter()
+                .map(|v| {
+                    let delta = if v.error_message.is_none() {
+                        //                 dbg!(z_g_fix, v.criterion_id, v.result, v.target);
+                      //  Some(v.result - v.target)
+                      Some((v.result, v.target))
+                    } else {
+                        None
+                    };
+                    (v.criterion_id, delta)
+                })
+                .collect();
+            results.push((z_g_fix, tmp));
+        }
+        // создаем коллекцию векторов, сортируем значения по id
+        let mut values: HashMap<usize, Vec<(f64, (f64, f64))>> = HashMap::new();
+        for (z_g_fix, tmp) in results.into_iter() {
+            tmp.into_iter()
+                .filter(|(_, value)| value.is_some())
+                .for_each(|(id, value)| {
+                    values
+                        .entry(id)
+                        .and_modify(|v| v.push((z_g_fix, value.unwrap())))
+                        .or_insert(vec![(z_g_fix, value.unwrap())]);
+                });
+        }
+        let mut result = HashMap::new();
+        for (id, mut values) in values.into_iter() {
+            // сортируем значения по увеличению дельты с целевым
+            values.sort_by(|&(_, v1), &(_, v2)| {
+                (v1.0 - v1.1).abs()
+                    .partial_cmp(&(v2.0 - v2.1).abs())
+                    .expect("CriterionComputer calculate error: sort values!")
+            });
+            // берем первое значение как ближайшее значение к целевому
+            let closest_value = values
+                .first()
+                .expect("CriterionComputer calculate error, no values!");
+            //result.insert(id, (closest_value.0, closest_value.1.0, closest_value.1.1));
+            result.insert(id, closest_value.0);
+        }
+        Ok(result)
+    }
+
+ /*   /// Расчет zg, возвращяет результат в виде HashMap<criterion_id, zg>
+    pub fn calculate(&mut self) -> Result<HashMap<usize, f64>, Error> {
         let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
         // zg + Vec<id, delta>
         let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
         let delta = 0.01;
         let max_index = (self.max_zg / delta).ceil() as i32;
+        for_each_concurent        
         for index in 0..=max_index {
             let z_g_fix = index as f64 * delta;
             let z_m = self.center_draught_shift.z() + self.rad_trans;
@@ -336,4 +487,5 @@ impl CriterionComputer {
         }
         Ok(result)
     }
+    */
 }

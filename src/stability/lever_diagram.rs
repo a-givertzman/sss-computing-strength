@@ -5,7 +5,7 @@ use crate::{
 };
 
 use super::metacentric_height::IMetacentricHeight;
-use std::{cell::RefCell, f64::consts::PI, rc::Rc};
+use std::{cell::RefCell, f64::consts::PI, rc::Rc, sync::Arc};
 
 type RcOpt<T> = Rc<RefCell<Option<T>>>;
 
@@ -14,7 +14,7 @@ type RcOpt<T> = Rc<RefCell<Option<T>>>;
 #[derive(Clone)]
 pub struct LeverDiagram {
     /// Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
-    ship_moment: Rc<dyn IShipMoment>,
+    ship_moment: Arc<dyn IShipMoment>,
     /// Отстояние центра величины погруженной части судна
     center_draught_shift: Position,
     /// Кривая плечей остойчивости формы для разных осадок
@@ -22,9 +22,9 @@ pub struct LeverDiagram {
     /// Средняя осадка
     mean_draught: f64,
     /// Продольная и поперечная исправленная метацентрическая высота.
-    metacentric_height: Rc<dyn IMetacentricHeight>,
+    metacentric_height: Arc<dyn IMetacentricHeight>,
     /// Набор результатов расчетов для записи в БД
-    parameters: Rc<dyn IParameters>,
+    parameters: Arc<dyn IParameters>,
     /// Результат расчета - диаграмма плеч статической остойчивости
     dso: RcOpt<Vec<(f64, f64)>>,
     /// Результат расчета - диаграмма плеч статической остойчивости
@@ -48,12 +48,12 @@ impl LeverDiagram {
     /// * metacentric_height - Продольная и поперечная исправленная метацентрическая высота.
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
-        ship_moment: Rc<dyn IShipMoment>,
+        ship_moment: Arc<dyn IShipMoment>,
         center_draught_shift: Position,
         pantocaren: Vec<(f64, Vec<(f64, f64)>)>,
         mean_draught: f64,
-        metacentric_height: Rc<dyn IMetacentricHeight>,
-        parameters: Rc<dyn IParameters>,
+        metacentric_height: Arc<dyn IMetacentricHeight>,
+        parameters: Arc<dyn IParameters>,
     ) -> Self {
         Self {
             ship_moment,

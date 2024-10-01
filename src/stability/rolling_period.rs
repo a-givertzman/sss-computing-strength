@@ -1,6 +1,6 @@
 //! Период качки судна  (2.1.5)
 
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::Error;
 
@@ -15,7 +15,7 @@ pub struct RollingPeriod {
     /// Длина судна по ватерлинии
     l_wl: f64,
     /// Исправленная метацентрическая высота
-    metacentric_height: Rc<dyn IMetacentricHeight>,
+    metacentric_height: Arc<dyn IMetacentricHeight>,
 }
 ///
 impl RollingPeriod {
@@ -28,7 +28,7 @@ impl RollingPeriod {
         // Осадка судна d
         d: f64,
         // Исправленная метацентрическая высота
-        metacentric_height: Rc<dyn IMetacentricHeight>,
+        metacentric_height: Arc<dyn IMetacentricHeight>,
     ) -> Self {
         Self { l_wl, b, d, metacentric_height }
     }
