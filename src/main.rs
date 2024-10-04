@@ -32,11 +32,10 @@ mod tests;
 mod trim;
 
 fn main() {
-    //    std::env::set_var("RUST_LOG", "info");
+    // std::env::set_var("RUST_LOG", "info");
     // env_logger::init();
     let _log2 = log2::start();
     info!("starting up");
-
     let reply = if let Err(error) = execute() {
         let str1 = r#"{"status":"failed","message":""#;
         let str2 = r#""}"#;
@@ -66,8 +65,50 @@ fn execute() -> Result<(), Error> {
     */
     //   println!("{}", json_data);
 
-    let host: String = "0.0.0.0".to_string();
-    let port = "8080".to_string();
+    let host: String;
+    let port;
+    let mut input = String::new();
+    match io::stdin().read_line(&mut input) {
+        Ok(n) => {
+            info!("{n} bytes read from stdin");
+            info!("{input}");
+            let json_data: serde_json::Value = serde_json::from_str(&input)?;
+            host = json_data
+                .get("api-host")
+                .ok_or(Error::FromString(
+                    "Parse param error: no api-host".to_owned(),
+                ))?
+                .to_string();
+            port = json_data
+                .get("api-port")
+                .ok_or(Error::FromString(
+                    "Parse param error: no api-host".to_owned(),
+                ))?
+                .to_string();           
+        }
+        Err(error) => {
+            error!("error read from stdin!: {error}");
+            host = "0.0.0.0".to_string();
+            port = "8080".to_string();
+        },
+    }
+    let json_data: serde_json::Value = serde_json::from_str(&input)?;
+    let host: String = json_data
+        .get("api-host")
+        .ok_or(Error::FromString(
+            "Parse param error: no api-host".to_owned(),
+        ))?
+        .to_string();
+    let port = json_data
+        .get("api-port")
+        .ok_or(Error::FromString(
+            "Parse param error: no api-host".to_owned(),
+        ))?
+        .to_string();
+
+    println!("{}", json_data);
+
+
 
     let ship_id = 1;
     let mut api_server =
