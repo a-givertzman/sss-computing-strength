@@ -47,24 +47,6 @@ fn main() {
 }
 
 fn execute() -> Result<(), Error> {
-    /*      let mut input = String::new();
-          io::stdin().read_line(&mut input)?;
-          let json_data: serde_json::Value = serde_json::from_str(&input)?;
-          let host: String = json_data
-              .get("api-host")
-              .ok_or(Error::FromString(
-                  "Parse param error: no api-host".to_owned(),
-              ))?
-              .to_string();
-          let port = json_data
-              .get("api-port")
-              .ok_or(Error::FromString(
-                  "Parse param error: no api-host".to_owned(),
-              ))?
-              .to_string();
-    */
-    //   println!("{}", json_data);
-
     let host: String;
     let port;
     let mut input = String::new();
@@ -84,7 +66,9 @@ fn execute() -> Result<(), Error> {
                 .ok_or(Error::FromString(
                     "Parse param error: no api-host".to_owned(),
                 ))?
-                .to_string();           
+                .to_string();          
+
+            info!("io::stdin(): {}", json_data); 
         }
         Err(error) => {
             error!("error read from stdin!: {error}");
@@ -92,43 +76,20 @@ fn execute() -> Result<(), Error> {
             port = "8080".to_string();
         },
     }
-    let json_data: serde_json::Value = serde_json::from_str(&input)?;
-    let host: String = json_data
-        .get("api-host")
-        .ok_or(Error::FromString(
-            "Parse param error: no api-host".to_owned(),
-        ))?
-        .to_string();
-    let port = json_data
-        .get("api-port")
-        .ok_or(Error::FromString(
-            "Parse param error: no api-host".to_owned(),
-        ))?
-        .to_string();
-
-    println!("{}", json_data);
-
-
 
     let ship_id = 1;
     let mut api_server =
         ApiServer::new("sss-computing".to_owned(), host.to_owned(), port.to_owned());
 
     let mut elapsed = HashMap::new();
-    let time = Instant::now();
 
+    let time = Instant::now();
     let results: Rc<dyn IResults> = Rc::new(Results::new());
     let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
     let data = get_data(&mut api_server, ship_id)?;
-    elapsed.insert("ParsedShipData sync", time.elapsed());
+    elapsed.insert("read data", time.elapsed());
 
-    /*   let time = Instant::now();
-        let data = async_get_data("test_ship", 1);
-        let data = block_on(data)?;
-        elapsed.insert("ParsedShipData async", time.elapsed());
-    */
     let time = Instant::now();
-
     // ускорение свободного падения
     let gravity_g = 9.81;
     // вектор разбиения судна на отрезки
@@ -347,7 +308,6 @@ fn execute() -> Result<(), Error> {
     )?);
 
     // Критерии остойчивости
-    let time = Instant::now();
     let criterion_computer_results = CriterionComputer::new(
         data.overall_height,
         data.ship_type,
@@ -382,9 +342,7 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
     )?
     .calculate()?;
-    elapsed.insert("CriterionComputer", time.elapsed());
 
-    let time = Instant::now();
     let mut criterion_result = CriterionStability::new(
         data.ship_type,
         data.navigation_area.area,
@@ -433,7 +391,6 @@ fn execute() -> Result<(), Error> {
         )),
     )?
     .create();
-    elapsed.insert("Criterion", time.elapsed());
 
     let trim: Rc<dyn ITrim> = Rc::new(stability::Trim::new(
         data.length_lbp,
@@ -483,32 +440,11 @@ fn execute() -> Result<(), Error> {
         criterion_computer_results,
     )?;
     send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //
+    elapsed.insert("calculate", time.elapsed());
 
     for (key, e) in elapsed {
-        log::info!("{}:\t{:?}", key, e);
+        info!("{}:\t{:?}", key, e);
     }
-    Ok(())
-}
-
-/*
-/// Чтение данных из стандартного потока ввода
-pub fn read() -> Result<ParsedInputData, Box<dyn std::error::Error>> {
-    let mut input = String::new();
-    io::stdin().read_line(&mut input)?;
-    Ok(ParsedInputData::parse(
-        &input.to_lowercase().trim().to_owned(),
-    )?)
-}
-*/
-/*
-/// Writes a given value to the writer, serializing it into JSON.
-pub fn write<W: Write, T: serde::Serialize>(mut writer: W, t: &T) -> Result<(), WriteError> {
-    // We use to_string here instead of to_vec because it verifies that the JSON is valid UTF-8,
-    // which is required by the JSON Lines specification (https://jsonlines.org).
-    let json = serde_json::to_string(t).map_err(WriteError::Serialize)?;
-
-    writer.write_all(json.as_bytes()).map_err(WriteError::Io)?;
-    writer.write_all(b"\n").map_err(WriteError::Io)?;
 
     Ok(())
-}*/
+}
