@@ -31,10 +31,9 @@ impl IWettingMass for WettingMass {
     /// Масса намокания попадающая в Bound или вся если Bound отсутствует
     fn mass(&self, bound: &Bound) -> Result<f64, Error> {
         let mut sum = 0.;
-        for v in self.loads_timber
-            .iter() {
-                sum += v.value(bound)?; 
-            }
+        for v in self.loads_timber.iter() {
+            sum += v.value(bound)?;
+        }
         Ok(sum * self.coeff)
     }
 }

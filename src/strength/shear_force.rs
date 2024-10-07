@@ -28,7 +28,7 @@ impl IShearForce for ShearForce {
             .into_iter()
             .map(|v| -v)
             .collect();
-        //     log::info!("\t ShearForce result:{:?}", result);
+        log::trace!("\t ShearForce result:{:?}", result);
         Ok(result)
     }
 }

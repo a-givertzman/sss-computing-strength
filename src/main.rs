@@ -66,15 +66,15 @@ fn execute() -> Result<(), Error> {
                 .ok_or(Error::FromString(
                     "Parse param error: no api-host".to_owned(),
                 ))?
-                .to_string();          
+                .to_string();
 
-            info!("io::stdin(): {}", json_data); 
+            info!("io::stdin(): {}", json_data);
         }
         Err(error) => {
             error!("error read from stdin!: {error}");
             host = "0.0.0.0".to_string();
             port = "8080".to_string();
-        },
+        }
     }
 
     let ship_id = 1;
@@ -347,8 +347,8 @@ fn execute() -> Result<(), Error> {
         data.ship_type,
         data.navigation_area.area,
         data.width,
-        data.moulded_depth,    
-        Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,            
+        data.moulded_depth,
+        Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,
         loads.desks()?.iter().any(|v| v.is_timber()),
         loads.bulks()?.iter().any(|v| v.moment() != 0.),
         !loads.load_variable()?.is_empty(),

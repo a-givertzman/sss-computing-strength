@@ -1,10 +1,7 @@
 //! Амплитуда качки судна
 use std::rc::Rc;
 
-use crate::{
-    math::{Curve, ICurve},
-    Error, IMetacentricHeight,
-};
+use crate::{math::ICurve, Error, IMetacentricHeight};
 
 use super::rolling_period::IRollingPeriod;
 
@@ -67,9 +64,9 @@ impl RollingAmplitude {
         t: Rc<dyn IRollingPeriod>,
     ) -> Result<Self, Error> {
         if d <= 0. {
-            return Err(Error::FromString(
-                "RollingAmplitude new error: draught <= 0.".to_string(),
-            ));
+            let error = Error::FromString("RollingAmplitude new error: draught <= 0.".to_owned());
+            log::error!("{error}");
+            return Err(error);
         }
         Ok(Self {
             a_k,
@@ -105,8 +102,8 @@ impl IRollingAmplitude for RollingAmplitude {
         let s = self.s.value(t)?;
         // (2.1.5.1)
         let res = 109. * k * x_1 * x_2 * (r * s).sqrt();
-        //           log::info!("\t RollingAmplitude l:{} b:{} d:{} z_g_fix:{} c_b:{} k:{k} x_1:{x_1} x_2:{x_2} r:{r} t:{t} s:{s} angle:{res}",
-        //          self.l_wl, self.b, self.d, self.metacentric_height.z_g_fix()?, c_b);
+        log::trace!("\t RollingAmplitude l:{} b:{} d:{} z_g_fix:{} c_b:{} k:{k} x_1:{x_1} x_2:{x_2} r:{r} t:{t} s:{s} angle:{res}",
+            self.l_wl, self.b, self.d, self.metacentric_height.z_g_fix()?, c_b);
         Ok((t, res.round()))
     }
 }

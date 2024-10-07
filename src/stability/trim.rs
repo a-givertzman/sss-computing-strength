@@ -20,11 +20,11 @@ pub struct Trim {
     /// Исправленная метацентрическая высота
     metacentric_height: Rc<dyn IMetacentricHeight>,
     /// Масса судна
-    mass: Rc<dyn IMass>, 
+    mass: Rc<dyn IMass>,
     /// Момент массы судна
-    moment: Rc<dyn IShipMoment>, 
+    moment: Rc<dyn IShipMoment>,
     /// Набор результатов расчетов для записи в БД
-    parameters: Rc<dyn IParameters>, 
+    parameters: Rc<dyn IParameters>,
 }
 ///
 impl Trim {
@@ -37,16 +37,18 @@ impl Trim {
     /// * moment - Момент массы судна
     /// * parameters - Набор результатов расчетов для записи в БД
     pub fn new(
-        ship_length: f64,   
-        mean_draught: f64,          
-        center_draught_shift: Position,        
-        metacentric_height: Rc<dyn IMetacentricHeight>, 
-        mass: Rc<dyn IMass>, 
-        moment: Rc<dyn IShipMoment>,                
-        parameters: Rc<dyn IParameters>, 
+        ship_length: f64,
+        mean_draught: f64,
+        center_draught_shift: Position,
+        metacentric_height: Rc<dyn IMetacentricHeight>,
+        mass: Rc<dyn IMass>,
+        moment: Rc<dyn IShipMoment>,
+        parameters: Rc<dyn IParameters>,
     ) -> Result<Self, Error> {
         if ship_length <= 0. {
-            return Err(Error::FromString("Trim new error: ship_length <= 0.".to_string()));
+            return Err(Error::FromString(
+                "Trim new error: ship_length <= 0.".to_string(),
+            ));
         }
         Ok(Self {
             ship_length,
@@ -72,15 +74,15 @@ impl ITrim for Trim {
         let t = self.mass.sum()? * (self.moment.shift()?.x() - self.center_draught_shift.x())
             / (100. * trim_moment);
         // Дифферент судна, градусы (5)
-        let trim_angle = (t/self.ship_length).atan()*180.0/PI;  
-        //dbg!(H, trim_moment, t, trim_angle);
-   /*     log::info!(
+        let trim_angle = (t / self.ship_length).atan() * 180.0 / PI;
+        log::trace!(
             "\t Trim H:{H} mass:{} mass_shift_x:{} center_draught_x:{} M:{trim_moment} trim:{t} trim_angle{trim_angle} ",
             self.mass.sum()?,
-            self.moment.shift().x(),
+            self.moment.shift()?.x(),
             self.center_draught_shift.x()
         );
-  */      self.parameters.add(ParameterID::MomentTrimPerCm, trim_moment);
+        self.parameters
+            .add(ParameterID::MomentTrimPerCm, trim_moment);
         self.parameters.add(ParameterID::TrimDeg, trim_angle);
         self.parameters.add(ParameterID::TrimMeter, t);
         Ok((self.mean_draught, t))

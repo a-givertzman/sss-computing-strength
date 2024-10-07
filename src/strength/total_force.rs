@@ -27,7 +27,9 @@ impl TotalForce {
         gravity_g: f64,
     ) -> Result<Self, Error> {
         if gravity_g <= 0. {
-            return Err(Error::FromString("TotalForce new error: gravity_g <= 0.".to_string()));
+            return Err(Error::FromString(
+                "TotalForce new error: gravity_g <= 0.".to_string(),
+            ));
         }
         Ok(Self {
             mass,
@@ -44,13 +46,24 @@ impl ITotalForce for TotalForce {
         let mass_values = self.mass.values()?;
         let mut volume_values = self.volume.values()?;
         if mass_values.len() != volume_values.len() {
-            return Err(Error::FromString("TotalForce values error: mass_values.len() != volume_values.len()".to_string()));
+            let error = Error::FromString(
+                "TotalForce values error: mass_values.len() != volume_values.len()".to_owned(),
+            );
+            log::error!("{error}");
+            return Err(error);
         }
         let mut result = mass_values.clone();
         volume_values.mul_single(self.water_density);
         result.sub_vec(&volume_values)?;
         result.mul_single(self.gravity_g);
-        //      log::info!("\t TotalForce mass:{:?} volume:{:?} result:{:?}, mass_sum:{}, volume_mass_sum:{}", mass_values, volume_values, result, mass_values.iter().sum::<f64>(), volume_values.iter().sum::<f64>());
+        log::trace!(
+            "\t TotalForce mass:{:?} volume:{:?} result:{:?}, mass_sum:{}, volume_mass_sum:{}",
+            mass_values,
+            volume_values,
+            result,
+            mass_values.iter().sum::<f64>(),
+            volume_values.iter().sum::<f64>()
+        );
         Ok(result)
     }
 }

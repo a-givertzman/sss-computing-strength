@@ -6,7 +6,7 @@ use super::{
     displacement::Displacement,
     volume::Volume, IMass,
 };
-use std::{cell::RefCell, rc::Rc};
+use std::rc::Rc;
 
 /// Класс для расчета дифферента и средней осадки в расчете прочности метором перебора
 /// Используются только эпюра масс и Бонжан. Данные по остойчивости не используются.
@@ -103,7 +103,9 @@ impl ITrim for Trim {
         let mut dx = Vec::new();
         for v in self.bounds.iter() { 
             if !v.is_value() {
-                return Err(Error::FromString("Trim value error: bound is no value".to_owned()));
+                let error = Error::FromString("Trim value error: bound is no value".to_owned());
+                log::error!("{error}");
+                return Err(error);
             }
             dx.push(v.center().unwrap());
         }
@@ -127,7 +129,6 @@ impl ITrim for Trim {
                     Rc::clone(&self.bounds),
                 ).values()?;
                 volume_values.mul_single(self.water_density);
-    //            dbg!(&volume_values);
                 let volume_pairs = dx.clone().into_iter().zip(volume_values).collect::<Vec<_>>();
                 let (new_v_xc, volume_mass) = Trim::calc_s(&volume_pairs);
                 v_xc = new_v_xc;
@@ -135,13 +136,10 @@ impl ITrim for Trim {
                 if delta_w.abs() <= 0.000000001 {
                     break;
                 }         
-                mean_draught = 0.001_f64.max(mean_draught + mean_draught*delta_w);   
-    //            dbg!(_j, trim, mean_draught, v_xc, volume_mass, w, delta_w, );             
+                mean_draught = 0.001_f64.max(mean_draught + mean_draught*delta_w);            
             }
             let delta_x = w_xg - v_xc;
-   //         dbg!(_i, trim, mean_draught, v_xc, w_xg, w, delta_x, );
             if delta_x.abs() <= 0.000000001 {
-    //            dbg!("delta_x.abs() <= 0.000000001");
                 break;
             }                 
             trim += delta_x / 10.;

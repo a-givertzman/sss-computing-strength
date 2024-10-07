@@ -113,10 +113,12 @@ impl Mass {
         self.parameters.add(ParameterID::MassLightship, lightship);
         self.parameters.add(ParameterID::MassIcing, icing);
         self.parameters.add(ParameterID::MassWetting, wetting);
-    /*    log::info!("\t Mass ballast:{ballast}, stores:{stores}, 
-            cargo:{cargo}, deadweight:{deadweight}, lightship:{lightship}, 
-            icing:{icing}, wetting:{wetting} sum:{mass_sum}");
-    */    Ok(mass_sum)
+        log::trace!(
+            "\t Mass ballast:{ballast}, stores:{stores}, bulkhead:{bulkhead}
+            cargo:{cargo}, deadweight:{deadweight}, lightship:{lightship},
+            icing:{icing}, wetting:{wetting} sum:{mass_sum}"
+        );
+        Ok(mass_sum)
     }
     /// Распределение массы по вектору разбиения
     fn values(&self) -> Result<Vec<f64>, Error> {
@@ -189,7 +191,6 @@ impl Mass {
             vec_icing.push(icing);
             let wetting = self.wetting_mass.mass(b)?;
             vec_wetting.push(wetting);
-
             res.push(hull + equipment + bulkhead + ballast + store + cargo + icing + wetting);
         }
         vec_hull.push(vec_hull.iter().sum());
@@ -202,7 +203,7 @@ impl Mass {
         vec_wetting.push(vec_wetting.iter().sum());
         vec_sum.append(&mut res.clone());
         vec_sum.push(res.iter().sum());
-        // log::info!("\t Mass values:{:?} ", res);
+        log::trace!("\t Mass values:{:?} ", res);
         self.results.add("value_mass_hull".to_owned(), vec_hull);
         self.results
             .add("value_mass_equipment".to_owned(), vec_equipment);
@@ -226,17 +227,18 @@ impl IMass for Mass {
         if self.sum.borrow().is_none() {
             self.calculate()?;
         }
-        Ok((*self.sum.borrow()).expect("Mass sum error: no value"))
+        Ok((*self.sum.borrow()).ok_or(Error::FromString("Mass sum error: no value".to_owned()))?)
     }
     /// Распределение массы по вектору разбиения
     fn values(&self) -> Result<Vec<f64>, Error> {
         if self.values.borrow().is_none() {
             self.calculate()?;
         }
-        Ok(self.values
+        Ok(self
+            .values
             .borrow()
             .clone()
-            .expect("Mass values error: no values"))
+            .ok_or(Error::FromString("Mass values error: no values".to_owned()))?)
     }
 }
 

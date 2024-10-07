@@ -30,7 +30,12 @@ impl RollingPeriod {
         // Исправленная метацентрическая высота
         metacentric_height: Rc<dyn IMetacentricHeight>,
     ) -> Self {
-        Self { l_wl, b, d, metacentric_height }
+        Self {
+            l_wl,
+            b,
+            d,
+            metacentric_height,
+        }
     }
 }
 ///
@@ -40,11 +45,16 @@ impl IRollingPeriod for RollingPeriod {
         let c = self.c();
         Ok(if self.metacentric_height.h_trans_fix()? > 0. {
             let h_sqrt = self.metacentric_height.h_trans_fix()?.sqrt();
-            let res= 2. *  c * self.b / h_sqrt;
-    //        log::info!("\t RollingPeriod calculate l_wl:{} b:{} d:{} c:{c} h_sqrt: {h_sqrt} T:{res}", self.l_wl, self.b, self.d);
+            let res = 2. * c * self.b / h_sqrt;
+            log::trace!(
+                "\t RollingPeriod calculate l_wl:{} b:{} d:{} c:{c} h_sqrt: {h_sqrt} T:{res}",
+                self.l_wl,
+                self.b,
+                self.d
+            );
             res
         } else {
-   //         log::info!("\t RollingPeriod calculate error: h_trans_fix is negative!");
+            log::trace!("\t RollingPeriod calculate error: h_trans_fix is negative!");
             0.
         })
     }
@@ -56,7 +66,7 @@ impl IRollingPeriod for RollingPeriod {
 #[doc(hidden)]
 pub trait IRollingPeriod {
     /// Период качки судна
-    fn calculate(&self) -> Result<f64, Error> ;
+    fn calculate(&self) -> Result<f64, Error>;
     /// Коэффициент для расчета периода
     fn c(&self) -> f64;
 }
@@ -69,23 +79,16 @@ pub struct FakeRollingPeriod {
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeRollingPeriod {
-    pub fn new(
-        value: f64,
-        c: f64,
-    ) -> Self {
-        Self {
-            value,
-            c,
-        }
+    pub fn new(value: f64, c: f64) -> Self {
+        Self { value, c }
     }
 }
 #[doc(hidden)]
 impl IRollingPeriod for FakeRollingPeriod {
-    fn calculate(&self) -> Result<f64, Error>  {
+    fn calculate(&self) -> Result<f64, Error> {
         Ok(self.value)
     }
     fn c(&self) -> f64 {
         self.c
     }
 }
-

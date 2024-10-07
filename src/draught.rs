@@ -56,10 +56,10 @@ impl Draught {
         let draught_mid = (draught_bow + draught_stern) / 2.;
         // Изменение осадки
         let delta_draught = (draught_bow - draught_stern) / self.ship_length;
-     //   log::info!("\t Draught mean_draught:{:?} center_waterline_shift:{:?} ship_length:{:?}, trim:{}, 
-      //      draught_bow:{draught_bow} draught_stern:{draught_stern} draught_mid:{draught_mid}", 
-     //       mean_draught, self.center_waterline_shift, self.ship_length, trim);
         if let Some(parameters) = &self.parameters {
+            log::trace!("\t Draught mean_draught:{:?} center_waterline_shift:{:?} ship_length:{:?}, trim:{}, 
+                draught_bow:{draught_bow} draught_stern:{draught_stern} draught_mid:{draught_mid}", 
+                mean_draught, self.center_waterline_shift, self.ship_length, trim);            
             parameters.add(ParameterID::DraughtBow, draught_bow);
             parameters.add(ParameterID::DraughtStern, draught_stern);
         }

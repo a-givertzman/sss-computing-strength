@@ -1,7 +1,7 @@
 //! Распределение объема вытесненной воды по шпациям
-use std::rc::Rc;
-use crate::{draught::IDraught, math::Bounds, Error};
 use super::displacement::Displacement;
+use crate::{draught::IDraught, math::Bounds, Error};
+use std::rc::Rc;
 
 ///
 /// Распределение объема вытесненной воды по шпациям
@@ -19,14 +19,14 @@ impl Volume {
     /// * bounds - Вектор разбиения на отрезки для эпюров
     /// * displacement - Водоизмещение судна, м^3
     /// * draught - Осадка судна
-    pub fn new(  
-        displacement: Rc<Displacement>,   
+    pub fn new(
+        displacement: Rc<Displacement>,
         draught: Rc<dyn IDraught>,
         bounds: Rc<Bounds>,
     ) -> Self {
         Self {
             bounds,
-            draught,            
+            draught,
             displacement,
         }
     }
@@ -38,16 +38,21 @@ impl IVolume for Volume {
         let mut result: Vec<f64> = Vec::new();
         for v in self.bounds.iter() {
             if !v.is_value() {
-                return Err(Error::FromString("Volume value error: bound is no value".to_owned()));
+                let error = Error::FromString("Volume value error: bound is no value".to_owned());
+                log::error!("{error}");
+                return Err(error);
             }
             result.push(self.displacement.value(
-                    v,
-                    self.draught.value(v.start().unwrap())?,
-                    self.draught.value(v.end().unwrap())?,
+                v,
+                self.draught.value(v.start().unwrap())?,
+                self.draught.value(v.end().unwrap())?,
             )?)
         }
-  //      log::info!("\t Volume ship_length:{ship_length} trim:{trim} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} result:{:?}, res_sum:{}", result, result.iter().sum::<f64>());
-//            log::info!("\t Volume ship_length:{ship_length} trim:{trim} x_f:{x_f} d:{d} stern_draught:{stern_draught} bow_draught:{bow_draught} delta_draught:{delta_draught} res_sum:{}", result.iter().sum::<f64>());
+        log::trace!(
+            "\t Volume result:{:?}, res_sum:{}",
+            result,
+            result.iter().sum::<f64>()
+        );
         Ok(result)
     }
 }
