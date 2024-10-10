@@ -1,0 +1,19 @@
+#!/bin/bash
+# 
+# Deb package postinst script for the package
+#
+echo ""
+systemctl daemon-reload
+name="cma-server"
+if [[ $(systemctl list-unit-files --all -t service --full --no-legend "$name.service" | sed 's/^\s*//g' | cut -f1 -d' ') == $name.service ]]; then
+    if ! systemctl is-enabled --quiet "$name.service" ; then
+        echo "Enabling $name service..."
+        systemctl enable "$name.service"
+    fi
+    if ! systemctl is-active --quiet "$name.service" ; then
+        echo "Starting $name service..."
+        systemctl start "$name.service"
+    fi
+else
+    echo "$name service - not found"
+fi

@@ -1,0 +1,22 @@
+#!/bin/bash
+# 
+# Deb package prerem script for the package
+#
+############ INSTALLATION ACTIONS ############
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+GRAY='\033[1;30m'
+NC='\033[0m' # No Color
+#
+echo ""
+name="cma-server"
+if [[ $(systemctl list-units --all -t service --full --no-legend "$name.service" | sed 's/^\s*//g' | cut -f1 -d' ') == $name.service ]]; then
+    if systemctl is-active --quiet "$name.service" ; then
+        echo "Stopping $name service..."
+        systemctl stop "$name.service"
+    fi    
+    if systemctl is-enabled --quiet "$name.service" ; then
+        echo "Disabling $name service..."
+        systemctl disable "$name.service"
+    fi    
+fi

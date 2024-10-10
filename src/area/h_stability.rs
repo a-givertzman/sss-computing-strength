@@ -7,7 +7,7 @@ pub struct HAreaStability {
     /// Значение площади, м^2
     value: f64,
     /// Смещение центра
-    shift: Position,    
+    shift: Position,
 }
 ///
 impl HAreaStability {

@@ -1,6 +1,7 @@
 use crate::data::structs::MeanDraughtDataArray;
 
 #[allow(dead_code)]
+#[allow(clippy::approx_constant)]
 pub(crate) fn mean_draught() -> MeanDraughtDataArray {
     MeanDraughtDataArray::from(vec![
         (11.50, 0.00),
