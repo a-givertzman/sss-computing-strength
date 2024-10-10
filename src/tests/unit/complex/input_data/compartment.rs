@@ -1,9 +1,8 @@
 use std::collections::HashMap;
-
 use crate::data::structs::loads::{
     CargoGeneralCategory, CompartmentArray, CompartmentData, MatterType,
 };
-///
+//
 impl
     From<
         Vec<(
@@ -80,7 +79,7 @@ impl
         }
     }
 }
-///
+//
 #[allow(dead_code)]
 pub fn compartment_100_sea() -> CompartmentArray {                                                                                                                                                                                                         
     CompartmentArray::from(vec![                                                                                                                                                                                                                
@@ -103,7 +102,7 @@ pub fn compartment_100_sea() -> CompartmentArray {
             ("Цистерна запасного масла ГД",             2.493,    MatterType::Liquid, CargoGeneralCategory::Stores,   Some(0.9),  Some(2.77),          -53.194,  -51.994,  -52.594,    0.525,       5.3,           Some(0.1),            Some(0.2),         ),    
         ])
 }
-///
+//
 #[allow(dead_code)]
 pub fn compartment_100_sea_grain() -> CompartmentArray {       
     CompartmentArray::from(vec![                                                                                                                                                                                                                

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::data::structs::{HStabArea, HStabAreaArray};
-///
+//
 impl From<Vec<(&str, f64, f64, f64, f64)>> for HStabAreaArray {
     fn from(src: Vec<(&str, f64, f64, f64, f64)>) -> Self {
         Self {
@@ -18,6 +18,7 @@ impl From<Vec<(&str, f64, f64, f64, f64)>> for HStabAreaArray {
         }
     }
 }
+//
 #[allow(dead_code)]
 pub(crate) fn area_h_stab() -> HStabAreaArray {
     HStabAreaArray::from(vec![

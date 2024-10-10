@@ -1,5 +1,6 @@
 use crate::data::structs::CenterDraughtShiftDataArray;
-
+//
+#[allow(clippy::approx_constant)]
 pub fn center_draught_shift() -> CenterDraughtShiftDataArray {
     CenterDraughtShiftDataArray::from(vec![
         (11.50, -0.272,  0., -0.005),

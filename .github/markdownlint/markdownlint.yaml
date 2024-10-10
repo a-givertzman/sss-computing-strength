@@ -1,0 +1,5 @@
+# First line in a file should be a top-level heading
+MD041:
+  # Default ^\s*title\s*[:=]
+  # To disable the use of front matter by this rule, specify "" for front_matter_title.
+  front_matter_title: ""

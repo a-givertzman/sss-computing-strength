@@ -1,15 +1,12 @@
 use std::collections::HashMap;
-
 use crate::data::structs::{multipler_s::MultiplerSData, MultiplerSArray, NavigationArea};
-
-///
+//
 impl MultiplerSArray {
-    /// Преобразование данных в массив ключ + значение
     pub fn from(src: Vec<(NavigationArea, i32, f64)>) -> Self {
         Self{data: src.into_iter().map(|(area, t, s)| MultiplerSData{area, t: t as f64, s} ).collect(), error: HashMap::new() }
     }
 }
-
+//
 #[allow(dead_code)]
 pub(crate) fn multipler_s() -> MultiplerSArray {
     MultiplerSArray::from(vec![

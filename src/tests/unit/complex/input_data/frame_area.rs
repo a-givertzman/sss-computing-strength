@@ -1,14 +1,12 @@
 use std::collections::HashMap;
-
 use crate::data::structs::{FrameAreaData, FrameAreaDataArray};
-
-///
+//
 impl From<Vec<(i32, f64, f64)>> for FrameAreaDataArray {
     fn from(src: Vec<(i32, f64, f64)>) -> Self {
         Self{data: src.into_iter().map(|(frame_index, draft, area)| FrameAreaData{frame_index, draft, area} ).collect(), error: HashMap::new() }
     }
 }
-
+//
 #[allow(dead_code)]
 pub(crate) fn frame_area() -> FrameAreaDataArray {
     FrameAreaDataArray::from(vec![

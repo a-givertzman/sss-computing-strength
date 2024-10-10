@@ -26,7 +26,7 @@ pub struct Mass {
     /// Распределение массы по вектору разбиения
     values: Rc<RefCell<Option<Vec<f64>>>>,
 }
-///
+//
 impl Mass {
     /// Аргументы конструктора:  
     /// * loads_const - постоянная масса судна распределенная по шпациям
@@ -56,7 +56,7 @@ impl Mass {
             values: Rc::new(RefCell::new(None)),
         }
     }
-    ///
+    /// Ленивое вычисление 
     fn calculate(&self) -> Result<(), Error> {
         *self.sum.borrow_mut() = Some(self.sum()?);
         *self.values.borrow_mut() = Some(self.values()?);
@@ -219,7 +219,7 @@ impl Mass {
         Ok(res)
     }
 }
-///
+
 impl IMass for Mass {
     /// Суммарная масса
     fn sum(&self) -> Result<f64, Error> {

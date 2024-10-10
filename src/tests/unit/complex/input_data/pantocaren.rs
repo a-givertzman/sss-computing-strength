@@ -1,14 +1,14 @@
 use std::collections::HashMap;
-
 use crate::data::structs::{PantocarenData, PantocarenDataArray};
-///
+//
 impl From<Vec<(f64, f64, f64)>> for PantocarenDataArray {
     fn from(src: Vec<(f64, f64, f64)>) -> Self {
         Self{data: src.into_iter().map(|(draught, roll, moment)| PantocarenData{draught, roll, moment} ).collect(), error: HashMap::new() }
     }
 }
-///
+//
 #[allow(dead_code)]
+#[allow(clippy::approx_constant)]
 pub(crate) fn pantocaren() -> PantocarenDataArray {
     PantocarenDataArray::from(vec![
         (6.55, 0.0, 0.000),

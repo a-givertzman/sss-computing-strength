@@ -75,15 +75,15 @@ impl Trim {
         xc /= sum_s;
         (xc, sum_s)
     }*/
-    /// Вычисление суммы площади и смещения центра
-    /// * values - Vec(x, value)>
-    /// * result - (delta_x, sum_s)
-    pub fn calc_s(values: &Vec<(f64, f64)>) -> (f64, f64) {
+    /// Вычисление суммы площади и смещения центра  
+    /// * values - Vec(x, value)>  
+    /// * result - (delta_x, sum_s)  
+    pub fn calc_s(values: &[(f64, f64)]) -> (f64, f64) {
         let mut sum_s = 0.;
         let mut xc = 0.;
-        for i in 0..values.len() {
-            let x_i = values[i].0;
-            let y_i = values[i].1; 
+        for value in values {
+            let x_i = value.0;
+            let y_i = value.1; 
             sum_s += y_i;
             xc += y_i * x_i;
         }
@@ -96,7 +96,7 @@ impl Trim {
         (xc, sum_s)
     }
 }
-/// 
+//
 impl ITrim for Trim {
     /// Вычисление средней осадки и дифферента
     fn value(&self) -> Result<(f64, f64), Error> {

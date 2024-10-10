@@ -1,13 +1,22 @@
 use std::collections::HashMap;
-
 use crate::data::structs::{DeltaWindageMomentData, DeltaWindageMomentDataArray};
-///
+//
 impl From<Vec<(f64, f64, f64)>> for DeltaWindageMomentDataArray {
     fn from(src: Vec<(f64, f64, f64)>) -> Self {
-        Self{data: src.into_iter().map(|(draught, value_x, value_z)| DeltaWindageMomentData{draught, value_x, value_z} ).collect(), error: HashMap::new() }
+        Self {
+            data: src
+                .into_iter()
+                .map(|(draught, value_x, value_z)| DeltaWindageMomentData {
+                    draught,
+                    value_x,
+                    value_z,
+                })
+                .collect(),
+            error: HashMap::new(),
+        }
     }
 }
-///
+//
 #[allow(dead_code)]
 pub fn delta_windage_moment() -> DeltaWindageMomentDataArray {
     DeltaWindageMomentDataArray::from(vec![

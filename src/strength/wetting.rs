@@ -14,7 +14,7 @@ pub struct WettingMass {
     /// Палубный груз - лес
     loads_timber: Rc<Vec<Rc<LoadMass>>>,
 }
-///
+//
 impl WettingMass {
     /// Основной конструктор
     /// * coeff - Коэффициент изменения массы при намокании
@@ -26,7 +26,7 @@ impl WettingMass {
         }
     }
 }
-///
+//
 impl IWettingMass for WettingMass {
     /// Масса намокания попадающая в Bound или вся если Bound отсутствует
     fn mass(&self, bound: &Bound) -> Result<f64, Error> {

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use crate::data::structs::stability::*;
 
-///
 impl From<Vec<(f64, f64, f64, f64)>> for VerticalAreaArray {
     fn from(src: Vec<(f64, f64, f64, f64)>) -> Self {
         Self {
@@ -18,7 +17,7 @@ impl From<Vec<(f64, f64, f64, f64)>> for VerticalAreaArray {
         }
     }
 }
-///
+//
 #[allow(dead_code)]
 pub(crate) fn area_v_stab() -> VerticalAreaArray {
     VerticalAreaArray::from(vec![

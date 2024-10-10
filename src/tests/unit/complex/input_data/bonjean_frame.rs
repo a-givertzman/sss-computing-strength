@@ -1,14 +1,18 @@
 use std::collections::HashMap;
-
 use crate::data::structs::{FrameIndexData, FrameIndexDataArray};
-
-///
+//
 impl From<Vec<(i32, f64)>> for FrameIndexDataArray {
     fn from(src: Vec<(i32, f64)>) -> Self {
-        Self{data: src.into_iter().map(|(frame_index, pos_x)| FrameIndexData{frame_index, pos_x} ).collect(), error: HashMap::new() }
+        Self {
+            data: src
+                .into_iter()
+                .map(|(frame_index, pos_x)| FrameIndexData { frame_index, pos_x })
+                .collect(),
+            error: HashMap::new(),
+        }
     }
 }
-
+//
 #[allow(dead_code)]
 pub(crate) fn bonjean_frame() -> FrameIndexDataArray {
     FrameIndexDataArray::from(vec![

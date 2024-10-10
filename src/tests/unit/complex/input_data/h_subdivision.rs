@@ -1,6 +1,7 @@
 use crate::data::structs::MetacentricHeightSubdivisionArray;
-
+//
 #[allow(dead_code)]
+#[allow(clippy::approx_constant)]
 pub(crate) fn h_subdivision() -> MetacentricHeightSubdivisionArray {
     MetacentricHeightSubdivisionArray::from(vec![
         (0.0, 2.547),

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
-
 use crate::data::structs::{ScrewData, ScrewDataArray};
-///
+//
 impl From<Vec<(&str, f64, f64, f64, f64)>> for ScrewDataArray {
     fn from(src: Vec<(&str, f64, f64, f64, f64)>) -> Self {
         Self {
@@ -19,7 +18,7 @@ impl From<Vec<(&str, f64, f64, f64, f64)>> for ScrewDataArray {
         }
     }
 }
-///
+//
 #[allow(dead_code)]
 pub(crate) fn screw() -> ScrewDataArray {
     ScrewDataArray::from(vec![

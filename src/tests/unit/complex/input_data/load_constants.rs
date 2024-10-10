@@ -1,10 +1,7 @@
 use std::collections::HashMap;
-
 use crate::data::structs::loads::{LoadConstantArray, LoadConstantData, LoadConstantType};
-
-///
+//
 impl LoadConstantArray {
-    /// Преобразование данных в массив ключ + значение
     pub fn from(src: Vec<(f64, f64, f64, i32)>) -> Self {
         Self {
             data: src
