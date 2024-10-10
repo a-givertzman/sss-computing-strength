@@ -1,6 +1,6 @@
 //! Промежуточные структуры для serde_json для парсинга коэффициентов обледенения
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use super::DataArray;
 
@@ -15,12 +15,7 @@ pub struct IcingData {
 ///
 impl std::fmt::Display for IcingData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "IcingData(key:{}, value:{})",
-            self.key,
-            self.value,
-        )
+        write!(f, "IcingData(key:{}, value:{})", self.key, self.value,)
     }
 }
 /// Массив данных по расчету

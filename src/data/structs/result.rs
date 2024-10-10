@@ -356,7 +356,7 @@ impl ParsedShipData {
         let mut compartments = Vec::from(compartments_src.data());
         compartments.append(&mut hold_compartments_src.data());
         log::info!("result parse ok");
-        Self {
+        let result = Self {
             ship_type,
             navigation_area,
             multipler_x1,
@@ -430,6 +430,12 @@ impl ParsedShipData {
             area_v_str: area_v_str.data(),
             bow_area: bow_area.data(),
         }
-        .check()
+        .check();
+        match &result {
+            Ok(_) => log::info!("result check ok"),
+            Err(error) => log::error!("result check error: {}", error),
+        };   
+
+        result   
     }
 }

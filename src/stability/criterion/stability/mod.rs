@@ -101,9 +101,9 @@ impl CriterionStability {
         grain: Box<dyn IGrain>,
     ) -> Result<Self, Error> {
         if moulded_depth <= 0. {
-            return Err(Error::FromString(
-                "Criterion new error: moulded_depth <= 0.".to_string(),
-            ));
+            let error = Error::FromString("Criterion new error: moulded_depth <= 0.".to_owned());
+            log::error!("{error}");
+            return Err(error);
         }
         Ok(Self {
             ship_type,
@@ -129,7 +129,6 @@ impl CriterionStability {
     ///
     pub fn create(&mut self) -> Vec<CriterionData> {
         let mut out_data = Vec::new();
-        //        dbg!(self.metacentric_height.z_g_fix().unwrap());
         if self.navigation_area != NavigationArea::R3Rsn {
             out_data.push(self.weather());
         }
@@ -366,7 +365,6 @@ impl CriterionStability {
                     )),
                 };
             } else if angles.len() > 1 {
-                //        dbg!(&self.metacentric_height.z_g_fix(), &angles);
                 results.push(CriterionData::new_result(
                     CriterionID::HeelFirstMaximumLC,
                     angle.0,

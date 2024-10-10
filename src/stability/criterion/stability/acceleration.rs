@@ -56,7 +56,7 @@ impl IAcceleration for Acceleration {
         let (_, theta_1_r) = self.rolling_amplitude.calculate()?;
         let a = 0.0105 * h_trans_0/(c*c*self.b)*k_theta*theta_1_r;
         let k = 0.3/a; // >= 1;
-     //   log::info!("Acceleration calculate: zg_fix:{} b:{} d:{} h_trans_0:{h_trans_0} k_theta:{k_theta} c:{c} theta_1_r:{theta_1_r} a:{a} k:{k}",  self.metacentric_height.z_g_fix().unwrap(), self.b, self.d);
+        log::trace!("Acceleration calculate: zg_fix:{} b:{} d:{} h_trans_0:{h_trans_0} k_theta:{k_theta} c:{c} theta_1_r:{theta_1_r} a:{a} k:{k}",  self.metacentric_height.z_g_fix().unwrap(), self.b, self.d);
         Ok(k)
     }
 }

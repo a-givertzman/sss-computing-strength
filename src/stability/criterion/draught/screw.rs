@@ -41,7 +41,6 @@ impl Screw {
         for v in self.data.iter() {
             let z_fix = v.pos.z()  - v.pos.y() * (roll * PI / 180.).sin() - self.draught.value(v.pos.x())?;
             let percent = (1. - z_fix/v.d).min(2.).max(0.)*50.;
-   //         dbg!(&v.pos, v.pos.y() * (roll * PI / 180.).sin(), self.draught.value(v.pos.x())?, z_fix, percent);
             result.push((v.name.clone(), v.pos.y(), percent));
         }
         Ok(result)

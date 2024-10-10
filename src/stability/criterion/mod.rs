@@ -1,18 +1,18 @@
 //! Критерии проверки остойчивости
-pub(crate) mod stability;
-pub(crate) mod draught;
 pub(crate) mod computer;
+pub(crate) mod draught;
+pub(crate) mod stability;
 
-pub use stability::*;
-pub use draught::*;
 pub use computer::*;
+pub use draught::*;
+pub use stability::*;
 
 #[derive(Hash, Eq, PartialEq)]
 pub enum CriterionID {
     Wheather = 1,
     WindStaticHeel = 2,
     AreaLC0_30 = 3,
-    AreaLc0Thetalmax = 4,    
+    AreaLc0Thetalmax = 4,
     AreaLC0_40 = 5,
     AreaLC30_40 = 6,
     MaximumLC = 7,
@@ -35,7 +35,7 @@ pub enum CriterionID {
     LlDraftTSB = 107,
     LlDraftTPS = 108,
     LlDraftFSB = 109,
-    LlDraftFPS= 110,
+    LlDraftFPS = 110,
     LlDraftTFSB = 111,
     LlDraftTFPS = 112,
     LlDraftLSSB = 113,
@@ -60,7 +60,7 @@ pub enum CriterionID {
     ScrewImmersionSB = 146,
     ScrewImmersionPS = 147,
     ScrewImmersionReserve = 148,
-  //  ScrewImmersionRreserve = 149,
+    //  ScrewImmersionRreserve = 149,
     ReserveBuoyncyInBow = 150,
 }
 ///
@@ -71,7 +71,9 @@ impl From<String> for CriterionID {
             "Осадка по Л ГВЛ ЛБ" | "LL draft S PS" => CriterionID::LlDraftSPS,
             "Осадка по З ГВЛ ПрБ" | "LL draft W SB" => CriterionID::LlDraftWSB,
             "Осадка по З ГВЛ ЛБ" | "LL draft W PS" => CriterionID::LlDraftWPS,
-            "Осадка по ЗСА ГВЛ ПрБ" | "LL draft WNA SB" => CriterionID::LlDraftWNASB,
+            "Осадка по ЗСА ГВЛ ПрБ" | "LL draft WNA SB" => {
+                CriterionID::LlDraftWNASB
+            }
             "Осадка по ЗСА ГВЛ ЛБ" | "LL draft WNA PS" => CriterionID::LlDraftWNAPS,
             "Осадка по Т ГВЛ ПрБ" | "LL draft T SB" => CriterionID::LlDraftTSB,
             "Осадка по Т ГВЛ ЛБ" | "LL draft T PS" => CriterionID::LlDraftTPS,
@@ -83,26 +85,52 @@ impl From<String> for CriterionID {
             "Осадка по ЛЛ ГВЛ ЛБ" | "LL draft LS PS" => CriterionID::LlDraftLSPS,
             "Осадка по ЛЗ ГВЛ ПрБ" | "LL draft LW SB" => CriterionID::LlDraftLWSB,
             "Осадка по ЛЗ ГВЛ ЛБ" | "LL draft LW PS" => CriterionID::LlDraftLWPS,
-            "Осадка по ЛЗСА ГВЛ ПрБ" | "LL draft LWNA SB" => CriterionID::LlDraftLWNASB,
-            "Осадка по ЛЗСА ГВЛ ЛБ" | "LL draft LWNA PS" => CriterionID::LlDraftLWNAPS,
+            "Осадка по ЛЗСА ГВЛ ПрБ" | "LL draft LWNA SB" => {
+                CriterionID::LlDraftLWNASB
+            }
+            "Осадка по ЛЗСА ГВЛ ЛБ" | "LL draft LWNA PS" => {
+                CriterionID::LlDraftLWNAPS
+            }
             "Осадка по ЛТ ГВЛ ПрБ" | "LL draft LT SB" => CriterionID::LlDraftLTSB,
             "Осадка по ЛТ ГВЛ ЛБ" | "LL draft LT PS" => CriterionID::LlDraftLTPS,
             "Осадка по ЛП ГВЛ ПрБ" | "LL draft LF SB" => CriterionID::LlDraftLFSB,
             "Осадка по ЛП ГВЛ ЛБ" | "LL draft LF PS" => CriterionID::LlDraftLFPS,
-            "Осадка по ЛТП ГВЛ ПрБ" | "LL draft LTF SB" => CriterionID::LlDraftLTFSB,
+            "Осадка по ЛТП ГВЛ ПрБ" | "LL draft LTF SB" => {
+                CriterionID::LlDraftLTFSB
+            }
             "Осадка по ЛТП ГВЛ ЛБ" | "LL draft LTF PS" => CriterionID::LlDraftLTFPS,
-            "Осадка по ГВЛ Р1 (резерв)" | "LL draft SI1 (reserve)" => CriterionID::LlDraftSI1Reserve,
-            "Осадка по ГВЛ Р16 (резерв)" | "LL draft SI16 (reserve)" => CriterionID::LlDraftSI16Reserve,
-            "Максимальный дифферент на нос" | "Maximum forward trim" => CriterionID::MaximumForwardTrim,
-            "Максимальный дифферент на корму" | "Maximum aft trim" => CriterionID::MaximumAftTrim,
-            "Высота на носовом перпендикуляре ПрБ" | "Depth at forward perpendicular SB" => CriterionID::DepthAtForwardPerpendicularSB,
-            "Высота на носовом перпендикуляре ЛБ" | "Depth at forward perpendicular PS" => CriterionID::DepthAtForwardPerpendicularPS,
-            "Заглубление винта ДП" | "Screw immersion CL" => CriterionID::ScrewImmersionCL,
-            "Заглубление винта ПрБ" | "Screw immersion SB" => CriterionID::ScrewImmersionSB,
-            "Заглубление винта ЛБ" | "Screw immersion PS" => CriterionID::ScrewImmersionPS,
-            "Запас плавучести в носу" | "Reserve buoyncy in bow" => CriterionID::ReserveBuoyncyInBow,  
+            "Осадка по ГВЛ Р1 (резерв)" | "LL draft SI1 (reserve)" => {
+                CriterionID::LlDraftSI1Reserve
+            }
+            "Осадка по ГВЛ Р16 (резерв)" | "LL draft SI16 (reserve)" => {
+                CriterionID::LlDraftSI16Reserve
+            }
+            "Максимальный дифферент на нос" | "Maximum forward trim" => {
+                CriterionID::MaximumForwardTrim
+            }
+            "Максимальный дифферент на корму" | "Maximum aft trim" => {
+                CriterionID::MaximumAftTrim
+            }
+            "Высота на носовом перпендикуляре ПрБ" | "Depth at forward perpendicular SB" => {
+                CriterionID::DepthAtForwardPerpendicularSB
+            }
+            "Высота на носовом перпендикуляре ЛБ" | "Depth at forward perpendicular PS" => {
+                CriterionID::DepthAtForwardPerpendicularPS
+            }
+            "Заглубление винта ДП" | "Screw immersion CL" => {
+                CriterionID::ScrewImmersionCL
+            }
+            "Заглубление винта ПрБ" | "Screw immersion SB" => {
+                CriterionID::ScrewImmersionSB
+            }
+            "Заглубление винта ЛБ" | "Screw immersion PS" => {
+                CriterionID::ScrewImmersionPS
+            }
+            "Запас плавучести в носу" | "Reserve buoyncy in bow" => {
+                CriterionID::ReserveBuoyncyInBow
+            }
             _ => CriterionID::ScrewImmersionReserve,
-        } 
+        }
     }
 }
 /// Результат проверки критерия

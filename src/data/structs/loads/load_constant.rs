@@ -1,13 +1,13 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
-use serde::{Deserialize, Serialize};
 use crate::data::structs::DataArray;
+use serde::{Deserialize, Serialize};
 
 /// Тип груза, приходящегося на шпацию
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum LoadConstantType {
-    #[serde(alias="hull")]
+    #[serde(alias = "hull")]
     Hull,
-    #[serde(alias="equipment")]
+    #[serde(alias = "equipment")]
     Equipment,
 }
 ///
@@ -18,7 +18,7 @@ impl std::fmt::Display for LoadConstantType {
             "{}",
             match self {
                 LoadConstantType::Hull => "Hull",
-                LoadConstantType::Equipment => "Equipment", 
+                LoadConstantType::Equipment => "Equipment",
             },
         )
     }
@@ -40,10 +40,7 @@ impl std::fmt::Display for LoadConstantData {
         write!(
             f,
             "LoadConstantData(mass:{}, bound_x1:{}, bound_x2:{}, type:{})",
-            self.mass,            
-            self.bound_x1,
-            self.bound_x2,
-            self.loading_type,
+            self.mass, self.bound_x1, self.bound_x2, self.loading_type,
         )
     }
 }
@@ -51,9 +48,8 @@ impl std::fmt::Display for LoadConstantData {
 pub type LoadConstantArray = DataArray<LoadConstantData>;
 ///
 impl LoadConstantArray {
-    /// 
+    ///
     pub fn data(self) -> Vec<LoadConstantData> {
         self.data
     }
 }
-

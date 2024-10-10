@@ -29,7 +29,8 @@ pub type ComputedFrameDataArray = DataArray<ComputedFrameData>;
 impl ComputedFrameDataArray {
     /// Преобразование и возвращает данные в виде вектора (индекс, начало, конец) шпации
     pub fn data(mut self) -> Vec<(f64, f64)> {
-        let mut result: Vec<_> = self.data
+        let mut result: Vec<_> = self
+            .data
             .iter_mut()
             .map(|v| (v.index, v.start_x, v.end_x))
             .collect();
@@ -37,6 +38,6 @@ impl ComputedFrameDataArray {
         result
             .into_iter()
             .map(|(_, start_x, end_x)| (start_x, end_x))
-            .collect::< Vec<(f64, f64)>>()
+            .collect::<Vec<(f64, f64)>>()
     }
 }

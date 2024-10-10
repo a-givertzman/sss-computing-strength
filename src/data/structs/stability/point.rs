@@ -1,20 +1,19 @@
 //! Промежуточные структуры для serde_json для парсинга данных
-//! Координаты точки на корпусе судна 
+//! Координаты точки на корпусе судна
 //! относительно центра корпуса судна
 
 use serde::{Deserialize, Serialize};
 
-
-/// Координаты точки на корпусе судна 
+/// Координаты точки на корпусе судна
 /// относительно центра
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PointData {
-    /// Название 
-    pub name: String, 
+    /// Название
+    pub name: String,
     /// Координаты относительно центра корпуса судна, м
     pub z: f64,
     pub x: f64,
-    pub y: f64,  
+    pub y: f64,
 }
 ///
 impl std::fmt::Display for PointData {
@@ -26,5 +25,3 @@ impl std::fmt::Display for PointData {
         )
     }
 }
-
-

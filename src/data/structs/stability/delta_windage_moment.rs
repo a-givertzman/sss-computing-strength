@@ -29,10 +29,10 @@ pub type DeltaWindageMomentDataArray = DataArray<DeltaWindageMomentData>;
 impl DeltaWindageMomentDataArray {
     /// Преобразование данных в массив ключ + значение по х
     pub fn x(&self) -> Vec<(f64, f64)> {
-        self.data.iter().map(|v| (v.draught, v.value_x) ).collect()
+        self.data.iter().map(|v| (v.draught, v.value_x)).collect()
     }
     /// Преобразование данных в массив ключ + значение по z
     pub fn z(&self) -> Vec<(f64, f64)> {
-        self.data.iter().map(|v| (v.draught, v.value_z) ).collect()
-    }   
+        self.data.iter().map(|v| (v.draught, v.value_z)).collect()
+    }
 }

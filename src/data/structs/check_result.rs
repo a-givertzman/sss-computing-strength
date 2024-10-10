@@ -456,7 +456,6 @@ impl ParsedShipData {
                 "Error check ParsedShipData: bow_area.is_empty()".to_string(),
             ));
         }
-
         log::info!("result check ok");
         Ok(self)
     }

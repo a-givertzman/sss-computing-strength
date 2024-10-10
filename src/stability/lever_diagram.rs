@@ -75,9 +75,8 @@ impl LeverDiagram {
     /// динамической остойчивости (13)
     fn calculate(&self) -> Result<(), Error> {
         if self.pantocaren.len() < 2 {
-            let error = Error::FromString(
-                "LeverDiagram calculate error: pantocaren.len() < 2".to_owned(),
-            );
+            let error =
+                Error::FromString("LeverDiagram calculate error: pantocaren.len() < 2".to_owned());
             log::error!("{error}");
             return Err(error);
         }
@@ -100,7 +99,11 @@ impl LeverDiagram {
         }
         let curve = Curve2D::from_values_catmull_rom(pantocaren)?;
         // расчет диаграммы
-        log::trace!("StabilityArm calculate mean_draught:{}, z_g_fix:{} ", self.mean_draught, self.metacentric_height.z_g_fix()?);
+        log::trace!(
+            "StabilityArm calculate mean_draught:{}, z_g_fix:{} ",
+            self.mean_draught,
+            self.metacentric_height.z_g_fix()?
+        );
         let theta: &dyn Fn(i32) -> Result<(f64, f64), Error> = &|angle_deg: i32| {
             let angle_deg = angle_deg as f64 * 0.1;
             let angle_rad = angle_deg * std::f64::consts::PI / 180.;
@@ -271,7 +274,8 @@ impl ILeverDiagram for LeverDiagram {
     fn lever_moment(&self, angle: f64) -> Result<f64, Error> {
         if !(0. ..=90.).contains(&angle) {
             let error = Error::FromString(
-                "ILeverDiagram lever_moment error: angle {angle} >= 0. && angle {angle} <= 90.".to_owned(),
+                "ILeverDiagram lever_moment error: angle {angle} >= 0. && angle {angle} <= 90."
+                    .to_owned(),
             );
             log::error!("{error}");
             return Err(error);
@@ -432,7 +436,8 @@ impl ILeverDiagram for FakeLeverDiagram {
     fn dso_lever_max(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
         if angle1 > angle2 {
             let error = Error::FromString(
-                "FakeLeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}".to_owned(),
+                "FakeLeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}"
+                    .to_owned(),
             );
             log::error!("{error}");
             return Err(error);
