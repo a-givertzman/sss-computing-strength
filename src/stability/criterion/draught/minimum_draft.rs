@@ -5,7 +5,7 @@ pub struct MinimumDraft {
     /// Длинна судна между перпендикулярами
     length_lbp: f64,
 }
-///
+//
 impl MinimumDraft {
     /// Конструктор по умолчанию.
     /// * length_lbp - Длинна судна между перпендикулярами

@@ -1,19 +1,14 @@
 //! Кривая, позволяет получать интерполированные значения
 use splines::{Interpolation, Key, Spline};
-
 use crate::Error;
-
-///
 /// Представление кривой в виде массива пар значений
 /// - Обеспечивает получение промежуточных значений с помощью простой линейной интерполяции
 #[derive(Clone, Debug)]
 pub struct Curve {
     spline: Spline<f64, f64>,
 }
-///
-///
+//
 impl Curve {
-    ///
     /// Creates new instance of the Curve with linear interpolation  
     /// from vector of the key - value pairs
     pub fn new_linear(src: &Vec<(f64, f64)>) -> Result<Curve, Error> {
@@ -28,16 +23,15 @@ impl Curve {
             spline: Spline::from_vec(src),
         })
     }
-    ///
     /// Creates new instance of the Curve with CatmullRom interpolation  
     /// from vector of the key - value pairs
     /// Values must be sorted by key
-    pub fn new_catmull_rom(src: &Vec<(f64, f64)>) -> Result<Curve, Error> {
+    pub fn new_catmull_rom(src: &[(f64, f64)]) -> Result<Curve, Error> {
         if src.len() <= 2 {
             return Err(Error::FromString("Curve new_catmull_rom error: src.len() <= 2".to_string()))
         }
         let mut res = Vec::new();
-        let mut src = src.clone();
+        let mut src = Vec::from(src);
         src.sort_by(|a, b| a.0.partial_cmp(&b.0).expect("Curve.new_catmull_rom src sort error!"));
         // Для метода CatmullRom добавляем по 3 значения вначало и конец вектора
         let delta_key = src[1].0 - src[0].0;
@@ -60,13 +54,11 @@ impl Curve {
             src[0].1 - delta_value,
             Interpolation::CatmullRom,
         ));
-
         let values: Vec<Key<_, _>> = src
             .iter()
             .map(|v| Key::new(v.0, v.1, Interpolation::CatmullRom))
             .collect();
         res.append(&mut values.clone());
-
         let delta_key = src[src.len() - 1].0 - src[src.len() - 2].0;
         if delta_key <= 0. {
             return Err(Error::FromString("Curve new_catmull_rom error: delta_key <= 0".to_string()))

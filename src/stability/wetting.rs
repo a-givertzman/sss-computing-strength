@@ -14,7 +14,7 @@ pub struct WettingMoment {
     /// Палубный груз - лес
     loads_timber: Rc<Vec<Rc<LoadMass>>>,
 }
-///
+//
 impl WettingMoment {
     /// Основной конструктор
     /// * coeff - Коэффициент изменения массы при намокании
@@ -26,7 +26,7 @@ impl WettingMoment {
         }
     }
 }
-///
+//
 impl IWettingMoment for WettingMoment {
     /// Суммарный статический момент массы намокания
     fn moment(&self) -> Moment {

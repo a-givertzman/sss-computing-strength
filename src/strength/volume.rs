@@ -13,7 +13,7 @@ pub struct Volume {
     /// Осадка судна
     draught: Rc<dyn IDraught>,
 }
-///
+//
 impl Volume {
     /// Основной конструктор. Аргументы:  
     /// * bounds - Вектор разбиения на отрезки для эпюров
@@ -31,7 +31,7 @@ impl Volume {
         }
     }
 }
-///
+//
 impl IVolume for Volume {
     /// Распределение объема вытесненной воды по шпациям
     fn values(&self) -> Result<Vec<f64>, Error> {

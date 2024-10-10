@@ -1,9 +1,6 @@
 //! Осадка судна
 use std::{cell::RefCell, rc::Rc};
-
 use crate::{trim::ITrim, Error, IParameters, ParameterID};
-
-
 /// Осадка судна
 pub struct Draught {
     /// длинна судна
@@ -19,7 +16,7 @@ pub struct Draught {
     /// Изменение осадки
     delta_draught: RefCell<Option<f64>>,
 }
-///
+//
 impl Draught {
     /// Основной конструктор
     /// * ship_length - длинна судна
@@ -68,7 +65,7 @@ impl Draught {
         Ok(())
     }
 }
-///
+//
 impl IDraught for Draught {
     /// Значение осадки в точке
     #[allow(non_snake_case)]

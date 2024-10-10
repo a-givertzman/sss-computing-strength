@@ -23,21 +23,19 @@ pub struct PosShift {
     y: Curve, 
     z: Curve,
 }
-
+//
 impl PosShift {
-    ///
     pub fn new(x: Curve, y: Curve, z: Curve ) -> Self {
         Self { x, y, z }
     }
 }
-
+//
 impl IPosShift for PosShift {
-    ///
     fn value(&self, key: f64) -> Result<Position, Error> {
         Ok(Position::new(self.x.value(key)?, self.y.value(key)?, self.z.value(key)?))
     }
 }
-
+//
 #[doc(hidden)]
 pub trait IPosShift {
     fn value(&self, key: f64) -> Result<Position, Error>;

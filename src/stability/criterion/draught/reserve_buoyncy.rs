@@ -15,7 +15,7 @@ pub struct ReserveBuoyncyInBow {
     /// Cуммарая площадь проекции на диаметральную плоскость от осадки, м^2
     bow_area: Vec<(f64, f64)>,
 }
-///
+//
 impl ReserveBuoyncyInBow {
     /// Конструктор по умолчанию.
     /// * draught - Осадка судна
@@ -32,7 +32,7 @@ impl ReserveBuoyncyInBow {
             bow_area,
         }
     }
-    ///
+    //
     pub fn calculate(&self) -> Result<f64, Error> {
         let draught_0075l = self.draught.value((0.5 - 0.075)*self.length_lbp)?;
         Curve::new_linear(&self.bow_area)?.value(draught_0075l)

@@ -27,7 +27,7 @@ pub struct ShipMoment {
     /// Отстояние центра масс
     shift: Rc<RefCell<Option<Position>>>,
 }
-///
+//
 impl ShipMoment {
     /// Аргументы конструктора:  
     /// * mass - Масса судна
@@ -58,7 +58,7 @@ impl ShipMoment {
             shift: Rc::new(RefCell::new(None)),
         }
     }
-    ///
+    //
     fn calculate(&self) -> Result<(), Error> {
         *self.shift.borrow_mut() = Some(self.shift()?);
         *self.moment_mass.borrow_mut() = Some(self.moment_mass()?);
@@ -89,7 +89,7 @@ impl ShipMoment {
         Ok(moment_sum)
     }
 }
-///
+//
 impl IShipMoment for ShipMoment {
     /// Отстояние центра масс
     fn shift(&self) -> Result<Position, Error> {

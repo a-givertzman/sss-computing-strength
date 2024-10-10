@@ -26,7 +26,7 @@ pub struct Trim {
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>, 
 }
-///
+//
 impl Trim {
     /// Основной конструктор
     /// * ship_length - длинна судна

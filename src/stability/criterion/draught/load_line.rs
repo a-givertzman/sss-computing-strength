@@ -13,7 +13,7 @@ pub struct LoadLine {
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>,
 }
-///
+//
 impl LoadLine {
     /// Конструктор по умолчанию.
     /// * draught - Осадка судна

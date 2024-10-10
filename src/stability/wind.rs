@@ -17,7 +17,7 @@ pub struct Wind {
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>,
 }
-///
+//
 impl Wind {
     /// Основной конструктор
     /// * navigation_area: Параметры района плавания

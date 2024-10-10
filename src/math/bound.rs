@@ -8,7 +8,7 @@ pub enum Bound {
     /// диапазон: (начало диапазона, конец диапазона)
     Value(f64, f64),
 }
-///
+//
 impl Bound {
     /// Основной конструктор  
     /// * start - начало диапазона
@@ -40,7 +40,7 @@ impl Bound {
     }
     /// Пересечение c другим диапазоном, возвращает общий диапазон
     pub fn intersect(&self, other: &Bound) -> Result<Bound, Error> {
-        return Ok(match self {
+        Ok(match self {
             Bound::None => Bound::None,
             Bound::Full => *other,
             Bound::Value(self_start, self_end) => match other {
@@ -59,7 +59,7 @@ impl Bound {
                     Bound::new(other_start.max(*self_start), other_end.min(*self_end))?
                 }
             },
-        });
+        })
     }
     /// Длинна диапазона
     pub fn length(&self) -> Option<f64> {
@@ -90,20 +90,20 @@ impl Bound {
             _ => None,
         }
     }
-    ///
+    /// Если true, то диапазон с нулевой длинной
     pub fn is_none(&self) -> bool {
-        return *self == Bound::None
+        *self == Bound::None
     }
-    ///
+    /// Если true, то диапазон с ненулевой длинной
     pub fn is_some(&self) -> bool {
-        return !self.is_none()
+        !self.is_none()
     }
-    ///
+    /// Если true, то ограниченный диапазон с ненулевой длинной 
     pub fn is_value(&self) -> bool {
-        return *self != Bound::None && *self != Bound::Full
+        *self != Bound::None && *self != Bound::Full
     }
 }
-///
+//
 impl std::fmt::Display for Bound {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

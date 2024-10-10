@@ -58,7 +58,7 @@ pub struct CriterionStability {
     /// Смещение груза при перевозки навалочных смещаемых грузов (зерна)
     grain: Box<dyn IGrain>,
 }
-///
+//
 impl CriterionStability {
     /// Главный конструктор:
     /// * ship_type - Тип судна
@@ -126,7 +126,7 @@ impl CriterionStability {
             grain,
         })
     }
-    ///
+    //
     pub fn create(&mut self) -> Vec<CriterionData> {
         let mut out_data = Vec::new();
         //        dbg!(self.metacentric_height.z_g_fix().unwrap());
@@ -435,7 +435,7 @@ impl CriterionStability {
         if let Some(angle) = angle {
             CriterionData::new_result(CriterionID::HeelTurning, angle, target)
         } else {
-            return match self.circulation.velocity(target) {
+            match self.circulation.velocity(target) {
                 Ok(velocity) => CriterionData::new_error(
                     CriterionID::HeelTurning,
                     format!(
@@ -444,12 +444,12 @@ impl CriterionStability {
                     ),
                 ),
                 Err(text) => {
-                    return CriterionData::new_error(
+                    CriterionData::new_error(
                         CriterionID::HeelTurning,
                         "Ошибка вычисления рекомендуемой скорости: ".to_owned() + &text.to_string(),
                     )
                 }
-            };
+            }
         }
         // TODO: В случаях, когда палубный груз контейнеров размещается только на крышках грузовых
         // люков, вместо угла входа кромки верхней палубы может приниматься меньший из углов

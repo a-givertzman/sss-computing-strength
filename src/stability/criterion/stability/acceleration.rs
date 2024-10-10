@@ -1,9 +1,6 @@
 //! Расчет критерия ускорения
-
 use std::rc::Rc;
-
 use crate::{Error, ICurve, IMetacentricHeight, IRollingAmplitude, IRollingPeriod};
-
 /// Расчет критерия ускорения
 pub struct Acceleration {
     ///  Ширина судна B
@@ -19,7 +16,7 @@ pub struct Acceleration {
     /// Продольная и поперечная исправленная метацентрическая высота.
     metacentric_height: Rc<dyn IMetacentricHeight>,   
 }
-/// 
+//
 impl Acceleration {
     /// Основной конструктор
     /// * b - Ширина судна, м
@@ -46,7 +43,7 @@ impl Acceleration {
         }
     }
 }
-///
+//
 impl IAcceleration for Acceleration {
     /// Расчет критерия ускорения
     fn calculate(&self) -> Result<f64, Error> {
@@ -60,6 +57,7 @@ impl IAcceleration for Acceleration {
         Ok(k)
     }
 }
+//
 #[doc(hidden)]
 pub trait IAcceleration {
     /// Расчет критерия ускорения
@@ -81,9 +79,9 @@ impl FakeAccelleration {
         }
     }
 }
+//
 #[doc(hidden)]
 impl IAcceleration for FakeAccelleration {
-    ///
     fn calculate(&self) -> Result<f64, Error>  {
         Ok(self.value)
     }

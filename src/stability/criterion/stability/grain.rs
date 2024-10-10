@@ -1,9 +1,7 @@
 //! Критерий крена от смещения зерна
-
 use core::f64;
 use std::{f64::consts::PI, rc::Rc};
 use crate::{Error, IBulk, ILeverDiagram, IMass, IParameters, ParameterID};
-
 /// Критерий крена от смещения зерна
 pub struct Grain {
     /// Угол заливания отверстий
@@ -22,7 +20,7 @@ pub struct Grain {
     /// кривой восстанавливающих плеч
     area: Option<f64>,   
 }
-/// 
+//
 impl Grain {
     /// Основной конструктор
     /// * flooding_angle - Угол заливания отверстий
@@ -109,7 +107,7 @@ impl Grain {
         Ok(())
     }
 }
-///
+//
 impl IGrain for Grain {
     /// Расчетный и максимально допустимый углы крена от смещения зерна 
     fn angle(&mut self) -> Result<(f64, f64), Error> {
@@ -127,6 +125,7 @@ impl IGrain for Grain {
         self.area.ok_or(Error::FromString("Grain area error!".to_string()))
     }
 }
+//
 #[doc(hidden)]
 pub trait IGrain {
     /// Расчетный и максимально допустимый углы крена от смещения зерна 
@@ -156,11 +155,9 @@ impl FakeGrain {
 }
 #[doc(hidden)]
 impl IGrain for FakeGrain  {
-    ///
     fn angle(&mut self) -> Result<(f64, f64), Error> {
         Ok(self.angle)
     }
-    ///
     fn area(&mut self) -> Result<f64, Error> {
         Ok(self.area)
     }

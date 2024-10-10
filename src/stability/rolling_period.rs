@@ -17,7 +17,7 @@ pub struct RollingPeriod {
     /// Исправленная метацентрическая высота
     metacentric_height: Rc<dyn IMetacentricHeight>,
 }
-///
+//
 impl RollingPeriod {
     /// Основной конструктор
     pub fn new(
@@ -33,7 +33,7 @@ impl RollingPeriod {
         Self { l_wl, b, d, metacentric_height }
     }
 }
-///
+//
 impl IRollingPeriod for RollingPeriod {
     /// Период качки судна
     fn calculate(&self) -> Result<f64, Error> {

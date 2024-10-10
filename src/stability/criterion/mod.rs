@@ -63,10 +63,10 @@ pub enum CriterionID {
   //  ScrewImmersionRreserve = 149,
     ReserveBuoyncyInBow = 150,
 }
-///
+//
 impl From<String> for CriterionID {
     fn from(s: String) -> Self {
-        match s.as_str().as_ref() {
+        match s.as_str() {
             "Осадка по Л ГВЛ ПрБ" | "LL draft S SB" => CriterionID::LlDraftSSB,
             "Осадка по Л ГВЛ ЛБ" | "LL draft S PS" => CriterionID::LlDraftSPS,
             "Осадка по З ГВЛ ПрБ" | "LL draft W SB" => CriterionID::LlDraftWSB,
@@ -116,7 +116,7 @@ pub struct CriterionData {
     /// Текст ошибки
     pub error_message: Option<String>,
 }
-///
+//
 impl CriterionData {
     /// Конструктор при наличии результата
     pub fn new_result(criterion_id: CriterionID, result: f64, target: f64) -> Self {

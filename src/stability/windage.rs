@@ -19,7 +19,7 @@ pub struct Windage {
     /// Отстояние по вертикали центра площади проекции подводной части корпуса
     volume_shift: f64, 
 }
-///
+//
 impl Windage {
     /// Главный конструктор: 
     /// * icing_stab - Тип обледенения
@@ -42,12 +42,12 @@ impl Windage {
             volume_shift,
         }
     }
-    ///
+    //
     fn moment(&self) -> Result<Moment, Error> {
         Ok(self.area_stability.moment_v()?.scale(1. + self.icing_stab.coef_v_moment()))
     }
 }
-///
+//
 impl IWindage for Windage {
     /// Площадь парусности, м^2
     fn a_v(&self) -> Result<f64, Error> {

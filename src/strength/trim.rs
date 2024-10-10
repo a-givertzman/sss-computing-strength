@@ -1,13 +1,10 @@
 //! Класс для расчета дифферента и средней осадки в расчете прочности
-
 use crate::{draught::{Draught, IDraught}, math::Bounds, trim::{FakeTrim, ITrim}, Error, IVolume, MultipleSingle};
-
 use super::{
     displacement::Displacement,
     volume::Volume, IMass,
 };
-use std::{cell::RefCell, rc::Rc};
-
+use std::rc::Rc;
 /// Класс для расчета дифферента и средней осадки в расчете прочности метором перебора
 /// Используются только эпюра масс и Бонжан. Данные по остойчивости не используются.
 pub struct Trim {
@@ -26,7 +23,7 @@ pub struct Trim {
     /// Вектор разбиения судна на отрезки
     bounds: Rc<Bounds>,
 }
-///
+//
 impl Trim {
     /// Основной конструктор
     /// * ship_length - длинна судна
@@ -75,6 +72,7 @@ impl Trim {
         xc /= sum_s;
         (xc, sum_s)
     }*/
+    ///  
     /// Вычисление суммы площади и смещения центра  
     /// * values - Vec(x, value)>  
     /// * result - (delta_x, sum_s)  

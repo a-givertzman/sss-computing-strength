@@ -16,16 +16,15 @@ pub enum IcingTimberType {
     #[serde(alias="bow")]
     Bow,
 }
-///
+//
 impl IcingTimberType {
-    ///
     pub fn from_str(src: &str) -> Result<Self, Error> {
         Ok(match src.trim().to_lowercase().as_str() {
             "full" => IcingTimberType::Full,
             "half left" => IcingTimberType::HalfLeft,
             "half right" => IcingTimberType::HalfRight,
             "bow" => IcingTimberType::Bow,
-            src @ _ => return Err(Error::FromString(format!("IcingTimberType from_str error: no type {src}"))),
+            src => return Err(Error::FromString(format!("IcingTimberType from_str error: no type {src}"))),
         })
     }
 }
@@ -39,7 +38,7 @@ pub struct IcingTimberBound {
     /// Тип обледенения  
     icing_timber_stab: IcingTimberType,
 }
-///
+//
 impl IcingTimberBound {
     /// Основной конструктор
     /// * width - Ширина корпуса судна  

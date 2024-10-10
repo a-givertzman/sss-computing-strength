@@ -16,7 +16,7 @@ pub struct DepthAtForwardPerpendicular {
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>,
 }
-///
+//
 impl DepthAtForwardPerpendicular {
     /// Конструктор по умолчанию.
     /// * draught - Осадка судна

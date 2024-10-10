@@ -28,7 +28,7 @@ pub struct Computer {
     /// Набор результатов расчетов для записи в БД
     results: Rc<dyn IResults>, 
 }
-///
+//
 impl Computer {
     /// Основной конструктор  
     /// * gravity_g - Ускорение свободного падения  

@@ -8,18 +8,18 @@ pub struct ShearForce {
     /// результирующая нагрузки по шпациям
     total_force: Box<dyn ITotalForce>,
 }
-///
+//
 impl ShearForce {
-    ///
+    /// Главный конструктор
+    /// *total_force - результирующая нагрузки на шпацию
     pub fn new(total_force: impl ITotalForce + 'static) -> Self {
         Self {
             total_force: Box::new(total_force),
         }
     }
 }
-///
+//
 impl IShearForce for ShearForce {
-    ///
     fn values(&mut self) -> Result<Vec<f64>, Error> {
         let result = self
             .total_force

@@ -1,8 +1,7 @@
 //! Момент
 use super::position::Position;
-
 pub type Moment = super::position::Position;
-///
+/// Момент
 impl Moment {
     /// Рассчет момента из позиции и значения
     pub fn from_pos(position: Position, value: f64) -> Self {

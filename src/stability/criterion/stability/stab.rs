@@ -17,7 +17,7 @@ pub struct Stability {
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>, 
 }
-///
+//
 impl Stability {
     /// Конструктор по умолчанию.
     /// * flooding_angle - Угол заливания отверстий
@@ -41,7 +41,7 @@ impl Stability {
         }
     }
 }
-///
+//
 impl IStability for Stability {
     /// Расчет критерия погоды К (2.1.2)
     fn k(&self) -> Result<f64, Error> {

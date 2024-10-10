@@ -16,7 +16,7 @@ pub struct IcingMoment {
     /// Площади поверхности для расчета остойчивости
     area_stability: Rc<dyn crate::stability::IArea>,
 }
-///
+//
 impl IcingMoment {
     /// Основной конструктор
     /// * icing_stab - Тип обледенения судна
@@ -31,7 +31,7 @@ impl IcingMoment {
         }
     }
 }
-///
+//
 impl IIcingMoment for IcingMoment {
     /// Суммарный статический момент массы льда. 
     fn moment(&self) -> Result<Moment, Error> {

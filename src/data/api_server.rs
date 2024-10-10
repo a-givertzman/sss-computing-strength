@@ -5,7 +5,7 @@ use crate::{
         structs::*,
     },
     error::{self, Error},
-    CriterionData,
+    CriterionData, Position,
 };
 use api_tools::client::{api_query::*, api_request::ApiRequest};
 use loads::{BulkheadArray, CompartmentArray, LoadCargoArray};
@@ -505,15 +505,15 @@ pub fn send_parameters_data(
 pub fn send_draft_mark(
     api_server: &mut ApiServer,
     ship_id: usize,
-    data: Vec<(String, (f64, f64, f64))>,
+    data: Vec<(String, Position)>,
 ) -> Result<(), error::Error> {
     log::info!("send_draft_mark begin");
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM draft_mark_result WHERE ship_id={ship_id};");
     if !data.is_empty() {
         full_sql += " INSERT INTO draft_mark_result (ship_id, name, x, y, value) VALUES";
-        data.into_iter().for_each(|(name, (x, y, value))| {
-            full_sql += &format!(" ({ship_id}, '{name}', {x}, {y}, {value}),");
+        data.into_iter().for_each(|(name, position)| {
+            full_sql += &format!(" ({ship_id}, '{name}', {}, {}, {}),", position.x(), position.y(), position.z());
         });
         full_sql.pop();
         full_sql.push(';');

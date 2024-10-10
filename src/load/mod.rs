@@ -28,7 +28,7 @@ pub enum LoadingType {
     Stores,
     Cargo,
 }
-///
+//
 impl std::fmt::Display for LoadingType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -45,7 +45,7 @@ impl std::fmt::Display for LoadingType {
         )
     }
 }
-///
+//
 impl From<CargoGeneralCategory> for LoadingType {
     fn from(value: CargoGeneralCategory) -> Self {
         match value {
@@ -57,7 +57,7 @@ impl From<CargoGeneralCategory> for LoadingType {
         }
     }
 }
-///
+//
 impl From<LoadConstantType> for LoadingType {
     fn from(value: LoadConstantType) -> Self {
         match value {
@@ -90,7 +90,7 @@ pub struct Loads<'a> {
     // Постоянная масса судна
     loads_const: Option<Rc<Vec<Rc<LoadMass>>>>,
 }
-///
+//
 impl<'a> Loads<'_> {
     /// Основной конструктор
     /// * load_constants - Постоянная нагрузка на судно
@@ -116,7 +116,7 @@ impl<'a> Loads<'_> {
             loads_const: None,
         }
     }
-    ///
+    // Ленивый расчет
     fn create(&mut self) -> Result<(), Error> {
         let mut tanks: Vec<Rc<dyn ITank>> = Vec::new();
         let mut desks: Vec<Rc<dyn IDesk>> = Vec::new();
@@ -272,7 +272,7 @@ impl<'a> Loads<'_> {
         self.tanks = Some(Rc::new(tanks));
         Ok(())
     }
-
+    /// Цистерны
     pub fn tanks(&mut self) -> Result<Rc<Vec<Rc<dyn ITank>>>, Error> {
         if self.tanks.is_none() {
             self.create()?;
@@ -283,6 +283,7 @@ impl<'a> Loads<'_> {
                 .ok_or("Loads tanks error: no data!".to_string())?,
         ))
     }
+    /// Палубный груз
     pub fn desks(&mut self) -> Result<Rc<Vec<Rc<dyn IDesk>>>, Error> {
         if self.desks.is_none() {
             self.create()?;
@@ -293,6 +294,7 @@ impl<'a> Loads<'_> {
                 .ok_or("Loads desks error: no data!".to_string())?,
         ))
     }
+    /// Сыпучий груз
     pub fn bulks(&mut self) -> Result<Rc<Vec<Rc<dyn IBulk>>>, Error> {
         if self.bulks.is_none() {
             self.create()?;
@@ -303,6 +305,7 @@ impl<'a> Loads<'_> {
                 .ok_or("Loads bulks error: no data!".to_string())?,
         ))
     }
+    /// Груз с переменной массой
     pub fn load_variable(&mut self) -> Result<Rc<Vec<Rc<LoadMass>>>, Error> {
         if self.load_variable.is_none() {
             self.create()?;
@@ -313,6 +316,7 @@ impl<'a> Loads<'_> {
                 .ok_or("Loads load_variable error: no data!".to_string())?,
         ))
     }
+    /// Лес
     pub fn load_timber(&mut self) -> Result<Rc<Vec<Rc<LoadMass>>>, Error> {
         if self.load_timber.is_none() {
             self.create()?;

@@ -13,9 +13,7 @@ pub use reserve_buoyncy::*;
 pub use screw::*;
 
 use super::{CriterionData, CriterionID};
-use crate::{
-    data::structs::ShipType, draught::IDraught, trim::ITrim, Error, IParameters, ParameterID,
-};
+use crate::{data::structs::ShipType, draught::IDraught, trim::ITrim, IParameters};
 use std::rc::Rc;
 
 /// Критерии проверки посадки судна
@@ -51,7 +49,7 @@ pub struct CriterionDraught {
     /// Минимальная осадка
     minimum_draft: MinimumDraft,
 }
-///
+//
 impl CriterionDraught {
     /// Главный конструктор:
     /// * ship_type - Тип судна
@@ -104,7 +102,7 @@ impl CriterionDraught {
             minimum_draft,
         }
     }
-    ///
+    //
     pub fn create(&self) -> Vec<CriterionData> {
         let mut out_data = Vec::new();
         out_data.append(&mut self.load_line());
@@ -112,20 +110,20 @@ impl CriterionDraught {
         out_data.append(&mut self.bow_board());
         out_data.append(&mut self.screw());
 
-  /*       if self.freeboard_type == "B"
-            && self.ship_type == ShipType::Tanker
-            && self.ship_type == ShipType::ChemicalTanker
-            && self.ship_type == ShipType::GasCarrier
-        {
-            out_data.push(self.reserve_buoyncy());
-        }
+        /*       if self.freeboard_type == "B"
+                   && self.ship_type == ShipType::Tanker
+                   && self.ship_type == ShipType::ChemicalTanker
+                   && self.ship_type == ShipType::GasCarrier
+               {
+                   out_data.push(self.reserve_buoyncy());
+               }
 
-        if (self.ship_type == ShipType::Tanker && self.deadweight >= 20000.)
-            || (self.ship_type == ShipType::OilTanker && self.deadweight >= 30000.)
-        {
-            out_data.append(&mut self.draught_min());
-        }
- */       
+               if (self.ship_type == ShipType::Tanker && self.deadweight >= 20000.)
+                   || (self.ship_type == ShipType::OilTanker && self.deadweight >= 30000.)
+               {
+                   out_data.append(&mut self.draught_min());
+               }
+        */
         out_data
     }
     /// Осадка по грузовой марке
@@ -141,8 +139,8 @@ impl CriterionDraught {
                     ));
                 }
             }
-            Err(err) => (),
-    /*        Err(err) => {
+            Err(_err) => (),
+            /*        Err(err) => {
                 res.push(CriterionData::new_error(
                     CriterionID::LoadLineDraftSB,
                     "Ошибка расчета уровня заглубления для осадок судна: ".to_owned()
@@ -188,9 +186,17 @@ impl CriterionDraught {
             Ok(bow_board) => {
                 for (_, y, delta_h) in bow_board {
                     res.push(if y <= 0. {
-                        CriterionData::new_result(CriterionID::DepthAtForwardPerpendicularPS, delta_h, self.bow_h_min)
+                        CriterionData::new_result(
+                            CriterionID::DepthAtForwardPerpendicularPS,
+                            delta_h,
+                            self.bow_h_min,
+                        )
                     } else {
-                        CriterionData::new_result(CriterionID::DepthAtForwardPerpendicularSB, delta_h, self.bow_h_min)
+                        CriterionData::new_result(
+                            CriterionID::DepthAtForwardPerpendicularSB,
+                            delta_h,
+                            self.bow_h_min,
+                        )
                     });
                 }
             }
@@ -259,7 +265,7 @@ impl CriterionDraught {
             ),
         }
     }
- /*   /// Минимальная осадка
+    /*   /// Минимальная осадка
     pub fn draught_min(&self) -> Vec<CriterionData> {
         let minimum_draft_middle = match self.parameters.get(ParameterID::DraughtMean) {
             Some(draught_mean) => CriterionData::new_result(

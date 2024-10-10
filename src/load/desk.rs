@@ -35,7 +35,7 @@ pub struct Desk {
     /// Признак палубного груза: лес  
     is_timber: bool,
 }
-///
+//
 impl Desk {
     /// Основной конструктор  
     /// * mass - Масса груза  
@@ -68,8 +68,7 @@ impl Desk {
         }
     }
 }
-///
-///
+//
 impl IDesk for Desk {
     /// Парусность попадающая в Bound или вся если Bound отсутствует
     fn windage_area(&self, bound: &Bound) -> Result<f64, Error> {
@@ -101,20 +100,17 @@ impl IDesk for Desk {
         self.is_timber
     }
 }
-///
+//
 impl ILoad for Desk {
-    ///
     fn mass(&self) -> f64 {
         self.mass
     }
-    ///
     fn bound_x(&self) -> Bound {
         self.bound_x
     }
-    ///
     fn shift(&self) -> Position {
         self.mass_shift.clone()
     }
 }
-///
+//
 impl ILoadMass for Desk {}

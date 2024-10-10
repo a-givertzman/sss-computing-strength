@@ -38,7 +38,7 @@ pub struct LeverDiagram {
     /// Углы максимумов диаграммы плеч статической остойчивости
     max_angles: RcOpt<Vec<(f64, f64)>>,
 }
-///
+//
 impl LeverDiagram {
     /// Основной конструктор.
     /// * ship_moment - Нагрузка на корпус судна: конструкции, груз, экипаж и т.п.
@@ -235,7 +235,7 @@ impl LeverDiagram {
         Ok(())
     }
 }
-///
+//
 impl ILeverDiagram for LeverDiagram {
     /// Углы крена судна соответствующие плечу кренящего момента (angle >= 0. && angle <= 90.)
     fn angle(&self, lever_moment: f64) -> Result<Vec<f64>, Error> {

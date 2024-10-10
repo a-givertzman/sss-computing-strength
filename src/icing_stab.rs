@@ -1,7 +1,5 @@
 //! Обледенение судна
-
 use serde::{Deserialize, Serialize};
-
 use crate::Error;
 /// Тип обледенения судна
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
@@ -13,9 +11,8 @@ pub enum IcingStabType {
     #[serde(alias="none")]
     None,
 }
-///
+//
 impl IcingStabType {
-    ///
     pub fn from_str(src: &str) -> Result<Self, Error> {
         Ok(match src.trim().to_lowercase().as_str() {
             "full" => IcingStabType::Full,
@@ -67,12 +64,11 @@ pub struct IcingStab {
     /// при отсутствии обледенения
     icing_coef_v_moment_zero: f64,
 }
-///
+//
 impl IcingStab {
     /// Основной конструктор
     /// * icing_stab - Тип обледенения: "full", "half" или отсутствует
-    /// * icing_m_timber - Масса льда на квадратный метр площади горизонтальной поверхности
-    /// палубного лесного груза
+    /// * icing_m_timber - Масса льда на квадратный метр площади горизонтальной поверхности палубного лесного груза
     /// * icing_m_v_full - Масса льда на квадратный метр площади парусности
     /// * icing_m_v_half
     /// * icing_m_h_full - Масса льда на квадратный метр площади горизонтальной поверхности
@@ -113,7 +109,7 @@ impl IcingStab {
         }
     }
 }
-///
+//
 impl IIcingStab for IcingStab {
     /// Масса льда на метр площади поверхности открытой палубы
     fn mass_desc_h(&self) -> f64 {
@@ -169,6 +165,7 @@ impl IIcingStab for IcingStab {
         }
     }
 }
+//
 #[doc(hidden)]
 pub trait IIcingStab {
     /// Масса льда на метр площади поверхности открытой палубы
@@ -200,6 +197,7 @@ pub struct FakeIcingStab {
     coef_v_moment: f64,
     is_some: bool,
 }
+//
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeIcingStab {
@@ -223,32 +221,27 @@ impl FakeIcingStab {
         }
     }
 }
+//
 #[doc(hidden)]
 impl IIcingStab for FakeIcingStab {
     fn mass_desc_h(&self) -> f64{
         self.mass_desc_h
     }
-
     fn mass_timber_h(&self) -> f64 {
         self.mass_timber_h
     }
-
     fn mass_v(&self) -> f64 {
         self.mass_v
     }
-
     fn coef_v_area(&self) -> f64 {
         self.coef_v_area
     }
-
     fn coef_v_ds_area(&self) -> f64 {
         self.coef_v_ds_area
     }
-
     fn coef_v_moment(&self) -> f64 {
         self.coef_v_moment
     }
-
     fn is_some(&self) -> bool {
         self.is_some
     }

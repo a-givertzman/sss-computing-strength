@@ -56,19 +56,19 @@ mod tests {
         .unwrap();
         let target = 2.;
         assert!(
-            (result[0].1 .2 - target).abs() < 0.0001,
+            (result[0].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         assert!(
-            (result[1].1 .2 - target).abs() < 0.0001,
+            (result[1].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         assert!(
-            (result[2].1 .2 - target).abs() < 0.0001,
+            (result[2].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -121,19 +121,19 @@ mod tests {
         .unwrap();
         let target = 2. + 2. * (10. * PI / 180.).sin();
         assert!(
-            (result[0].1 .2 - target).abs() < 0.0001,
+            (result[0].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         assert!(
-            (result[1].1 .2 - target).abs() < 0.0001,
+            (result[1].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         assert!(
-            (result[2].1 .2 - target).abs() < 0.0001,
+            (result[2].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -186,19 +186,19 @@ mod tests {
         .unwrap();
         let target = 2. - 2. * (10. * PI / 180.).sin();
         assert!(
-            (result[0].1 .2 - target).abs() < 0.0001,
+            (result[0].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         assert!(
-            (result[1].1 .2 - target).abs() < 0.0001,
+            (result[1].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
         );
         assert!(
-            (result[2].1 .2 - target).abs() < 0.0001,
+            (result[2].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -236,7 +236,7 @@ mod tests {
         .unwrap();
         let target = 3. + 2. * (10. * PI / 180.).sin();
         assert!(
-            (result[0].1 .2 - target).abs() < 0.0001,
+            (result[0].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -274,7 +274,7 @@ mod tests {
         .unwrap();
         let target = 1. + 2. * (10. * PI / 180.).sin();
         assert!(
-            (result[0].1 .2 - target).abs() < 0.0001,
+            (result[0].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target
@@ -312,7 +312,7 @@ mod tests {
         .unwrap();
         let target = 3. + 2. * (10. * PI / 180.).sin();
         assert!(
-            (result[0].1 .2 - target).abs() < 0.0001,
+            (result[0].1.z() - target).abs() < 0.0001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target

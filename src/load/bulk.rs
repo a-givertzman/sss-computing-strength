@@ -33,7 +33,7 @@ impl Bulk {
         })
     }
 }
-///
+//
 impl IBulk for Bulk {
     /// Кренящий момент от смещения сыпучего груза
     fn moment(&self) -> f64 {

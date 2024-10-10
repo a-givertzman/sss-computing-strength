@@ -1,14 +1,11 @@
 //! Распределение площади горизонтальных поверхностей и
 //! площади парусности судна для осадки dmin
-
 use std::rc::Rc;
-
 use crate::{
     area::{HAreaStrength, VerticalArea},
     icing_timber::IcingTimberBound,
     Bound, Error, IDesk,
 };
-
 /// Распределение площади горизонтальных поверхностей и
 /// площадь парусности судна для осадки dmin
 #[derive(Clone)]
@@ -22,7 +19,7 @@ pub struct Area {
     /// Ограничение для гортзонтальной площади обледенения палубного груза - леса
     icing_timber_bound: IcingTimberBound,
 }
-///
+//
 impl Area {
     /// Аргументы конструктора:  
     /// * area_const_v - Площадь парусности корпуса судна
@@ -43,7 +40,7 @@ impl Area {
         }
     }
 }
-///
+//
 impl IArea for Area {
     /// Площадь парусности для заданного диапазона, м^2
     fn area_v(&self, bound: &Bound) -> Result<f64, Error> {

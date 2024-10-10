@@ -1,16 +1,13 @@
 //! Кривая поверхность, позволяет получать интерполированные значения
 use crate::Error;
-
 use super::{Curve, ICurve};
-
-///
 /// Представление поверхности в виде массива кривых пар значений
 /// - Обеспечивает получение промежуточных значений с помощью простой линейной интерполяции
 #[derive(Clone)]
 pub struct Curve2D {
     curves: Vec<(f64, Curve)>,
 }
-///
+//
 impl Curve2D {
     /// Основной конструктор
     #[allow(dead_code)]
@@ -51,7 +48,7 @@ impl Curve2D {
         Self::new(curves)
     }
 }
-///
+//
 impl ICurve2D for Curve2D {
     /// Возвращает значение из таблицы по его ключу
     /// - если такого ключа нет, то возвращает промежуточное значение между двумя соседними с помощью линейной интерполяции
@@ -82,9 +79,8 @@ impl ICurve2D for Curve2D {
             .value(key2)
     }
 }
-
+//
 #[doc(hidden)]
-///
 /// Interface used for testing purposes only
 pub trait ICurve2D {
     fn value(&self, key1: f64, key2: f64) -> Result<f64, Error>;
@@ -94,6 +90,7 @@ pub trait ICurve2D {
 pub struct FakeCurve2D {
     value: f64,
 }
+//
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeCurve2D {
@@ -101,9 +98,9 @@ impl FakeCurve2D {
         Self { value }
     }
 }
+//
 #[doc(hidden)]
 impl ICurve2D for FakeCurve2D {
-    ///
     fn value(&self, _: f64, _: f64) -> Result<f64, Error> {
         Ok(self.value)
     }

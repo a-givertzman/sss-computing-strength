@@ -32,7 +32,7 @@ pub struct MetacentricHeight {
     /// свободной поверхности жидкости в цистернах балласта и запасов (2)
     delta_m_h: Rc<RefCell<Option<DeltaMH>>>,
 }
-///
+//
 impl  MetacentricHeight {
     /// Основной конструктор
     /// * center_draught_shift - Отстояние центра величины погруженной части судна       
@@ -123,7 +123,7 @@ impl  MetacentricHeight {
         Ok(())
     }
 }
-///
+//
 #[allow(dead_code)]
 impl IMetacentricHeight for MetacentricHeight {
     /// Продольная исправленная метацентрическая высота

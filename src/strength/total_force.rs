@@ -5,7 +5,7 @@ use super::mass::*;
 use super::volume::IVolume;
 use crate::{math::*, Error};
 
-/// Результирующая нагрузка на шпацию, сумма сил
+/// Результирующая нагрузки на шпацию, сумма сил
 /// действующая на каждую шпацию судна
 pub struct TotalForce {
     /// нагрузка на судно
@@ -17,9 +17,13 @@ pub struct TotalForce {
     /// ускорение свободного падения
     gravity_g: f64,
 }
-///
+//
 impl TotalForce {
-    ///
+    /// Главный конструктор
+    /// * mass - нагрузка на судно
+    /// * water_density - плотность воды
+    /// * volume - объем вытесненной воды
+    /// * gravity_g - ускорение свободного падения
     pub fn new(
         mass: Rc<dyn IMass>,
         water_density: f64,
@@ -37,9 +41,8 @@ impl TotalForce {
         })
     }
 }
-///
+//
 impl ITotalForce for TotalForce {
-    ///
     fn values(&mut self) -> Result<Vec<f64>, Error> {
         let mass_values = self.mass.values()?;
         let mut volume_values = self.volume.values()?;
@@ -54,7 +57,7 @@ impl ITotalForce for TotalForce {
         Ok(result)
     }
 }
-
+//
 #[doc(hidden)]
 pub trait ITotalForce {
     fn values(&mut self) -> Result<Vec<f64>, Error>;

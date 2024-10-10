@@ -2,7 +2,7 @@
 
 use std::{f64::consts::PI, rc::Rc};
 
-use crate::{data::structs::DraftMarkParsedData, draught::IDraught, Curve, Error, ICurve, IParameters, ParameterID};
+use crate::{data::structs::DraftMarkParsedData, draught::IDraught, Curve, Error, ICurve, IParameters, ParameterID, Position};
 
 /// Расчет уровня заглубления для координат отметок заглубления на корпусе судна
 pub struct DraftMark {
@@ -14,7 +14,7 @@ pub struct DraftMark {
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>,
 }
-///
+//
 impl DraftMark {
     /// Конструктор по умолчанию.
     /// * draught - Осадка судна
@@ -32,7 +32,7 @@ impl DraftMark {
         }
     }
     /// Расчет координат точек с уровнем заглубления 0
-    pub fn calculate(&self) -> Result<Vec<(String, (f64, f64, f64))>, Error> {
+    pub fn calculate(&self) -> Result<Vec<(String, Position)>, Error> {
         let roll = self
             .parameters
             .get(ParameterID::Roll)
@@ -60,7 +60,7 @@ impl DraftMark {
             if z_fix[0].3.signum() == z_fix[1].3.signum() {
                 if z_fix[0].3.abs() < 0.001 {
                     // если уровень прямо на марке
-                    result.push((p.name.to_owned(), (z_fix[0].0, z_fix[0].1, z_fix[0].2)));
+                    result.push((p.name.to_owned(), Position::new(z_fix[0].0, z_fix[0].1, z_fix[0].2)));
                 }
                 continue;
             }
@@ -71,7 +71,7 @@ impl DraftMark {
                 Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.1)).collect())?.value(0.)?;
             let fix_z =
                 Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.2)).collect())?.value(0.)?;
-            result.push((p.name.to_owned(), (fix_x, fix_y, fix_z)));
+            result.push((p.name.to_owned(), Position::new(fix_x, fix_y, fix_z)));
         }
         Ok(result)
     }

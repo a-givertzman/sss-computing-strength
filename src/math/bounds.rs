@@ -1,15 +1,13 @@
 //! Непрерывный набор диапазонов значений
 use crate::Error;
-
 use super::Bound;
-
 /// Непрерывный набор диапазонов значений
 #[derive(Debug, Clone, PartialEq)]
 pub struct Bounds {
     // Непрерывный вектор диапазонов
     values: Vec<Bound>,
 }
-///
+//
 impl Bounds {
     /// Основной конструктор
     pub fn new(values: Vec<Bound>) -> Result<Self, Error> {
@@ -51,16 +49,16 @@ impl Bounds {
         }
         Self::new(values)
     }
-    // Вспомогательный конструктор
-    pub fn from_frames(frames: &Vec<(f64, f64)>) -> Result<Self, Error> {
+    /// Вспомогательный конструктор
+    pub fn from_frames(frames: &[(f64, f64)]) -> Result<Self, Error> {
         if frames.len() <= 1 {
             return Err(Error::FromString(
                 "Bounds from_frames error: frames.len() <= 1".to_string(),
             ));
         }
         let mut values = Vec::new();
-        for i in 0..frames.len() {
-            values.push(Bound::new(frames[i].0, frames[i].1)?);
+        for frame in frames {
+            values.push(Bound::new(frame.0, frame.1)?);
         }
         //      log::info!("\t Bounds from_frames: frames:{:?} values:{:?} ", frames, res);
         Self::new(values)

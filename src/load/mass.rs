@@ -12,7 +12,6 @@ pub trait ILoadMass: ILoad {
         Moment::from_pos(self.shift(), self.mass())
     }
 }
-
 /// Абстрактный груз - заглушка для учета массы
 #[derive(Debug)]
 pub struct LoadMass {
@@ -25,7 +24,7 @@ pub struct LoadMass {
     /// Тип груза
     load_type: LoadingType,
 }
-///
+//
 impl LoadMass {
     /// Основной конструктор
     /// * mass - Масса груза
@@ -50,22 +49,19 @@ impl LoadMass {
             load_type,
         })
     }
-    ///
+    // Тип груза
     pub fn load_type(&self) -> LoadingType {
         self.load_type
     }
 }
-///
+//
 impl ILoad for LoadMass {
-    ///
     fn mass(&self) -> f64 {
         self.mass
     }
-    ///
     fn bound_x(&self) -> Bound {
         self.bound_x
     }
-    ///
     fn shift(&self) -> Position {
         if let Some(shift) = self.shift.clone() {
             shift

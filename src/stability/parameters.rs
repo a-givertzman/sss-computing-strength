@@ -1,8 +1,6 @@
 //! Набор результатов расчетов для записи в БД
-
 use std::{cell::RefCell, collections::HashMap};
-
-///
+//
 #[derive(Hash, Eq, PartialEq)]
 pub enum ParameterID {
     CenterMassZFix = 1,
@@ -63,26 +61,26 @@ pub enum ParameterID {
 pub struct Parameters {
     data: RefCell<HashMap<ParameterID, f64>>,
 }
-///
+//
 impl Parameters {
-    ///
+    /// Главный конструктор
     pub fn new() -> Self {
         Self {
             data: RefCell::new(HashMap::new()),
         }
     }
 }
-///
+//
 impl IParameters for Parameters {
-    ///
+    /// Добавление нового параметра
     fn add(&self, id: ParameterID, value: f64) {
         self.data.borrow_mut().insert(id, value);
     }
-    ///
+    /// Геттер, возвращает значение параметра или None если данных нет
     fn get(&self, id: ParameterID) -> Option<f64> {
         self.data.borrow().get(&id).copied()
     }
-    ///
+    /// Все данные в виде пар значений id/value
     fn take_data(&self) -> Vec<(usize, f64)> {
         self.data
             .take()
@@ -91,13 +89,14 @@ impl IParameters for Parameters {
             .collect()
     }
 }
+//
 #[doc(hidden)]
 pub trait IParameters {
-    ///
+    /// Добавление нового параметра
     fn add(&self, id: ParameterID, value: f64);
-    ///
+    /// Геттер, возвращает значение параметра или None если данных нет
     fn get(&self, id: ParameterID) -> Option<f64>;
-    ///
+    /// Все данные в виде пар значений id/value
     fn take_data(&self) -> Vec<(usize, f64)>;
 }
 // заглушка для тестирования
@@ -106,13 +105,10 @@ pub struct FakeParameters;
 #[doc(hidden)]
 #[allow(dead_code)]
 impl IParameters for FakeParameters {
-    ///
     fn add(&self, _: ParameterID, _: f64) {}
-    ///
     fn get(&self, _: ParameterID) -> Option<f64> {
         None
     }
-    ///
     fn take_data(&self) -> Vec<(usize, f64)> {
         Vec::new()
     }

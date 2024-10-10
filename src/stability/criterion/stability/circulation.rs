@@ -21,7 +21,7 @@ pub struct Circulation {
     /// Набор результатов расчетов для записи в БД
     parameters: Rc<dyn IParameters>,
 }
-///
+//
 impl Circulation {
     /// Основной конструктор
     /// * v_0 - Эксплуатационная скорость судна, m/s
@@ -68,7 +68,7 @@ impl Circulation {
         Ok(l_r)
     }
 }
-///
+//
 impl ICirculation for Circulation {
     /// Угла крена на циркуляции при скорости v, m/s
     fn angle(&self) -> Result<Option<f64>, Error> {
@@ -118,6 +118,7 @@ pub struct FakeAccelleration {
     angle: f64,
     velocity: f64,
 }
+//
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeAccelleration {
@@ -125,13 +126,12 @@ impl FakeAccelleration {
         Self { angle, velocity }
     }
 }
+//
 #[doc(hidden)]
 impl ICirculation for FakeAccelleration {
-    ///
     fn angle(&self) -> Result<Option<f64>, Error> {
         Ok(Some(self.angle))
     }
-    ///
     fn velocity(&self, _: f64) -> Result<f64, Error> {
         Ok(self.velocity)
     }
