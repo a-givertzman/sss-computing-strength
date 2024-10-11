@@ -17,8 +17,7 @@ pub trait IntegralCotes {
     #[allow(unused)]
     fn integral_cotes(&self, h: f64) -> Result<f64, Error> ;
 }
-///
-/// 
+//
 impl IntegralCotes for Vec<f64>  {
     fn integral_cotes(&self, h: f64) -> Result<f64, Error> {
         if self.len() < 2 {

@@ -1,25 +1,23 @@
 //! Промежуточные структуры для serde_json для парсинга данных
-//! Постоянные площади обледенения: горизонтальные поверхности 
-//! корпуса судна для расчета остойчивости. 
-use serde::{Deserialize, Serialize};
-
+//! Постоянные площади обледенения: горизонтальные поверхности
+//! корпуса судна для расчета остойчивости.
 use super::DataArray;
-
-/// Постоянные площади обледенения: горизонтальные поверхности 
-/// корпуса судна для расчета остойчивости. Дополнительно содержат 
+use serde::{Deserialize, Serialize};
+/// Постоянные площади обледенения: горизонтальные поверхности
+/// корпуса судна для расчета остойчивости. Дополнительно содержат
 /// смещение центра поверхности.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct HStabArea {
-    /// Название 
-    pub name: String, 
+    /// Название
+    pub name: String,
     /// Значение площади, м^2
     pub value: f64,
     /// Смещение центра
     pub shift_x: f64,
     pub shift_y: f64,
-    pub shift_z: f64,  
+    pub shift_z: f64,
 }
-///
+//
 impl std::fmt::Display for HStabArea {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -29,13 +27,12 @@ impl std::fmt::Display for HStabArea {
         )
     }
 }
-///
+//
 pub type HStabAreaArray = DataArray<HStabArea>;
-///
+//
 impl HStabAreaArray {
     /// Преобразование данных в массив
     pub fn data(self) -> Vec<HStabArea> {
         self.data
-    }  
+    }
 }
-

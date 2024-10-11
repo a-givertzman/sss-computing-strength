@@ -66,11 +66,11 @@ impl DraftMark {
             }
             // Интерполированные значения координат марок заглубления
             let fix_x =
-                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.0)).collect())?.value(0.)?;
+                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.0)).collect::<Vec<_>>()[..])?.value(0.)?;
             let fix_y =
-                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.1)).collect())?.value(0.)?;
+                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.1)).collect::<Vec<_>>()[..])?.value(0.)?;
             let fix_z =
-                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.2)).collect())?.value(0.)?;
+                Curve::new_linear(&z_fix.iter().map(|&v| (v.3, v.2)).collect::<Vec<_>>()[..])?.value(0.)?;
             result.push((p.name.to_owned(), Position::new(fix_x, fix_y, fix_z)));
         }
         Ok(result)

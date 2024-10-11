@@ -1,9 +1,7 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
 use serde::{Deserialize, Serialize};
 use crate::data::structs::DataArray;
-
 use super::CargoGeneralCategory;
-
 /// Груз без привязки к помещению, всегда твердый
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LoadCargo {
@@ -37,8 +35,7 @@ pub struct LoadCargo {
     pub vertical_area_shift_y: Option<f64>,
     pub vertical_area_shift_z: Option<f64>,
 }
-
-///
+//
 impl std::fmt::Display for LoadCargo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -68,65 +65,9 @@ impl std::fmt::Display for LoadCargo {
 }
 /// Массив данных по грузам
 pub type LoadCargoArray = DataArray<LoadCargo>;
-///
+//
 impl LoadCargoArray {
-    /// 
     pub fn data(self) -> Vec<LoadCargo> {
         self.data
     }
 }
-/*
-/// Груз
-#[derive(Debug)]
-pub struct ParsedCargoData {
-    /// Название 
-    pub name: String, 
-    /// Общая масса, т
-    pub mass: f64,
-    /// Границы груза, м
-    pub bound_x: (f64, f64),
-    pub bound_y: Option<(f64, f64)>,
-    pub bound_z: Option<(f64, f64)>,
-    /// Центр масс, м
-    pub mass_shift: Option<(f64, f64, f64)>, 
-    /// Площадь горизонтальной поверхности, м^2
-    pub horizontal_area: Option<f64>,
-    /// Центр горизонтальной поверхности, м
-    pub horizontal_area_shift: Option<(f64, f64, f64)>,
-    /// Площадь парусности, м^2
-    pub vertical_area: Option<f64>,
-    /// Центр парусности, м
-    pub vertical_area_shift: Option<(f64, f64, f64)>,
-    /// Тип груза
-    pub loading_type: CargoType,
-}
-///
-impl std::fmt::Display for ParsedCargoData {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "LoadCargoData(name:{}, mass:{} bound_x:{:?}, bound_y:{:?} bound_z:{:?} mass_shift:({}, {}, {}) 
-            horizontal_area:{} horizontal_area_shift:({}, {}, {})
-            vertical_area:{} vertical_area_shift:({}, {}, {}) type:{}) ",
-            self.name,
-            self.mass,
-
-            self.bound_x,
-            self.bound_y,
-            self.bound_z,
-            self.mass_shift.unwrap_or((0.,0.,0.)).0,
-            self.mass_shift.unwrap_or((0.,0.,0.)).1,
-            self.mass_shift.unwrap_or((0.,0.,0.)).2,
-            self.horizontal_area.unwrap_or(0.),
-            self.horizontal_area_shift.unwrap_or((0.,0.,0.)).0,
-            self.horizontal_area_shift.unwrap_or((0.,0.,0.)).1,
-            self.horizontal_area_shift.unwrap_or((0.,0.,0.)).2,
-            self.vertical_area.unwrap_or(0.),
-            self.vertical_area_shift.unwrap_or((0.,0.,0.)).0,
-            self.vertical_area_shift.unwrap_or((0.,0.,0.)).1,
-            self.vertical_area_shift.unwrap_or((0.,0.,0.)).2,
-            self.loading_type,
-        )
-    }
-}
-*/

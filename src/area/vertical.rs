@@ -1,6 +1,5 @@
 //! Распределение площади парусности
 use crate::{Bound, Error};
-
 /// Распределение площадь парусности
 #[derive(Debug, Clone)]
 pub struct VerticalArea {
@@ -10,7 +9,7 @@ pub struct VerticalArea {
     /// Ограничение по оси Х
     bound_x: Bound,
 }
-///
+//
 impl VerticalArea {
     /// Основной конструктор
     /// * value - Значение площади, м^2

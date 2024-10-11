@@ -24,7 +24,7 @@ use crate::Error;
 pub trait SumAbove<T> {
     fn sum_above(&self) -> Vec<T>;
 }
-
+//
 impl SumAbove<f64> for Vec<f64>  {
     fn sum_above(&self) -> Self {
         let mut data: Vec<f64> = vec![0.];
@@ -72,7 +72,7 @@ pub trait DivideSingle {
     #[allow(unused)]
     fn div_single(&mut self, rhs: f64);
 }
-///
+//
 impl DivideSingle for Vec<f64>  {
     fn div_single(&mut self, rhs: f64) {
         self.iter_mut()
@@ -93,7 +93,7 @@ impl DivideSingle for Vec<f64>  {
 pub trait MultipleSingle {
     fn mul_single(&mut self, rhs: f64);
 }
-///
+//
 impl MultipleSingle for Vec<f64>  {
     fn mul_single(&mut self, rhs: f64) {
         self.iter_mut()
@@ -115,7 +115,7 @@ pub trait AddVec {
     #[allow(unused)]
     fn add_vec(&mut self, rhs: &Self) -> Result<(), Error>;
 }
-///
+//
 impl AddVec for Vec<f64>  {   
     fn add_vec(&mut self, rhs: &Self) -> Result<(), Error> {
         if self.len() != rhs.len() {
@@ -141,7 +141,7 @@ impl AddVec for Vec<f64>  {
 pub trait SubVec {
     fn sub_vec(&mut self, rhs: &Self) -> Result<(), Error>;
 }
-///
+//
 impl SubVec for Vec<f64>  {   
     fn sub_vec(&mut self, rhs: &Self) -> Result<(), Error> {
         if self.len() != rhs.len() {
@@ -168,7 +168,7 @@ pub trait MultipleVec {
     #[allow(unused)]
     fn mul_vec(&mut self, rhs: &Self) -> Result<(), Error>;
 }
-///
+//
 impl MultipleVec for Vec<f64>  {   
     fn mul_vec(&mut self, rhs: &Self) -> Result<(), Error> {
         if self.len() != rhs.len() {
@@ -193,11 +193,11 @@ impl MultipleVec for Vec<f64>  {
 /// ```
 pub trait DivideVec {
     #[allow(unused)]
-    fn div_vec(&mut self, rhs: &Vec<f64>) -> Result<(), Error>;
+    fn div_vec(&mut self, rhs: &[f64]) -> Result<(), Error>;
 }
-///
+//
 impl DivideVec for Vec<f64>  {   
-    fn div_vec(&mut self, rhs: &Vec<f64>) -> Result<(), Error> {
+    fn div_vec(&mut self, rhs: &[f64]) -> Result<(), Error> {
         if self.len() != rhs.len() {
             return Err(Error::FromString("DivideVec error: self.len() != rhs.len()".to_string()));
         } 

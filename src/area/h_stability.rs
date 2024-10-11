@@ -1,6 +1,5 @@
 //! Площадь горизонтальной поверхности для расчета остойчивости
 use crate::{Moment, Position};
-
 /// Площадь горизонтальной поверхности для расчета остойчивости
 #[derive(Debug, Clone)]
 pub struct HAreaStability {
@@ -9,7 +8,7 @@ pub struct HAreaStability {
     /// Смещение центра
     shift: Position,
 }
-///
+//
 impl HAreaStability {
     /// Основной конструктор
     /// * value - Значение площади, м^2

@@ -3,9 +3,7 @@
 //! корпуса судна для расчета прочности. Дополнительно содержат
 //! данные по распределению по длинне.
 use serde::{Deserialize, Serialize};
-
 use crate::data::structs::DataArray;
-
 /// Постоянные площади обледенения: горизонтальные поверхности
 /// корпуса судна для расчета прочности. Дополнительно содержат
 /// данные по распределению по длинне.
@@ -19,7 +17,7 @@ pub struct HStrArea {
     pub bound_x1: f64,
     pub bound_x2: f64, 
 }
-///
+//
 impl std::fmt::Display for HStrArea {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -29,9 +27,9 @@ impl std::fmt::Display for HStrArea {
         )
     }
 }
-///
+//
 pub type HStrAreaArray = DataArray<HStrArea>;
-///
+//
 impl HStrAreaArray {
     /// Преобразование данных в массив
     pub fn data(self) -> Vec<HStrArea> {

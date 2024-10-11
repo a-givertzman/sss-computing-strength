@@ -36,6 +36,7 @@ impl RollingPeriod {
 //
 impl IRollingPeriod for RollingPeriod {
     /// Период качки судна
+    #[allow(clippy::let_and_return)]
     fn calculate(&self) -> Result<f64, Error> {
         let c = self.c();
         Ok(if self.metacentric_height.h_trans_fix()? > 0. {

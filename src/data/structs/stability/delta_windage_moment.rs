@@ -14,7 +14,7 @@ pub struct DeltaWindageMomentData {
     /// Разница в статических моментах относительно ОП
     pub value_z: f64,
 }
-///
+//
 impl std::fmt::Display for DeltaWindageMomentData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -25,7 +25,7 @@ impl std::fmt::Display for DeltaWindageMomentData {
     }
 }
 pub type DeltaWindageMomentDataArray = DataArray<DeltaWindageMomentData>;
-///
+//
 impl DeltaWindageMomentDataArray {
     /// Преобразование данных в массив ключ + значение по х
     pub fn x(&self) -> Vec<(f64, f64)> {

@@ -28,9 +28,8 @@ pub use draft_mark::*;
 pub use screw::*;
 pub use load_line::*;
 pub use bow_board::*;
-
-///
 use super::{DataArray, Pair};
+//
 /// Безразмерный множитель Х_1 Табл. 2.1.5.1-1
 pub type MultiplerX1Array = DataArray<Pair>;
 /// Безразмерный множитель Х_2 Табл. 2.1.5.1-2

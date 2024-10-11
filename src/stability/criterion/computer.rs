@@ -117,6 +117,7 @@ impl CriterionComputer {
     /// * wind - Расчет плеча кренящего момента от давления ветра
     /// * metacentric_height - Продольная и поперечная исправленная метацентрическая высота
     /// * parameters - Набор результатов расчетов для записи в БД
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         max_zg: f64,
         ship_type: ShipType,
@@ -310,6 +311,7 @@ impl CriterionComputer {
             results.push((z_g_fix, tmp));
         }
         // создаем коллекцию векторов, сортируем значения по id
+        #[allow(clippy::type_complexity)]
         let mut values: HashMap<usize, Vec<(f64, (f64, f64))>> = HashMap::new();
         for (z_g_fix, tmp) in results.into_iter() {
             tmp.into_iter()

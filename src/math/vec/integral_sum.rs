@@ -11,8 +11,7 @@
 pub trait IntegralSum<T> {
     fn integral_sum(&self) -> Vec<T>;
 }
-///
-/// 
+// 
 impl IntegralSum<f64> for Vec<f64>  {
     fn integral_sum(&self) -> Self {
         let mut data = vec![0.];

@@ -40,6 +40,7 @@ impl Computer {
     /// * displacement - Распределение осадки  
     /// * bounds - Вектор разбиения судна на отрезки  
     /// * results - Набор результатов расчетов для записи в БД  
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         gravity_g: f64,                 
         water_density: f64,   

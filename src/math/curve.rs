@@ -11,7 +11,7 @@ pub struct Curve {
 impl Curve {
     /// Creates new instance of the Curve with linear interpolation  
     /// from vector of the key - value pairs
-    pub fn new_linear(src: &Vec<(f64, f64)>) -> Result<Curve, Error> {
+    pub fn new_linear(src: &[(f64, f64)]) -> Result<Curve, Error> {
         if src.len() <= 1 {
             return Err(Error::FromString("Curve new_linear error: src.len() <= 1".to_string()))
         }

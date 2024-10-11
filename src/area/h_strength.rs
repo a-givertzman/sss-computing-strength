@@ -1,6 +1,5 @@
 //! Площадь горизонтальной поверхности для расчета прочности
 use crate::{Bound, Error};
-
 /// Площадь горизонтальной поверхности для расчета прочности
 #[derive(Debug, Clone)]
 pub struct HAreaStrength {
@@ -9,7 +8,7 @@ pub struct HAreaStrength {
     /// Ограничение по оси Х
     bound_x: Bound,
 }
-///
+//
 impl HAreaStrength {
     /// Основной конструктор
     /// * value - Значение площади, м^2

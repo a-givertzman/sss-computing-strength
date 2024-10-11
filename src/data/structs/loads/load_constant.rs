@@ -1,7 +1,6 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
 use serde::{Deserialize, Serialize};
 use crate::data::structs::DataArray;
-
 /// Тип груза, приходящегося на шпацию
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
 pub enum LoadConstantType {
@@ -10,7 +9,7 @@ pub enum LoadConstantType {
     #[serde(alias="equipment")]
     Equipment,
 }
-///
+//
 impl std::fmt::Display for LoadConstantType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -34,7 +33,7 @@ pub struct LoadConstantData {
     /// Тип груза, приходящегося на шпацию
     pub loading_type: LoadConstantType,
 }
-///
+//
 impl std::fmt::Display for LoadConstantData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -49,9 +48,8 @@ impl std::fmt::Display for LoadConstantData {
 }
 /// Массив данных по грузам
 pub type LoadConstantArray = DataArray<LoadConstantData>;
-///
+//
 impl LoadConstantArray {
-    /// 
     pub fn data(self) -> Vec<LoadConstantData> {
         self.data
     }

@@ -18,7 +18,7 @@ pub struct VerticalArea {
     pub bound_x1: f64,
     pub bound_x2: f64, 
 }
-///
+//
 impl std::fmt::Display for VerticalArea {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -28,9 +28,9 @@ impl std::fmt::Display for VerticalArea {
         )
     }
 }
-///
+//
 pub type VerticalAreaArray = DataArray<VerticalArea>;
-///
+//
 impl VerticalAreaArray {
     /// Преобразование данных в массив
     pub fn data(self) -> Vec<VerticalArea> {

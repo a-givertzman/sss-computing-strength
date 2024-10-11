@@ -95,6 +95,7 @@ impl Bound {
         *self == Bound::None
     }
     /// Если true, то диапазон с ненулевой длинной
+    #[allow(unused)]
     pub fn is_some(&self) -> bool {
         !self.is_none()
     }

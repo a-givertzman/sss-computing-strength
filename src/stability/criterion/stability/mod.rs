@@ -80,6 +80,7 @@ impl CriterionStability {
     /// * acceleration - Расчет критерия ускорения
     /// * circulation - Расчет крена на циркуляции
     /// * grain - Смещение груза при перевозки навалочных смещаемых грузов (зерна)
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         ship_type: ShipType,
         navigation_area: NavigationArea,
@@ -265,7 +266,7 @@ impl CriterionStability {
     }
     /// Максимум диаграммы статической остойчивости
     pub fn dso_lever(&self) -> CriterionData {
-        let curve = match Curve::new_linear(&vec![(105., 0.20), (80., 0.25)]) {
+        let curve = match Curve::new_linear(&[(105., 0.20), (80., 0.25)]) {
             Ok(curve) => curve,
             Err(text) => return CriterionData::new_error(
                 CriterionID::MaximumLC,

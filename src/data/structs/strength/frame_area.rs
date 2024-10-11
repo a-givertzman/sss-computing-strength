@@ -1,9 +1,7 @@
 //! Промежуточные структуры для serde_json для парсинга данных шпангоутов
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-
 use crate::data::structs::DataArray;
-
 /// Данные по шпангоуту
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FrameAreaData {
@@ -14,7 +12,7 @@ pub struct FrameAreaData {
     /// Погруженная площадь
     pub area: f64,
 }
-///
+//
 impl std::fmt::Display for FrameAreaData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -25,7 +23,7 @@ impl std::fmt::Display for FrameAreaData {
     }
 }
 pub type FrameAreaDataArray = DataArray<FrameAreaData>;
-///
+//
 impl FrameAreaDataArray {
     /// Преобразование и возвращает данные в виде мапы индекс/данные шпангоута
     pub fn data(self) -> HashMap<i32, Vec<(f64, f64)>> {
@@ -48,7 +46,7 @@ pub struct ParsedFrameData {
     /// кривая погружаемой площади
     pub immersion_area: Vec<(f64, f64)>,
 }
-///
+//
 impl std::fmt::Display for ParsedFrameData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

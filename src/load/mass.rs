@@ -76,5 +76,5 @@ impl ILoad for LoadMass {
         }
     }
 }
-///
+//
 impl ILoadMass for LoadMass {}

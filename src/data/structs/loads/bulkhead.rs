@@ -1,9 +1,7 @@
 //! Промежуточные структуры для serde_json для парсинга данных зерновой перегородки
 use serde::{Deserialize, Serialize};
 use crate::data::structs::DataArray;
-
 use super::{CargoGeneralCategory, LoadCargo};
-
 /// Зерновая перегородка
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Bulkhead {
@@ -21,8 +19,7 @@ pub struct Bulkhead {
     pub mass_shift_y: Option<f64>,
     pub mass_shift_z: Option<f64>,
 }
-
-///
+//
 impl std::fmt::Display for Bulkhead {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -41,9 +38,9 @@ impl std::fmt::Display for Bulkhead {
 }
 /// Массив данных по грузам
 pub type BulkheadArray = DataArray<Bulkhead>;
-///
+//
 impl BulkheadArray {
-    /// 
+    //
     pub fn data(self) -> Vec<LoadCargo> {
         self.data.into_iter().map(|v| LoadCargo{
             name: v.name,

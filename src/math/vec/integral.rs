@@ -1,5 +1,4 @@
 //! Численное интегрирование
-
 use crate::Error;
 /// Численное интегрирование методом трапеций
 /// Количество значений должно быть не меньше 2х
@@ -17,8 +16,7 @@ pub trait Integral {
     #[allow(unused)]
     fn integral(&self) -> Result<f64, Error>;
 }
-///
-/// 
+//
 impl Integral for Vec<(f64, f64)>  {
     fn integral(&self) -> Result<f64, Error> {
         if self.len() < 2 {

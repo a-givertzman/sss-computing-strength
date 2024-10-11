@@ -67,6 +67,7 @@ impl CriterionDraught {
     /// * screw - Расчет уровня заглубления для винтов судна
     /// * reserve_buoyncy - Запас плавучести в носу
     /// * minimum_draft - Минимальная осадка
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         ship_type: ShipType,
         deadweight: f64,

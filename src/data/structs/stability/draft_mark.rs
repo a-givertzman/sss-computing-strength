@@ -2,15 +2,12 @@
 //! Координаты отметок заглубления на корпусе судна
 //! относительно центра корпуса судна
 use std::collections::HashMap;
-
 use crate::Position;
-
 use super::{DataArray, PointData};
-
 /// Координаты отметок заглубления на корпусе судна
 /// относительно центра
 pub type DraftMarkDataArray = DataArray<PointData>;
-///
+//
 impl DraftMarkDataArray {
     /// Преобразование данных в массив
     pub fn draft_data(&self) -> Vec<DraftMarkParsedData> {
@@ -25,12 +22,12 @@ impl DraftMarkDataArray {
         map.into_iter()
             .map(|v| DraftMarkParsedData {
                 name: v.0,
-                data: v.1.into_iter().map(|v| Position::from(v)).collect(),
+                data: v.1.into_iter().map(Position::from).collect(),
             })
             .collect()
     }
 }
-///
+//
 #[derive(Debug, Clone, PartialEq)]
 pub struct DraftMarkParsedData {
     /// Название
@@ -38,7 +35,7 @@ pub struct DraftMarkParsedData {
     /// Координаты центра винта относительно центра корпуса судна, м
     pub data: Vec<Position>,
 }
-///
+//
 impl std::fmt::Display for DraftMarkParsedData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

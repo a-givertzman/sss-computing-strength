@@ -18,7 +18,7 @@ impl IcingStabType {
             "full" => IcingStabType::Full,
             "half" => IcingStabType::Half,
             "none" => IcingStabType::None,
-            src @ _ => return Err(Error::FromString(format!("IcingStabType from_str error: no type {src}"))),
+            src => return Err(Error::FromString(format!("IcingStabType from_str error: no type {src}"))),
         })
     }
 }
@@ -79,6 +79,7 @@ impl IcingStab {
     /// * icing_coef_v_moment_full - Коэффициент статического момента
     /// * icing_coef_v_moment_half
     /// * icing_coef_v_moment_zero
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         icing_stab: IcingStabType,
         icing_m_timber: f64,
@@ -159,10 +160,7 @@ impl IIcingStab for IcingStab {
     }
     /// Признал наличия обледенения
     fn is_some(&self) -> bool {
-        match self.icing_stab {
-            IcingStabType::Full | IcingStabType::Half => true,
-            _ => false,
-        }
+        matches!(self.icing_stab, IcingStabType::Full | IcingStabType::Half)
     }
 }
 //

@@ -1,7 +1,6 @@
 //! Промежуточные структуры для serde_json для парсинга пантокаренов  
-use serde::{Deserialize, Serialize};
 use super::DataArray;
-
+use serde::{Deserialize, Serialize};
 /// Промежуточные структуры для serde_json для парсинга данных  
 /// плечей устойчивости формы (пантокарены)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -13,7 +12,7 @@ pub struct PantocarenData {
     /// Плечо устойчивости, м
     pub moment: f64,
 }
-///
+//
 impl std::fmt::Display for PantocarenData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -23,9 +22,9 @@ impl std::fmt::Display for PantocarenData {
         )
     }
 }
-///
+//
 pub type PantocarenDataArray = DataArray<PantocarenData>;
-///
+//
 impl PantocarenDataArray {
     /// Преобразовает и возвращает данные
     pub fn data(mut self) -> Vec<(f64, Vec<(f64, f64)>)> {
@@ -36,8 +35,7 @@ impl PantocarenDataArray {
                 .expect("PantocarenDataArray data sort error!")
         });
         self.data.into_iter().for_each(|v| {
-            if vec.last().is_none() ||
-                vec.last().unwrap().0 != v.draught {
+            if vec.last().is_none() || vec.last().unwrap().0 != v.draught {
                 vec.push((v.draught, vec![(v.roll, v.moment)]));
             } else {
                 vec.last_mut().unwrap().1.push((v.roll, v.moment));

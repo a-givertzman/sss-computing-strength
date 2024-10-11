@@ -17,7 +17,7 @@ pub struct VerticalArea {
     /// Статический момент площади парусности по оси Z, m^3
     pub moment_z: f64,
 }
-///
+//
 impl std::fmt::Display for VerticalArea {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -27,9 +27,9 @@ impl std::fmt::Display for VerticalArea {
         )
     }
 }
-///
+//
 pub type VerticalAreaArray = DataArray<VerticalArea>;
-///
+//
 impl VerticalAreaArray {
     /// Преобразование данных в массив пар (осадкаб площадь)
     pub fn area(&self) -> Vec<(f64, f64)> {

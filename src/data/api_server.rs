@@ -17,7 +17,7 @@ pub struct ApiServer {
     port: String,
     request: Option<ApiRequest>,
 }
-///
+//
 impl ApiServer {
     pub fn new(database: String, host: String, port: String) -> Self {
         Self {
@@ -27,7 +27,7 @@ impl ApiServer {
             request: None,
         }
     }
-    ///
+    //
     pub fn fetch(&mut self, sql: &str) -> Result<Vec<u8>, Error> {
         if let Some(request) = self.request.as_mut() {
             let result = request.fetch(
@@ -406,26 +406,19 @@ pub fn send_strenght_data(
     let mut full_sql = "DO $$ BEGIN ".to_owned();
     full_sql += &format!("DELETE FROM result_strength WHERE ship_id={ship_id};");
     full_sql += " INSERT INTO result_strength (ship_id, index";
-    full_sql += &results.iter().map(|(k, _)| format!(", {k}") ).collect::<String>();
+    full_sql += &results.iter().fold("".to_string(), |s, (k, _)| s + &format!(", {k}"));
+//    full_sql += &results.iter().map(|(k, _)| format!(", {k}") ).collect::<String>();
     full_sql += ") VALUES";
 
     for i in 0..results[0].1.len() {
         full_sql += &format!(" ({ship_id}, {i}," );
-        full_sql += &results.iter().map(|(_, v)| format!(" {},", v[i])).collect::<String>();
+        full_sql += &results.iter().fold("".to_string(), |s, (_, v)| s + &format!(" {},", v[i]));
+    //    full_sql += &results.iter().map(|(_, v)| format!(" {},", v[i])).collect::<String>();
         full_sql.pop();
         full_sql += "),";        
     }
     full_sql.pop();
     full_sql.push(';');
-
-/*     results.iter().for_each(|(k, v)| {
-        full_sql += &format!(" INSERT INTO result_strength (ship_id, index, {}) VALUES", k);
-        v.iter().enumerate().for_each(|(i, v)| {
-            full_sql += &format!(" ({ship_id}, {i}, {v}),");
-        });
-        full_sql.pop();
-        full_sql.push(';');
-    }); */
 
     full_sql += " END$$;";
     //   dbg!(&string);

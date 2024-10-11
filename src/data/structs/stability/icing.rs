@@ -1,9 +1,7 @@
 //! Промежуточные структуры для serde_json для парсинга коэффициентов обледенения
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-
 use super::DataArray;
-
 /// Коэффициенты обледенения
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct IcingData {
@@ -12,7 +10,7 @@ pub struct IcingData {
     /// Величина параметра
     pub value: f64,
 }
-///
+//
 impl std::fmt::Display for IcingData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -25,7 +23,7 @@ impl std::fmt::Display for IcingData {
 }
 /// Массив данных по расчету
 pub type IcingArray = DataArray<IcingData>;
-///
+//
 impl IcingArray {
     /// Преобразование и возвращает данные в виде мапы ключ/значение
     pub fn data(self) -> HashMap<String, f64> {

@@ -37,9 +37,9 @@ pub enum ShipType {
     #[serde(alias="other")]
     Other,
 }
-///
+//
 impl ShipType {
-    ///
+    //
     pub fn from_str(src: &str) -> Result<Self, Error> {
         Ok(match src.trim().to_lowercase().as_str() {
             "general dry cargo ship" => ShipType::GeneralDryCargoShip,            
@@ -52,11 +52,11 @@ impl ShipType {
             "gas carrier" => ShipType::GasCarrier,
             "ro-ro ship" => ShipType::RoRo,
             "other" => ShipType::Other,
-            src @ _ => return Err(Error::FromString(format!("ShipType from_str error: no type {src}"))),
+            src => return Err(Error::FromString(format!("ShipType from_str error: no type {src}"))),
         })
     }
 }
-///
+//
 impl std::fmt::Display for ShipType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

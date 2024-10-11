@@ -43,7 +43,7 @@ impl Wind {
         }
     }
 }
-///
+//
 impl IWind for Wind {
     /// Плечо кренящего момента постоянного ветра
     fn arm_wind_static(&self) -> Result<f64, Error> {
@@ -68,6 +68,7 @@ impl IWind for Wind {
         Ok(res)
     }
 }
+//
 #[doc(hidden)]
 pub trait IWind {
     /// Плечо кренящего момента постоянного ветра
@@ -82,6 +83,7 @@ pub struct FakeWind {
     /// Плечо кренящего момента порыва ветра
     arm_wind_dynamic: f64,
 }
+//
 #[doc(hidden)]
 #[allow(dead_code)]
 impl FakeWind {
@@ -92,6 +94,7 @@ impl FakeWind {
         }
     }
 }
+//
 #[doc(hidden)]
 impl IWind for FakeWind {
     /// Плечо кренящего момента постоянного ветра

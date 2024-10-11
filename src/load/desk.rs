@@ -46,6 +46,7 @@ impl Desk {
     /// * windage_shift - Смещение центра парусности
     /// * horizontal_area - Площадь горизонтальной поверхности  
     /// * is_timber - Признак палубного груза: лес  
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         mass: f64,
         mass_shift: Position,

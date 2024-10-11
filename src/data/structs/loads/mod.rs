@@ -2,14 +2,11 @@ pub mod load_constant;
 pub mod compartment;
 pub mod cargo;
 pub mod bulkhead;
-
 pub use load_constant::*;
 pub use compartment::*;
 pub use cargo::*;
 pub use bulkhead::*;
-
 use serde::{Deserialize, Serialize};
-
 /// Тип груза по назначению
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
 pub enum CargoGeneralCategory {
@@ -24,7 +21,7 @@ pub enum CargoGeneralCategory {
     #[serde(alias="cargo")]
     Cargo,
 }
-///
+//
 impl std::fmt::Display for CargoGeneralCategory {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -50,7 +47,7 @@ pub enum MatterType {
     #[serde(alias="solid")]
     Solid,
 }
-///
+//
 impl std::fmt::Display for MatterType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

@@ -1,10 +1,7 @@
 //! Промежуточные структуры для serde_json для парсинга данных судна
-use serde::{Deserialize, Serialize};
-
-use crate::Error;
-
 use super::{DataArray, NavigationArea, NavigationAreaData};
-
+use crate::Error;
+use serde::{Deserialize, Serialize};
 /// Общие по судну и расчету
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Ship {
@@ -25,9 +22,9 @@ pub struct Ship {
     /// Тип надводного борта судна
     pub freeboard_type: String,
 }
-///
+//
 pub type ShipArray = DataArray<Ship>;
-///
+//
 impl std::fmt::Display for Ship {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -44,7 +41,7 @@ impl std::fmt::Display for Ship {
         )
     }
 }
-///
+//
 impl Ship {
     pub fn navigation_area(&self) -> Result<NavigationAreaData, Error> {
         Ok(NavigationAreaData {

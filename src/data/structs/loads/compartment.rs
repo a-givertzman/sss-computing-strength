@@ -1,9 +1,7 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
 use crate::data::structs::DataArray;
 use serde::{Deserialize, Serialize};
-
 use super::{CargoGeneralCategory, MatterType};
-
 /// Помещения судна: цистерны и трюмы  
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CompartmentData {
@@ -32,7 +30,7 @@ pub struct CompartmentData {
     /// Физический тип груза судна
     pub matter_type: MatterType,
 }
-///
+//
 impl std::fmt::Display for CompartmentData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -58,9 +56,8 @@ impl std::fmt::Display for CompartmentData {
 }
 /// Массив данных по грузам
 pub type CompartmentArray = DataArray<CompartmentData>;
-///
+//
 impl CompartmentArray {
-    ///
     pub fn data(self) -> Vec<CompartmentData> {
         self.data
     }

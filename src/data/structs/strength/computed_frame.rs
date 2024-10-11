@@ -1,9 +1,7 @@
 //! Промежуточные структуры для serde_json для парсинга данных
 //! разбиения корпуса для расчете эпюров
 use serde::{Deserialize, Serialize};
-
 use crate::data::structs::DataArray;
-
 /// Данные по шпангоуту
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ComputedFrameData {
@@ -14,7 +12,7 @@ pub struct ComputedFrameData {
     /// Конец шпангоута
     pub end_x: f64,
 }
-///
+//
 impl std::fmt::Display for ComputedFrameData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -25,7 +23,7 @@ impl std::fmt::Display for ComputedFrameData {
     }
 }
 pub type ComputedFrameDataArray = DataArray<ComputedFrameData>;
-///
+//
 impl ComputedFrameDataArray {
     /// Преобразование и возвращает данные в виде вектора (индекс, начало, конец) шпации
     pub fn data(mut self) -> Vec<(f64, f64)> {

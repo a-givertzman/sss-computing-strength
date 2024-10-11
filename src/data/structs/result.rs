@@ -166,10 +166,11 @@ pub struct ParsedShipData {
     /// Cуммарая площадь проекции на диаметральную плоскость от осадки, м^2
     pub bow_area: Vec<(f64, f64)>,
 }
-///
+//
 impl ParsedShipData {
     /// Парсинг данных в общую структуру. Включает в себя  
     /// проверку данных на корректность.
+    #[allow(clippy::too_many_arguments)]
     pub fn parse(
         multipler_x1: MultiplerX1Array,
         multipler_x2: MultiplerX2Array,
@@ -351,9 +352,9 @@ impl ParsedShipData {
             "ParsedShipData parse error: no icing_coef_v_moment_zero for ship id:{}",
             ship_id
         ))?;
-        let mut cargoes = Vec::from(cargo_src.data());
+        let mut cargoes = cargo_src.data();
         cargoes.append(&mut bulkhead_src.data());        
-        let mut compartments = Vec::from(compartments_src.data());
+        let mut compartments =compartments_src.data();
         compartments.append(&mut hold_compartments_src.data());
         log::info!("result parse ok");
         Self {

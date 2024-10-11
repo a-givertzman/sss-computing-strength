@@ -84,7 +84,6 @@ fn execute() -> Result<(), Error> {
         let data = block_on(data)?;
         elapsed.insert("ParsedShipData async", time.elapsed());
     */
-    let time = Instant::now();
 
     // ускорение свободного падения
     let gravity_g = 9.81;

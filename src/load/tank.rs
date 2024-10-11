@@ -26,7 +26,7 @@ pub struct Tank {
     /// Тип груза
     load_type: LoadingType,
 }
-///
+//
 impl Tank {
     /// Основной конструктор
     /// * density - Плотность жидкости в цистерне
@@ -59,30 +59,25 @@ impl Tank {
         })
     }
 }
-///
+//
 impl ITank for Tank {
     /// Момент свободной поверхности 
-    fn moment_surface(&self) -> FreeSurfaceMoment {
-        
+    fn moment_surface(&self) -> FreeSurfaceMoment {        
  //       log::info!("\t Tank result:{:?}", result);    
         FreeSurfaceMoment::from_inertia(self.inertia.clone(), self.density)
     }
-    ///
     fn load_type(&self) -> LoadingType {
         self.load_type
     }
 }
-///
+//
 impl ILoad for Tank {
-    ///
     fn mass(&self) -> f64 {
         self.density*self.volume
     }
-    ///
     fn bound_x(&self) -> Bound {
         self.bound_x
     }   
-    ///
     fn shift(&self) -> Position {
         if let Some(shift) = self.shift.clone() {
             shift
@@ -97,5 +92,5 @@ impl ILoad for Tank {
         }
     }
 }
-///
+//
 impl ILoadMass for Tank{}

@@ -48,6 +48,7 @@ impl RollingAmplitude {
     /// * x_2 - Безразмерный множитель Х_2 Табл. 2.1.5.1-2
     /// * s - Безразмерный множитель S Табл. 2.1.5.1-3
     /// * t - Период качки судна
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         a_k: Option<f64>,
         metacentric_height: Rc<dyn IMetacentricHeight>,

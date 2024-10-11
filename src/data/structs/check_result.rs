@@ -1,7 +1,7 @@
-use crate::error::Error;
-
+//! Проверка данных на корректность
 use super::*;
-///
+use crate::error::Error;
+//
 impl ParsedShipData {
     /// Проверка данных на корректность
     pub fn check(self) -> Result<Self, Error> {
@@ -125,10 +125,10 @@ impl ParsedShipData {
                 self.deadweight
             )));
         }
-        if self.freeboard_type.len() == 0 {
-            return Err(Error::Parameter(format!(
-                "Error check ParsedShipData: freeboard_type.len() == 0"
-            )));
+        if self.freeboard_type.is_empty() {
+            return Err(Error::Parameter(
+                "Error check ParsedShipData: freeboard_type.is_empty()".to_string(),
+            ));
         }
         if self.bow_area_min <= 0. {
             return Err(Error::Parameter(format!(
