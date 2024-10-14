@@ -112,7 +112,7 @@ impl LeverDiagram {
             let v3 =
                 (self.ship_moment.shift()?.y() - self.center_draught_shift.y()) * angle_rad.cos();
             let value = v1 - v2 - v3;
-            log::trace!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}");
+            log::trace!("{}", format!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}"));
             Ok((angle_deg, value))
         };
         let mut dso = (-900..=900)
@@ -163,7 +163,7 @@ impl LeverDiagram {
                 angle = max_angle;
             }
             delta_angle *= 0.5;
-            log::trace!("StabilityArm calculate max_angle: value:{value} angle:{angle} max_value:{max_value} max_angle:{max_angle} delta_angle:{delta_angle} i:{_i} ");
+            log::trace!("{}", format!("StabilityArm calculate max_angle: value:{value} angle:{angle} max_value:{max_value} max_angle:{max_angle} delta_angle:{delta_angle} i:{_i} "));
         }
         *self.theta_max.borrow_mut() = Some(max_angle);
         *self.dso.borrow_mut() = Some(dso.clone());
@@ -244,7 +244,7 @@ impl ILeverDiagram for LeverDiagram {
         ))?;
         if curve.value(max_angle)? < lever_moment {
             let error = Error::FromString(
-                "StabilityArm angle error: curve.value(max_angle) < lever_moment!".to_owned(),
+                format!("StabilityArm angle error: curve.value(max_angle) < lever_moment!"),
             );
             log::error!("{error}");
             return Err(error);
@@ -253,12 +253,12 @@ impl ILeverDiagram for LeverDiagram {
         let mut angles = vec![max_angle - delta_angle, max_angle + delta_angle];
         for _i in 0..30 {
             let last_delta_value = lever_moment - curve.value(angles[0])?;
-            log::trace!("StabilityArm angle: target:{lever_moment} angle1:{} last_delta_value:{last_delta_value} i:{_i} delta_angle:{delta_angle} ", angles[0]);
+            log::trace!("{}", format!("StabilityArm angle: target:{lever_moment} angle1:{} last_delta_value:{last_delta_value} i:{_i} delta_angle:{delta_angle} ", angles[0]));
             if last_delta_value.abs() > 0.00001 {
                 angles[0] += delta_angle * last_delta_value.signum();
             }
             let last_delta_value = lever_moment - curve.value(angles[1])?;
-            log::trace!("StabilityArm angle: target:{lever_moment} angle2:{} last_delta_value:{last_delta_value} i:{_i} delta_angle:{delta_angle} ", angles[1]);
+            log::trace!("{}", format!("StabilityArm angle: target:{lever_moment} angle2:{} last_delta_value:{last_delta_value} i:{_i} delta_angle:{delta_angle} ", angles[1]));
             if last_delta_value.abs() > 0.00001 {
                 angles[1] -= delta_angle * last_delta_value.signum();
                 angles[1] = angles[1].min(90.);
@@ -274,8 +274,7 @@ impl ILeverDiagram for LeverDiagram {
     fn lever_moment(&self, angle: f64) -> Result<f64, Error> {
         if !(0. ..=90.).contains(&angle) {
             let error = Error::FromString(
-                "ILeverDiagram lever_moment error: angle {angle} >= 0. && angle {angle} <= 90."
-                    .to_owned(),
+                format!("ILeverDiagram lever_moment error: angle {angle} >= 0. && angle {angle} <= 90."),
             );
             log::error!("{error}");
             return Err(error);
@@ -295,7 +294,7 @@ impl ILeverDiagram for LeverDiagram {
     fn dso_area(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
         if angle1 > angle2 {
             let error = Error::FromString(
-                "ILeverDiagram dso_area error: angle1 {angle1} > angle2 {angle2}".to_owned(),
+                format!("ILeverDiagram dso_area error: angle1 {angle1} > angle2 {angle2}"),
             );
             log::error!("{error}");
             return Err(error);
@@ -318,7 +317,7 @@ impl ILeverDiagram for LeverDiagram {
     fn dso_lever_max(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
         if angle1 > angle2 {
             let error = Error::FromString(
-                "ILeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}".to_owned(),
+                format!("ILeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}"),
             );
             log::error!("{error}");
             return Err(error);
@@ -425,7 +424,7 @@ impl ILeverDiagram for FakeLeverDiagram {
     fn dso_area(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
         if angle1 > angle2 {
             let error = Error::FromString(
-                "FakeLeverDiagram dso_area error: angle1 {angle1} > angle2 {angle2}".to_owned(),
+                format!("FakeLeverDiagram dso_area error: angle1 {angle1} > angle2 {angle2}"),
             );
             log::error!("{error}");
             return Err(error);
@@ -436,8 +435,7 @@ impl ILeverDiagram for FakeLeverDiagram {
     fn dso_lever_max(&self, angle1: f64, angle2: f64) -> Result<f64, Error> {
         if angle1 > angle2 {
             let error = Error::FromString(
-                "FakeLeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}"
-                    .to_owned(),
+                format!("FakeLeverDiagram dso_lever_max error: angle1 {angle1} > angle2 {angle2}"),
             );
             log::error!("{error}");
             return Err(error);
