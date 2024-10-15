@@ -13,8 +13,7 @@ pub use reserve_buoyncy::*;
 pub use screw::*;
 
 use super::{CriterionData, CriterionID};
-use crate::{data::structs::ShipType, draught::IDraught, trim::ITrim, IParameters};
-use crate::{data::structs::ShipType, draught::IDraught, trim::ITrim, IParameters};
+use crate::{data::structs::ship_type::ShipType, draught::IDraught, trim::ITrim, IParameters};
 use std::rc::Rc;
 
 /// Критерии проверки посадки судна
@@ -154,7 +153,7 @@ impl CriterionDraught {
                     ));
                 }
             }
-            Err(_err) => (),
+            Err(err) => log::error!("CriterionDraught load_line error: {}", err.to_string()),
             /*        Err(err) => {
                 res.push(CriterionData::new_error(
                     CriterionID::LoadLineDraftSB,
@@ -206,17 +205,7 @@ impl CriterionDraught {
                             delta_h,
                             self.bow_h_min,
                         )
-                        CriterionData::new_result(
-                            CriterionID::DepthAtForwardPerpendicularPS,
-                            delta_h,
-                            self.bow_h_min,
-                        )
                     } else {
-                        CriterionData::new_result(
-                            CriterionID::DepthAtForwardPerpendicularSB,
-                            delta_h,
-                            self.bow_h_min,
-                        )
                         CriterionData::new_result(
                             CriterionID::DepthAtForwardPerpendicularSB,
                             delta_h,
@@ -290,7 +279,6 @@ impl CriterionDraught {
             ),
         }
     }
-    /*   /// Минимальная осадка
     /*   /// Минимальная осадка
     pub fn draught_min(&self) -> Vec<CriterionData> {
         let minimum_draft_middle = match self.parameters.get(ParameterID::DraughtMean) {
