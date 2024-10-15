@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+
 use crate::data::structs::stability::*;
 
 impl From<Vec<(f64, f64, f64, f64)>> for VerticalAreaArray {

@@ -1,4 +1,6 @@
 //! Промежуточные структуры для serde_json для парсинга данных шпангоутов
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use crate::data::structs::DataArray;
 /// Данные по шпангоуту

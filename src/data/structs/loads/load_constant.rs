@@ -1,7 +1,6 @@
 //! Промежуточные структуры для serde_json для парсинга данных груза
 use crate::data::structs::DataArray;
 use serde::{Deserialize, Serialize};
-use crate::data::structs::DataArray;
 /// Тип груза, приходящегося на шпацию
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum LoadConstantType {

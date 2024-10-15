@@ -1,15 +1,14 @@
 //! Структуры для преобразования данных из формата данных DB
 //! в формат пригодный для создания объектов.
-
+use super::*;
 use bow_board::BowBoardParsedData;
 use loads::{
     BulkheadArray, CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData
 };
 use navigation_area_data::NavigationAreaData;
-
+use ship_type::ShipType;
 use crate::{error::Error, icing_stab::IcingStabType, icing_timber::IcingTimberType};
 
-use super::*;
 
 /// Общая структура для ввода данных. Содержит все данные
 /// для расчетов.

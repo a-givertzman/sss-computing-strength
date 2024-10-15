@@ -1,7 +1,6 @@
 //! Промежуточные структуры для serde_json для парсинга данных зерновой перегородки
 use crate::data::structs::DataArray;
 use serde::{Deserialize, Serialize};
-use crate::data::structs::DataArray;
 use super::{CargoGeneralCategory, LoadCargo};
 /// Зерновая перегородка
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

@@ -1,6 +1,5 @@
 //! Промежуточные структуры для serde_json для парсинга пантокаренов  
 use super::DataArray;
-use super::DataArray;
 use serde::{Deserialize, Serialize};
 /// Промежуточные структуры для serde_json для парсинга данных  
 /// плечей устойчивости формы (пантокарены)

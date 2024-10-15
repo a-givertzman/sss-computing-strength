@@ -12,7 +12,7 @@ pub use stab::*;
 use std::rc::Rc;
 
 use crate::{
-    data::structs::{NavigationArea, ShipType},
+    data::structs::{ship_type::ShipType, NavigationArea},
     Curve, Error, ICurve, ILeverDiagram, IMetacentricHeight, IWind,
 };
 

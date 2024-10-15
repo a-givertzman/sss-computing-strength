@@ -2,13 +2,10 @@ pub mod bulkhead;
 pub mod cargo;
 pub mod compartment;
 pub mod load_constant;
-pub mod compartment;
-pub mod cargo;
-pub mod bulkhead;
-pub use load_constant::*;
-pub use compartment::*;
-pub use cargo::*;
 pub use bulkhead::*;
+pub use cargo::*;
+pub use compartment::*;
+pub use load_constant::*;
 use serde::{Deserialize, Serialize};
 /// Тип груза по назначению
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]

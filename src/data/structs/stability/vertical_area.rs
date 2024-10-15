@@ -3,7 +3,7 @@
 //! парусности корпуса судна
 use serde::{Deserialize, Serialize};
 
-use super::DataArray;
+use crate::data::structs::DataArray;
 
 /// Площадь обледенения
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

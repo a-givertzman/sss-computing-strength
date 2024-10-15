@@ -5,8 +5,9 @@ use std::{collections::HashMap, rc::Rc};
 
 use log::{info, trace};
 
+use crate::data::structs::ship_type::ShipType;
 use crate::{
-    data::structs::{NavigationArea, ShipType},
+    data::structs::NavigationArea,
     Error, IBulk, ICurve, IMass, Position,
 };
 

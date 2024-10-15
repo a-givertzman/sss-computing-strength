@@ -19,6 +19,7 @@ pub use bow_board::*;
 pub use delta_windage_moment::*;
 pub use draft_mark::*;
 pub use horizontal_area::*;
+pub use vertical_area::*;
 pub use icing::*;
 pub use load_line::*;
 pub use navigation_area::*;
