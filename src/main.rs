@@ -1,5 +1,7 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
+use std::{collections::HashMap, rc::Rc, time::Instant};
+
 use crate::{
     area::{HAreaStability, HAreaStrength, VerticalArea},
     icing_stab::{IIcingStab, IcingStab},
@@ -9,22 +11,24 @@ use crate::{
     strength::*,
     windage::Windage,
 };
+use args::get_args;
 use data::api_server::*;
 use draught::{Draught, IDraught};
 pub use error::Error;
 use icing_timber::IcingTimberBound;
-use log::info;
+use log::init_logger;
 use log2::*;
-use std::{collections::HashMap, io, rc::Rc, time::Instant};
 use trim::ITrim;
 
 mod area;
+mod args;
 mod data;
 mod draught;
 mod error;
 mod icing_stab;
 mod icing_timber;
 mod load;
+mod log;
 mod math;
 mod stability;
 mod strength;
@@ -32,14 +36,7 @@ mod tests;
 mod trim;
 
 fn main() {
-    let _log2 = log2::open("log.txt")
-    .level("info")
-    .size(100*1024*1024)
-    .rotate(20)
-    .tee(true)
-    .module(true)
-    .start();
-    info!("starting up");
+    init_logger();
     let reply = if let Err(error) = execute() {
         let str1 = r#"{"status":"failed","message":""#;
         let str2 = r#""}"#;
@@ -47,65 +44,15 @@ fn main() {
     } else {
         r#"{"status":"ok","message":null}"#.to_owned()
     };
-    let _ = io::Write::write_all(&mut io::stdout().lock(), reply.as_bytes());
-}
-
-
-use std::sync::mpsc;
-use std::sync::mpsc::Receiver;
-use std::{thread, time};
-
-fn spawn_stdin_channel() -> Receiver<String> {
-    let (tx, rx) = mpsc::channel::<String>();
-    thread::spawn(move || loop {
-        let mut buffer = String::new();
-        io::stdin().read_line(&mut buffer).unwrap();
-        tx.send(buffer).unwrap();
-    });
-    rx
-}
-fn sleep(millis: u64) {
-    let duration = time::Duration::from_millis(millis);
-    thread::sleep(duration);
+    let _ = std::io::Write::write_all(&mut std::io::stdout().lock(), reply.as_bytes());
 }
 
 fn execute() -> Result<(), Error> {
-    let host: String;
-    let port;
-    let stdin_channel = spawn_stdin_channel();
-    sleep(100);
-    match stdin_channel.try_recv() {
-        Ok(input) => {
-            info!("read from stdin: {input}");
-            let json_data: serde_json::Value = serde_json::from_str(&input)?;
-            info!("io::stdin(): {}", json_data);
-            host = json_data
-                .get("api-host")
-                .ok_or(Error::FromString(
-                    "Parse param error: no api-host".to_owned(),
-                ))?
-                .to_string();
-            port = json_data
-                .get("api-port")
-                .ok_or(Error::FromString(
-                    "Parse param error: no api-host".to_owned(),
-                ))?
-                .to_string();            
-        }
-        Err(error) => {
-            error!("error read from stdin!: {error}");
-            info!("set default host:0.0.0.0, port:8080");
-            host = "0.0.0.0".to_string();
-            port = "8080".to_string();
-        },
-    }
-
+    let (host, port) = get_args()?;
     let ship_id = 1;
     let mut api_server =
         ApiServer::new("sss-computing".to_owned(), host.to_owned(), port.to_owned());
-
     let mut elapsed = HashMap::new();
-
     let time = Instant::now();
     let results: Rc<dyn IResults> = Rc::new(Results::new());
     let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());

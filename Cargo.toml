@@ -18,6 +18,7 @@ serde_json = "^1.0"
 splines = "4.3.1"
 thiserror = "1.0.57"
 log2 = "0.1.11"
+env_logger = "0.11.5"
 
 [package.metadata.docs.rs]
 rustdoc-args = [ "--html-in-header", "katex-header.html" ]
