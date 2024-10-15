@@ -1,18 +1,21 @@
 #[cfg(test)]
 
 mod tests {
-    use crate::{draught::{FakeDraught, IDraught}, mass::FakeMass, math::{position::Position, vec::vec::MultipleSingle}, total_force::{ITotalForce, TotalForce}};
+
     use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
-    use log::{debug, info, warn};
-    use std::{
-        rc::Rc, sync::Once, time::{Duration, Instant}
-    };
+    use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
+
+    use crate::{
+        math::*,
+        strength::{total_force::*, volume::*},
+        FakeMass,
+    };
 
     #[test]
     fn total_force() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test TotalForce";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
@@ -20,13 +23,17 @@ mod tests {
 
         let gravity_g = 9.81;
         let result = TotalForce::new(
-            Rc::new(FakeMass::new(30., vec![20.; 10], Position::new(0., 0., 0.,), 0.)),
-            FakeDraught::new(vec![5., 25., 25., 25., 25., 25., 25., 25., 15., 5.]),
+            Rc::new(FakeMass::new(30., vec![20.; 10])),
+            1.0,
+            FakeVolume::new(vec![5., 25., 25., 25., 25., 25., 25., 25., 15., 5.]),
             gravity_g,
-        ).values();
+        )
+        .unwrap()
+        .values()
+        .unwrap();
         let mut target = Vec::from([15., -5., -5., -5., -5., -5., -5., -5., 5., 15.]);
         target.mul_single(gravity_g);
-        
+
         assert!(
             result == target,
             "\nresult: {:?}\ntarget: {:?}",

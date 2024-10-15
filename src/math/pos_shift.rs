@@ -1,4 +1,6 @@
 //! Зависимость положения точки от некоторого значения
+use crate::Error;
+
 use super::{curve::{Curve, ICurve}, position::Position};
 /// Зависимость положения точки от некоторого значения.
 /// Интерполирует значение по ключу.
@@ -21,24 +23,22 @@ pub struct PosShift {
     y: Curve, 
     z: Curve,
 }
-
+//
 impl PosShift {
-    ///
     pub fn new(x: Curve, y: Curve, z: Curve ) -> Self {
         Self { x, y, z }
     }
 }
-
+//
 impl IPosShift for PosShift {
-    ///
-    fn value(&self, key: f64) -> Position {
-        Position::new(self.x.value(key), self.y.value(key), self.z.value(key))
+    fn value(&self, key: f64) -> Result<Position, Error> {
+        Ok(Position::new(self.x.value(key)?, self.y.value(key)?, self.z.value(key)?))
     }
 }
-
+//
 #[doc(hidden)]
 pub trait IPosShift {
-    fn value(&self, key: f64) -> Position;
+    fn value(&self, key: f64) -> Result<Position, Error>;
 }
 #[doc(hidden)]
 /// заглушка для тестирования
@@ -46,6 +46,7 @@ pub struct FakePosShift {
     data: Position,
 }
 #[doc(hidden)]
+#[allow(dead_code)]
 impl FakePosShift {
     pub fn new(data: Position) -> Self {
         Self { data }
@@ -53,7 +54,7 @@ impl FakePosShift {
 }
 #[doc(hidden)]
 impl IPosShift for FakePosShift {
-    fn value(&self, _: f64) -> Position {
-        self.data.clone()
+    fn value(&self, _: f64) -> Result<Position, Error> {
+        Ok(self.data.clone())
     }
 }

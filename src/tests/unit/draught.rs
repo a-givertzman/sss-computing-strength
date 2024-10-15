@@ -1,77 +1,63 @@
 #[cfg(test)]
 
 mod tests {
-    use log::{warn, info, debug};
-    use std::{rc::Rc, sync::Once, time::{Duration, Instant}};
-    use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
+
+    use debugging::session::debug_session::{Backtrace, DebugSession, LogLevel};
+    use std::{rc::Rc, time::Duration};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::{displacement::Displacement, draught::Draught, frame::Frame, load::{ILoad, LoadSpace}, mass::Mass, math::{bound::Bound, curve::Curve, mass_moment::MassMoment, pos_shift::PosShift, position::Position}, trim::Trim};
-    
+
+    use crate::{
+        draught::{Draught, IDraught},
+        trim::FakeTrim,
+    };
+
     #[test]
     fn draught() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test Draught";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));
         test_duration.run().unwrap();
-
-/*      TODO 
-        let ship_length = 20.;
-
-         // отстояние центра величины погруженной части судна
-        let center_shift = PosShift::new(
-            Curve::new(vec![(0., 1.), (10., 1.)]),
-            Curve::new(vec![(0., 0.), (10., 0.)]),
-            Curve::new(vec![(0., 0.), (10., 0.)]),
-        );
-        // поперечный метацентрические радиус
-        let rad_long = Curve::new(vec![(0., 0.), (10., 1.)]);
-
-        // отстояние центра тяжести ватерлинии по длине от миделя
-        let center_waterline = Curve::new(vec![(0., 0.), (10., 1.)]);
-
-        // средняя осадка
-        let mean_draught = Curve::new(vec![(0., 0.), (1000., 1.), (10000., 10.)]);
-
-        let bounds = vec![Bound::new(-10., 10.)];
-        let mass = Mass::new(
-            vec![Rc::new(Box::new(LoadSpace::new(
-                Bound::new(-10., 10.),
-                Position::new(0., 0., 0.),
-                10.,
-            )))],
-            bounds.clone(),
-        );
-
-        let frames = vec![
-            Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-            Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-            Frame::new(Curve::new(vec![(0., 0.), (10., 10.)])),
-        ];
-
-
-        let result = Draught::new(
-            
-            
-            
-            Trim::new(
-                1., // плотность окружающей воды
-                mass,         // все грузы судна
-                ship_length,   // длинна судна
-                center_shift,  // отстояние центра величины погруженной части судна
-                rad_long,     // продольный метацентрические радиус
-            ),
-            Displacement::new(frames, ship_length),
+        let ship_length = 118.39;
+        let draught = Draught::new(
             ship_length,
-            bounds,
-            center_waterline,
-            mean_draught,
-        ).values();
-
-        let target = vec![1.];
-        assert!(result == target, "\nresult: {:?}\ntarget: {:?}", result, target);
-*/
+            -0.862,
+            Rc::new(FakeTrim::from_angle(
+                1.6562565987303715,
+                -0.3013717957692749,
+                ship_length,
+            )),
+            None,
+        )
+        .unwrap();
+        // bow
+        let result = draught.value(59.194).unwrap();
+        let target = 1.34;
+        assert!(
+            (result - target).abs() < result.abs() * 0.01, //TODO
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
+        // mid
+        let result = draught.value(0.).unwrap();
+        let target = 1.65;
+        assert!(
+            (result - target).abs() < result.abs() * 0.01, //TODO
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
+        // stern
+        let result = draught.value(-59.194).unwrap();
+        let target = 1.96;
+        assert!(
+            (result - target).abs() < result.abs() * 0.01, //TODO
+            "\nresult: {:?}\ntarget: {:?}",
+            result,
+            target
+        );
         test_duration.exit();
     }
 }

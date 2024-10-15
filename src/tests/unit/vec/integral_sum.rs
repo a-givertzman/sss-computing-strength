@@ -1,16 +1,15 @@
 #[cfg(test)]
 
 mod tests {
-    use log::{warn, info, debug};
-    use std::{sync::Once, time::{Duration, Instant}};
+    use std::time::Duration;
     use debugging::session::debug_session::{DebugSession, LogLevel, Backtrace};
     use testing::stuff::max_test_duration::TestDuration;
-    use crate::math::vec::{integral_sum::IntegralSum, vec::*};
+    use crate::math::vec::IntegralSum;
 
     #[test]
     fn integral_sum() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
-        println!("");
+        println!();
         let self_id = "test Vec integral_sum";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(10));

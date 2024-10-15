@@ -1,0 +1,518 @@
+//! Функции для работы с АПИ-сервером
+use crate::{
+    data::{
+        api_server::{loads::LoadConstantArray, serde_parser::IFromJson},
+        structs::*,
+    },
+    error::{self, Error},
+    CriterionData, Position,
+};
+use api_tools::client::{api_query::*, api_request::ApiRequest};
+use loads::{BulkheadArray, CompartmentArray, LoadCargoArray};
+use std::{collections::HashMap, thread, time};
+
+pub struct ApiServer {
+    database: String,
+    host: String,
+    port: String,
+    request: Option<ApiRequest>,
+}
+//
+impl ApiServer {
+    pub fn new(database: String, host: String, port: String) -> Self {
+        Self {
+            database,
+            host,
+            port,
+            request: None,
+        }
+    }
+    //
+    pub fn fetch(&mut self, sql: &str) -> Result<Vec<u8>, Error> {
+        if let Some(request) = self.request.as_mut() {
+            let result = request.fetch(
+                &ApiQuery::new(
+                    ApiQueryKind::Sql(ApiQuerySql::new(self.database.clone(), sql)),
+                    false,
+                ),
+                true,
+            )?;
+            let millis = time::Duration::from_millis(100);
+            thread::sleep(millis);
+            //      dbg!(sql, &String::from_utf8(result.clone()));
+            let json: serde_json::Value = serde_json::from_slice(&result)?;
+            let error_mess = json
+                .get("error")
+                .ok_or(Error::FromString(format!(
+                    "ApiServer can't get error:{}",
+                    json
+                )))?
+                .get("message")
+                .ok_or(Error::FromString(format!(
+                    "ApiServer can't get error message:{}",
+                    json
+                )))?
+                .as_str()
+                .ok_or(Error::FromString(format!(
+                    "ApiServer can't get error message str:{}",
+                    json
+                )))?;
+            if !error_mess.is_empty() {
+                return Err(Error::FromString(error_mess.to_owned()));
+            }
+            Ok(result)
+        } else {
+            self.request = Some(ApiRequest::new(
+                "parent",
+                self.host.clone() + ":" + &self.port,
+                "auth_token",
+                ApiQuery::new(
+                    ApiQueryKind::Sql(ApiQuerySql::new(self.database.clone(), "")),
+                    false,
+                ),
+                true,
+                false,
+            ));
+            self.fetch(sql)
+        }
+    }
+}
+
+/// Чтение данных из БД. Функция читает данные за несколько запросов,
+/// парсит их и проверяет данные на корректность.
+pub fn get_data(
+    api_server: &mut ApiServer,
+    ship_id: usize,
+) -> Result<ParsedShipData, Error> {
+    log::info!("input_api_server read begin");
+    let ship = ShipArray::parse(&api_server.fetch(&format!(
+        "SELECT             
+            s.name AS name,            
+            tr.title_eng AS ship_type,            
+            i.icing_type::TEXT AS icing_type,            
+            it.icing_type::TEXT AS icing_timber_type,            
+            n.area::TEXT AS area,
+            n.p_v AS p_v,
+            n.m AS m,   
+            s.freeboard_type AS freeboard_type        
+        FROM             
+            ship AS s        
+        JOIN             
+            ship_type AS t ON s.ship_type_id = t.id        
+        JOIN             
+            ship_type_rmrs AS tr ON t.type_rmrs = tr.id        
+        JOIN             
+            ship_icing AS i ON s.icing_type_id = i.id        
+        JOIN             
+            ship_icing_timber AS it ON s.icing_timber_type_id = it.id        
+        JOIN             
+            navigation_area AS n ON s.navigation_area_id = n.id        
+        WHERE  
+            s.id={ship_id};"
+    ))?)?.data[0].clone();
+    let ship_parameters = ShipParametersArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM ship_parameters WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let multipler_x1 = MultiplerX1Array::parse(
+        &api_server.fetch("SELECT key, value FROM multipler_x1;")?,
+    )?;
+    let multipler_x2 = MultiplerX2Array::parse(
+        &api_server.fetch("SELECT key, value FROM multipler_x2;")?,
+    )?;
+    let multipler_s = MultiplerSArray::parse(
+        &api_server.fetch("SELECT area, t, s FROM multipler_s;")?,
+    )?;
+    let coefficient_k = CoefficientKArray::parse(
+        &api_server.fetch("SELECT key, value FROM coefficient_k;")?,
+    )?;
+    let coefficient_k_theta = CoefficientKThetaArray::parse(
+        &api_server.fetch("SELECT key, value FROM coefficient_k_theta;")?,
+    )?;
+    let icing = IcingArray::parse(&api_server.fetch("SELECT key, value FROM icing;")?)?;
+    let bounds = ComputedFrameDataArray::parse(&api_server.fetch(&format!(
+        "SELECT index, start_x, end_x FROM computed_frame_space WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let center_waterline = CenterWaterlineArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM center_waterline WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let waterline_length = WaterlineLengthArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM waterline_length WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let waterline_breadth = WaterlineBreadthArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM waterline_breadth WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let waterline_area = WaterlineAreaArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM waterline_area WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let volume_shift = VolumeShiftArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM volume_shift WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let center_draught_shift = CenterDraughtShiftDataArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value_x, value_y, value_z FROM center_draught WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let mean_draught = MeanDraughtDataArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM mean_draught WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let rad_long = RadLongDataArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM rad_long WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let rad_trans = RadTransDataArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM rad_trans WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let h_subdivision = MetacentricHeightSubdivisionArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM min_metacentric_height_subdivision WHERE ship_id={ship_id};"
+    ))?)?;
+    //    dbg!(&h_subdivision);
+    log::trace!("input_api_server h_subdivision read ok");
+    let pantocaren = PantocarenDataArray::parse(&api_server.fetch(&format!(
+        "SELECT draught, roll, moment FROM pantocaren WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let flooding_angle = FloodingAngleDataArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM flooding_angle WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let entry_angle = EntryAngleDataArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM entry_angle WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let delta_windage_area = DeltaWindageAreaDataArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM delta_windage_area WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let delta_windage_moment = DeltaWindageMomentDataArray::parse(&api_server.fetch(&format!(
+        "SELECT draught, value_x, value_z FROM delta_windage_moment WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let bonjean_frame = FrameIndexDataArray::parse(&api_server.fetch(&format!(
+        "SELECT frame_index, pos_x FROM bonjean_frame WHERE ship_id={ship_id};"
+    ))?)?;
+    let frame_area = FrameAreaDataArray::parse(&api_server.fetch(&format!(
+        "SELECT frame_index, draft, area FROM frame_area WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let draft_mark = DraftMarkDataArray::parse(&api_server.fetch(&format!(
+        "SELECT name, x, y, z FROM draft_mark WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let load_line = LoadLineDataArray::parse(&api_server.fetch(&format!(
+        "SELECT name, x, y, z FROM load_line WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let screw = ScrewDataArray::parse(&api_server.fetch(&format!(
+        "SELECT name, x, y, z, d FROM screw WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let bow_board = BowBoardDataArray::parse(&api_server.fetch(&format!(
+        "SELECT name, x, y, z FROM bow_board WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    let cargo = LoadCargoArray::parse(&api_server.fetch(&format!(
+        "SELECT 
+            c.name AS name, \
+            c.mass AS mass, \
+            c.timber AS timber, \
+            cgc.key::TEXT AS general_category, \
+            c.bound_x1 AS bound_x1, \
+            c.bound_x2 AS bound_x2, \
+            c.bound_y1 AS bound_y1, \
+            c.bound_y2 AS bound_y2, \
+            c.bound_z1 AS bound_z1, \
+            c.bound_z2 AS bound_z2, \
+            c.mass_shift_x AS mass_shift_x, \
+            c.mass_shift_y AS mass_shift_y, \
+            c.mass_shift_z AS mass_shift_z, \
+            c.horizontal_area AS horizontal_area, \
+            c.vertical_area AS vertical_area, \
+            c.vertical_area_shift_x AS vertical_area_shift_x, \
+            c.vertical_area_shift_y AS vertical_area_shift_y, \
+            c.vertical_area_shift_z AS vertical_area_shift_z \
+        FROM 
+            cargo AS c
+        JOIN 
+            cargo_category AS cc ON c.category_id = cc.id
+        JOIN 
+            cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+        WHERE 
+            c.ship_id={ship_id};"
+    ))?)?;
+    let compartment = CompartmentArray::parse(&api_server.fetch(&format!(
+        "SELECT 
+            c.name AS name, \
+            c.mass AS mass, \
+            cc.matter_type::TEXT AS matter_type, \
+            cgc.key::TEXT AS general_category, \
+            c.density AS density, \
+            c.volume AS volume, \
+            c.bound_x1 AS bound_x1, \
+            c.bound_x2 AS bound_x2, \
+            c.mass_shift_x AS mass_shift_x, \
+            c.mass_shift_y AS mass_shift_y, \
+            c.mass_shift_z AS mass_shift_z, \
+            c.m_f_s_y AS m_f_s_y, \
+            c.m_f_s_x AS m_f_s_x, \
+            c.grain_moment AS grain_moment \
+        FROM 
+            compartment c
+        JOIN 
+            cargo_category AS cc ON c.category_id = cc.id
+        JOIN 
+            cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+        WHERE 
+            c.ship_id={ship_id} AND active=TRUE AND mass>0;"
+    ))?)?;
+    let hold_compartment = CompartmentArray::parse(&api_server.fetch(&format!(
+        "SELECT 
+            c.name AS name, \
+            c.mass AS mass, \
+            cc.matter_type::TEXT AS matter_type, \
+            cgc.key::TEXT AS general_category, \
+            c.density AS density, \
+            c.volume AS volume, \
+            c.bound_x1 AS bound_x1, \
+            c.bound_x2 AS bound_x2, \
+            c.mass_shift_x AS mass_shift_x, \
+            c.mass_shift_y AS mass_shift_y, \
+            c.mass_shift_z AS mass_shift_z, \
+            c.grain_moment AS grain_moment \
+        FROM 
+            hold_compartment c
+        JOIN 
+            cargo_category AS cc ON c.category_id = cc.id
+        JOIN 
+            cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+        WHERE 
+            c.ship_id={ship_id} AND mass>0;"
+    ))?)?;
+    let bulkhead = BulkheadArray::parse(&api_server.fetch(&format!(
+            "SELECT 
+                h.name AS name, \
+                h.mass AS mass, \
+                cgc.key::TEXT AS general_category, \
+                p.bound_x1 AS bound_x1, \
+                p.bound_x2 AS bound_x2, \
+                p.mass_shift_x AS mass_shift_x, \
+                p.mass_shift_y AS mass_shift_y, \
+                p.mass_shift_z AS mass_shift_z \
+            FROM 
+                bulkhead AS h
+            JOIN 
+                cargo_category AS cc ON h.category_id = cc.id
+            JOIN 
+                cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+            JOIN 
+                bulkhead_place AS p ON h.id = p.bulkhead_id
+            WHERE 
+                h.ship_id={ship_id};"
+        ))?)?;
+    let load_constant = LoadConstantArray::parse(&api_server.fetch(&format!(
+        "SELECT 
+            l.mass AS mass, \
+            l.bound_x1 AS bound_x1, \
+            l.bound_x2 AS bound_x2, \
+            cc.key as loading_type \
+        FROM 
+            load_constant AS l
+        JOIN 
+            cargo_category AS cc 
+        ON 
+            l.category_id = cc.id
+        WHERE 
+            l.ship_id={ship_id};"
+    ))?)?;
+    let area_h_str = HStrAreaArray::parse(&api_server.fetch(
+        &format!("SELECT name, value, bound_x1, bound_x2 FROM horizontal_area_strength WHERE ship_id={};", ship_id)
+    )?)?;
+    log::trace!("input_api_server area_h_str read ok");
+    let area_h_stab = HStabAreaArray::parse(&api_server.fetch(
+        &format!("SELECT name, value, shift_x, shift_y, shift_z FROM horizontal_area_stability WHERE ship_id={};", ship_id)
+    )?)?;
+    log::trace!("input_api_server area_h_stab read ok");
+    let area_v_str = strength::VerticalAreaArray::parse(&api_server.fetch(
+        &format!("SELECT name, value, shift_z, bound_x1, bound_x2 FROM vertical_area_strength WHERE ship_id={};", ship_id)
+    )?)?;
+    log::trace!("input_api_server area_v_str read ok");
+    let area_v_stab = stability::VerticalAreaArray::parse(&api_server.fetch(
+        &format!("SELECT draught, area, moment_x, moment_z FROM vertical_area_stability WHERE ship_id={};", ship_id)
+    )?)?;
+    let bow_area = BowAreaDataArray::parse(&api_server.fetch(&format!(
+        "SELECT key, value FROM bow_area WHERE ship_id={};",
+        ship_id
+    ))?)?;
+    log::info!("input_api_server read ok");
+    ParsedShipData::parse(
+        multipler_x1,
+        multipler_x2,
+        multipler_s,
+        coefficient_k,
+        coefficient_k_theta,
+        icing,
+        ship_id,
+        ship,
+        ship_parameters,
+        bounds,
+        center_waterline,
+        waterline_length,
+        waterline_breadth,
+        waterline_area,
+        volume_shift,
+        rad_long,
+        rad_trans,
+        h_subdivision,
+        mean_draught,
+        center_draught_shift,
+        pantocaren,
+        flooding_angle,
+        entry_angle,
+        delta_windage_area,
+        delta_windage_moment,
+        bonjean_frame,
+        frame_area,
+        draft_mark,
+        load_line,
+        screw,
+        bow_board,
+        cargo,
+        bulkhead,
+        compartment,
+        hold_compartment,
+        load_constant,
+        area_h_stab,
+        area_h_str,
+        area_v_stab,
+        area_v_str,
+        bow_area,
+    )
+}
+
+/// Запись данных расчета прочности в БД
+pub fn send_strenght_data(
+    api_server: &mut ApiServer,
+    ship_id: usize,
+    results: Vec<(String, Vec<f64>)>,
+) -> Result<(), error::Error> {
+    log::info!("send_strenght_data begin");
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM result_strength WHERE ship_id={ship_id};");
+    full_sql += " INSERT INTO result_strength (ship_id, index";
+    full_sql += &results.iter().fold("".to_string(), |s, (k, _)| s + &format!(", {k}"));
+//    full_sql += &results.iter().map(|(k, _)| format!(", {k}") ).collect::<String>();
+    full_sql += ") VALUES";
+
+    for i in 0..results[0].1.len() {
+        full_sql += &format!(" ({ship_id}, {i}," );
+        full_sql += &results.iter().fold("".to_string(), |s, (_, v)| s + &format!(" {},", v[i]));
+    //    full_sql += &results.iter().map(|(_, v)| format!(" {},", v[i])).collect::<String>();
+        full_sql.pop();
+        full_sql += "),";        
+    }
+    full_sql.pop();
+    full_sql.push(';');
+
+    full_sql += " END$$;";
+    //   dbg!(&string);
+    api_server.fetch(&full_sql)?;
+    log::info!("send_strenght_data end");
+    Ok(())
+}
+/// Запись данных расчета остойчивости в БД
+pub fn send_stability_data(
+    api_server: &mut ApiServer,
+    ship_id: usize,
+    criterion_data: Vec<CriterionData>,
+    zg_data: HashMap<usize, f64>,
+) -> Result<(), error::Error> {
+    log::info!("send_stability_data begin");
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM criterion_values WHERE ship_id={ship_id};");
+    criterion_data.into_iter().for_each(|v| {
+        let zg = zg_data.get(&v.criterion_id);
+        full_sql += " INSERT INTO criterion_values "; 
+        full_sql += &match (v.error_message, zg) {
+            (None, None) => format!("(ship_id, criterion_id, actual_value, limit_value) VALUES ({ship_id}, {}, {}, {});", v.criterion_id, v.result, v.target),
+            (None, Some(zg_value)) => format!("(ship_id, criterion_id, actual_value, limit_value, zg_value) VALUES ({ship_id}, {}, {}, {}, {zg_value});", v.criterion_id, v.result, v.target),
+            (Some(error), None) => format!("(ship_id, criterion_id, actual_value, limit_value, error_message) VALUES ({ship_id}, {}, {}, {}, '{}');", v.criterion_id, v.result, v.target, error),
+            (Some(error), Some(zg_value)) => format!("(ship_id, criterion_id, actual_value, limit_value, error_message) VALUES ({ship_id}, {}, {}, {}, {zg_value}, '{}');", v.criterion_id, v.result, v.target, error),
+        };
+    });
+    full_sql += " END$$;";
+    api_server.fetch(&full_sql)?;
+    log::info!("send_stability_data end");
+    Ok(())
+}
+/// Запись данных расчета плечей остойчивости в БД
+pub fn send_stability_diagram(
+    api_server: &mut ApiServer,
+    ship_id: usize,
+    data: Vec<(f64, f64, f64)>,
+) -> Result<(), error::Error> {
+    log::info!("send_stability_diagram begin");
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM stability_diagram WHERE ship_id={ship_id};");
+    full_sql += " INSERT INTO stability_diagram (ship_id, angle, value_dso, value_ddo) VALUES"; 
+    data.into_iter().for_each(|(angle, value_dso, value_ddo) | {
+        full_sql += &format!(" ({ship_id}, {angle}, {value_dso}, {value_ddo}),");
+    });
+    full_sql.pop();
+    full_sql.push(';');
+    full_sql += " END$$;";
+    api_server.fetch(&full_sql)?;
+    log::info!("send_stability_diagram end");
+    Ok(())
+}
+/// Запись данных расчета остойчивости в БД
+pub fn send_parameters_data(
+    api_server: &mut ApiServer,
+    ship_id: usize,
+    data: Vec<(usize, f64)>,
+) -> Result<(), error::Error> {
+    log::info!("send_parameters_data begin");
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM parameter_data WHERE ship_id={ship_id};");
+    if !data.is_empty() {
+        full_sql += " INSERT INTO parameter_data (ship_id, parameter_id, result) VALUES";
+        data.into_iter().for_each(|v| {
+            full_sql += &format!(" ({ship_id}, {}, {}),", v.0, v.1);
+        });
+        full_sql.pop();
+        full_sql.push(';');
+    }
+    full_sql += " END$$;";
+    api_server.fetch(&full_sql)?;
+    log::info!("send_parameters_data end");
+    Ok(())
+}
+/// Запись данных расчета уровня заглубления 
+/// для координат отметок заглубления на корпусе судна
+pub fn send_draft_mark(
+    api_server: &mut ApiServer,
+    ship_id: usize,
+    data: Vec<(String, Position)>,
+) -> Result<(), error::Error> {
+    log::info!("send_draft_mark begin");
+    let mut full_sql = "DO $$ BEGIN ".to_owned();
+    full_sql += &format!("DELETE FROM draft_mark_result WHERE ship_id={ship_id};");
+    if !data.is_empty() {
+        full_sql += " INSERT INTO draft_mark_result (ship_id, name, x, y, value) VALUES";
+        data.into_iter().for_each(|(name, position)| {
+            full_sql += &format!(" ({ship_id}, '{name}', {}, {}, {}),", position.x(), position.y(), position.z());
+        });
+        full_sql.pop();
+        full_sql.push(';');
+    }
+    full_sql += " END$$;";
+    api_server.fetch(&full_sql)?;
+    log::info!("send_draft_mark end");
+    Ok(())
+}
