@@ -7,6 +7,7 @@ pub(crate) mod stab;
 pub use acceleration::*;
 pub use circulation::*;
 pub use grain::*;
+use log::info;
 pub use stab::*;
 use std::rc::Rc;
 
@@ -128,6 +129,7 @@ impl CriterionStability {
     }
     ///
     pub fn create(&mut self) -> Vec<CriterionData> {
+        info!("Criterion begin");
         let mut out_data = Vec::new();
         if self.navigation_area != NavigationArea::R3Rsn {
             out_data.push(self.weather());
@@ -163,6 +165,7 @@ impl CriterionStability {
             out_data.append(&mut self.grain());
         }
         out_data.push(self.metacentric_height_subdivision());
+        info!("Criterion end");
         out_data
     }
     /// Критерий погоды K

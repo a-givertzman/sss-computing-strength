@@ -3,6 +3,8 @@
 
 use std::{collections::HashMap, rc::Rc};
 
+use log::{info, trace};
+
 use crate::{
     data::structs::{NavigationArea, ShipType},
     Error, IBulk, ICurve, IMass, Position,
@@ -202,6 +204,7 @@ impl CriterionComputer {
     }
     /// Расчет zg, возвращяет результат в виде HashMap<criterion_id, zg>
     pub fn calculate(&mut self) -> Result<HashMap<usize, f64>, Error> {
+        info!("CriterionComputer begin");
         let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
         // zg + Vec<id, delta>
         let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
@@ -213,6 +216,7 @@ impl CriterionComputer {
             let delta_m_h = self.metacentric_height.delta_m_h()?;
             let h = z_m - z_g_fix;
             let h_0 = h + delta_m_h.trans();
+            trace!("CriterionComputer index:{index} z_g_fix:{z_g_fix} z_m:{z_m} delta_m_h:{delta_m_h} h:{h} h_0:{h_0}");
             let metacentric_height: Rc<dyn IMetacentricHeight> =
                 Rc::new(FakeMetacentricHeight::new(
                     self.metacentric_height.h_long_fix()?,
@@ -340,6 +344,7 @@ impl CriterionComputer {
                 .expect("CriterionComputer calculate error, no values!");
             result.insert(id, closest_value.0);
         }
+        info!("CriterionComputer end");
         Ok(result)
     }
 }

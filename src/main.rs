@@ -16,8 +16,8 @@ use data::api_server::*;
 use draught::{Draught, IDraught};
 pub use error::Error;
 use icing_timber::IcingTimberBound;
-use log::init_logger;
-use log2::*;
+use env_logger::Logger;
+use log::info;
 use trim::ITrim;
 
 mod area;
@@ -28,7 +28,6 @@ mod error;
 mod icing_stab;
 mod icing_timber;
 mod load;
-mod log;
 mod math;
 mod stability;
 mod strength;
@@ -36,7 +35,14 @@ mod tests;
 mod trim;
 
 fn main() {
-    init_logger();
+    let _log2 = log2::open("log.txt")
+    .level(Logger::from_default_env().filter().as_str())
+    .size(100*1024*1024)
+    .rotate(20)
+    .tee(true)
+    .module(true)
+    .start();
+    info!("starting up");
     let reply = if let Err(error) = execute() {
         let str1 = r#"{"status":"failed","message":""#;
         let str2 = r#""}"#;
