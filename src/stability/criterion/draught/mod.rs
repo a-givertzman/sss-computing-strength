@@ -14,6 +14,7 @@ pub use screw::*;
 
 use super::{CriterionData, CriterionID};
 use crate::{data::structs::ShipType, draught::IDraught, trim::ITrim, IParameters};
+use crate::{data::structs::ShipType, draught::IDraught, trim::ITrim, IParameters};
 use std::rc::Rc;
 
 /// Критерии проверки посадки судна
@@ -118,7 +119,20 @@ impl CriterionDraught {
                {
                    out_data.push(self.reserve_buoyncy());
                }
+        /*       if self.freeboard_type == "B"
+                   && self.ship_type == ShipType::Tanker
+                   && self.ship_type == ShipType::ChemicalTanker
+                   && self.ship_type == ShipType::GasCarrier
+               {
+                   out_data.push(self.reserve_buoyncy());
+               }
 
+               if (self.ship_type == ShipType::Tanker && self.deadweight >= 20000.)
+                   || (self.ship_type == ShipType::OilTanker && self.deadweight >= 30000.)
+               {
+                   out_data.append(&mut self.draught_min());
+               }
+        */
                if (self.ship_type == ShipType::Tanker && self.deadweight >= 20000.)
                    || (self.ship_type == ShipType::OilTanker && self.deadweight >= 30000.)
                {
@@ -192,7 +206,17 @@ impl CriterionDraught {
                             delta_h,
                             self.bow_h_min,
                         )
+                        CriterionData::new_result(
+                            CriterionID::DepthAtForwardPerpendicularPS,
+                            delta_h,
+                            self.bow_h_min,
+                        )
                     } else {
+                        CriterionData::new_result(
+                            CriterionID::DepthAtForwardPerpendicularSB,
+                            delta_h,
+                            self.bow_h_min,
+                        )
                         CriterionData::new_result(
                             CriterionID::DepthAtForwardPerpendicularSB,
                             delta_h,
@@ -266,6 +290,7 @@ impl CriterionDraught {
             ),
         }
     }
+    /*   /// Минимальная осадка
     /*   /// Минимальная осадка
     pub fn draught_min(&self) -> Vec<CriterionData> {
         let minimum_draft_middle = match self.parameters.get(ParameterID::DraughtMean) {

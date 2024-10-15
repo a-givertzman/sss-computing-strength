@@ -41,10 +41,14 @@ impl Circulation {
         parameters: Rc<dyn IParameters>,
     ) -> Result<Self, Error> {
         if l_wl <= 0. {
-            return Err(Error::FromString("Circulation new error: l_wl <= 0.".to_string()));
+            let error = Error::FromString("Circulation new error: l_wl <= 0.".to_owned());
+            log::error!("{error}");
+            return Err(error);
         }
         if d <= 0. {
-            return Err(Error::FromString("Circulation new error: d <= 0.".to_string()));
+            let error = Error::FromString("Circulation new error: d <= 0.".to_owned());
+            log::error!("{error}");
+            return Err(error);
         }
         Ok(Self {
             v_0,
@@ -57,14 +61,14 @@ impl Circulation {
         })
     }
     /// Плечо кренящего момента на циркуляции при скорости v, m/s
-    pub fn heel_lever(&self, v: f64) -> Result<f64, Error>  {
+    pub fn heel_lever(&self, v: f64) -> Result<f64, Error> {
         // Кренящий момент на циркуляции
         let m_r = 0.2
             * (v * v * self.mass.sum()? / self.l_wl)
             * (self.moment.shift()?.z() - self.d / 2.).abs();
         // Плечо кренящего момента на циркуляции
         let l_r = m_r / self.mass.sum()?;
-    //    log::info!("Circulation angle v:{v} m_r:{m_r} l_r:{l_r}");
+        log::trace!("Circulation angle v:{v} m_r:{m_r} l_r:{l_r}");
         Ok(l_r)
     }
 }
@@ -78,7 +82,7 @@ impl ICirculation for Circulation {
             .angle(self.heel_lever(self.v_0)?)?
             .first()
             .copied();
-        log::info!("Circulation angle {:?} ", angle);
+        log::trace!("Circulation angle {:?} ", angle);
         self.parameters.add(ParameterID::VesselSpeed, self.v_0);
         Ok(angle)
     }
@@ -97,7 +101,7 @@ impl ICirculation for Circulation {
             if delta_angle.abs() < 0.001 {
                 break;
             }
-            //         log::info!("Circulation velocity src_angle:{src_angle} current_vel:{current_vel} delta_vel:{delta_vel} delta_angle:{delta_angle}");
+            log::trace!("Circulation velocity src_angle:{src_angle} current_vel:{current_vel} delta_vel:{delta_vel} delta_angle:{delta_angle}");
             current_vel = delta_vel * delta_angle.signum();
             delta_vel /= 2.;
         }

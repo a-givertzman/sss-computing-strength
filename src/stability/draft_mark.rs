@@ -36,12 +36,18 @@ impl DraftMark {
         let roll = self
             .parameters
             .get(ParameterID::Roll)
-            .ok_or(Error::FromString("DraftMark calculate error: no ParameterID::Roll!".to_string()))? * PI / 180.;
+            .ok_or(Error::FromString(
+                "DraftMark calculate error: no ParameterID::Roll!".to_string(),
+            ))?
+            * PI
+            / 180.;
         let mut result = Vec::new();
         for p in self.points.iter() {
             if p.data.len() <= 2 {
-                return Err(Error::FromString("DraftMark calculate error: p.data.len() <= 2".to_string()));
-            } 
+                return Err(Error::FromString(
+                    "DraftMark calculate error: p.data.len() <= 2".to_string(),
+                ));
+            }
             let mut z_fix: Vec<(f64, f64, f64, f64)> = Vec::new();
             for v in p.data.iter() {
                 z_fix.push((

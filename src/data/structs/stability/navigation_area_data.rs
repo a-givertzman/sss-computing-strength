@@ -1,4 +1,4 @@
-//! Давление ветра p_v и добавка на порывистость m 
+//! Давление ветра p_v и добавка на порывистость m
 //! в зависимости от района плавания судна, Табл. 2.1.4.1
 use serde::{Deserialize, Serialize};
 use super::NavigationArea;
@@ -23,4 +23,3 @@ impl std::fmt::Display for NavigationAreaData {
         )
     }
 }
-

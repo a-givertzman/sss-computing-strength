@@ -2,25 +2,25 @@
 use serde::{Deserialize, Serialize};
 use crate::Error;
 /// Район плавания судна
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum NavigationArea {
     /// Неограниченный
-    #[serde(alias="Unlimited")]
+    #[serde(alias = "Unlimited")]
     Unlimited,
     /// Ограниченный R1
-    #[serde(alias="R1")]
+    #[serde(alias = "R1")]
     R1,
     /// Ограниченный R2
-    #[serde(alias="R2")]
+    #[serde(alias = "R2")]
     R2,
     /// Ограниченный R2-RSN
-    #[serde(alias="R2-RSN")]
+    #[serde(alias = "R2-RSN")]
     R2Rsn,
     /// Ограниченный R2-RSN(4,5)
-    #[serde(alias="R2-RSN(4,5)")]
+    #[serde(alias = "R2-RSN(4,5)")]
     R2Rsn45,
     /// Ограниченный R3-RSN
-    #[serde(alias="R3-RSN")]
+    #[serde(alias = "R3-RSN")]
     R3Rsn,
 }
 //

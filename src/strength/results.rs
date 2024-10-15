@@ -9,7 +9,9 @@ pub struct Results {
 //
 impl Results {
     pub fn new() -> Self {
-        Self{ data: RefCell::new(HashMap::new()) }
+        Self {
+            data: RefCell::new(HashMap::new()),
+        }
     }
 }
 //
@@ -32,7 +34,7 @@ pub trait IResults {
 }
 // заглушка для тестирования
 #[doc(hidden)]
-pub struct FakeResults; 
+pub struct FakeResults;
 #[doc(hidden)]
 #[allow(dead_code)]
 impl IResults for FakeResults {
@@ -41,4 +43,3 @@ impl IResults for FakeResults {
         Vec::new()
     }
 }
-

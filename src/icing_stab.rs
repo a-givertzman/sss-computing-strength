@@ -2,13 +2,13 @@
 use serde::{Deserialize, Serialize};
 use crate::Error;
 /// Тип обледенения судна
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum IcingStabType {
-    #[serde(alias="full")]
+    #[serde(alias = "full")]
     Full,
-    #[serde(alias="half")]
+    #[serde(alias = "half")]
     Half,
-    #[serde(alias="none")]
+    #[serde(alias = "none")]
     None,
 }
 //
@@ -222,7 +222,7 @@ impl FakeIcingStab {
 //
 #[doc(hidden)]
 impl IIcingStab for FakeIcingStab {
-    fn mass_desc_h(&self) -> f64{
+    fn mass_desc_h(&self) -> f64 {
         self.mass_desc_h
     }
     fn mass_timber_h(&self) -> f64 {

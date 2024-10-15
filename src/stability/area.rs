@@ -82,8 +82,14 @@ impl IArea for Area {
     fn moment_timber_h(&self) -> Result<Moment, Error> {
         let mut moment_sum = Moment::new(0., 0., 0.);
         for v in self.desks.iter().filter(|v| v.is_timber()) {
-            moment_sum +=
-                Moment::from_pos(Position::new(v.shift().x(), v.shift().y(), v.shift().z() + v.height()?/2.), v.horizontal_area(&Bound::Full, &Bound::Full)?);
+            moment_sum += Moment::from_pos(
+                Position::new(
+                    v.shift().x(),
+                    v.shift().y(),
+                    v.shift().z() + v.height()? / 2.,
+                ),
+                v.horizontal_area(&Bound::Full, &Bound::Full)?,
+            );
         }
         Ok(moment_sum)
     }

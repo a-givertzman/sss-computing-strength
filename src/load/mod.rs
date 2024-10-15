@@ -133,7 +133,7 @@ impl<'a> Loads<'_> {
                 Some(self.shift_const.clone()),
                 LoadingType::from(v.loading_type),
             )?);
-            //   log::info!("\t Mass loads_const from load_constants:{:?} ", load);
+            log::trace!("\t Mass loads_const from load_constants:{:?} ", load);
             loads_const.push(load);
         }
 
@@ -152,7 +152,7 @@ impl<'a> Loads<'_> {
                 mass_shift.clone(),
                 LoadingType::from(v.general_category),
             )?);
-            //  log::info!("\t Mass load_variable from cargoes:{:?} ", load);
+            log::trace!("\t Mass load_variable from cargoes:{:?} ", load);
             load_variable.push(load.clone());
 
             if let (Some(vertical_area), Some(horizontal_area)) =
@@ -237,10 +237,10 @@ impl<'a> Loads<'_> {
                 mass_shift.clone(),
                 LoadingType::from(v.general_category),
             )?);
-            // log::info!("\t Mass load_variable from compartments src:{:?} trg:{:?}", v, load, );
+            log::trace!("\t Mass load_variable from compartments src:{:?} trg:{:?}", v, load, );
             load_variable.push(load);
             if v.matter_type == MatterType::Liquid {
-                let tank: Rc<dyn ITank> = Rc::new(Tank::new(
+                let tank = Tank::new(
                     v.density
                         .ok_or("CompartmentData error: no density for PhysicalType::Liquid!".to_string())?,
                     v.volume
@@ -252,8 +252,9 @@ impl<'a> Loads<'_> {
                         v.m_f_s_y.ok_or("CompartmentData error: no y in InertiaMoment for PhysicalType::Liquid!".to_string())?,
                     ),
                     LoadingType::from(v.general_category),
-                )?);
-                //        log::info!("\t Mass tanks from compartments:{:?} ", tank);
+                )?;
+                log::trace!("\t Mass tanks from compartments:{:?} ", tank);
+                let tank: Rc<dyn ITank> = Rc::new(tank);
                 tanks.push(tank);
             }
             if v.matter_type == MatterType::Bulk {

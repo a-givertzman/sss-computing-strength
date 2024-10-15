@@ -1,3 +1,6 @@
+pub mod bulkhead;
+pub mod cargo;
+pub mod compartment;
 pub mod load_constant;
 pub mod compartment;
 pub mod cargo;
@@ -8,17 +11,17 @@ pub use cargo::*;
 pub use bulkhead::*;
 use serde::{Deserialize, Serialize};
 /// Тип груза по назначению
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum CargoGeneralCategory {
-    #[serde(alias="lightship")]
+    #[serde(alias = "lightship")]
     Lightship,
-    #[serde(alias="ballast")]
+    #[serde(alias = "ballast")]
     Ballast,
-    #[serde(alias="bulkhead")]
+    #[serde(alias = "bulkhead")]
     Bulkhead,
-    #[serde(alias="stores")]
+    #[serde(alias = "stores")]
     Stores,
-    #[serde(alias="cargo")]
+    #[serde(alias = "cargo")]
     Cargo,
 }
 //
@@ -28,23 +31,23 @@ impl std::fmt::Display for CargoGeneralCategory {
             f,
             "{}",
             match self {
-                CargoGeneralCategory::Lightship => "Lightship", 
-                CargoGeneralCategory::Ballast => "Ballast", 
-                CargoGeneralCategory::Bulkhead => "Bulkhead", 
-                CargoGeneralCategory::Stores => "Stores", 
-                CargoGeneralCategory::Cargo => "Cargo", 
+                CargoGeneralCategory::Lightship => "Lightship",
+                CargoGeneralCategory::Ballast => "Ballast",
+                CargoGeneralCategory::Bulkhead => "Bulkhead",
+                CargoGeneralCategory::Stores => "Stores",
+                CargoGeneralCategory::Cargo => "Cargo",
             },
         )
     }
 }
 /// Физический тип груза судна
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum MatterType {
-    #[serde(alias="bulk")]
+    #[serde(alias = "bulk")]
     Bulk,
-    #[serde(alias="liquid")]
+    #[serde(alias = "liquid")]
     Liquid,
-    #[serde(alias="solid")]
+    #[serde(alias = "solid")]
     Solid,
 }
 //
@@ -55,10 +58,9 @@ impl std::fmt::Display for MatterType {
             "{}",
             match self {
                 MatterType::Bulk => "Bulk",
-                MatterType::Liquid => "Liquid", 
-                MatterType::Solid => "Solid", 
+                MatterType::Liquid => "Liquid",
+                MatterType::Solid => "Solid",
             },
         )
     }
 }
-

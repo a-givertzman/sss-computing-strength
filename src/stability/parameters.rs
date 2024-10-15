@@ -55,7 +55,6 @@ pub enum ParameterID {
     VesselSpeed = 50,
     TrimMeter = 51,
     MassBulkhead = 52,
-
 }
 /// Набор результатов расчетов для записи в БД
 pub struct Parameters {

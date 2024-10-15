@@ -3,18 +3,21 @@
 
 use std::{collections::HashMap, rc::Rc};
 
+use log::{info, trace};
+
 use crate::{
-    data::structs::{NavigationArea, ShipType}, Error, IBulk, ICurve, IMass, Position
+    data::structs::{NavigationArea, ShipType},
+    Error, IBulk, ICurve, IMass, Position,
 };
 
 use crate::{
     Acceleration, Circulation, CriterionStability, FakeMetacentricHeight, Grain, ILeverDiagram,
-    IMetacentricHeight, IParameters, IRollingAmplitude, IRollingPeriod, IShipMoment, 
-    IWind, LeverDiagram, Parameters, RollingAmplitude, RollingPeriod, Stability, 
+    IMetacentricHeight, IParameters, IRollingAmplitude, IRollingPeriod, IShipMoment, IWind,
+    LeverDiagram, Parameters, RollingAmplitude, RollingPeriod, Stability,
 };
 
 /// Расчет допустимого z_g (исправленное отстояние центра масс судна по высоте)
-/// для критериев остойчивости. Перебираем в цикле значение z_g от 0 до max 
+/// для критериев остойчивости. Перебираем в цикле значение z_g от 0 до max
 /// и вычисляем для него критерии.
 pub struct CriterionComputer {
     /// Максимальное исправленное отстояние центра масс судна по высоте
@@ -152,14 +155,18 @@ impl CriterionComputer {
         metacentric_height: Rc<dyn IMetacentricHeight>,
     ) -> Result<Self, Error> {
         if max_zg <= 0. {
-            return Err(Error::FromString(
-                "CriterionComputer new error: max_zg <= 0.".to_string(),
-            ));
+            let error = Error::FromString(
+                "CriterionComputer new error: max_zg <= 0.".to_owned(),
+            );
+            log::error!("{error}");
+            return Err(error);
         }
         if moulded_depth <= 0. {
-            return Err(Error::FromString(
-                "CriterionComputer new error: moulded_depth <= 0.".to_string(),
-            ));
+            let error = Error::FromString(
+                "CriterionComputer new error: moulded_depth <= 0.".to_owned(),
+            );
+            log::error!("{error}");
+            return Err(error);
         }
         Ok(Self {
             max_zg,
@@ -197,6 +204,7 @@ impl CriterionComputer {
     }
     /// Расчет zg, возвращяет результат в виде HashMap<criterion_id, zg>
     pub fn calculate(&mut self) -> Result<HashMap<usize, f64>, Error> {
+        info!("CriterionComputer begin");
         let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
         // zg + Vec<id, delta>
         let mut results = Vec::new(); //<(f64, Vec<(usize, Option<f64>)>)>'
@@ -206,8 +214,9 @@ impl CriterionComputer {
             let z_g_fix = index as f64 * delta;
             let z_m = self.center_draught_shift.z() + self.rad_trans;
             let delta_m_h = self.metacentric_height.delta_m_h()?;
-            let h = z_m - z_g_fix;            
+            let h = z_m - z_g_fix;
             let h_0 = h + delta_m_h.trans();
+            trace!("CriterionComputer index:{index} z_g_fix:{z_g_fix} z_m:{z_m} delta_m_h:{delta_m_h} h:{h} h_0:{h_0}");
             let metacentric_height: Rc<dyn IMetacentricHeight> =
                 Rc::new(FakeMetacentricHeight::new(
                     self.metacentric_height.h_long_fix()?,
@@ -294,14 +303,12 @@ impl CriterionComputer {
                 )),
             )?
             .create();
-            // отбрасываем ошибки, оставляем только значения, считаем дельту с целевым значением 
+            // отбрасываем ошибки, оставляем только значения, считаем дельту с целевым значением
             let tmp: Vec<(usize, Option<(f64, f64)>)> = tmp
                 .iter()
                 .map(|v| {
                     let delta = if v.error_message.is_none() {
-                        //                 dbg!(z_g_fix, v.criterion_id, v.result, v.target);
-                      //  Some(v.result - v.target)
-                      Some((v.result, v.target))
+                        Some((v.result, v.target))
                     } else {
                         None
                     };
@@ -327,7 +334,8 @@ impl CriterionComputer {
         for (id, mut values) in values.into_iter() {
             // сортируем значения по увеличению дельты с целевым
             values.sort_by(|&(_, v1), &(_, v2)| {
-                (v1.0 - v1.1).abs()
+                (v1.0 - v1.1)
+                    .abs()
                     .partial_cmp(&(v2.0 - v2.1).abs())
                     .expect("CriterionComputer calculate error: sort values!")
             });
@@ -335,9 +343,9 @@ impl CriterionComputer {
             let closest_value = values
                 .first()
                 .expect("CriterionComputer calculate error, no values!");
-            //result.insert(id, (closest_value.0, closest_value.1.0, closest_value.1.1));
             result.insert(id, closest_value.0);
         }
+        info!("CriterionComputer end");
         Ok(result)
     }
 }

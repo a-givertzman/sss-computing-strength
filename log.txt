@@ -1,5 +1,0 @@
-ParsedShipData sync:	3.929913832s
-Completed:	26.438201ms
-CriterionComputer:	26.423631ms
-Write stability result:	114.389355ms
-{"status":"ok","message":null}

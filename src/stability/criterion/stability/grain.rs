@@ -71,7 +71,7 @@ impl Grain {
             let lever_ab = lambda_0 + delta_ab * angle; 
             // значение восстанавливающего момента в текущей точке
             let lever_dso = self.lever_diagram.lever_moment(angle).unwrap_or(f64::MIN);
-            // log::info!("\t Grain area first_angle i:{i} angle:{angle} lever_ab:{lever_ab} lever_dso:{lever_dso}");
+            log::trace!("\t Grain area first_angle i:{i} angle:{angle} lever_ab:{lever_ab} lever_dso:{lever_dso}");
             lever_dso >= lever_ab
         }).unwrap_or((90./precision) as usize) as f64 * precision;
         // угол соответствующий максимальной разности между ординатами двух кривых
@@ -97,7 +97,7 @@ impl Grain {
         let grain_area = (first_grain_lever + (second_grain_lever - first_grain_lever)/2.) * (second_angle - first_angle) * PI/180.;
         let result_area = dso_area - grain_area;
         self.area = Some(result_area);
-        log::info!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} 
+        log::trace!("\t Grain area m_grain:{m_grain} lambda_0:{lambda_0} 
             first_point_ab:{:?} second_point_ab:{:?}
             first_angle:{first_angle} angle_delta_max:{angle_delta_max} second_angle:{second_angle} 
             delta_ab:{delta_ab} dso_area:{dso_area} first_grain_lever:{first_grain_lever} second_grain_lever:{second_grain_lever}

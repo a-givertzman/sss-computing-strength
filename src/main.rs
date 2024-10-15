@@ -1,5 +1,7 @@
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
+use std::{collections::HashMap, rc::Rc, time::Instant};
+
 use crate::{
     area::{HAreaStability, HAreaStrength, VerticalArea},
     icing_stab::{IIcingStab, IcingStab},
@@ -9,15 +11,17 @@ use crate::{
     strength::*,
     windage::Windage,
 };
+use args::get_args;
 use data::api_server::*;
 use draught::{Draught, IDraught};
 pub use error::Error;
 use icing_timber::IcingTimberBound;
+use env_logger::Logger;
 use log::info;
-use std::{collections::HashMap, io, rc::Rc, time::Instant};
 use trim::ITrim;
 
 mod area;
+mod args;
 mod data;
 mod draught;
 mod error;
@@ -31,10 +35,14 @@ mod tests;
 mod trim;
 
 fn main() {
-    //    std::env::set_var("RUST_LOG", "info");
-    env_logger::init();
+    let _log2 = log2::open("log.txt")
+    .level(Logger::from_default_env().filter().as_str())
+    .size(100*1024*1024)
+    .rotate(20)
+    .tee(false)
+    .module(true)
+    .start();
     info!("starting up");
-
     let reply = if let Err(error) = execute() {
         let str1 = r#"{"status":"failed","message":""#;
         let str2 = r#""}"#;
@@ -42,49 +50,23 @@ fn main() {
     } else {
         r#"{"status":"ok","message":null}"#.to_owned()
     };
-    let _ = io::Write::write_all(&mut io::stdout().lock(), reply.as_bytes());
+    info!("reply: {reply}");    
+    let _ = std::io::Write::write_all(&mut std::io::stdout().lock(), reply.as_bytes());
 }
 
 fn execute() -> Result<(), Error> {
-    /*      let mut input = String::new();
-          io::stdin().read_line(&mut input)?;
-          let json_data: serde_json::Value = serde_json::from_str(&input)?;
-          let host: String = json_data
-              .get("api-host")
-              .ok_or(Error::FromString(
-                  "Parse param error: no api-host".to_owned(),
-              ))?
-              .to_string();
-          let port = json_data
-              .get("api-port")
-              .ok_or(Error::FromString(
-                  "Parse param error: no api-host".to_owned(),
-              ))?
-              .to_string();
-    */
-    //   println!("{}", json_data);
-
-    let host: String = "0.0.0.0".to_string();
-    let port = "8080".to_string();
-
+    let (host, port) = get_args()?;
     let ship_id = 1;
     let mut api_server =
         ApiServer::new("sss-computing".to_owned(), host.to_owned(), port.to_owned());
-
     let mut elapsed = HashMap::new();
     let time = Instant::now();
-
     let results: Rc<dyn IResults> = Rc::new(Results::new());
     let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
     let data = get_data(&mut api_server, ship_id)?;
-    elapsed.insert("ParsedShipData sync", time.elapsed());
+    elapsed.insert("read data", time.elapsed());
 
-    /*   let time = Instant::now();
-        let data = async_get_data("test_ship", 1);
-        let data = block_on(data)?;
-        elapsed.insert("ParsedShipData async", time.elapsed());
-    */
-
+    let time = Instant::now();
     // ускорение свободного падения
     let gravity_g = 9.81;
     // вектор разбиения судна на отрезки
@@ -303,7 +285,6 @@ fn execute() -> Result<(), Error> {
     )?);
 
     // Критерии остойчивости
-    let time = Instant::now();
     let criterion_computer_results = CriterionComputer::new(
         data.overall_height,
         data.ship_type,
@@ -338,15 +319,13 @@ fn execute() -> Result<(), Error> {
         Rc::clone(&metacentric_height),
     )?
     .calculate()?;
-    elapsed.insert("CriterionComputer", time.elapsed());
 
-    let time = Instant::now();
     let mut criterion_result = CriterionStability::new(
         data.ship_type,
         data.navigation_area.area,
         data.width,
-        data.moulded_depth,    
-        Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,            
+        data.moulded_depth,
+        Curve::new_linear(&data.h_subdivision)?.value(mean_draught)?,
         loads.desks()?.iter().any(|v| v.is_timber()),
         loads.bulks()?.iter().any(|v| v.moment() != 0.),
         !loads.load_variable()?.is_empty(),
@@ -389,7 +368,6 @@ fn execute() -> Result<(), Error> {
         )),
     )?
     .create();
-    elapsed.insert("Criterion", time.elapsed());
 
     let trim: Rc<dyn ITrim> = Rc::new(stability::Trim::new(
         data.length_lbp,
@@ -439,32 +417,11 @@ fn execute() -> Result<(), Error> {
         criterion_computer_results,
     )?;
     send_parameters_data(&mut api_server, ship_id, parameters.take_data())?; //
+    elapsed.insert("calculate", time.elapsed());
 
     for (key, e) in elapsed {
-        log::info!("{}:\t{:?}", key, e);
+        info!("{}:\t{:?}", key, e);
     }
-    Ok(())
-}
-
-/*
-/// Чтение данных из стандартного потока ввода
-pub fn read() -> Result<ParsedInputData, Box<dyn std::error::Error>> {
-    let mut input = String::new();
-    io::stdin().read_line(&mut input)?;
-    Ok(ParsedInputData::parse(
-        &input.to_lowercase().trim().to_owned(),
-    )?)
-}
-*/
-/*
-/// Writes a given value to the writer, serializing it into JSON.
-pub fn write<W: Write, T: serde::Serialize>(mut writer: W, t: &T) -> Result<(), WriteError> {
-    // We use to_string here instead of to_vec because it verifies that the JSON is valid UTF-8,
-    // which is required by the JSON Lines specification (https://jsonlines.org).
-    let json = serde_json::to_string(t).map_err(WriteError::Serialize)?;
-
-    writer.write_all(json.as_bytes()).map_err(WriteError::Io)?;
-    writer.write_all(b"\n").map_err(WriteError::Io)?;
 
     Ok(())
-}*/
+}

@@ -67,7 +67,7 @@ impl ShipMoment {
     /// Отстояние центра масс
     fn shift(&self) -> Result<Position, Error> {
         let res = self.moment_mass()?.to_pos(self.mass.sum()?);
-        //   log::info!("\t Mass shift:{res} ");
+        log::trace!("\t ShipMoment shift:{res} ");
         self.parameters.add(ParameterID::CenterMassX, res.x());
         self.parameters.add(ParameterID::CenterMassZ, res.z());
         Ok(res)
@@ -85,7 +85,7 @@ impl ShipMoment {
         for v in self.loads_const.iter() {
             moment_sum += Moment::from_pos(self.shift_const.clone(), v.value(&Bound::Full)?);
         }
-        //log::info!("\t Mass moment_mass:{res} ");
+        log::trace!("\t ShipMoment moment_mass:{moment_sum}");
         Ok(moment_sum)
     }
 }
@@ -99,7 +99,7 @@ impl IShipMoment for ShipMoment {
         Ok(self.shift
             .borrow()
             .clone()
-            .expect("Mass shift error: no value"))
+            .ok_or(Error::FromString("ShipMoment shift error: no value".to_owned()))?)
     }
 }
 

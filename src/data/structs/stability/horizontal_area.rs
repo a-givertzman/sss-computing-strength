@@ -10,11 +10,14 @@ use serde::{Deserialize, Serialize};
 pub struct HStabArea {
     /// Название
     pub name: String,
+    /// Название
+    pub name: String,
     /// Значение площади, м^2
     pub value: f64,
     /// Смещение центра
     pub shift_x: f64,
     pub shift_y: f64,
+    pub shift_z: f64,
     pub shift_z: f64,
 }
 //
@@ -34,5 +37,6 @@ impl HStabAreaArray {
     /// Преобразование данных в массив
     pub fn data(self) -> Vec<HStabArea> {
         self.data
+    }
     }
 }

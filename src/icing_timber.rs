@@ -5,15 +5,15 @@ use crate::{Bound, Error};
 use serde::{Deserialize, Serialize};
 
 /// Тип обледенения горизонтальной площади палубного груза - леса
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize,)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum IcingTimberType {
-    #[serde(alias="full")]
+    #[serde(alias = "full")]
     Full,
-    #[serde(alias="half left")]
+    #[serde(alias = "half left")]
     HalfLeft,
-    #[serde(alias="half right")]
+    #[serde(alias = "half right")]
     HalfRight,
-    #[serde(alias="bow")]
+    #[serde(alias = "bow")]
     Bow,
 }
 //

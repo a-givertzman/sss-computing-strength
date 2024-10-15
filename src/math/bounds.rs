@@ -60,7 +60,7 @@ impl Bounds {
         for frame in frames {
             values.push(Bound::new(frame.0, frame.1)?);
         }
-        //      log::info!("\t Bounds from_frames: frames:{:?} values:{:?} ", frames, res);
+        log::trace!("\t Bounds from_frames: frames:{:?} values:{:?} ", frames, values);
         Self::new(values)
     }
     /// Итератор по коллекции

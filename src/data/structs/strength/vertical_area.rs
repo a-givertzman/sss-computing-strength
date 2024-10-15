@@ -8,15 +8,15 @@ use crate::data::structs::DataArray;
 /// Площадь обледенения
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct VerticalArea {
-    /// Название 
-    pub name: String, 
+    /// Название
+    pub name: String,
     /// Значение площади, м^2
     pub value: f64,
     /// Смещение центра по оси Z
-    pub shift_z: f64,  
+    pub shift_z: f64,
     /// Ограничение по оси Х, м
     pub bound_x1: f64,
-    pub bound_x2: f64, 
+    pub bound_x2: f64,
 }
 //
 impl std::fmt::Display for VerticalArea {
@@ -35,5 +35,5 @@ impl VerticalAreaArray {
     /// Преобразование данных в массив
     pub fn data(self) -> Vec<VerticalArea> {
         self.data
-    }  
+    }
 }

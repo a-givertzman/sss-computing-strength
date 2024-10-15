@@ -1,5 +1,6 @@
 //! Промежуточные структуры для serde_json для парсинга пантокаренов  
 use super::DataArray;
+use super::DataArray;
 use serde::{Deserialize, Serialize};
 /// Промежуточные структуры для serde_json для парсинга данных  
 /// плечей устойчивости формы (пантокарены)
@@ -35,6 +36,7 @@ impl PantocarenDataArray {
                 .expect("PantocarenDataArray data sort error!")
         });
         self.data.into_iter().for_each(|v| {
+            if vec.last().is_none() || vec.last().unwrap().0 != v.draught {
             if vec.last().is_none() || vec.last().unwrap().0 != v.draught {
                 vec.push((v.draught, vec![(v.roll, v.moment)]));
             } else {

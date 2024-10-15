@@ -1,5 +1,4 @@
 //! Промежуточные структуры для serde_json для парсинга данных шпангоутов
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::data::structs::DataArray;
 /// Данные по шпангоуту
@@ -32,7 +31,7 @@ impl FrameAreaDataArray {
             if let Some(vector) = map.get_mut(&v.frame_index) {
                 vector.push((v.draft, v.area));
             } else {
-                map.insert(v.frame_index, vec![(v.draft, v.area)]);       
+                map.insert(v.frame_index, vec![(v.draft, v.area)]);
             }
         });
         map
