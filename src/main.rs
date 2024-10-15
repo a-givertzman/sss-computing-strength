@@ -39,7 +39,7 @@ fn main() {
     .level(Logger::from_default_env().filter().as_str())
     .size(100*1024*1024)
     .rotate(20)
-    .tee(true)
+    .tee(false)
     .module(true)
     .start();
     info!("starting up");
@@ -50,6 +50,7 @@ fn main() {
     } else {
         r#"{"status":"ok","message":null}"#.to_owned()
     };
+    info!("reply: {reply}");    
     let _ = std::io::Write::write_all(&mut std::io::stdout().lock(), reply.as_bytes());
 }
 
