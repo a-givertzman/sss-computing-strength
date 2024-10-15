@@ -38,5 +38,4 @@ impl HStabAreaArray {
     pub fn data(self) -> Vec<HStabArea> {
         self.data
     }
-    }
 }
