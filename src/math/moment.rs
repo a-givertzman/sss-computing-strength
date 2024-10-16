@@ -15,4 +15,8 @@ impl Moment {
     pub fn scale(&self, value: f64) -> Self {
         Self::new(self.x()*value, self.y()*value, self.z()*value)
     }
+    /// Нулевой момент
+    pub fn zero() -> Self {
+        Moment::from((0., 0., 0.,))
+    }
 }
