@@ -46,7 +46,7 @@ mod waterline_length;
 use std::collections::HashMap;
 
 use crate::data::structs::{
-    loads::LoadCargoArray,
+    loads::{ContainerArray, LoadCargoArray},
     ParsedShipData,
 };
 
@@ -85,6 +85,10 @@ pub(crate) fn input_data_66() -> ParsedShipData {
         screw::screw(),
         bow_board::bow_board(),
         LoadCargoArray {
+            data: Vec::new(),
+            error: HashMap::new(),
+        },
+        ContainerArray {
             data: Vec::new(),
             error: HashMap::new(),
         },
@@ -136,6 +140,10 @@ pub(crate) fn input_data_grain() -> ParsedShipData {
         screw::screw(),
         bow_board::bow_board(),
         LoadCargoArray {
+            data: Vec::new(),
+            error: HashMap::new(),
+        },
+        ContainerArray {
             data: Vec::new(),
             error: HashMap::new(),
         },
