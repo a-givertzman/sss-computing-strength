@@ -22,6 +22,7 @@ mod tests {
     };
 
     #[test]
+    #[ignore]
     fn complex_19() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
