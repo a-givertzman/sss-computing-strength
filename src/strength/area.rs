@@ -61,38 +61,40 @@ impl IArea for Area {
             .max_by(|&a, &b| a.partial_cmp(&b).unwrap());
         if min_x.is_some() && max_x.is_some() {
             let bound = bound.intersect(&Bound::new(min_x.unwrap(), max_x.unwrap())?)?;
-            let (min_x, max_x) = (
-                bound.start().ok_or(Error::FromString(
-                    "Area area_v error: bound.start()".to_owned(),
-                ))?,
-                bound.end().ok_or(Error::FromString(
-                    "Area area_v error: bound.end()".to_owned(),
-                ))?,
-            );
-            area_sum += Bounds::from_min_max(min_x, max_x, 200)?.iter().map(|bound_x| {
-                let min_z = self
-                    .desks
-                    .iter()
-                    .filter_map(|v| v.min_z())
-                    .min_by(|&a, &b| a.partial_cmp(&b).unwrap());
-                let max_z = self
-                    .desks
-                    .iter()
-                    .filter_map(|v| v.max_z())
-                    .max_by(|&a, &b| a.partial_cmp(&b).unwrap());
-                if let (Some(min_z), Some(max_z)) = (min_z, max_z) {
-                    Bounds::from_min_max(min_z, max_z, 50).expect("Area area_v error: Bounds::from_min_max").iter().map(|bound_z| 
-                        self
-                            .desks
-                            .iter()
-                            .filter_map(|v| v.windage_area(&bound_x, &bound_z).ok())
-                            .max_by(|&a, &b| a.partial_cmp(&b).unwrap())
-                            .unwrap_or(0.)   
-                    ).sum()                 
-                } else {
-                    0.
-                }
-            }).sum::<f64>()
+            if bound.is_some() {
+                let (min_x, max_x) = (
+                    bound.start().ok_or(Error::FromString(
+                        "Area area_v error: bound.start()".to_owned(),
+                    ))?,
+                    bound.end().ok_or(Error::FromString(
+                        "Area area_v error: bound.end()".to_owned(),
+                    ))?,
+                );
+                area_sum += Bounds::from_min_max(min_x, max_x, 200)?.iter().map(|bound_x| {
+                    let min_z = self
+                        .desks
+                        .iter()
+                        .filter_map(|v| v.min_z())
+                        .min_by(|&a, &b| a.partial_cmp(&b).unwrap());
+                    let max_z = self
+                        .desks
+                        .iter()
+                        .filter_map(|v| v.max_z())
+                        .max_by(|&a, &b| a.partial_cmp(&b).unwrap());
+                    if let (Some(min_z), Some(max_z)) = (min_z, max_z) {
+                        Bounds::from_min_max(min_z, max_z, 50).expect("Area area_v error: Bounds::from_min_max").iter().map(|bound_z| 
+                            self
+                                .desks
+                                .iter()
+                                .filter_map(|v| v.windage_area(&bound_x, &bound_z).ok())
+                                .max_by(|&a, &b| a.partial_cmp(&b).unwrap())
+                                .unwrap_or(0.)   
+                        ).sum()                 
+                    } else {
+                        0.
+                    }
+                }).sum::<f64>()
+            }
         }
         Ok(area_sum)
     }

@@ -11,8 +11,6 @@ pub struct Container {
     pub mass: f64,
     /// Классификация груза
     pub general_category: CargoGeneralCategory,
-    /// Груз - лес и может намокать и обмерзать
-    pub timber: bool,
     /// Диапазон по длинне, м
     pub bound_x1: f64,
     pub bound_x2: f64,

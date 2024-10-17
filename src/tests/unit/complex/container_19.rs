@@ -1,4 +1,4 @@
-/// Комплексный тест отход море 100% запасов с грузом зерна
+/// Комплексный тест отход море 100% запасов
 
 #[cfg(test)]
 mod tests {
@@ -20,18 +20,18 @@ mod tests {
         Loads, MetacentricHeight, Moment, ParameterID, Parameters, PosShift, Position, Results,
         RollingAmplitude, RollingPeriod, Stability, WettingMass, WettingMoment, Wind,
     };
+
     #[test]
-    #[ignore]
-    fn complex_grain() {
+    fn complex_19() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let self_id = "test complex grain";
+        let self_id = "test complex 19";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(60));
         test_duration.run().unwrap();
 
         let precision = 1. / 20.; // 5%
-        let data = input_data::input_data_grain();
+        let data = input_data::input_data_19();
         let results: Rc<dyn IResults> = Rc::new(Results::new());
         let parameters: Rc<dyn IParameters> = Rc::new(Parameters::new());
         // ускорение свободного падения
@@ -194,6 +194,155 @@ mod tests {
         )
         .calculate()
         .unwrap();
+        /*
+        let map_results: HashMap<String, Vec<f64>> =
+            results.take_data().into_iter().map(|v| v).collect();
+
+        let mut displacement_result = map_results.get("value_displacement").unwrap().clone();
+        displacement_result = displacement_result
+            .into_iter()
+            .rev()
+            .map(|v| v * 1.025)
+            .collect(); // переводим м^3 в тонны
+                        //displacement_result.remove(0);
+        let mut displacement_target = vec![
+            23.41, 67.76, 98.35, 107.89, 112.13, 115.65, 119.04, 122.78, 126.55, 130.33, 134.17,
+            137.98, 141.71, 145.46, 149.23, 153.00, 156.77, 156.75, 114.95, 40.45,
+        ];
+        displacement_target.insert(0, displacement_target.iter().sum());
+
+        let mut mass_values_result = map_results.get("value_mass_sum").unwrap().clone();
+        mass_values_result = mass_values_result.into_iter().rev().collect();
+        // mass_values_result.remove(0);
+        let mut mass_values_target = vec![
+            139.14, 182.25, 188.06, 137.06, 83.66, 70.46, 70.46, 70.46, 70.46, 70.46, 70.46, 70.46,
+            70.46, 70.46, 70.46, 70.46, 70.46, 235.42, 286.06, 257.20,
+        ];
+        mass_values_target.insert(0, mass_values_target.iter().sum());
+
+        let mut total_force_result = map_results.get("value_total_force").unwrap().clone();
+        total_force_result = total_force_result.into_iter().rev().collect();
+        // total_force_result.remove(0);
+        let total_force_target = vec![
+            115.73, 114.50, 89.71, 29.17, -28.47, -45.19, -48.58, -52.32, -56.09, -59.87, -63.71,
+            -67.52, -71.25, -75.00, -78.77, -82.54, -86.31, 78.67, 171.10, 216.74,
+        ];
+        total_force_result.insert(0, total_force_result.iter().sum());
+
+        let mut shear_force_result = map_results.get("value_shear_force").unwrap().clone();
+        shear_force_result = shear_force_result.into_iter().rev().collect();
+        let shear_force_target = vec![
+            0., 1135., 2259., 3139., 3425., 3145., 2702., 2226., 1712., 1162., 575., -50., -713.,
+            -1412., -2147., -2920., -3730., -4577., -3805., -2126., 0.,
+        ];
+
+        let mut bending_moment_result = map_results.get("value_bending_moment").unwrap().clone();
+        bending_moment_result = bending_moment_result.into_iter().rev().collect();
+        let bending_moment_target = vec![
+            0., 3292., 13135., 28786., 47820., 66874., 83832., 98122., 109541., 117877., 122913.,
+            124434., 122222., 116061., 105740., 91045., 71760., 47672., 23366., 6166., 0.,
+        ];
+
+        println!("displacement: index: result  target");
+        displacement_result
+            .iter()
+            .zip(displacement_target.iter())
+            .enumerate()
+            .for_each(|(i, (r, t))| {
+                println!("{i}: {r} {t}");
+            });
+        println!("mass_values: index: result  target");
+        mass_values_result
+            .iter()
+            .zip(mass_values_target.iter())
+            .enumerate()
+            .for_each(|(i, (r, t))| {
+                println!("{i}: {r} {t}");
+            });
+        println!("total_force: index: result  target");
+             total_force_result
+                    .iter()
+                    .zip(total_force_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        println!("{i}: {r} {t}");
+                    });
+                println!("shear_force: index: result  target");
+                shear_force_result
+                    .iter()
+                    .zip(shear_force_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        println!("{i}: {r} {t}");
+                    });
+                println!("bending_moment: index: result  target");
+                bending_moment_result
+                    .iter()
+                    .zip(bending_moment_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        println!("{i}: {r} {t}");
+                    });
+
+                displacement_result
+                    .iter()
+                    .zip(displacement_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        assert!(
+                            (r - t).abs() < t.abs()*precision,
+                            "\ndisplacement i:{i} result:{r} target:{t}"
+                        );
+                    });
+                mass_values_result
+                    .iter()
+                    .zip(mass_values_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        assert!(
+                            (r - t).abs() < t.abs()*precision,
+                            "\nmass_values i:{i} result:{r} target:{t}"
+                        );
+                    });
+               total_force_result
+                    .iter()
+                    .zip(total_force_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        assert!(
+                            (r - t).abs() < t.abs()*precision,
+                            "\total_force i:{i} result:{r} target:{t}"
+                        );
+                    });
+                shear_force_result
+                    .iter()
+                    .zip(shear_force_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        assert!(
+                            (r - t).abs() < t.abs()*precision,
+                            "\nshear_force i:{i} result:{r} target:{t}"
+                        );
+                    });
+                bending_moment_result
+                    .iter()
+                    .zip(bending_moment_target.iter())
+                    .enumerate()
+                    .for_each(|(i, (r, t))| {
+                        assert!(
+                            (r - t).abs() < t.abs()*precision,
+                            "\nbending_moment i:{i} result:{r} target:{t}"
+                        );
+                    });
+        */
+
+        /* let mass_icing_result = parameters.get(ParameterID::MassIcing).unwrap();
+                let mass_icing_target = 67.5;
+                assert!(
+                    (mass_icing_result - mass_icing_target).abs() < mass_icing_target.abs()*precision,
+                    "\nmass_icing result:{mass_icing_result} target:{mass_icing_target}"
+                );
+        */
 
         // Угол заливания отверстий
         let flooding_angle = Curve::new_linear(&data.flooding_angle)
@@ -289,8 +438,9 @@ mod tests {
             Rc::new(Curve::new_linear(&data.multipler_x1.data()).unwrap());
         let multipler_x2: Rc<dyn ICurve> =
             Rc::new(Curve::new_linear(&data.multipler_x2.data()).unwrap());
-        let multipler_s: Rc<dyn ICurve> =
-            Rc::new(Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area.area)).unwrap());
+        let multipler_s: Rc<dyn ICurve> = Rc::new(
+            Curve::new_linear(&data.multipler_s.get_area(&data.navigation_area.area)).unwrap(),
+        );
         let coefficient_k_theta: Rc<dyn ICurve> =
             Rc::new(Curve::new_linear(&data.coefficient_k_theta.data()).unwrap());
         let roll_amplitude: Rc<dyn IRollingAmplitude> = Rc::new(
@@ -310,7 +460,47 @@ mod tests {
             )
             .unwrap(),
         );
-    
+        // Критерии остойчивости
+        /*      let mut criterion_computer_results = CriterionComputer::new(
+                 data.overall_height,
+                 data.ship_type,
+                 Curve::new_linear(&data.h_subdivision)
+                     .unwrap()
+                     .value(mean_draught)
+                     .unwrap(),
+                 data.navigation_area,
+                 loads.desks().unwrap().iter().any(|v| v.is_timber()),
+                 loads.bulks().unwrap().iter().any(|v| v.moment() != 0.),
+                 !loads.load_variable().unwrap().is_empty(),
+                 icing_stab.is_some(),
+                 flooding_angle,
+                 data.length_lbp,
+                 data.moulded_depth,
+                 mean_draught,
+                 volume,
+                 length_wl,
+                 data.width,
+                 breadth_wl,
+                 data.velocity,
+                 Rc::clone(&ship_moment),
+                 Rc::clone(&ship_mass),
+                 loads.bulks().unwrap(),
+                 Rc::clone(&coefficient_k),
+                 Rc::clone(&multipler_x1),
+                 Rc::clone(&multipler_x2),
+                 Rc::clone(&multipler_s),
+                 Rc::clone(&coefficient_k_theta),
+                 data.keel_area,
+                 rad_trans,
+                 center_draught_shift.clone(),
+                 data.pantocaren.clone(),
+                 Rc::clone(&wind),
+                 Rc::clone(&metacentric_height),
+             )
+             .unwrap()
+             .calculate()
+             .unwrap();
+        */
         let criterion_res: HashMap<usize, f64> = CriterionStability::new(
             data.ship_type,
             data.navigation_area.area,
@@ -370,27 +560,6 @@ mod tests {
         .map(|v| (v.criterion_id, v.result))
         .collect();
 
-        let mut grain = Grain::new(
-            flooding_angle,
-            loads.bulks().unwrap(),
-            Rc::clone(&ship_mass),
-            Rc::clone(&lever_diagram),
-            Rc::clone(&parameters),
-        );
-
-        let grain_angle_result = grain.angle().unwrap().0;
-        let grain_angle_target = 12.;
-        assert!(
-            grain_angle_result < grain_angle_target,
-            "\ngrain_angle result:{grain_angle_result} target:{grain_angle_target}"
-        );
-        let grain_area_result = grain.area().unwrap();
-        let grain_area_target = 0.075;
-        assert!(
-            grain_area_result >= grain_area_target,
-            "\ngrain_area result:{grain_area_result} target:{grain_area_target}"
-        );
-
         // Для расчета и записи осадок в параметры
         let _ = DraftMark::new(
             Rc::new(
@@ -418,57 +587,58 @@ mod tests {
             Rc::clone(&parameters),
         )
         .calculate();
+
         let x_g_result = parameters.get(ParameterID::CenterMassX).unwrap();
-        let x_g_target = -1.11;
+        let x_g_target = -1.21;
         assert!(
             (x_g_result - x_g_target).abs() < x_g_target.abs() * precision,
             "\nx_g result:{x_g_result} target:{x_g_target}"
         );
 
         let z_g_result = parameters.get(ParameterID::CenterMassZ).unwrap();
-        let z_g_target = 4.47;
+        let z_g_target = 4.32;
         assert!(
             (z_g_result - z_g_target).abs() < z_g_target.abs() * precision,
             "\nz_g result:{z_g_result} target:{z_g_target}"
         );
         //OCAДKA HA MИДEЛE, M
         let d_result = parameters.get(ParameterID::DraughtMean).unwrap();
-        let d_target = 4.60;
+        let d_target = 3.76;
         assert!(
             (d_result - d_target).abs() < d_target.abs() * precision,
             "\nd result:{d_result} target:{d_target}"
         );
         //OCAДKA HOCOM, M
         let d_b_result = parameters.get(ParameterID::DraughtBow).unwrap();
-        let d_b_target = 4.65;
+        let d_b_target = 3.73;
         assert!(
             (d_b_result - d_b_target).abs() < d_b_target.abs() * precision,
             "\nd_b result:{d_b_result} target:{d_b_target}"
         );
         //OCAДKA KOPMOЙ, M
         let d_s_result = parameters.get(ParameterID::DraughtStern).unwrap();
-        let d_s_target = 4.55;
+        let d_s_target = 3.79;
         assert!(
             (d_s_result - d_s_target).abs() < d_s_target.abs() * precision,
             "\nd_s result:{d_s_result} target:{d_s_target}"
         );
         //ПOПEPEЧHAЯ MЦB C УЧETOM ПOПPABOK, M
         let h_fix_result = parameters.get(ParameterID::MetacentricTransHeight).unwrap();
-        let h_fix_target = 1.244;
+        let h_fix_target = 1.725;
         assert!(
             (h_fix_result - h_fix_target).abs() < h_fix_target.abs() * precision,
             "\nh_fix result:{h_fix_result} target:{h_fix_target}"
         );
         //ЧИCЛO TOHH HA 1 CM. OCAДKИ
         let t_per_sm_result = parameters.get(ParameterID::TonesPerCm).unwrap();
-        let t_per_sm_target = 16.00;
+        let t_per_sm_target = 15.91;
         assert!(
             (t_per_sm_result - t_per_sm_target).abs() < t_per_sm_target.abs() * precision,
             "\nt_per_sm result:{t_per_sm_result} target:{t_per_sm_target}"
         );
         //MOMEHT, KPEHЯЩИЙ HA 1 ГPAДУC, TM
         let roll_per_deg_result = parameters.get(ParameterID::MomentRollPerDeg).unwrap();
-        let roll_per_deg_target = 150.42;
+        let roll_per_deg_target = 168.28;
         assert!(
             (roll_per_deg_result - roll_per_deg_target).abs()
                 < roll_per_deg_target.abs() * precision,
@@ -476,7 +646,7 @@ mod tests {
         );
         //MOMEHT, ДИФФEPEHTУЮЩИЙ HA 1 CM., TM
         let moment_trim_result = parameters.get(ParameterID::MomentTrimPerCm).unwrap();
-        let moment_trim_target = 151.79;
+        let moment_trim_target = 149.21;
         assert!(
             (moment_trim_result - moment_trim_target).abs() < t_per_sm_target.abs() * precision,
             "\nmoment_trim result:{moment_trim_result} target:{moment_trim_target}"
@@ -485,14 +655,14 @@ mod tests {
         let heel_max_result = criterion_res
             .get(&(CriterionID::HeelMaximumLC as usize))
             .unwrap();
-        let heel_max_target = 42.80;
+        let heel_max_target = 44.00_f64;
         assert!(
             (heel_max_result - heel_max_target).abs() < heel_max_target.abs() * precision,
             "\nheel_max result:{heel_max_result} target:{heel_max_target}"
         );
         //УГOЛ ЗAKATA, ГPAД.
         let sunset_angle_result = parameters.get(ParameterID::SunsetAngle).unwrap();
-        let sunset_angle_target = 80.47;
+        let sunset_angle_target = 85.05;
         assert!(
             (sunset_angle_result - sunset_angle_target).abs()
                 < sunset_angle_target.abs() * precision,
@@ -502,14 +672,14 @@ mod tests {
         let max_lc_result = criterion_res
             .get(&(CriterionID::MaximumLC as usize))
             .unwrap();
-        let max_lc_target = 0.904;
+        let max_lc_target = 1.270_f64;
         assert!(
             (max_lc_result - max_lc_target).abs() < max_lc_target.abs() * precision,
             "\nmax_lc result:{max_lc_result} target:{max_lc_target}"
         );
         //УГOЛ KPEHA, ГPAД.
         let roll_result = parameters.get(ParameterID::Roll).unwrap();
-        let roll_target = 44.34;
+        let roll_target = 0.0_f64;
         assert!(
             (roll_result - roll_target).abs() < roll_target.abs() * precision,
             "\nroll result:{roll_result} target:{roll_target}"
@@ -526,7 +696,7 @@ mod tests {
               );
         */      //AMПЛИTУДA KAЧKИ, ГPAД.
         let roll_amplitude_result = parameters.get(ParameterID::RollAmplitude).unwrap();
-        let roll_amplitude_target = 19.00;
+        let roll_amplitude_target = 20.00;
         assert!(
             (roll_amplitude_result - roll_amplitude_target).abs()
                 < roll_amplitude_target.abs() * precision,
@@ -542,7 +712,7 @@ mod tests {
         );
         //ПЛOЩAДЬ ПAPУCHOCTИ, KB.M
         let windage_area_result = parameters.get(ParameterID::WindageArea).unwrap();
-        let windage_area_target = 683.66;
+        let windage_area_target = 1439.95;
         assert!(
             (windage_area_result - windage_area_target).abs()
                 < windage_area_target.abs() * precision,
@@ -550,14 +720,14 @@ mod tests {
         );
         //BOЗBЫШEHИE ЦEHTPA ПAPУCHOCTИ HAД BЛ, M
         let windage_area_lever_result = parameters.get(ParameterID::WindageAreaLever).unwrap();
-        let windage_area_lever_target = 3.65;
+        let windage_area_lever_target = 6.57;
         assert!(
-                (windage_area_lever_result - windage_area_lever_target).abs() < windage_area_lever_target.abs()*precision,
-                "\nwindage_area_lever result:{windage_area_lever_result} target:{windage_area_lever_target}"
-            );
+                    (windage_area_lever_result - windage_area_lever_target).abs() < windage_area_lever_target.abs()*precision,
+                    "\nwindage_area_lever result:{windage_area_lever_result} target:{windage_area_lever_target}"
+                );
         //ПEPИOД БOPTOBOЙ KAЧKИ, C
         let roll_pariod_result = parameters.get(ParameterID::RollPeriod).unwrap();
-        let roll_pariod_target = 9.35;
+        let roll_pariod_target = 8.25;
         assert!(
             (roll_pariod_result - roll_pariod_target).abs() < roll_pariod_target.abs() * precision,
             "\nroll_pariod result:{roll_pariod_result} target:{roll_pariod_target}"
@@ -566,7 +736,7 @@ mod tests {
         let wheather_result = criterion_res
             .get(&(CriterionID::Wheather as usize))
             .unwrap();
-        let wheather_target = 4.63;
+        let wheather_target = 5.20_f64;
         assert!(
             (wheather_result - wheather_target).abs() < wheather_target.abs() * precision,
             "\nwheather result:{wheather_result} target:{wheather_target}"
@@ -575,7 +745,7 @@ mod tests {
         let acceleration_result = criterion_res
             .get(&(CriterionID::Acceleration as usize))
             .unwrap();
-        let acceleration_target = 2.22;
+        let acceleration_target = 1.58_f64;
         assert!(
             (acceleration_result - acceleration_target).abs()
                 < acceleration_target.abs() * precision,
@@ -585,7 +755,7 @@ mod tests {
         let area_lc0_30_result = criterion_res
             .get(&(CriterionID::AreaLC0_30 as usize))
             .unwrap();
-        let area_lc0_30_target = 0.188;
+        let area_lc0_30_target = 0.263_f64;
         assert!(
             (area_lc0_30_result - area_lc0_30_target).abs() < area_lc0_30_target.abs() * precision,
             "\narea_lc0_30 result:{area_lc0_30_result} target:{area_lc0_30_target}"
@@ -594,7 +764,7 @@ mod tests {
         let area_lc0_40_result = criterion_res
             .get(&(CriterionID::AreaLC0_40 as usize))
             .unwrap();
-        let area_lc0_40_target = 0.327;
+        let area_lc0_40_target = 0.469_f64;
         assert!(
             (area_lc0_40_result - area_lc0_40_target).abs() < area_lc0_40_target.abs() * precision,
             "\narea_lc0_40 result:{area_lc0_40_result} target:{area_lc0_40_target}"
@@ -603,7 +773,7 @@ mod tests {
         let area_lc30_40_result = criterion_res
             .get(&(CriterionID::AreaLC30_40 as usize))
             .unwrap();
-        let area_lc30_40_target = 0.140;
+        let area_lc30_40_target = 0.206_f64;
         assert!(
             (area_lc30_40_result - area_lc30_40_target).abs()
                 < area_lc30_40_target.abs() * precision,
@@ -613,21 +783,21 @@ mod tests {
         let static_wind_angle_result = parameters
             .get(ParameterID::StaticWindageHeelingAngle)
             .unwrap();
-        let static_wind_angle_target = 0.23;
+        let static_wind_angle_target = 1.85;
         assert!(
                     (static_wind_angle_result - static_wind_angle_target).abs() < static_wind_angle_target.abs()*precision,
                     "\nstatic_wind_angle result:{static_wind_angle_result} target:{static_wind_angle_target}"
                 );
         //ПЛOЩAДЬ A, M*PAД
         let area_a_result = parameters.get(ParameterID::AreaA).unwrap();
-        let area_a_target = 0.0816;
+        let area_a_target = 0.1185;
         assert!(
             (area_a_result - area_a_target).abs() < area_a_target.abs() * precision,
             "\narea_a result:{area_a_result} target:{area_a_target}"
         );
         //ПЛOЩAДЬ B, M*PAД
         let area_b_result = parameters.get(ParameterID::AreaB).unwrap();
-        let area_b_target = 0.3781;
+        let area_b_target = 0.6165;
         assert!(
             (area_b_result - area_b_target).abs() < area_b_target.abs() * precision,
             "\narea_b result:{area_b_result} target:{area_b_target}"
@@ -641,22 +811,22 @@ mod tests {
             .map(|(a, dso, ddo)| (a.round() as i32, (dso, ddo)))
             .collect();
         let diagram_target = vec![
-            (0, 0.010, 0.000),
-            (5, 0.119, 0.006),
-            (10, 0.234, 0.021),
-            (15, 0.360, 0.047),
-            (20, 0.497, 0.084),
-            (25, 0.591, 0.132),
-            (30, 0.687, 0.188),
-            (35, 0.807, 0.253),
-            (40, 0.892, 0.327),
-            (45, 0.898, 0.406),
-            (50, 0.849, 0.483),
-            (55, 0.760, 0.553),
-            (60, 0.643, 0.614),
-            (70, 0.351, 0.702),
-            (80, 0.016, 0.735),
-            (90, -0.333, 0.707),
+            (0, 0.000, 0.000),
+            (5, 0.151, 0.007),
+            (10, 0.306, 0.026),
+            (15, 0.474, 0.060),
+            (20, 0.664, 0.110),
+            (25, 0.885, 0.177),
+            (30, 1.077, 0.263),
+            (35, 1.187, 0.363),
+            (40, 1.250, 0.469),
+            (45, 1.268, 0.580),
+            (50, 1.217, 0.689),
+            (55, 1.116, 0.791),
+            (60, 0.979, 0.882),
+            (70, 0.629, 1.024),
+            (80, 0.220, 1.099),
+            (90, -0.223, 1.099),
         ];
         diagram_target.iter().for_each(|(a, dso_trg, ddo_trg)| {
             let (dso_res, ddo_res) = diagram_result.get(a).unwrap();
@@ -669,23 +839,6 @@ mod tests {
                 "\nddo a:{a} result:{ddo_res} target:{ddo_trg}"
             );
         });
-
-        /*            log::info!("Main criterion zg:");
-                for (id, zg, result, target) in criterion_computer_results.iter() {
-                    log::info!("id:{id} zg:{zg} result:{result} delta:{}", result - target);
-                }
-                log::info!("Main criterion:");
-                for v in criterion_res.iter() {
-                    log::info!(
-                        "id:{} result:{} target:{}",
-                        v.criterion_id,
-                        v.result,
-                        v.target
-                    );
-                }
-                //   send_stability_data(&mut api_server, ship_id, criterion.create()).unwrap(); //
-        //        send_parameters_data(&mut api_server, ship_id, parameters.take_data()).unwrap(); //
-        */
 
         test_duration.exit();
     }
