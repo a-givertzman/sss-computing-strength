@@ -201,7 +201,7 @@ pub(crate) fn input_data_19() -> ParsedShipData {
         },
         container::container_19(),
         bulkhead::bulkhead_27_28(),
-        compartment::compartment_100_sea(),
+        compartment::compartment_100_sea_19(),
         hold_compartment::hold_compartment_empty(),
         load_constants::load_constants(),
         area_h_stab::area_h_stab(),
