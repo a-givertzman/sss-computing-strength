@@ -8,7 +8,7 @@ use crate::{
     CriterionData, Position,
 };
 use api_tools::client::{api_query::*, api_request::ApiRequest};
-use loads::{BulkheadArray, CompartmentArray, LoadCargoArray};
+use loads::{BulkheadArray, CompartmentArray, ContainerArray, LoadCargoArray};
 use std::{collections::HashMap, thread, time};
 
 pub struct ApiServer {
@@ -247,7 +247,31 @@ pub fn get_data(
         WHERE 
             c.ship_id={ship_id};"
     ))?)?;
-    let compartment = CompartmentArray::parse(&api_server.fetch(&format!(
+    let containers = ContainerArray::parse(&api_server.fetch(&format!(
+        "SELECT 
+            c.id AS id, \
+            c.mass AS mass, \
+            cgc.key::TEXT AS general_category, \
+            c.bound_x1 AS bound_x1, \
+            c.bound_x2 AS bound_x2, \
+            c.bound_y1 AS bound_y1, \
+            c.bound_y2 AS bound_y2, \
+            c.bound_z1 AS bound_z1, \
+            c.bound_z2 AS bound_z2, \
+            c.mass_shift_x AS mass_shift_x, \
+            c.mass_shift_y AS mass_shift_y, \
+            c.mass_shift_z AS mass_shift_z, \
+            c.is_on_deck AS is_on_deck \
+        FROM 
+            container_cargo AS c
+        JOIN 
+            cargo_category AS cc ON c.category_id = cc.id
+        JOIN 
+            cargo_general_category AS cgc ON cc.general_category_id = cgc.id
+        WHERE 
+            c.ship_id={ship_id};"
+    ))?)?;
+    let compartments = CompartmentArray::parse(&api_server.fetch(&format!(
         "SELECT 
             c.name AS name, \
             c.mass AS mass, \
@@ -272,7 +296,7 @@ pub fn get_data(
         WHERE 
             c.ship_id={ship_id} AND active=TRUE AND mass>0;"
     ))?)?;
-    let hold_compartment = CompartmentArray::parse(&api_server.fetch(&format!(
+    let hold_compartments = CompartmentArray::parse(&api_server.fetch(&format!(
         "SELECT 
             c.name AS name, \
             c.mass AS mass, \
@@ -316,7 +340,7 @@ pub fn get_data(
             WHERE 
                 h.ship_id={ship_id};"
         ))?)?;
-    let load_constant = LoadConstantArray::parse(&api_server.fetch(&format!(
+    let load_constants = LoadConstantArray::parse(&api_server.fetch(&format!(
         "SELECT 
             l.mass AS mass, \
             l.bound_x1 AS bound_x1, \
@@ -330,7 +354,7 @@ pub fn get_data(
             l.category_id = cc.id
         WHERE 
             l.ship_id={ship_id};"
-    ))?)?;
+    ))?)?;    
     let area_h_str = HStrAreaArray::parse(&api_server.fetch(
         &format!("SELECT name, value, bound_x1, bound_x2 FROM horizontal_area_strength WHERE ship_id={};", ship_id)
     )?)?;
@@ -384,10 +408,11 @@ pub fn get_data(
         screw,
         bow_board,
         cargo,
+        containers,
         bulkhead,
-        compartment,
-        hold_compartment,
-        load_constant,
+        compartments,
+        hold_compartments,
+        load_constants,
         area_h_stab,
         area_h_str,
         area_v_stab,

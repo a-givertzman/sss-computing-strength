@@ -35,6 +35,7 @@ mod tests;
 mod trim;
 
 fn main() {
+    //std::env::set_var("RUST_LOG", "info");
     let _log2 = log2::open("log.txt")
     .level(Logger::from_default_env().filter().as_str())
     .size(100*1024*1024)

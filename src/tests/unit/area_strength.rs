@@ -11,6 +11,7 @@ mod tests {
 
     static SHIP_LENGTH: f64 = 10.;
     static SHIP_WIDTH: f64 = 2.;
+    static SHIP_HEIGHT: f64 = 2.;
     static SHIP_AREA_V: f64 = 5.;
     static SHIP_AREA_H: f64 = 10.;
     static DESC_MASS: f64 = 3.;
@@ -41,8 +42,9 @@ mod tests {
                 Position::new(0., 0., 0.),
                 Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
                 Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                Bound::new(SHIP_HEIGHT, SHIP_HEIGHT + DESC_HEIGHT).unwrap(),
                 DESC_LENGTH * DESC_HEIGHT,
-                Position::new(0., 0., DESC_HEIGHT / 2.),
+                Position::new(0., 0., SHIP_HEIGHT + DESC_HEIGHT / 2.),
                 DESC_LENGTH * DESC_WIDTH,
                 true,
             ))]),
@@ -96,8 +98,9 @@ mod tests {
                 Position::new(0., 0., DESC_HEIGHT / 2.),
                 Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
                 Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                Bound::new(SHIP_HEIGHT, SHIP_HEIGHT + DESC_HEIGHT).unwrap(),
                 DESC_LENGTH * DESC_HEIGHT,
-                Position::new(0., 0., DESC_HEIGHT / 2.),
+                Position::new(0., 0., SHIP_HEIGHT + DESC_HEIGHT / 2.),
                 DESC_LENGTH * DESC_WIDTH,
                 true,
             ))]),
@@ -151,8 +154,9 @@ mod tests {
                 Position::new(0., 0., DESC_HEIGHT / 2.),
                 Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
                 Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                Bound::new(SHIP_HEIGHT, SHIP_HEIGHT + DESC_HEIGHT).unwrap(),
                 DESC_LENGTH * DESC_HEIGHT,
-                Position::new(0., 0., DESC_HEIGHT / 2.),
+                Position::new(0., 0., SHIP_HEIGHT + DESC_HEIGHT / 2.),
                 DESC_LENGTH * DESC_WIDTH,
                 true,
             ))]),
@@ -206,8 +210,9 @@ mod tests {
                 Position::new(0., 0., DESC_HEIGHT / 2.),
                 Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
                 Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                Bound::new(SHIP_HEIGHT, SHIP_HEIGHT + DESC_HEIGHT).unwrap(),
                 DESC_LENGTH * DESC_HEIGHT,
-                Position::new(0., 0., DESC_HEIGHT / 2.),
+                Position::new(0., 0., SHIP_HEIGHT + DESC_HEIGHT / 2.),
                 DESC_LENGTH * DESC_WIDTH,
                 true,
             ))]),
@@ -261,8 +266,9 @@ mod tests {
                 Position::new(0., 0., DESC_HEIGHT / 2.),
                 Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
                 Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                Bound::new(SHIP_HEIGHT, SHIP_HEIGHT + DESC_HEIGHT).unwrap(),
                 DESC_LENGTH * DESC_HEIGHT,
-                Position::new(0., 0., DESC_HEIGHT / 2.),
+                Position::new(0., 0., SHIP_HEIGHT + DESC_HEIGHT / 2.),
                 DESC_LENGTH * DESC_WIDTH,
                 true,
             ))]),
@@ -316,8 +322,9 @@ mod tests {
                 Position::new(0., 0., DESC_HEIGHT / 2.),
                 Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
                 Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                Bound::new(SHIP_HEIGHT, SHIP_HEIGHT + DESC_HEIGHT).unwrap(),
                 DESC_LENGTH * DESC_HEIGHT,
-                Position::new(0., 0., DESC_HEIGHT / 2.),
+                Position::new(0., 0., SHIP_HEIGHT + DESC_HEIGHT / 2.),
                 DESC_LENGTH * DESC_WIDTH,
                 true,
             ))]),

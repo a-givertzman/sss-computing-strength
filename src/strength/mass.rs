@@ -113,7 +113,7 @@ impl Mass {
         self.parameters.add(ParameterID::MassLightship, lightship);
         self.parameters.add(ParameterID::MassIcing, icing);
         self.parameters.add(ParameterID::MassWetting, wetting);
-        log::trace!(
+        log::info!(
             "\t Mass ballast:{ballast}, stores:{stores}, bulkhead:{bulkhead}
             cargo:{cargo}, deadweight:{deadweight}, lightship:{lightship},
             icing:{icing}, wetting:{wetting} sum:{mass_sum}"
@@ -203,7 +203,7 @@ impl Mass {
         vec_wetting.push(vec_wetting.iter().sum());
         vec_sum.append(&mut res.clone());
         vec_sum.push(res.iter().sum());
-        log::trace!("\t Mass values:{:?} ", res);
+        log::info!("\t Mass values:{:?} ", res);
         self.results.add("value_mass_hull".to_owned(), vec_hull);
         self.results
             .add("value_mass_equipment".to_owned(), vec_equipment);

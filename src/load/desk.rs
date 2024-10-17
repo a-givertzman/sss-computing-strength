@@ -6,15 +6,23 @@ use crate::load::ILoadMass;
 /// Палубный груз, имеет площадь и парусность
 pub trait IDesk: ILoad {
     /// Парусность попадающая в Bound или вся если Bound отсутствует
-    fn windage_area(&self, bound: &Bound) -> Result<f64, Error>;
+    fn windage_area(&self, bound_x: &Bound, bound_z: &Bound) -> Result<f64, Error>;
     /// Статический момент площади парусности палубного груза, м^3
-    fn windage_moment(&self) -> Result<Moment, Error>;
+    //   fn windage_moment(&self) -> Result<Moment, Error>;
     /// Площадь горизонтальной поверхности, м^2
     fn horizontal_area(&self, bound_x: &Bound, bound_y: &Bound) -> Result<f64, Error>;
     /// Высота груза, м
     fn height(&self) -> Result<f64, Error>;
     /// Признак палубного груза: лес
     fn is_timber(&self) -> bool;
+    /// Минимальная координата по оси X
+    fn min_x(&self) -> Option<f64>;
+    /// Максимальная координата по оси X
+    fn max_x(&self) -> Option<f64>;
+    /// Минимальная координата по оси Z
+    fn min_z(&self) -> Option<f64>;
+    /// Максимальная координата по оси Z
+    fn max_z(&self) -> Option<f64>;
 }
 /// Палубный груз, имеет площадь и парусность  
 pub struct Desk {
@@ -26,6 +34,8 @@ pub struct Desk {
     bound_x: Bound,
     /// Ограничение по оси Y
     bound_y: Bound,
+    /// Ограничение по оси Z
+    bound_z: Bound,
     /// Площадь парусности  
     windage_area: f64,
     /// Смещение центра парусности  
@@ -42,6 +52,7 @@ impl Desk {
     /// * shift - Смещение центра массы
     /// * bound_x - Ограничение по оси Х
     /// * bound_y - Ограничение по оси Y
+    /// * bound_Z - Ограничение по оси Z
     /// * windage_area - Площадь парусности  
     /// * windage_shift - Смещение центра парусности
     /// * horizontal_area - Площадь горизонтальной поверхности  
@@ -52,6 +63,7 @@ impl Desk {
         mass_shift: Position,
         bound_x: Bound,
         bound_y: Bound,
+        bound_z: Bound,
         windage_area: f64,
         windage_shift: Position,
         horizontal_area: f64,
@@ -62,6 +74,7 @@ impl Desk {
             mass_shift,
             bound_x,
             bound_y,
+            bound_z,
             windage_area,
             windage_shift,
             horizontal_area,
@@ -72,16 +85,18 @@ impl Desk {
 //
 impl IDesk for Desk {
     /// Парусность попадающая в Bound или вся если Bound отсутствует
-    fn windage_area(&self, bound: &Bound) -> Result<f64, Error> {
-        Ok(self.bound_x.part_ratio(bound)? * self.windage_area)
+    fn windage_area(&self, bound_x: &Bound, bound_z: &Bound) -> Result<f64, Error> {
+        Ok(self.bound_x.part_ratio(bound_x)?
+            * self.bound_z.part_ratio(bound_z)?
+            * self.windage_area)
     }
-    /// Статический момент площади парусности палубного груза, м^3
+    /*    /// Статический момент площади парусности палубного груза, м^3
     fn windage_moment(&self) -> Result<Moment, Error> {
         Ok(Moment::from_pos(
             self.windage_shift.clone(),
-            self.windage_area(&Bound::Full)?,
+            self.windage_area(&Bound::Full, &Bound::Full)?,
         ))
-    }
+    }*/
     /// Площадь горизонтальной поверхности, м^2
     fn horizontal_area(&self, bound_x: &Bound, bound_y: &Bound) -> Result<f64, Error> {
         let part_x = self.bound_x.part_ratio(bound_x)?;
@@ -91,14 +106,33 @@ impl IDesk for Desk {
     /// Высота груза, м,
     /// TODO: после того, как в базе появятся палубные грузы добавить нормальную высоту
     fn height(&self) -> Result<f64, Error> {
-        Ok(self.windage_area
-            / self.bound_x.length().ok_or(Error::FromString(
-                "Desk height error: no self.bound_x.length".to_owned(),
-            ))?)
+        self.bound_z.length().ok_or(Error::FromString(
+            "Desk height error: no self.bound_x.length".to_owned(),
+        ))
+        /*  Ok(self.windage_area
+        / self.bound_x.length().ok_or(Error::FromString(
+            "Desk height error: no self.bound_x.length".to_owned(),
+        ))?)*/
     }
     /// Признак палубного груза: лес
     fn is_timber(&self) -> bool {
         self.is_timber
+    }
+    /// Минимальная координата по оси X
+    fn min_x(&self) -> Option<f64> {
+        self.bound_x.start()
+    }
+    /// Максимальная координата по оси X
+    fn max_x(&self) -> Option<f64> {
+        self.bound_x.end()
+    }
+    /// Минимальная координата по оси Z
+    fn min_z(&self) -> Option<f64> {
+        self.bound_z.start()
+    }
+    /// Максимальная координата по оси Z
+    fn max_z(&self) -> Option<f64> {
+        self.bound_z.end()
     }
 }
 //

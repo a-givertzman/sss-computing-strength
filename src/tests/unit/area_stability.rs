@@ -42,6 +42,7 @@ mod tests {
                     Position::new(0., 0., SHIP_HEIGHT + DESC_HEIGHT / 2.),
                     Bound::new(-DESC_LENGTH / 2., DESC_LENGTH / 2.).unwrap(),
                     Bound::new(-DESC_WIDTH / 2., DESC_WIDTH / 2.).unwrap(),
+                    Bound::new(SHIP_HEIGHT, SHIP_HEIGHT + DESC_HEIGHT).unwrap(),
                     DESC_LENGTH * DESC_HEIGHT,
                     Position::new(0., 0., SHIP_HEIGHT + DESC_HEIGHT / 2.),
                     DESC_LENGTH * DESC_WIDTH,
@@ -91,7 +92,7 @@ mod tests {
                 DESC_LENGTH * DESC_HEIGHT,
             );
         assert!(
-            result == target,
+            (result.clone() - target.clone()).len() < 0.00000001,
             "\nresult: {:?}\ntarget: {:?}",
             result,
             target

@@ -50,6 +50,28 @@ impl Bounds {
         Self::new(values)
     }
     /// Вспомогательный конструктор
+    #[allow(unused)]
+    pub fn from_min_max(min: f64, max: f64, n: usize) -> Result<Self, Error> {
+        if min >= max {
+            return Err(Error::FromString(format!(
+                "Bounds from_min_max error: min {min} >= max {max}"
+            )));
+        }
+        if n <= 1 {
+            return Err(Error::FromString(format!(
+                "Bounds from_min_max error: n {n} <= 1"
+            )));
+        }
+        let n_parts = n as f64;
+        let len = max - min;
+        let mut values = Vec::new();
+        for i in 0..n {
+            let i = i as f64;
+            values.push(Bound::new(len*i/n_parts + min, len*(i+1.)/n_parts + min)?);
+        }
+        Self::new(values)
+    }
+    /// Вспомогательный конструктор
     pub fn from_frames(frames: &[(f64, f64)]) -> Result<Self, Error> {
         if frames.len() <= 1 {
             return Err(Error::FromString(
