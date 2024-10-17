@@ -48,7 +48,7 @@ impl IVolume for Volume {
                 self.draught.value(v.end().unwrap())?,
             )?)
         }
-        log::debug!(
+        log::trace!(
             "\t Volume result:{:?}, res_sum:{}",
             result,
             result.iter().sum::<f64>()
