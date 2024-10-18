@@ -4,7 +4,7 @@
 use std::rc::Rc;
 
 use crate::{
-    area::HAreaStability, icing_timber::IcingTimberBound, Bound, Error, IDesk, Moment, Position,
+    area::HAreaStability, icing_timber::IcingTimberBound, Bound, Bounds, Error, IDesk, Moment, Position
 };
 
 /// Момент площади горизонтальных поверхностей и
@@ -54,17 +54,94 @@ impl IArea for Area {
     /// Площадь парусности
     fn area_v(&self) -> Result<f64, Error> {
         let mut area_sum = self.av_cs_dmin1;
-        for v in self.desks.iter() {
-            area_sum += v.windage_area(&Bound::Full)?;
+        // Ищем площадь горизонтальной поверхности палубных грузов.
+        // Перебираем горизонтальую поверхность с шагом, проходим по грузам и
+        // берем максимальную площадь среди всех грузов на этом шаге.
+        let min_x = self
+            .desks
+            .iter()
+            .filter_map(|v| v.min_x())
+            .min_by(|&a, &b| a.partial_cmp(&b).unwrap());
+        let max_x = self
+            .desks
+            .iter()
+            .filter_map(|v| v.max_x())
+            .max_by(|&a, &b| a.partial_cmp(&b).unwrap());
+        if min_x.is_some() && max_x.is_some() {
+            area_sum += Bounds::from_min_max(min_x.unwrap(), max_x.unwrap(), 200)?.iter().map(|bound_x| {
+                let min_z = self
+                    .desks
+                    .iter()
+                    .filter_map(|v| v.min_z())
+                    .min_by(|&a, &b| a.partial_cmp(&b).unwrap());
+                let max_z = self
+                    .desks
+                    .iter()
+                    .filter_map(|v| v.max_z())
+                    .max_by(|&a, &b| a.partial_cmp(&b).unwrap());
+                if let (Some(min_z), Some(max_z)) = (min_z, max_z) {
+                    Bounds::from_min_max(min_z, max_z, 50).expect("Area area_v error: Bounds::from_min_max").iter().map(|bound_z| 
+                        self
+                            .desks
+                            .iter()
+                            .filter_map(|v| v.windage_area(&bound_x, &bound_z).ok())
+                            .max_by(|&a, &b| a.partial_cmp(&b).unwrap())
+                            .unwrap_or(0.)   
+                    ).sum()                 
+                } else {
+                    0.
+                }
+            }).sum::<f64>()
         }
         Ok(area_sum)
     }
     /// Момент площади парусности
     fn moment_v(&self) -> Result<Moment, Error> {
         let mut moment_sum = Moment::new(self.mvx_cs_dmin1, 0., self.mvz_cs_dmin1);
-        for v in self.desks.iter() {
-            moment_sum += v.windage_moment()?;
+        // Ищем площадь горизонтальной поверхности палубных грузов.
+        // Перебираем горизонтальую поверхность с шагом, проходим по грузам и
+        // берем максимальную площадь среди всех грузов на этом шаге.
+        let min_x = self
+            .desks
+            .iter()
+            .filter_map(|v| v.min_x())
+            .min_by(|&a, &b| a.partial_cmp(&b).unwrap());
+        let max_x = self
+            .desks
+            .iter()
+            .filter_map(|v| v.max_x())
+            .max_by(|&a, &b| a.partial_cmp(&b).unwrap());
+        if min_x.is_some() && max_x.is_some() {
+            moment_sum += Bounds::from_min_max(min_x.unwrap(), max_x.unwrap(), 200)?.iter().map(|bound_x| {
+                let min_z = self
+                    .desks
+                    .iter()
+                    .filter_map(|v| v.min_z())
+                    .min_by(|&a, &b| a.partial_cmp(&b).unwrap());
+                let max_z = self
+                    .desks
+                    .iter()
+                    .filter_map(|v| v.max_z())
+                    .max_by(|&a, &b| a.partial_cmp(&b).unwrap());
+                if let (Some(min_z), Some(max_z)) = (min_z, max_z) {
+                    Bounds::from_min_max(min_z, max_z, 50).expect("Area area_v error: Bounds::from_min_max").iter().map(|bound_z| {
+                            let area = self
+                                .desks
+                                .iter()
+                                .filter_map(|v| v.windage_area(&bound_x, &bound_z).ok())
+                                .max_by(|&a, &b| a.partial_cmp(&b).unwrap())
+                                .unwrap_or(0.);
+                            Moment::new(area*bound_x.center().unwrap_or(0.), 0., area*bound_z.center().unwrap_or(0.))
+                        }
+                    ).sum::<Moment>()                 
+                } else {
+                    Moment::zero()
+                }
+            }).sum::<Moment>()
         }
+       /* for v in self.desks.iter() {
+            moment_sum += v.windage_moment()?;
+        }*/
         Ok(moment_sum)
     }
     /// Момент площади горизонтальных поверхностей

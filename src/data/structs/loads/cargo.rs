@@ -40,7 +40,7 @@ impl std::fmt::Display for LoadCargo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "LoadCargo(name:{} mass:{} loading_type:{} timber:{} bound_x:({}, {}) bound_y:({}, {}) bound_z:({}, {}) 
+            "LoadCargo(name:{} mass:{} general_category:{} timber:{} bound_x:({}, {}) bound_y:({}, {}) bound_z:({}, {}) 
             mass_shift:({}, {}, {}) horizontal_area:{} vertical_area:{} vertical_area_shift_y:({}, {}, {}) )",
             self.name,
             self.mass.unwrap_or(0.),            

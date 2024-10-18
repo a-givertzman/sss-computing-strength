@@ -204,6 +204,7 @@ impl<'a> Loads<'_> {
                     mass_shift,
                     bound_x,
                     bound_y,
+                    bound_z,
                     vertical_area,
                     vertical_shift,
                     horizontal_area,

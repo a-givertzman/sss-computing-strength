@@ -38,7 +38,7 @@ impl Displacement {
         let area_start = self.area(bound.start().unwrap(), draft_start)?;
         let area_end = self.area(bound.end().unwrap(), draft_end)?;
         let result = bound.length().unwrap() * (area_start + area_end) / 2.;
-        log::trace!("\t Displacement value bound:{bound} draft_start:{draft_start} draft_end:{draft_end} area_start:{area_start} area_end:{area_end} result:{result}");
+    //    log::trace!("\t Displacement value bound:{bound} draft_start:{draft_start} draft_end:{draft_end} area_start:{area_start} area_end:{area_end} result:{result}");
         Ok(result)
     }
     ///Интерполированние значение погруженной площади сечения.  
@@ -50,14 +50,14 @@ impl Displacement {
             "Displacement area error: can't find first frame".to_string(),
         ))?;
         if frames_first.shift_x() >= pos_x {
-            log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  frames_first.shift_x() {} >= pos_x",  frames_first.shift_x());
+    //        log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  frames_first.shift_x() {} >= pos_x",  frames_first.shift_x());
             return Ok(frames_first.area(draft)? * 2.); // для крайних шпангоутов удваеваем площадь
         }
         let frames_last = self.frames.last().ok_or(Error::FromString(
             "Displacement area error: can't find last frame".to_string(),
         ))?;
         if frames_last.shift_x() <= pos_x {
-            log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  frames_last.shift_x() {} <= pos_x",  frames_last.shift_x());
+    //        log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  frames_last.shift_x() {} <= pos_x",  frames_last.shift_x());
             return Ok(frames_last.area(draft)? * 2.); // для крайних шпангоутов удваеваем площадь
         }
         let (index_up, frame_up) = &self
@@ -69,7 +69,7 @@ impl Displacement {
                 "Displacement area error: can't find frame".to_string(),
             ))?;
         if *index_up == 0 {
-            log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  index_up == 0");
+    //        log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  index_up == 0");
             return Ok(self.frames[*index_up].area(draft)? * 2.); // для крайних шпангоутов удваеваем площадь
         }
         let frame_down = &self.frames[*index_up - 1];
@@ -78,7 +78,7 @@ impl Displacement {
         let coeff_len_up = 1. - coeff_len_down;
         let result =
             frame_up.area(draft)? * coeff_len_up + frame_down.area(draft)? * coeff_len_down;
-        log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  index_up:{index_up} delta_x:{delta_x} coeff_len_up:{coeff_len_up} coeff_len_down:{coeff_len_down} result:{result}");
+    //    log::trace!("\t Displacement area pos_x:{pos_x} draft:{draft}  index_up:{index_up} delta_x:{delta_x} coeff_len_up:{coeff_len_up} coeff_len_down:{coeff_len_down} result:{result}");
         Ok(result)
     }
 }

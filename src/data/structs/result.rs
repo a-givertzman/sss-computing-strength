@@ -3,7 +3,7 @@
 use super::*;
 use bow_board::BowBoardParsedData;
 use loads::{
-    BulkheadArray, CompartmentArray, CompartmentData, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData
+    BulkheadArray, CompartmentArray, CompartmentData, ContainerArray, LoadCargo, LoadCargoArray, LoadConstantArray, LoadConstantData
 };
 use navigation_area_data::NavigationAreaData;
 use ship_type::ShipType;
@@ -202,11 +202,12 @@ impl ParsedShipData {
         load_line: LoadLineDataArray,
         screw: ScrewDataArray,
         bow_board: BowBoardDataArray,
-        cargo_src: LoadCargoArray,
-        bulkhead_src: BulkheadArray,
-        compartments_src: CompartmentArray,
-        hold_compartments_src: CompartmentArray,
-        load_constant_src: LoadConstantArray,
+        cargo: LoadCargoArray,
+        containers: ContainerArray,
+        bulkhead: BulkheadArray,
+        compartments: CompartmentArray,
+        hold_compartments: CompartmentArray,
+        load_constants: LoadConstantArray,
         area_h_stab: HStabAreaArray,
         area_h_str: HStrAreaArray,
         area_v_stab: stability::VerticalAreaArray,
@@ -351,10 +352,11 @@ impl ParsedShipData {
             "ParsedShipData parse error: no icing_coef_v_moment_zero for ship id:{}",
             ship_id
         ))?;
-        let mut cargoes = cargo_src.data();
-        cargoes.append(&mut bulkhead_src.data());        
-        let mut compartments =compartments_src.data();
-        compartments.append(&mut hold_compartments_src.data());
+        let mut cargoes = cargo.data();
+        cargoes.append(&mut containers.data());   
+        cargoes.append(&mut bulkhead.data());        
+        let mut compartments = compartments.data();
+        compartments.append(&mut hold_compartments.data());
         log::info!("result parse ok");
         let result = Self {
             ship_type,
@@ -423,7 +425,7 @@ impl ParsedShipData {
             bow_board: bow_board.bow_board_data(),
             cargoes,
             compartments,
-            load_constants: load_constant_src.data(),
+            load_constants: load_constants.data(),
             area_h_stab: area_h_stab.data(),
             area_h_str: area_h_str.data(),
             area_v_stab,

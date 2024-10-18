@@ -26,7 +26,7 @@ mod tests {
     fn complex_66() {
         DebugSession::init(LogLevel::Debug, Backtrace::Short);
         println!("");
-        let self_id = "test complex";
+        let self_id = "test complex 66";
         println!("{}", self_id);
         let test_duration = TestDuration::new(self_id, Duration::from_secs(60));
         test_duration.run().unwrap();
