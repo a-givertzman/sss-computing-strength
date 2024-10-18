@@ -99,11 +99,11 @@ impl LeverDiagram {
         }
         let curve = Curve2D::from_values_catmull_rom(pantocaren)?;
         // расчет диаграммы
-        log::trace!(
+ /*       log::trace!(
             "StabilityArm calculate mean_draught:{}, z_g_fix:{} ",
             self.mean_draught,
             self.metacentric_height.z_g_fix()?
-        );
+        );*/
         let theta: &dyn Fn(i32) -> Result<(f64, f64), Error> = &|angle_deg: i32| {
             let angle_deg = angle_deg as f64 * 0.1;
             let angle_rad = angle_deg * std::f64::consts::PI / 180.;
@@ -112,7 +112,7 @@ impl LeverDiagram {
             let v3 =
                 (self.ship_moment.shift()?.y() - self.center_draught_shift.y()) * angle_rad.cos();
             let value = v1 - v2 - v3;
-            log::trace!("{}", format!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}"));
+    //        log::trace!("{}", format!("StabilityArm calculate расчет диаграммы: {angle_deg}, {angle_rad}, {v1}, {v2}, {v3}, {value}"));
             Ok((angle_deg, value))
         };
         let mut dso = (-900..=900)
@@ -163,7 +163,7 @@ impl LeverDiagram {
                 angle = max_angle;
             }
             delta_angle *= 0.5;
-            log::trace!("{}", format!("StabilityArm calculate max_angle: value:{value} angle:{angle} max_value:{max_value} max_angle:{max_angle} delta_angle:{delta_angle} i:{_i} "));
+    //        log::trace!("{}", format!("StabilityArm calculate max_angle: value:{value} angle:{angle} max_value:{max_value} max_angle:{max_angle} delta_angle:{delta_angle} i:{_i} "));
         }
         *self.theta_max.borrow_mut() = Some(max_angle);
         *self.dso.borrow_mut() = Some(dso.clone());
@@ -210,14 +210,11 @@ impl LeverDiagram {
             .map(|((a1, v1), (_, v2))| (*a1, *v1, *v2))
             .collect::<Vec<_>>();
         log::trace!(
-            "StabilityArm calculate z_g_fix:{} angle_zero:{} len dso:{} ddo:{} diagram:{}, [angle, dso, ddo]",
+            "StabilityArm calculate z_g_fix:{} angle_zero:{}",
             self.metacentric_height.z_g_fix()?,
             angle_zero * angle_zero_signum,
-            dso.len(),
-            ddo.len(),
-            diagram.len(),
         );
-        log::trace!("StabilityArm calculate angle dso ddo:");
+        log::trace!("StabilityArm calculate diagram: [angle dso ddo]:");
         for &(angle, dso, ddo) in diagram.iter() {
             log::trace!("{angle} {dso} {ddo};");
         }
@@ -258,7 +255,7 @@ impl ILeverDiagram for LeverDiagram {
                 angles[0] += delta_angle * last_delta_value.signum();
             }
             let last_delta_value = lever_moment - curve.value(angles[1])?;
-            log::trace!("{}", format!("StabilityArm angle: target:{lever_moment} angle2:{} last_delta_value:{last_delta_value} i:{_i} delta_angle:{delta_angle} ", angles[1]));
+    //        log::trace!("{}", format!("StabilityArm angle: target:{lever_moment} angle2:{} last_delta_value:{last_delta_value} i:{_i} delta_angle:{delta_angle} ", angles[1]));
             if last_delta_value.abs() > 0.00001 {
                 angles[1] -= delta_angle * last_delta_value.signum();
                 angles[1] = angles[1].min(90.);
